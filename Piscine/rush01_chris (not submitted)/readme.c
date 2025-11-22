@@ -14,7 +14,7 @@
 
 /* This is copied and have not been rewritten into my own code
  * 
- * This is the state of the art online algo. to generate permutations
+ * This is a possible algo. I devised with A.I. to generate permutations
  * that we could have used to do the following problem approach:
  *
  * === ELIMINATION METHOD ===
