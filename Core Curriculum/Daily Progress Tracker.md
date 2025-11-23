@@ -1,13 +1,117 @@
-2025
-Nov
-W1
-- 17 (Mon 1): Orientation, nearly got TIG’d for coffee :’)
-- 18 (Tues 2): Sick
-- 19 (Wed 3): Sick + Doc’s Appt + Family stuff
-- 20 (Thurs 4): Sick
-- 21 (Fri 5): Went school late (Still Sick)
-- 22 (WkEnd, Sat 6): WFH (Still Sick)
-- 23 (WkEnd, Sun 7): WFH (Still Sick)
- 
-W2
-- 24 (Mon 8): Join Run Club as Core first time + ???
+# 2025
+
+## Jul (Piscine)
+#### 21/07 - Onwards
+
+## Aug (Piscine)
+#### 15/08 - Piscine ends
+
+## Sept, Oct, Nov (Waiting Period)
+- Therapy
+- Computer textbooks
+
+## Mid-Nov
+### W1
+#### 17/11 (Mon 1): Orientation, nearly got TIG’d for coffee :’)
+#### 18/11 (Tues 2): Sick
+#### 19/11 (Wed 3): Sick + Doc’s Appt + Family stuff
+#### 20/11 (Thurs 4): Sick
+#### 20/11 (Fri 5): Went school late (Still Sick)
+#### 22/11 (WkEnd, Sat 6): WFH (Still Sick)
+- Set up working environment (iPad + Keyboard + “Working Copy” IDE/ Application for Git Versioning).
+- ChatGPT “refined” Post-piscine custom project instructions for “Computer Science” folder/ project
+- Admin (SUTD email, slack, etc…)
+- Therapy
+#### 23/11 (WkEnd, Sun 7): WFH (Still Sick)
+# TODAY
+- Careful “re-solidifying” of C fundamentals/ Piscine contents.
+            
+### W2
+#### 24/11 (Mon 8): (???)
+- Join Run Club as Core first time + ???
+#### 25/11 (Tues 9):
+#### 26/11 (Wed 10):
+#### 27/11 (Thurs 11):
+#### 28/11 (Fri 12):
+#### 29/11 (WkEnd, Sat 13):
+#### 30/11 (WkEnd, Sun 14):
+## Dec
+
+### W3
+#### 01/12 (Mon 15):
+#### 02/12 (Tues 16):
+#### 03/12 (Wed 17):
+#### 04/12 (Thurs 18):
+#### 05/12 (Fri 19):
+#### 06/12 (WkEnd, Sat 20):
+#### 07/12 (WkEnd, Sun 21):
+
+### W4
+#### 08/12 (Mon 22):
+#### 09/12 (Tues 23):
+#### 10/12 (Wed 24):
+#### 11/12 (Thurs 25):
+#### 12/12 (Fri 26):
+#### 13/12 (WkEnd, Sat 27):
+#### 14/12 (WkEnd, Sun 28):
+
+### W5
+#### 15/12 (Mon 29):
+#### 16/12 (Tues 30):
+#### 17/12 (Wed 31):
+#### 18/12 (Thurs 32):
+#### 19/12 (Fri 33):
+#### 20/12 (WkEnd, Sat 34):
+#### 21/12 (WkEnd, Sun 35):
+
+# NOTE TO SELF: 
+# REGENERATE TEMPLATE HERE
+
+### W6
+#### 22/12 (Mon 36):
+#### 23/12 (Tues 37):
+#### 24/12 (Wed 38):
+#### 25/12 (Thurs 39):
+#### 26/12 (Fri 40):
+#### 27/12 (WkEnd, Sat 41):
+#### 28/12 (WkEnd, Sun 42):
+
+### W7
+#### 29/12 (Mon 43):
+#### 30/12 (Tues 44):
+#### 31/12 (Wed 45):
+
+# 2026
+
+# Jan
+#### 01/01 (Thurs 46):
+#### 02/01 (Fri 47):
+#### 03/01 (WkEnd, Sat 48):
+#### 04/01 (WkEnd, Sun 49):
+
+### W8
+#### 05/01 (Mon 50):
+#### 06/01 (Tues 51):
+#### 07/01 (Wed 52):
+#### 08/01 (Thurs 53):
+#### 09/01 (Fri 54):
+#### 10/01 (WkEnd, Sat 55):
+#### 11/01 (WkEnd, Sun 56):
+
+### W9
+#### 12/01 (Mon 57):
+#### 13/01 (Tues 58):
+#### 14/01 (Wed 59):
+#### 15/01 (Thurs 60):
+#### 16/01 (Fri 61):
+#### 17/01 (WkEnd, Sat 62):
+#### 18/01 (WkEnd, Sun 63):
+
+### W10
+#### 19/01 (Mon 64):
+#### 20/01 (Tues 65):
+#### 21/01 (Wed 66):
+#### 22/01 (Thurs 67):
+#### 23/01 (Fri 68):
+#### 24/01 (WkEnd, Sat 69):
+#### 25/01 (WkEnd, Sun 70)
