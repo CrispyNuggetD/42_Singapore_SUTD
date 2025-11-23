@@ -7,8 +7,6 @@
 #### 15/08 - Piscine ends
 
 ## Sept, Oct, Nov (Waiting Period)
-- Therapy
-- Computer textbooks
 
 ## Mid-Nov
 ### W1
