@@ -22,7 +22,7 @@ So I opted for the 12 months track that recommends, 35-45 hours a week, which I 
 
 # 42 Tips for others if you chance upon my repo.
 
-Get an iPad if you can, with a keyboard. 
+Get an iPad if you can, with a keyboard. It's like having a Macbook/ MacOS but you can poke the screen too (and more)!
 
 Then set up working environment by downloading “Working Copy” IDE/ Application for Git Versioning. Costs $40 (SGD, 2025) to do Git Push but it’s a necessary evil I guess. But hey, it’s a good app and Anders has to eat too! And it’s a good study investment.
 
