@@ -1,0 +1,162 @@
+# Set up the prompt
+
+# 2 helper functions curproj() and syncproj().
+
+# curproj switches into your current 42 project folder 
+# and shows the last edit + last sync status.
+
+# syncproj copies your 42 project into your main GitHub repo, 
+# strips its .git (IMPT), then prompts you for a commit message 
+# and pushes safely to GitHub.
+# NOTE: It does NOT touch Vogsphere. 
+# SYNC your campus repo before submitting project!
+
+# Usage: Just type curproj or syncproj into terminal.
+
+# Notes:
+# You MUST change a few things:
+
+# 1. Change and point the project you're working
+# on by changing variable, current_proj="<PROJECT NAME>"
+# e.g. current_proj="1_libft"
+
+# 2. Change PROJECTS_ROOTS to Project location on campus PC,
+# e.g. export PROJECTS_ROOTS="$HOME/Documents/Projects"
+
+# 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
+# e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/Core Curriculum"
+
+# 4. Change MAIN_PROJECTS_ROOT to your GitHub repo's project directory name 
+# (Can be same directory name as campus PC, of course. Just your preferences.)
+# e.g. export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Projects"
+
+
+###################################################################
+### (APPEND THESE) Variables after changing and Functions	###
+### Do NOT replace original .zshrc file				###
+###################################################################
+
+# hnah (intra) user defined
+export MAIL='hnah@student.42singapore.sg'
+
+# current project name (change as needed, then `source ~/.zshrc`)
+current_proj="1_libft"
+
+# --- 42 paths ---
+export PROJECTS_ROOT="$HOME/Documents/Projects"
+export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/Core Curriculum"
+export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Projects"
+
+# compile helper
+compile() {
+  cc -Wall -Wextra -Werror "$@"
+}
+
+# jump to current 42 project (Vogsphere working copy)
+curproj() {
+  local proj_dir="$PROJECTS_ROOT/$current_proj"
+
+  if [ ! -d "$proj_dir" ]; then
+    echo "No such project directory: $proj_dir"
+    return 1
+  fi
+
+  cd "$proj_dir" || return 1
+
+  echo "Now working on: $current_proj"
+  echo "Location: $proj_dir"
+
+  # --- Last edit (in the 42/Vogsphere clone) ---
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Last local git activity (this 42 project):"
+    git log -1 --pretty="  %h %s (%cr)"
+  else
+    echo "Not a git repo here (no .git found)."
+  fi
+
+  # --- Last sync to main GitHub repo ---
+  if [ -d "$MAIN_REPO_ROOT/.git" ]; then
+    # Get last commit in main repo that touched this project folder
+    local last_sync_line
+    last_sync_line=$(git -C "$MAIN_REPO_ROOT" log -1 \
+      --pretty="%h %s (%cr)" \
+      -- "Projects/$current_proj" 2>/dev/null)
+
+    if [ -n "$last_sync_line" ]; then
+      echo "Last sync to main repo (GitHub) for this project:"
+      echo "  $last_sync_line"
+
+      # Get last sync date in YYYY-MM-DD form
+      local last_sync_date today yesterday
+      last_sync_date=$(git -C "$MAIN_REPO_ROOT" log -1 \
+        --date=short --pretty="%cd" \
+        -- "Projects/$current_proj" 2>/dev/null)
+
+      today=$(date +%Y-%m-%d)
+      yesterday=$(date -d 'yesterday' +%Y-%m-%d)
+
+      # Warn if last sync was not today or yesterday
+      if [ "$last_sync_date" != "$today" ] && [ "$last_sync_date" != "$yesterday" ]; then
+        echo "⚠ WARNING: This project hasn't been synced to your main repo in more than a day."
+      fi
+    else
+      echo "No sync found for this project in main repo yet."
+    fi
+  else
+    echo "Main repo not found or not a git repo at: $MAIN_REPO_ROOT"
+  fi
+}
+
+# jump to main GitHub repo
+cdmain() {
+  cd "$MAIN_REPO_ROOT" || {
+    echo "No such main repo directory: $MAIN_REPO_ROOT"
+    return 1
+  }
+}
+
+# sync current 42 project into main GitHub repo (no commit)
+syncproj() {
+  local src="$PROJECTS_ROOT/$current_proj"
+  local dest="$MAIN_PROJECTS_ROOT/$current_proj"
+
+  if [ ! -d "$src" ]; then
+    echo "Source project not found: $src"
+    return 1
+  fi
+
+  echo "Syncing project: $current_proj"
+  echo "  from: $src"
+  echo "  to:   $dest"
+
+  # remove old version in main repo
+  rm -rf "$dest"
+
+  # make sure Projects/ exists
+  mkdir -p "$MAIN_PROJECTS_ROOT"
+
+  # copy fresh project over
+  cp -R "$src" "$MAIN_PROJECTS_ROOT/"
+
+  # remove any nested git metadata from the copied project
+  rm -rf "$dest/.git"
+
+  echo "Sync complete."
+
+  # jump into main repo to commit & push
+  cd "$MAIN_REPO_ROOT" || return 1
+
+  git add *
+  
+  # show status so you see what changed
+  echo
+  git status
+  echo
+
+  # ask for commit message
+  read "msg?Commit message for $current_proj: "
+
+  git commit -m "$msg"
+  git push
+  echo "Committed & pushed with message: $msg"
+}
