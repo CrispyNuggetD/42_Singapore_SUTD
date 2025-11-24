@@ -1,6 +1,15 @@
 # Set up the prompt
 
-# 2 helper functions curproj() and syncproj().
+# 3 useful things here.
+
+### Includes an alias 'compile' so you don't have 
+# to always type in full for 42-compliant compiling everytime.
+
+# Usage:
+# e.g. compile ft_isalpha.c
+# e.g. compile ft_isalpha.c -o output (run with ./output)
+
+### 2 helper functions curproj() and syncproj().
 
 # curproj switches into your current 42 project folder 
 # and shows the last edit + last sync status.
@@ -48,9 +57,7 @@ export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/"
 export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Core Curriculum/Projects"
 
 # compile helper
-compile() {
-  cc -Wall -Wextra -Werror "$@"
-}
+alias compile='cc -Wall -Wextra -Werror'
 
 # jump to current 42 project (Vogsphere working copy)
 curproj() {
