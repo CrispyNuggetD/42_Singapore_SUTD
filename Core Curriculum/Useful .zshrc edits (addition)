@@ -44,8 +44,8 @@ current_proj="1_libft"
 
 # --- 42 paths ---
 export PROJECTS_ROOT="$HOME/Documents/Projects"
-export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/Core Curriculum"
-export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Projects"
+export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/"
+export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Core Curriculum/Projects"
 
 # compile helper
 compile() {
