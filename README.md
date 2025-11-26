@@ -42,9 +42,15 @@ Week 1: (Stalled progress)
 - Careful “re-solidifying” of C fundamentals/ Piscine content.
 - Git Clone libft (At least… Just take one step at a time!)
 
+Week 2: (Starting up motor)
+- Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
+- Also zsh setup guide for syncproj (copy cur. proj to public GitHub - THIS - and git push), 
+- Synced folder libft.
+
 # PLAN FOR THIS WEEK
 
-Week: 1
+Week: 2
 - Re-learn finish C fundamentals/ Piscine content.
 - Up till Malloc at least.
 - Solve the “String of strings” exam question I kept getting wrong during. (Segfault)
+ 

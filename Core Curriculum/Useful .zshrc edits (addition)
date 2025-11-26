@@ -160,10 +160,25 @@ syncproj() {
   git status
   echo
 
-  # ask for commit message
-  read "msg?Commit message for $current_proj: "
+  # ask for commit message (zsh style)
+  read "title?Commit title for $current_proj: "
+  read "body?Commit details (optional, leave blank if none): "
 
-  git commit -m "$msg"
+  if [[ -n "$body" ]]; then
+    git commit -m "$title" -m "$body"
+  else
+    git commit -m "$title"
+  fi
+
   git push
-  echo "Committed & pushed with message: $msg"
+
+  echo
+  echo "Committed & pushed with message:"
+  echo "--------------------------------"
+  echo "$title"
+  if [[ -n "$body" ]]; then
+    echo
+    echo "$body"
+  fi
+  echo "--------------------------------"
 }
