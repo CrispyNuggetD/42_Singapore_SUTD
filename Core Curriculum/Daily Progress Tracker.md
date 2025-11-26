@@ -23,18 +23,27 @@
 - Admin (SUTD email, slack, etc…)
 - Therapy
 #### 23/11 (WkEnd, Sun 7): WFH (Still Sick)
-# TODAY
-- Careful “re-solidifying” of C fundamentals/ Piscine contents.
+- Continue setting up working environment (ChatGPT custom instructions to fit 42 A.I. pedagogy).
             
 ### W2
 #### 24/11 (Mon 8): (???)
-- Join Run Club as Core first time + ???
+- Join Run Club as Core first time
+- Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
+- Also zsh setup guide for syncproj (copy cur. proj to public GitHub - THIS - and git push), 
+- Synced folder libft.
 #### 25/11 (Tues 9):
+# TODAY
+- Reported to campus without sleep, even after Track (10*400M) intervals...
+- (Previous day is 8 hours of sleep after a night before that of skipping sleep again)
+- Studied requirements of Libft (PDF).
+- Careful “re-solidifying” of C fundamentals/ Piscine contents.
+- Started libft/isalpha
 #### 26/11 (Wed 10):
 #### 27/11 (Thurs 11):
 #### 28/11 (Fri 12):
 #### 29/11 (WkEnd, Sat 13):
 #### 30/11 (WkEnd, Sun 14):
+- Out of campus (Charity event, Run For Rice 3.0, volunteer.give.asia/activity/run-for-rice-3)
 
 ## Dec
 ### W3
