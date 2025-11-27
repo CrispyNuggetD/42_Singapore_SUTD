@@ -14,8 +14,11 @@
 - [ ] To learn (the below) when I have time
 - [x] Learnt!
 - Also, for things I'm particularly interested or that they're relevant to me, they get: **(IMPORTANT FOR ME)
+  
 ---
+
 #### 1. Bitwise stacking using isdigit returns (Proper)
+
 ---
 - Alex senior had a HACK of his Libft isdigit library returning in powers of 2 for bitwise usage.
 - However, ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
@@ -63,8 +66,11 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
 5. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
 
 ##### [Back to contents list](#contents)
+
 ---
+
 #### 2. Five Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
+
 ---
 What optimizations are available?
 - Clang supports the classic GCC-style flags:
@@ -106,8 +112,11 @@ Good for embedded systems.
 Would NOT pass 42 tests where correctness matters.
 
 ##### [Back to contents list](#contents)
+
 ---
+
 #### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?
+
 ---
 ChatGPT: No. Zero cost. Literally zero.
 
@@ -132,8 +141,11 @@ There is no runtime cost, no inefficiency, no penalty.
 These features make code more readable and error-proof without costing anything.
 
 ##### [Back to contents list](#contents)
+
 ---
+
 #### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.
+
 ---
 - (TL;DR) LUT = Look-Up Table (Pronounced loot).
 > A LUT is just a precomputed array that lets you replace a slow calculation with a single array access.
@@ -184,8 +196,11 @@ result = table[x];
 - Parsers (JSON, HTML, CSV), compilers, tokenizers all use LUTs for this reason.
 
 ##### [Back to contents list](#contents)
+
 ---
+
 #### 5. LUT optimisation for (1)'s code optimisation, using static const.
+
 ---
 From earlier:
 ```c
