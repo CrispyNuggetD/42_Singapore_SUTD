@@ -32,14 +32,13 @@
 - Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
 - Also zsh setup guide for syncproj (copy cur. proj to public GitHub - THIS - and git push), 
 - Synced folder libft.
-   
 #### 25/11 (Tues 9):
-# TODAY
 - Reported to campus without sleep, even after Track (10*400M) intervals...
 - (Previous day is 8 hours of sleep after a night before that of skipping sleep again)
 - Studied requirements of Libft (PDF).
 - Careful “re-solidifying” of C fundamentals/ Piscine contents.
 - Started libft/isalpha
+- Learnt itoa, 5 algos (simple, -ve trick, efficient, hardcoding, theoretical/ cute/dumb i.e. recursion)
 #### 26/11 (Wed 10):
 - (Malloc, char**) “re-solidifying” of C fundamentals/ Piscine contents
 - Alex senior taught 7 bitwise operations (^ XOR, |, &, ~ inversion, ! NOT, << bit shift, >>)
@@ -53,6 +52,27 @@
 - Alex however (anyway) advised for purpose of libft, we “don’t have to go until so complicated”, i.e. return 1,0 good enough.
 - Ran 2.95KM to end-of-PIE Plane Spotting area with the gang!
 #### 27/11 (Thurs 11):
+# TODAY
+- Made Study Notes.md, something I should have started long ago w. ChatGPT learning
+- Inspiration from alleow's notes.txt
+- Learnt a lot about structs and enums today (and using them together for simple reading).
+- Learnt (side-track) what "computation" even is (and alternative computation models); how can one not know what they're learning?
+- Computation: At its barest bones, computation means performing a rule-governed transformation of information.
+-	A system is computing when:
+-		1. You can describe its state.
+-		2. You can describe a rule for evolving that state.
+-		3. The rule produces reproducible outputs.
+- Learnt LUTs (look-up tables). And how isdigit() can be mapped to ASCII, cast as unsigned char to index LUT, written as such giving O(1).
+- Learnt LUTs' space-time trade off (faster but heavier; more speed, but more memory)
+- Learnt (roughly) how bitwise code is supposed to be written properly, not abused (i.e. Libft)
+- How to check diff in git repo. (synced?)
+
+```
+git fetch
+git status
+git diff HEAD..origin/main
+```
+
 #### 28/11 (Fri 12):
 #### 29/11 (WkEnd, Sat 13):
 #### 30/11 (WkEnd, Sun 14):
