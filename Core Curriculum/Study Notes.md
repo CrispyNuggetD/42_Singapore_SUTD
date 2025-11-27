@@ -23,6 +23,7 @@
 - Alex senior had a HACK of his Libft isdigit library returning in powers of 2 for bitwise usage.
 - However, ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
 - Proper way:
+ 
 ```c
 // First:
 enum e_char_flags {
@@ -51,6 +52,7 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
     // c is alphanumeric
 }
 ```
+
 - Note to self: (Enums = fancy ints with named constants.)
 - That keeps: ft_isalpha, ft_isdigit, etc. clean and spec-compliant (0/1 return)
 - All the bitmask magic in a separate abstraction designed for it
@@ -127,16 +129,20 @@ Reason: These constructs exist only at compile-time.
 - the compiler inlines and folds constants aggressively
 
 After compilation, the CPU sees this:
+
 ```c
 f = CF_ALPHA | CF_DIGIT;
 if (f & (CF_ALPHA | CF_DIGIT)) { ... }
 ```
+
 as something like this in assembly:
+
 ```asm
 mov eax, 3    ; CF_ALPHA|CF_DIGIT = 1|2 = 3, constant folded
 test eax, 3   ; bit test
 jnz ...
 ```
+
 There is no runtime cost, no inefficiency, no penalty.
 These features make code more readable and error-proof without costing anything.
 
@@ -149,30 +155,39 @@ These features make code more readable and error-proof without costing anything.
 ---
 - (TL;DR) LUT = Look-Up Table (Pronounced loot).
 > A LUT is just a precomputed array that lets you replace a slow calculation with a single array access.
+
 - Simply: store the answers in advance, then index with input, then done.
+ 
 #### Simple example (intuition)
+
 - Without LUT, every time I want to check if a character is a digit:
+           
 ```c
 if (c >= '0' && c <= '9')
 ```
+
 - The CPU must evaluate comparisons.
 - BUT with LUT, I first create a table for all 256 possible ASCII characters:
+
 ```c
 char is_digit[256] = { /* I need to fill with 1 or 0s */ }
 ```
+
 - Which is cool, because checking simply becomes this:
+
 ```c
 if (is_digit[(unsigned char)c])
 ```
+
 - So, TIL:
 - That’s a single array lookup.
 - No logic, no branching, no conditions.
 - [ ] To learn (the below) when I have time
 - That this is hugely powerful in hot loops, parsers, tokenizers, compilers, and OS code.
-
 #### Why LUTs matter in performance
 #### 1. Replace expensive operations
 Examples:
+
 - [ ] To learn (the below) when I have time
 - trig functions
 - bit counting
@@ -181,13 +196,15 @@ Examples:
 - noise functions
 - color conversion
 - [ ] To learn (the below) when I have time
-- DSP filters **(IMPORTANT FOR ME)
+- DSP filters **(IMPORTANT FOR ME) 
 Instead of recomputing a function thousands of times, you store the results.
 #### 2. Use O(1) time
 - Every lookup is constant time:
+               
 ```c
 result = table[x];
 ```
+
 - Which is as fast as memory access gets.
 #### 3. Remove branches (avoids branch misprediction)
 - Branch misprediction (~15–20 CPU cycles penalty), vs
@@ -203,11 +220,14 @@ result = table[x];
 
 ---
 From earlier:
+
 ```c
 t_char_flags ft_char_flags(int c)
 ```
+
 I can convert it from:
 - Slow version (multiple ifs):
+  
 ```c
 if (ft_isalpha(c))
     flags |= CF_ALPHA;
@@ -215,8 +235,10 @@ if (ft_isdigit(c))
     flags |= CF_DIGIT;
 ...
 ```
+
 - [ ] To learn (the below) when I have time
 To the Fast version (LUT):
+
 ```
 static const t_char_flags g_char_lut[256] = {
    /* precomputed flags */
@@ -233,11 +255,14 @@ t_char_flags ft_char_flags(int c)
     return g_char_lut[(unsigned char)c];
 }
 ```
+
 - Then ```ft_char_flags``` becomes an O(1) array lookup instead of a bunch of `if`s.
 - This turns 5–10 conditional checks into one lookup.
 - This is how high-performance lexers (C compilers, JSON parsers, regex engines) do it.
+
 #### ChatGPT: Fun analogy
 A LUT is like:
+
 - Instead of calculating square roots every time, instead, you store a table of ```sqrt(n)```
 - Instead of calculating sins and cosines, instead, store all values for 0–360°
 - Instead of figuring out if a char is alphanumeric, instead, store flags in a table
