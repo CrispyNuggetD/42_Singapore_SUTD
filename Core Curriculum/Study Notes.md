@@ -1,7 +1,7 @@
 # My 42 course notes (Largely ChatGPT)
 ## Contents
-1. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper-1)
-2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession-1)
+1. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
+2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
 
 
 #### 1. Bitwise stacking using isdigit returns (Proper)
