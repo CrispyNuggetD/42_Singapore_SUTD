@@ -5,6 +5,7 @@
 3. [Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?](#3-would-adding-things-like-typedefs-enums-bit-flags-make-the-program-more-inefficient-or-the-compiler-does-the-trick)
 4. [What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.](#4-what-are-luts-look-up-table-linked-to-1s-code-optimisation)
 5. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
+6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
 
 ##### [Back to top of contents list](#contents)
 ## Note to self:
@@ -91,7 +92,8 @@ What optimizations are available?
 - common subexpression elimination
 - branch prediction hints
 
-This is the commonly recommended setting for production.
+This is the commonly recommended setting for produc6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+tion.
 
 #### 3. O3, Maximum speed, aggressive
 - [ ] To learn (the below) when I have time
@@ -125,7 +127,8 @@ ChatGPT: No. Zero cost. Literally zero.
 Reason: These constructs exist only at compile-time.
 - typedef disappears entirely
 - enum becomes an int
-- bitwise OR | stays as a CPU instruction
+- bitwise OR | stays as a CPU instruction6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+
 - the compiler inlines and folds constants aggressively
 
 After compilation, the CPU sees this:
@@ -150,7 +153,8 @@ These features make code more readable and error-proof without costing anything.
 
 ---
 
-#### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.
+#### 4. What are LUTs (Look-Up Table)? Linked to (16. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+)'s code optimisation.
 
 ---
 - (TL;DR) LUT = Look-Up Table (Pronounced loot).
@@ -170,7 +174,7 @@ if (c >= '0' && c <= '9')
 - BUT with LUT, I first create a table for all 256 possible ASCII characters:
 
 ```c
-char is_digit[256] = { /* I need to fill with 1 or 0s */ }
+char is_digit[256] = { /* I ne#### 6. How to “just check” for potential conflicts without messing up git repo before pulling.ed to fill with 1 or 0s */ }
 ```
 
 - Which is cool, because checking simply becomes this:
@@ -196,10 +200,11 @@ Examples:
 - noise functions
 - color conversion
 - [ ] To learn (the below) when I have time
-- DSP filters **(IMPORTANT FOR ME) 
+- DSP filters **(IMPORTANT FOR#### 6. How to “just check” for potential conflicts without messing up git repo before pulling. ME) 
 Instead of recomputing a function thousands of times, you store the results.
 #### 2. Use O(1) time
-- Every lookup is constant time:
+- Every lookup is constant tim6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+e:
                
 ```c
 result = table[x];
@@ -225,7 +230,8 @@ From earlier:
 t_char_flags ft_char_flags(int c)
 ```
 
-I can convert it from:
+I can convert it from:6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+
 - Slow version (multiple ifs):
   
 ```c
@@ -269,6 +275,20 @@ A LUT is like:
 Your program turns from “thinking” into “just reading”.
 - [ ] To learn (the below) when I have time
 - If you want, I can show you a real-world LUT example from Clang’s tokenizer or Linux kernel so you see how deeply embedded this idea is in systems programming.
+
+##### [Back to contents list](#contents)
+
+---
+
+#### 6. How to “just check” for potential conflicts without messing up git repo before pulling.
+
+---
+
+```
+git fetch
+git status
+git diff HEAD..origin/main
+```
 
 ---
 ##### [Back to contents list](#contents)
