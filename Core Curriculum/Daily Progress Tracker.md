@@ -4,11 +4,11 @@
 #### 21/07 - Onwards
 
 ## Aug (Piscine)
-#### 15/08 - Piscine ends
+#### 15/08 - Piscine ends 
 
-## Sept, Oct, Nov (Waiting Period)
+## Sept, Oct, Nov (Waiting Period):
 - Therapy
-- Computer textbooks
+- Computer textbooks 
 
 ## Mid-Nov
 ### W1
@@ -17,20 +17,22 @@
 #### 19/11 (Wed 3): Sick + Doc’s Appt + Family stuff
 #### 20/11 (Thurs 4): Sick
 #### 20/11 (Fri 5): Went school late (Still Sick)
-#### 22/11 (WkEnd, Sat 6): WFH (Still Sick)
+#### 22/11 (WkEnd, Sat 6) WFH (Still Sick):
 - Set up working environment (iPad + Keyboard + “Working Copy” IDE/ Application for Git Versioning).
 - ChatGPT “refined” Post-piscine custom project instructions for “Computer Science” folder/ project
 - Admin (SUTD email, slack, etc…)
 - Therapy
-#### 23/11 (WkEnd, Sun 7): WFH (Still Sick)
+#### 23/11 (WkEnd, Sun 7) WFH (Still Sick):
 - Continue setting up working environment (ChatGPT custom instructions to fit 42 A.I. pedagogy).
             
 ### W2
-#### 24/11 (Mon 8): (???)
+
+#### 24/11 (Mon 8):
 - Join Run Club as Core first time
 - Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
 - Also zsh setup guide for syncproj (copy cur. proj to public GitHub - THIS - and git push), 
 - Synced folder libft.
+   
 #### 25/11 (Tues 9):
 # TODAY
 - Reported to campus without sleep, even after Track (10*400M) intervals...
@@ -39,6 +41,17 @@
 - Careful “re-solidifying” of C fundamentals/ Piscine contents.
 - Started libft/isalpha
 #### 26/11 (Wed 10):
+- (Malloc, char**) “re-solidifying” of C fundamentals/ Piscine contents
+- Alex senior taught 7 bitwise operations (^ XOR, |, &, ~ inversion, ! NOT, << bit shift, >>)
+- Learnt file descriptors (fd), and how UNIX represents things as “files”
+- write(fd), where 1 (stdout) and 2 (stderr) both point to terminal, but 1 can be piped to file.
+- How ft_putchar_fd is deceptively simple (need test edge cases but don’t go too extreme than libc)
+- Alex corrected ft_putchar_fd‘s char c requires addressing (in hindsight, duh!)
+- Alex also taught how bitwise can be used for comparison (isprintable, iseven in isdigit…)
+- Alex also explained why HIS IMPLEMENTATION isdigit functions returns in powers of 2 (helps bitwise comparison).
+- But apparently ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
+- Alex however (anyway) advised for purpose of libft, we “don’t have to go until so complicated”, i.e. return 1,0 good enough.
+- Ran 2.95KM to end-of-PIE Plane Spotting area with the gang!
 #### 27/11 (Thurs 11):
 #### 28/11 (Fri 12):
 #### 29/11 (WkEnd, Sat 13):
