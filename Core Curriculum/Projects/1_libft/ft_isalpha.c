@@ -6,14 +6,12 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/24 14:40:07 by hnah              #+#    #+#             */
-/*   Updated: 2025/11/24 14:40:27 by hnah             ###   ########.fr       */
+/*   Updated: 2025/11/27 09:42:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <unistd.h>
+#include <unistd.h>
 
-int     main()
+int	main(void)
 {
-        write(1, "Hello World!", 13);
-        return 0;
 }
