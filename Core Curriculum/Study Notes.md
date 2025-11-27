@@ -3,7 +3,7 @@
 1. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
 2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
 
-
+---
 #### 1. Bitwise stacking using isdigit returns (Proper)
 - Alex senior had a HACK of his Libft isdigit library returning in powers of 2 for bitwise usage.
 - However, ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
@@ -40,6 +40,7 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
 - That keeps: ft_isalpha, ft_isdigit, etc. clean and spec-compliant (0/1 return)
 - All the bitmask magic in a separate abstraction designed for it
 
+---
 #### 2. Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
 What optimizations are available?
 - Clang supports the classic GCC-style flags:
