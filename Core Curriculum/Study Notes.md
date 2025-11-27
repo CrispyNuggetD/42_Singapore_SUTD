@@ -1,10 +1,12 @@
 # My 42 course notes (Largely ChatGPT)
 ## Contents
 1. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
-2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
+2. [5 Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-5-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
+3. [Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?](#3-would-adding-things-like-typedefs-enums-bit-flags-make-the-program-more-inefficient-or-the-compiler-does-the-trick)
 
 ---
 #### 1. Bitwise stacking using isdigit returns (Proper)
+---
 - Alex senior had a HACK of his Libft isdigit library returning in powers of 2 for bitwise usage.
 - However, ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
 - Proper way:
@@ -41,15 +43,16 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
 - All the bitmask magic in a separate abstraction designed for it
 
 ---
-#### 2. Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
+#### 2. 5 Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
+---
 What optimizations are available?
 - Clang supports the classic GCC-style flags:
-##### 1. O0, No optimization (default)
-##### 2. O1, Simple optimizations
+#### 0. O0, No optimization (default)
+#### 1. O1, Simple optimizations
 - constant folding
 - remove obvious dead code
 - minimal inlining
-##### 3. O2, Standard “safe but fast”
+#### 2. O2, Standard “safe but fast”
 - larger inlining
 - loop optimizations
 - vectorization
@@ -59,7 +62,7 @@ What optimizations are available?
 
 This is the commonly recommended setting for production.
 
-##### 4. O3, Maximum speed, aggressive
+#### 3. O3, Maximum speed, aggressive
 - unrolling
 - more aggressive vectorization
 - may increase code size
@@ -67,12 +70,36 @@ This is the commonly recommended setting for production.
 
 Good for performance tests.
 
-##### 5. Os, Optimize for small code size
+#### 4. Os, Optimize for small code size
 Good for embedded systems.
 
-##### 6. Ofast
+#### 5. Ofast
 - Breaks strict IEEE math rules for speed
 - Unsafe unless you really know what you're doing.
 
 Would NOT pass 42 tests where correctness matters.
 
+---
+#### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?
+---
+ChatGPT: No. Zero cost. Literally zero.
+
+Reason: These constructs exist only at compile-time.
+- typedef disappears entirely
+- enum becomes an int
+- bitwise OR | stays as a CPU instruction
+- the compiler inlines and folds constants aggressively
+
+After compilation, the CPU sees this:
+```c
+f = CF_ALPHA | CF_DIGIT;
+if (f & (CF_ALPHA | CF_DIGIT)) { ... }
+```
+as something like this in assembly:
+```asm
+mov eax, 3    ; CF_ALPHA|CF_DIGIT = 1|2 = 3, constant folded
+test eax, 3   ; bit test
+jnz ...
+```
+There is no runtime cost, no inefficiency, no penalty.
+These features make code more readable and error-proof without costing anything.
