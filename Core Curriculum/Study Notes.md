@@ -4,8 +4,9 @@
 ### 2. Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
 
 ## Links for navigation
-1. [Bitwise stacking using isdigit returns (Proper)](####bitwise-stacking-using-isdigit-returns-proper)
-2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](####compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
+1. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
+2. [Compiler optimisations for Clang (My not-so-secret high perf. obsession!)](#2-compiler-optimisations-for-clang-my-not-so-secret-high-perf-obsession)
+
 
 #### 1. Bitwise stacking using isdigit returns (Proper)
 - Alex senior had a HACK of his Libft isdigit library returning in powers of 2 for bitwise usage.
