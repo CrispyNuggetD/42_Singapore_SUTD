@@ -107,7 +107,7 @@ Would NOT pass 42 tests where correctness matters.
 
 ##### [Back to contents list](#contents)
 ---
-#### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?contents list
+#### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?
 ---
 ChatGPT: No. Zero cost. Literally zero.
 
