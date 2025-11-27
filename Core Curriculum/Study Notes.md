@@ -107,7 +107,7 @@ Would NOT pass 42 tests where correctness matters.
 
 ##### [Back to contents list](#contents)
 ---
-#### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?
+#### 3. Would adding things like typedefs, enums, bit flags, make the program more inefficient or the compiler does the trick?contents list
 ---
 ChatGPT: No. Zero cost. Literally zero.
 
@@ -229,3 +229,6 @@ A LUT is like:
 Your program turns from “thinking” into “just reading”.
 - [ ] To learn (the below) when I have time
 - If you want, I can show you a real-world LUT example from Clang’s tokenizer or Linux kernel so you see how deeply embedded this idea is in systems programming.
+
+---
+##### [Back to contents list](#contents)
