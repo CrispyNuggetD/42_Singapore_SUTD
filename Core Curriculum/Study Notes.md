@@ -92,7 +92,7 @@ What optimizations are available?
 - common subexpression elimination
 - branch prediction hints
 
-This is the commonly recommended setting for produc6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+This is the commonly recommended setting for production. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
 tion.
 
 #### 3. O3, Maximum speed, aggressive
@@ -153,10 +153,11 @@ These features make code more readable and error-proof without costing anything.
 
 ---
 
-#### 4. What are LUTs (Look-Up Table)? Linked to (16. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
-)'s code optimisation.
+#### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.
 
 ---
+##########Linked to (1)'s code optimisation.[Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
+
 - (TL;DR) LUT = Look-Up Table (Pronounced loot).
 > A LUT is just a precomputed array that lets you replace a slow calculation with a single array access.
 
