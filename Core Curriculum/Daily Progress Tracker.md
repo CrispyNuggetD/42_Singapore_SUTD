@@ -74,7 +74,10 @@ git diff HEAD..origin/main
 ```
 
 #### 28/11 (Fri 12):
+- Went to campus just for 15 mins. 
+- Tried fixing study notes broken link. Undone. 
 #### 29/11 (WkEnd, Sat 13):
+- Out of campus, repair glasses and family birthday celebration. 
 #### 30/11 (WkEnd, Sun 14):
 - Out of campus (Charity event, Run For Rice 3.0, volunteer.give.asia/activity/run-for-rice-3)
 
