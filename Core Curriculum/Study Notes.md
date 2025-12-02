@@ -63,10 +63,10 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
 > A LUT is just a precomputed array that lets you replace a slow calculation with a single array access.
 - Simply: store the answers in advance, then index with input, then done.
 
-#### (More details, redirection to Contents: 4)
-4. [What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.](#4-what-are-luts-look-up-table-linked-to-1s-code-optimisation)
+#### (More details, redirection to what are LUTs)
+4\. [What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.](#4-what-are-luts-look-up-table-linked-to-1s-code-optimisation)
 #### (Actual LUT optimisation using static const.)
-5. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
+5\. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
 
 ##### [Back to contents list](#contents)
 
@@ -92,8 +92,7 @@ What optimizations are available?
 - common subexpression elimination
 - branch prediction hints
 
-This is the commonly recommended setting for production. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
-tion.
+This is the commonly recommended setting for production.
 
 #### 3. O3, Maximum speed, aggressive
 - [ ] To learn (the below) when I have time
@@ -127,7 +126,7 @@ ChatGPT: No. Zero cost. Literally zero.
 Reason: These constructs exist only at compile-time.
 - typedef disappears entirely
 - enum becomes an int
-- bitwise OR | stays as a CPU instruction6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+- bitwise OR | stays as a CPU instruction.
 
 - the compiler inlines and folds constants aggressively
 
@@ -156,7 +155,8 @@ These features make code more readable and error-proof without costing anything.
 #### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.
 
 ---
-##########Linked to (1)'s code optimisation.[Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
+#### Linked from (1)'s code optimisation.
+1\. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
 
 - (TL;DR) LUT = Look-Up Table (Pronounced loot).
 > A LUT is just a precomputed array that lets you replace a slow calculation with a single array access.
@@ -201,11 +201,10 @@ Examples:
 - noise functions
 - color conversion
 - [ ] To learn (the below) when I have time
-- DSP filters **(IMPORTANT FOR#### 6. How to “just check” for potential conflicts without messing up git repo before pulling. ME) 
+- DSP filters **(IMPORTANT FOR ME) 
 Instead of recomputing a function thousands of times, you store the results.
 #### 2. Use O(1) time
-- Every lookup is constant tim6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
-e:
+- Every lookup is constant time.
                
 ```c
 result = table[x];
@@ -231,7 +230,7 @@ From earlier:
 t_char_flags ft_char_flags(int c)
 ```
 
-I can convert it from:6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+I can convert it from:
 
 - Slow version (multiple ifs):
   

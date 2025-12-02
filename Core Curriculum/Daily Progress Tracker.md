@@ -52,16 +52,15 @@
 - Alex however (anyway) advised for purpose of libft, we “don’t have to go until so complicated”, i.e. return 1,0 good enough.
 - Ran 2.95KM to end-of-PIE Plane Spotting area with the gang!
 #### 27/11 (Thurs 11):
-# TODAY
 - Made Study Notes.md, something I should have started long ago w. ChatGPT learning
 - Inspiration from alleow's notes.txt
 - Learnt a lot about structs and enums today (and using them together for simple reading).
 - Learnt (side-track) what "computation" even is (and alternative computation models); how can one not know what they're learning?
 - Computation: At its barest bones, computation means performing a rule-governed transformation of information.
 -	A system is computing when:
--		1. You can describe its state.
--		2. You can describe a rule for evolving that state.
--		3. The rule produces reproducible outputs.
+	1. You can describe its state.
+	2. You can describe a rule for evolving that state.
+	3. The rule produces reproducible outputs.
 - Learnt LUTs (look-up tables). And how isdigit() can be mapped to ASCII, cast as unsigned char to index LUT, written as such giving O(1).
 - Learnt LUTs' space-time trade off (faster but heavier; more speed, but more memory)
 - Learnt (roughly) how bitwise code is supposed to be written properly, not abused (i.e. Libft)
@@ -84,8 +83,12 @@ git diff HEAD..origin/main
 ## Dec
 ### W3
 #### 01/12 (Mon 15):
+- Urgent wisdom tooth extraction, suffered for 2 days straight afterwards. (Bleeding complications)
 #### 02/12 (Tues 16):
+- Complete resting due to wisdom tooth.
+- Midnight revision on whether we can have a “sentinel struct linked list”
 #### 03/12 (Wed 17):
+# TODAY
 #### 04/12 (Thurs 18):
 #### 05/12 (Fri 19):
 #### 06/12 (WkEnd, Sat 20):
