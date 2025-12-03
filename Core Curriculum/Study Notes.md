@@ -225,6 +225,10 @@ result = table[x];
 #### 5. LUT optimisation for (1)'s code optimisation, using static const.
 
 ---
+
+#### Linked from (1)’s code optimisation.
+1\. [Bitwise stacking using isdigit returns (Proper)](#1-bitwise-stacking-using-isdigit-returns-proper)
+
 From earlier:
 
 ```c
