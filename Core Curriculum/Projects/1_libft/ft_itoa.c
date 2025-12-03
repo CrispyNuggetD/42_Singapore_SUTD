@@ -11,3 +11,29 @@
 /* ************************************************************************** */
 
 #include <unistd.h>
+
+
+/*
+Compilers (LLVM, GCC) optimize:
+
+-> Approach A:
+Highly optimized
+"Obvious" patterns
+Can eliminate unnecessary branches
+Can inline division strategies
+
+-> Approach B:
+Optimizes well, but
+Harder to detect patterns
+Negative modulo prevents some peephole optimizations
+
+-> Approach C:
+Compilers optimize the inner loop aggressively
+Stack buffer often unrolled
+Very fast
+
+-> Recursive variant:
+Worst for compilers
+Limited optimization potential
+Function calls block aggressive optimization
+*/
