@@ -2,30 +2,25 @@
 
 # 3 useful things here.
 
-### Includes an alias 'compile' so you don't have 
+### (1) Includes an alias 'compile' so you don't have 
 # to always type in full for 42-compliant compiling everytime.
 
 # Usage:
 # e.g. compile ft_isalpha.c
 # e.g. compile ft_isalpha.c -o output (run with ./output)
 
-### 3 helper functions curproj(), syncgithub() and syncproj().
+### (2) Two helper functions curproj() and syncproj().
 
 # curproj switches into your current 42 project folder 
 # and shows the last edit + last sync status.
 
 # syncgithub checks your working tree is clean, and 
-# pulls from GitHub before you run the more-destructive syncproj.
-# It also pushes if you made changes.
-# Run this first before syncproj, and at end of day!
-
-# syncproj copies your 42 project into your main GitHub repo, 
-# strips its .git (IMPT), then prompts you for a commit message 
-# and pushes safely to GitHub.
+# pulls from GitHub. It also pushes if you made changes.
+# Run this first before working on another computer to prevent conflicts!
 # NOTE: It does NOT touch Vogsphere. 
 # SYNC your campus repo before submitting project!
 
-# Usage: Just type curproj, syncproj or syncgithub into terminal.
+# Usage: Just type curproj or syncproj into terminal.
 
 # Notes:
 # You MUST change a few things:
@@ -40,15 +35,12 @@
 # 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
 # e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/Core Curriculum"
 
-# 4. Change MAIN_PROJECTS_ROOT to your GitHub repo's project directory name 
-# (Can be same directory name as campus PC, of course. Just your preferences.)
-# e.g. export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Projects"
-
 
 ###################################################################
-### (APPEND THESE) Variables after changing and Functions	###
-### Do NOT replace original .zshrc file				###
+### (APPEND THESE) Variables after changing and Functions	    ###
+### Do NOT replace original .zshrc file				            ###
 ###################################################################
+
 
 # hnah (intra) user defined
 export MAIL='hnah@student.42singapore.sg'
@@ -59,7 +51,6 @@ current_proj="1_libft"
 # --- 42 paths ---
 export PROJECTS_ROOT="$HOME/Documents/Projects"
 export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/"
-export MAIN_PROJECTS_ROOT="$MAIN_REPO_ROOT/Core Curriculum/Projects"
 
 # compile helper
 alias compile='cc -Wall -Wextra -Werror'
@@ -125,11 +116,12 @@ cdmain() {
     echo "No such main repo directory: $MAIN_REPO_ROOT"
     return 1
   }
-}
+} 
 
-syncgithub() {
+# sync current main GitHub repo: pull, then commit & push local changes
+syncproj() {
   if [ -z "$MAIN_REPO_ROOT" ]; then
-    echo "MAIN_REPO_ROOT is not set."
+    echo "MAIN_REPO_ROOT is not set. Please set it in your .zshrc."
     return 1
   fi
 
@@ -138,99 +130,43 @@ syncgithub() {
     return 1
   fi
 
+  # jump into main repo
   cd "$MAIN_REPO_ROOT" || {
     echo "Failed to cd into $MAIN_REPO_ROOT"
     return 1
   }
 
-  echo ">>> In main repo: $MAIN_REPO_ROOT"
+  echo "Syncing main GitHub repo at:"
+  echo "  $MAIN_REPO_ROOT"
   echo
 
-  #
-  # FIRST: pull from GitHub (always)
-  #
-  echo "Pulling from GitHub..."
+  # 1) Always pull latest from GitHub first
+  echo "Pulling from remote..."
   git pull
   echo
 
-  #
-  # SECOND: check if there are local changes
-  #
-  if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Local changes detected:"
-    git status
-    echo
-
-    git add -A
-
-    # Ask for commit title
-    read "title?Commit title: "
-    # Ask for commit body (optional)
-    read "body?Commit details (optional): "
-
-    if [[ -n "$body" ]]; then
-      git commit -m "$title" -m "$body"
-    else
-      git commit -m "$title"
-    fi
-
-    git push
-
-    echo
-    echo "Committed & pushed:"
-    echo "--------------------------------"
-    echo "$title"
-    if [[ -n "$body" ]]; then
-      echo
-      echo "$body"
-    fi
-    echo "--------------------------------"
-    echo
-  else
-    echo "No local changes to commit. Repo is up to date."
-  fi
-}
-
-# sync current 42 project into main GitHub repo (no commit)
-syncproj() {
-  local src="$PROJECTS_ROOT/$current_proj"
-  local dest="$MAIN_PROJECTS_ROOT/$current_proj"
-
-  if [ ! -d "$src" ]; then
-    echo "Source project not found: $src"
-    return 1
-  fi
-
-  echo "Syncing project: $current_proj"
-  echo "  from: $src"
-  echo "  to:   $dest"
-
-  # remove old version in main repo
-  rm -rf "$dest"
-
-  # make sure Projects/ exists
-  mkdir -p "$MAIN_PROJECTS_ROOT"
-
-  # copy fresh project over
-  cp -R "$src" "$MAIN_PROJECTS_ROOT/"
-
-  # remove any nested git metadata from the copied project
-  rm -rf "$dest/.git"
-
-  echo "Sync complete."
-
-  # jump into main repo to commit & push
-  cd "$MAIN_REPO_ROOT" || return 1
-
-  git add *
-  
-  # show status so you see what changed
-  echo
+  # 2) Show current status
+  echo "Current status:"
   git status
   echo
 
-  # ask for commit message (zsh style)
-  read "title?Commit title for $current_proj: "
+  # 3) If no changes, we're done
+  if [[ -z "$(git status --porcelain)" ]]; then
+    echo "No local changes to commit. Repo is up to date."
+    return 0
+  fi
+
+  # 4) Stage everything (tracked + untracked + deletions)
+  git add -A
+
+  # show status so you see what will be committed
+  echo
+  echo "Changes staged for commit:"
+  git status
+  echo
+
+  # 5) Ask for commit title/body (zsh style)
+  read "title?Commit title (main repo): "
   read "body?Commit details (optional, leave blank if none): "
 
   if [[ -n "$body" ]]; then
@@ -239,6 +175,7 @@ syncproj() {
     git commit -m "$title"
   fi
 
+  # 6) Push to GitHub
   git push
 
   echo
@@ -250,4 +187,4 @@ syncproj() {
     echo "$body"
   fi
   echo "--------------------------------"
-}
+}   
