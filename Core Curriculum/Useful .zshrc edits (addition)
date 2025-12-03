@@ -9,10 +9,15 @@
 # e.g. compile ft_isalpha.c
 # e.g. compile ft_isalpha.c -o output (run with ./output)
 
-### 2 helper functions curproj() and syncproj().
+### 3 helper functions curproj(), syncgithub() and syncproj().
 
 # curproj switches into your current 42 project folder 
 # and shows the last edit + last sync status.
+
+# syncgithub checks your working tree is clean, and 
+# pulls from GitHub before you run the more-destructive syncproj.
+# It also pushes if you made changes.
+# Run this first before syncproj, and at end of day!
 
 # syncproj copies your 42 project into your main GitHub repo, 
 # strips its .git (IMPT), then prompts you for a commit message 
@@ -20,7 +25,7 @@
 # NOTE: It does NOT touch Vogsphere. 
 # SYNC your campus repo before submitting project!
 
-# Usage: Just type curproj or syncproj into terminal.
+# Usage: Just type curproj, syncproj or syncgithub into terminal.
 
 # Notes:
 # You MUST change a few things:
@@ -120,6 +125,91 @@ cdmain() {
     echo "No such main repo directory: $MAIN_REPO_ROOT"
     return 1
   }
+}
+
+# Safely sync main GitHub repo itself (commit + push + pull)
+syncgithub() {
+  if [ -z "$MAIN_REPO_ROOT" ]; then
+    echo "MAIN_REPO_ROOT is not set. Please set it in your .zshrc."
+    return 1
+  fi
+
+  if [ ! -d "$MAIN_REPO_ROOT/.git" ]; then
+    echo "No git repo found at: $MAIN_REPO_ROOT"
+    return 1
+  fi
+
+  cd "$MAIN_REPO_ROOT" || {
+    echo "Failed to cd into $MAIN_REPO_ROOT"
+    return 1
+  }
+
+  echo ">>> In main repo: $MAIN_REPO_ROOT"
+  echo
+  git status
+  echo
+
+  # If there are local changes, commit & push them first
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Local changes detected in main repo."
+    echo "Staging all changes and preparing to commit..."
+    git add -A
+
+    # ask for commit message (zsh style)
+    read "title?Commit title for MAIN REPO (not $current_proj): "
+    read "body?Commit details (optional, leave blank if none): "
+
+    if [[ -n "$body" ]]; then
+      git commit -m "$title" -m "$body"
+    else
+      git commit -m "$title"
+    fi
+
+    git push
+
+    echo
+    echo "Committed & pushed main repo changes with message:"
+    echo "--------------------------------"
+    echo "$title"
+    if [[ -n "$body" ]]; then
+      echo
+      echo "$body"
+    fi
+    echo "--------------------------------"
+    echo
+  else
+    echo "No local changes to commit in main repo."
+  fi
+
+  # Now sync with remote (pull/rebase)
+  local upstream
+  upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+
+  if [[ -z "$upstream" ]]; then
+    echo "⚠ No upstream branch configured for current branch."
+    echo "   Set one with: git push -u origin <branch>"
+    return 1
+  fi
+
+  echo "Fetching latest changes from remote ($upstream)..."
+  git fetch
+  echo
+  echo "Current branch status relative to upstream:"
+  git status -sb
+  echo
+
+  echo "Pulling with rebase to sync with remote..."
+  git pull --rebase
+  echo
+
+  # Optional: push again if we're ahead after rebase
+  if git status -sb | grep -q '\[ahead '; then
+    echo "Branch is ahead of $upstream after rebase; pushing..."
+    git push
+    echo "Pushed updated history to $upstream."
+  fi
+
+  echo "✅ syncgithub: Main repo is now clean and synced with $upstream"
 }
 
 # sync current 42 project into main GitHub repo (no commit)
