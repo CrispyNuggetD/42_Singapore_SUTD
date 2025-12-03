@@ -303,15 +303,6 @@ git diff HEAD..origin/main
 
 ---
 
-- all (build all main targets)
-    - build the main output (libft.a)
-- clean (clean workspace (intermediate stuff))
-    - delete .o files
-- fclean (full clean)
-    - delete .o + final binary/lib
-- re (rebuild)
-    - full clean + rebuild everything
-
 - Rough Makefile:
 
 ```make
@@ -356,7 +347,36 @@ re: fclean all
 .PHONY: all clean fclean re
 ```
 
-- For this: 
+- **42 four targets required**:
+    1. all (build all main targets)
+        - build the main output (libft.a)
+    2. clean (clean workspace (intermediate stuff))
+        - delete .o files
+    3. fclean (full clean)
+        - delete .o + final binary/lib
+    4. re (rebuild)
+        - full clean + rebuild everything
+
+- **.PHONY - tells make these targets aren’t real files.**
+
+- This is a **target rule**:
+ 
+```make
+ $(NAME): $(OBJS)
+``` 
+
+- Target:
+
+    - $(NAME) → usually libft.a
+
+- Dependencies:
+
+    - $(OBJS) → list of all .o files (compiled from your .c files)
+- Meaning:
+
+> “To build libft.a, you must **first** have all the .o files.
+If any .o is newer than libft.a (or libft.a is missing),
+**then run** the recipe that **follows**.”
 
 ```make
 ar rcs $(NAME) $(OBJS)
@@ -380,9 +400,9 @@ ar rcs $(NAME) $(OBJS)
 
 - %.o: %.c (pattern rule: how to turn any .c into corresponding .o)
  
-> $< = first dependency (the .c)
+    - **$< = first dependency (the .c)**
 
-> $@ = target (the .o)
+    - **$@ = target (the .o)**
 
 ---
 
