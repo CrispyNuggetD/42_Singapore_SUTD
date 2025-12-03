@@ -88,8 +88,11 @@ git diff HEAD..origin/main
 - Complete resting due to wisdom tooth.
 - Midnight revision on whether we can have a “sentinel struct linked list”
 #### 03/12 (Wed 17):
-# TODAY
+- Learnt how to, wrote tutorial, made Makefile and libft.h
+- I guess I started on Libft proper. 43 functions to go. 
 #### 04/12 (Thurs 18):
+# TODAY
+
 #### 05/12 (Fri 19):
 #### 06/12 (WkEnd, Sat 20):
 #### 07/12 (WkEnd, Sun 21):
