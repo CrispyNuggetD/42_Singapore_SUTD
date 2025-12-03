@@ -6,6 +6,7 @@
 4. [What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.](#4-what-are-luts-look-up-table-linked-to-1s-code-optimisation)
 5. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
 6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
+7. [Four targets 42 enforces in Makefiles.](#7-four-targets-42-enforces-in-makefiles)   
 
 ##### [Back to top of contents list](#contents)
 ## Note to self:
@@ -290,5 +291,95 @@ git status
 git diff HEAD..origin/main
 ```
 
+##### [Back to contents list](#contents)
+
 ---
+
+#### 7. Four targets 42 enforces in Makefiles.
+
+---
+
+- all (build all main targets)
+    - build the main output (libft.a)
+- clean (clean workspace (intermediate stuff))
+    - delete .o files
+- fclean (full clean)
+    - delete .o + final binary/lib
+- re (rebuild)
+    - full clean + rebuild everything
+
+- Rough Makefile:
+
+```make
+# Compiler and flags
+CC     = cc
+CFLAGS = -Wall -Wextra -Werror
+
+# Library name
+NAME   = libft.a
+
+# Source files (add more as you implement them)
+SRCS   = ft_isalpha.c \
+         ft_isdigit.c \
+         ft_strlen.c \
+         ft_putchar_fd.c
+
+# Object files = same names but .o
+OBJS   = $(SRCS:.c=.o)
+
+# Default target
+all: $(NAME)
+
+# Build the library from object files
+$(NAME): $(OBJS)
+	ar rcs $(NAME) $(OBJS)	
+
+# Rule to build any .o from its .c
+%.o: %.c libft.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Remove .o files
+clean:
+	rm -f $(OBJS)
+
+# Remove .o and the library
+fclean: clean
+	rm -f $(NAME)
+
+# Rebuild everything
+re: fclean all
+
+.PHONY: all clean fclean re
+```
+
+- For this: 
+
+```make
+ar rcs $(NAME) $(OBJS)
+```
+
+> ar = archiver; it bundles .o files into a .a static library.
+
+> r = replace or add files to archive
+
+> c = create the archive if it doesn’t exists
+
+> s = build index (symbol table) → makes linking faster
+
+```make
+%.o: %.c libft.h
+```
+
+- This rule says:
+
+> “To build X.o, you need X.c and libft.h.”
+
+- %.o: %.c (pattern rule: how to turn any .c into corresponding .o)
+ 
+> $< = first dependency (the .c)
+
+> $@ = target (the .o)
+
+---
+
 ##### [Back to contents list](#contents)
