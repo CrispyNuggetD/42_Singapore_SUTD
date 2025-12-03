@@ -127,10 +127,9 @@ cdmain() {
   }
 }
 
-# Safely sync main GitHub repo itself (commit + push + pull)
 syncgithub() {
   if [ -z "$MAIN_REPO_ROOT" ]; then
-    echo "MAIN_REPO_ROOT is not set. Please set it in your .zshrc."
+    echo "MAIN_REPO_ROOT is not set."
     return 1
   fi
 
@@ -146,18 +145,28 @@ syncgithub() {
 
   echo ">>> In main repo: $MAIN_REPO_ROOT"
   echo
-  git status
+
+  #
+  # FIRST: pull from GitHub (always)
+  #
+  echo "Pulling from GitHub..."
+  git pull
   echo
 
-  # If there are local changes, commit & push them first
+  #
+  # SECOND: check if there are local changes
+  #
   if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Local changes detected in main repo."
-    echo "Staging all changes and preparing to commit..."
+    echo "Local changes detected:"
+    git status
+    echo
+
     git add -A
 
-    # ask for commit message (zsh style)
-    read "title?Commit title for MAIN REPO (not $current_proj): "
-    read "body?Commit details (optional, leave blank if none): "
+    # Ask for commit title
+    read "title?Commit title: "
+    # Ask for commit body (optional)
+    read "body?Commit details (optional): "
 
     if [[ -n "$body" ]]; then
       git commit -m "$title" -m "$body"
@@ -168,7 +177,7 @@ syncgithub() {
     git push
 
     echo
-    echo "Committed & pushed main repo changes with message:"
+    echo "Committed & pushed:"
     echo "--------------------------------"
     echo "$title"
     if [[ -n "$body" ]]; then
@@ -178,38 +187,8 @@ syncgithub() {
     echo "--------------------------------"
     echo
   else
-    echo "No local changes to commit in main repo."
+    echo "No local changes to commit. Repo is up to date."
   fi
-
-  # Now sync with remote (pull/rebase)
-  local upstream
-  upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
-
-  if [[ -z "$upstream" ]]; then
-    echo "⚠ No upstream branch configured for current branch."
-    echo "   Set one with: git push -u origin <branch>"
-    return 1
-  fi
-
-  echo "Fetching latest changes from remote ($upstream)..."
-  git fetch
-  echo
-  echo "Current branch status relative to upstream:"
-  git status -sb
-  echo
-
-  echo "Pulling with rebase to sync with remote..."
-  git pull --rebase
-  echo
-
-  # Optional: push again if we're ahead after rebase
-  if git status -sb | grep -q '\[ahead '; then
-    echo "Branch is ahead of $upstream after rebase; pushing..."
-    git push
-    echo "Pushed updated history to $upstream."
-  fi
-
-  echo "✅ syncgithub: Main repo is now clean and synced with $upstream"
 }
 
 # sync current 42 project into main GitHub repo (no commit)
