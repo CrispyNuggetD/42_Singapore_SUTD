@@ -12,6 +12,11 @@
 
 #include <unistd.h>
 
+int	main(void)
+{
+	
+}
+
 
 /*
 Compilers (LLVM, GCC) optimize:

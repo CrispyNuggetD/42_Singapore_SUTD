@@ -92,6 +92,8 @@ git diff HEAD..origin/main
 - I guess I started on Libft proper. 43 functions to go. 
 #### 04/12 (Thurs 18):
 # TODAY
+- Did makefile corrections; tab means make echos; @ to silent
+- Painstakingly installed iSH on iPad with Clang/ norminette support
 
 #### 05/12 (Fri 19):
 #### 06/12 (WkEnd, Sat 20):
