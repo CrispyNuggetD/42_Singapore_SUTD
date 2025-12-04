@@ -6,7 +6,9 @@
 4. [What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.](#4-what-are-luts-look-up-table-linked-to-1s-code-optimisation)
 5. [LUT optimisation for (1)'s code optimisation, using static const.](#5-lut-optimisation-for-1s-code-optimisation-using-static-const)
 6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
-7. [Four targets 42 enforces in Makefiles.](#7-four-targets-42-enforces-in-makefiles)   
+7. [Four targets 42 enforces in Makefiles.](#7-four-targets-42-enforces-in-makefiles)
+8. [Vim: Opening a file directly to a line number.](#8-vim-opening-a-file-directly-to-a-line-number)
+ 
 
 ##### [Back to top of contents list](#contents)
 ## Note to self:
@@ -254,7 +256,8 @@ These features make code more readable and error-proof without costing anything.
 
 ---
 
-#### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisation.
+#### 4. What are LUTs (Look-Up Table)? Linked to (1)'s code optimisa8. [Vim: Opening a file directly to a line number.](#8-vim-opening-a-file-directly-to-a-line-number)
+tion.
 
 ---
 #### Linked from (1)'s code optimisation.
@@ -504,6 +507,20 @@ ar rcs $(NAME) $(OBJS)
     - **$< = first dependency (the .c)**
 
     - **$@ = target (the .o)**
+
+##### [Back to contents list](#contents)
+
+---
+
+#### 8. Vim: Opening a file directly to a line number.
+
+---
+
+- When opening a file from the terminal, you can specify the line number directly.
+
+```sh
+vim +123 filename.txt
+```
 
 ---
 

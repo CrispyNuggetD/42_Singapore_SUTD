@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/04 16:35:44 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/04 21:14:15 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,32 +26,48 @@ int	main(void)
 	test += 1;
 }
 
-/* While there's the canonical way (more below), I chose my final code based on 
- * how well the compiler "could've" optimised it if cc were given -O2, though I 
- * found out 42 doesn't (obviously - It only has the warning flags).
- * 
- * Of course there's a space-time tradeoff with my method (discussed below).
- */
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
 
-/*
- * 1. Canonical ft_itoa algorithm (ChatGPT's vibecoding recommendation for 42)
+/* 
+ * DISCUSSION:
+ *
+ * While there's the canonical way (more below), I chose my final code which
+ * was an alternative approach based on how well the compiler "could've" 
+ * optimised it if cc were given -O2 just like "in real-life" code, though I
+ * found out 42 doesn't.(Obviously - It only compiles cc using the warning
+ * flags).
+ *
+ * The final code is linked to my liking of efficient, super fast code,
+ * suitable for ultra-low latency applications, though I might not even use
+ * C language at that point...
  * 
  * Goal:
  * Convert an int n to a freshly malloc’d C string.
- * 
+ *
  * Key constraints:
- * 
  * Works for all int values (including INT_MIN)
  * Allocates exact length (no waste)
  * No hardcoded magic constants like 12 if possible
  * Caller must be able to free the result
+ *
+ * ChatGPT provided 4 alternative approaches upon prompting as I wanted to
+ * learn more approaches. Pros and Cons discussed below, such as space-time
+ * tradeoff of my method.
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/*
+ * Approach A (1 of 5): Canonical ft_itoa algorithm
+ * (ChatGPT's vibecoding recommendation for 42)
  * 
  * --> Step 0 — Promote to wider type
  * 
  * Problem: INT_MIN cannot be negated in int range.
- * 
- * So we do this conceptually:
- * 
  * - Take input int n
  * - Create long nb = n;
  * (now nb can hold +2147483648 safely on usual 64-bit machines)
@@ -59,25 +75,19 @@ int	main(void)
  * From here on, all logic is done using nb.
  * 
  * --> Step 1 — Determine if negative
- * 
- * Algorithm: 
- * 
  * is_negative = (nb < 0)
  * 
  * If negative:
  * (!) remember this (need one extra char for -)
  * 
  * set nb = -nb (safe now, because nb is long)
- * 
  * Now nb is non-negative, even if original was INT_MIN.
  * 
  * --> Step 2 — Count digits
  * 
  * We now have a non-negative nb.
- * Algorithm to count digits:
  * 
  * If nb == 0, then digit count is 1 (special case)
- * 
  * Else:
  * count = 0
  * while nb > 0:
@@ -87,7 +97,6 @@ int	main(void)
  * After this, count = number of decimal digits.
  * 
  * Then total length:
- * 
  * len = count
  * If is_negative, len++ for '-'
  * 
@@ -106,14 +115,10 @@ int	main(void)
  * 
  * We reset nb again to the absolute value of n (as long):
  * If original n was 0 → handle as special case: string is "0"
+ * 
  * Else:
- * 
- * Conceptual algorithm:
- * 
  * Put the string terminator at the end: str[len] = '\0'
- * 
  * Start from index i = len - 1
- * 
  * While nb > 0:
  * last_digit = nb % 10 (gives 0–9)
  * convert digit to char: '0' + last_digit
@@ -122,15 +127,16 @@ int	main(void)
  * nb /= 10
  * If is_negative, put '-' at str[0]
  * 
- * Example with n = -123:
+ * Example:
+ * With n = -123:
  * 
  * nb = -123 → negative → is_negative = 1 → nb = 123
  * digits = 3
  * len = 4 (3 digits + 1 sign)
+ * len = 4 (3 digits + 1 sign)
  * allocate 5 bytes (4 chars + \0)
  * 
  * fill:
- * 
  * Index progression:
  * str[4] = '\0'
  * i = 3, nb = 123 → digit = 3 → str[3] = '3'
@@ -142,8 +148,7 @@ int	main(void)
  * 
  * Result: "-123".
  * 
- * Why this is “nice”
- * 
+ * --> ChatGPT's "opinion" on why this is “nice”:
  * No hardcoded limits
  * Works for all ints
  * Clear conceptual flow
@@ -154,13 +159,49 @@ int	main(void)
  * safe, portable enough, and norm-friendly.
  */
 
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/* Alternative approach B (2 of 5):  All-negative route (no long)
+ *
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/* Alternative approach C (3 of 5):
+ *
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/* Alternativee approach D (4 of 5):
+ *
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/* Alternative approach E (5 of 5):
+ *
+ */
 
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
 
 /*
- * Compilers (LLVM, GCC) optimize:
+ * DISCUSSION:
+ *
+ * Let's consider "real-life" compiler -O2 optimisation, even though 42 only
+ * compiles using cc (Clang nowadays) with warning flags.
+ *
+ * Compilers (Clang/ LLVM, GCC) optimize:
  * 
  * -> Approach A:
  * Highly optimized
@@ -182,6 +223,42 @@ int	main(void)
  * Worst for compilers
  * Limited optimization potential
  * Function calls block aggressive optimization
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/*
+ * Which approach impresses employers?
+ *
+ * Clean correctness
+ * No undefined behaviour
+ * Portability
+ * Clear naming & structure
+ * Predictability
+ * Deep comments showing you understand the internals
+ *
+ * Approach A wins here.
+ */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/*
+ * However, What impresses niche employers:
+ *
+ * Embedded companies → appreciate approach B (no 64-bit math, predictable)
+ * HFT / low-latency finance → appreciate approach C (stack buffer, single pass)
+ * Aerospace / military → love predictable and portable code (A or B)
+ *
+ * So:
+ * Portfolio GitHub → A
+ * Embedded firmware → B
+ * Ultra-low latency → C
+ *
+ * Each approach has a “domain,” but A is the most broadly respected.
  */
 
 /* ************************************************************************** */
