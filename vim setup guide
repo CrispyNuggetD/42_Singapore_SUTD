@@ -19,3 +19,4 @@ ro: The value being added, which consists of two flag characters:
 So, add to home as Hidden File a file using "vim .vimrc" containing:
 set number
 set formatoptions+=ro
+filetype indent on
