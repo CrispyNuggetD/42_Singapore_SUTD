@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/04 21:14:15 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/05 07:15:35 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,15 @@
 
 char	*ft_itoa(int n)
 {
-	n = 3;
-	n += 1;
+	int	is_negative;
+	long	n_long;
+ 
+	n_long = (long)n;
+	if (n_long < 0)
+	{
+		n_long = -n_long;
+		is_negative = (n < 0);
+	}
 }
 
 int	main(void)
@@ -26,9 +33,11 @@ int	main(void)
 	test += 1;
 }
 
+
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
+
 
 /* 
  * DISCUSSION:
@@ -57,9 +66,11 @@ int	main(void)
  * tradeoff of my method.
  */
 
+
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
+
 
 /*
  * Approach A (1 of 5): Canonical ft_itoa algorithm
@@ -160,15 +171,65 @@ int	main(void)
  */
 
 /* ************************************************************************** */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
 /* Alternative approach B (2 of 5):  All-negative route (no long)
  *
+ * ChatGPT thought this was "fun" or "elegant", but if I'm not wrong real
+ * use case is only when using 32-bit operations only embedded systems
+ * with no long support.
+ *
+ * A PRIMER:
+ * In C, strictly speaking, the '%' "modulo operator" is a "remainder"
+ * operator, defined in C standards as "(a / b) * b + (a % b) == a".
+ *
+ * This is not the same as TRUE modular arithmetic, where the result is
+ * ALWAYS in [0, b-1].
+ *
+ * ILLUSTRATION OF "REMAINDER OPERATOR":
+ *   5 %  3 =  2
+ *   5 % -3 =  2
+ *  -5 % -3 = -2
+ *  -5 %  3 = -2  <- BUT IMPORTANT! NOTE SIGN IS SAME AS DIVIDEND. Ans != 1
+ * 
+ * This is why the negative route works (remainder operator keeps sign)
+ *
+ * Idea:
+ * Keep n as negative, and when you extract digits, do:
+ *
+ * last_digit = -(n % 10) (gives positive 0–9)
+ * then n /= 10 (still negative, approaching 0)
+ *
+ * Algorithm sketch:
+ * (Similar to canonical) If n == 0, handle "0" special case.
+ * (Similar too) is_negative = (n < 0)
+ *
+ * DIFFERENCE: Count digits while n != 0 using division by 10,
+ * BUT keep it negative.
+ *
+ * Allocate length = digits + (is_negative ? 1 : 0) + 1 for \0.
+ *
+ * Fill from end:
+ *
+ * (Using the negative route method)
+ * digit = -(n % 10)
+ * str[i] = '0' + digit
+ * n /= 10
+ *
+ * If negative, str[0] = '-'.
+ *
+ * PROS OF METHOD:
+ * NO need for a long
+ * Works for INT_MIN naturally
+ * Mathematically neat
+ *
+ * CONS AS A RESULT:
+ * Slightly unintuitive: % on negative numbers is confusing
+ * (LOL) Can be harder to reason about under sleep deprivation
+ * w/o internalising negative modulo semantics in C, it’s bug-prone
+ *
+ * TL;DR ChatGPT: Still perfectly valid, and elegant once brain locks it in.
  */
 
-/* ************************************************************************** */
-/* ************************************************************************** */
 /* ************************************************************************** */
 
 /* Alternative approach C (3 of 5):
@@ -176,24 +237,22 @@ int	main(void)
  */
 
 /* ************************************************************************** */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
 /* Alternativee approach D (4 of 5):
  *
  */
 
 /* ************************************************************************** */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
 /* Alternative approach E (5 of 5):
  *
  */
 
+
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
+
 
 /*
  * DISCUSSION:
@@ -226,8 +285,6 @@ int	main(void)
  */
 
 /* ************************************************************************** */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
 /*
  * Which approach impresses employers?
@@ -242,8 +299,6 @@ int	main(void)
  * Approach A wins here.
  */
 
-/* ************************************************************************** */
-/* ************************************************************************** */
 /* ************************************************************************** */
 
 /*
@@ -260,6 +315,7 @@ int	main(void)
  *
  * Each approach has a “domain,” but A is the most broadly respected.
  */
+
 
 /* ************************************************************************** */
 /* ************************************************************************** */
