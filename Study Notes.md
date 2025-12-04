@@ -76,8 +76,109 @@ if (flags & (CF_ALPHA | CF_DIGIT)) {
 #### 2. Five Compiler optimisations for Clang (My not-so-secret high perf. obsession!)
 
 ---
-What optimizations are available?
-- Clang supports the classic GCC-style flags:
+
+#### A primer: Five examples of types of available optimization:
+
+1\. Inlining
+
+> Inlining replaces a function call with the body of that function.
+
+- For example:
+
+```scss
+foo();
+```
+
+- Becomes:
+
+```arduino
+do stuff in foo directly here
+```
+- Effects:
+	- No jump hence, fewer branches, hence faster.
+	- **But...** it makes the instruction footprint bigger.
+	- Lots of inlining → bigger code → possible L1I pressure.
+2\. Loop unrolling
+
+> Expands one loop iteration into many operations.
+
+From:
+```c
+for (i = 0; i < 4; i++)
+    sum += a[i];
+```
+
+- Unroll 4 times:
+```c
+sum += a[0];
+sum += a[1];
+sum += a[2];
+sum += a[3];
+```
+
+- Effect:
+
+1. fewer jumps
+2. fewer branch predictions
+3. more chances to vectorise
+
+- **But again...** code becomes bulky, meaning larger instruction footprint, meaning I-cache (L1I) pressure.
+
+3\. Branching / branch predictor
+
+> A branch is any point where execution may jump:
+
+```c
+if (x > 0) { ... }
+```
+So it is essentially:
+- CPU tries to guess which path you’ll take (branch prediction).
+- If the CPU guesses wrong, it must:
+
+1. flush pipeline
+2. re-fetch instructions
+3. waste cycles
+
+Optimisation attempts to reduce or predict branches, is using:
+
+1. loop rotation
+2. duplication of hot paths
+3. branch flattening
+
+4\. Vectorisation
+
+> Transform scalar operations into SIMD (Single Instruction, Multiple Data).
+
+- Scalar:
+
+```c
+c[i] = a[i] + b[i];
+```
+
+Vectorised (NEON? / AVX?):
+
+```arduino
+process 4–16 elements per instruction
+```
+
+- This massively speeds up DSP, image processing, ML…
+- but requires strict alignment and no aliasing.
+
+5\. Strength reduction
+
+> Replace expensive operations with cheaper ones.
+
+```ini
+x = y * 8;   →   x = y << 3
+```
+
+or:
+
+```arduino
+i * 10 inside loop  → convert to running addition
+```
+
+#### **Clang supports the classic GCC-style flags:**
 #### 0. O0, No optimization (default)
 #### 1. O1, Simple optimizations
 - [ ] To learn (the below) when I have time
