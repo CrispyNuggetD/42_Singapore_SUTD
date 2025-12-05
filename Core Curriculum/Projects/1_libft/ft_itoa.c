@@ -6,38 +6,59 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/05 07:15:35 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/05 09:57:42 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
+#include "libft.h"
 
 char	*ft_itoa(int n)
 {
-	int	is_negative;
+	char	*str;
+	int		is_negative;
+	int		len;
 	long	n_long;
- 
+	long	temp;
+
 	n_long = (long)n;
+	is_negative = (n < 0);
 	if (n_long < 0)
-	{
 		n_long = -n_long;
-		is_negative = (n < 0);
+	len = 1;
+	temp = n_long;
+	while (temp / 10 != 0)
+	{
+		temp /= 10;
+		len++;
 	}
+	str = malloc(sizeof(char) * (is_negative + len + 1));
+	if (!str)
+		return (NULL);
+	str[len + is_negative] = '\0';
+	if (n_long == 0)
+		str[0] = '0';
+	while (n_long > 0)
+	{
+		str[--len + is negative] = '0' + (n_long % 10); 
+		/* DOESN'T WORK REWRITE ITOA WITH HELPER LEN COUNTER OR LIBC */
+		n_long /= 10;
+	}
+	if (is_negative)
+		str[--len] = '-';
+	return (str);
 }
 
 int	main(void)
 {
 	int	test;
-	
+
 	test = 3;
 	test += 1;
 }
 
-
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
-
 
 /* 
  * DISCUSSION:
@@ -66,11 +87,9 @@ int	main(void)
  * tradeoff of my method.
  */
 
-
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
-
 
 /*
  * Approach A (1 of 5): Canonical ft_itoa algorithm
@@ -248,11 +267,9 @@ int	main(void)
  *
  */
 
-
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* ************************************************************************** */
-
 
 /*
  * DISCUSSION:
@@ -315,7 +332,6 @@ int	main(void)
  *
  * Each approach has a “domain,” but A is the most broadly respected.
  */
-
 
 /* ************************************************************************** */
 /* ************************************************************************** */
