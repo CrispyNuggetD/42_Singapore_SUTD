@@ -15,7 +15,22 @@
  * suitable for ultra-low latency applications, though I might not even use
  * C language at that point...
  * 
- * Goal:
+ * THOUGH technically code without malloc heap usage will be much faster.
+ * That will be using this prototype and i will recreate it when I have the 
+ * time to avoid getting blakholed (lol):
+ *
+ * size_t  itoa_buf(int n, char *dst, size_t dst_size)
+ * 
+ * It:
+ * Writes into a caller-provided buffer (dst).
+ * Never calls malloc.
+ * Returns the number of chars written (excluding '\0'), or 0 on failure.
+ */
+
+/* ************************************************************************** */
+
+/*
+ * ft_itoa's goal:
  * Convert an int n to a freshly malloc’d C string.
  *
  * Key constraints:
@@ -28,6 +43,77 @@
  * learn more approaches. Pros and Cons discussed below, such as space-time
  * tradeoff of my method.
  */
+
+/* ************************************************************************** */
+/* ************************************************************************** */
+/* ************************************************************************** */
+
+/*
+ * Sample itoa_buf code (non-Norm, ChatGPT):
+ *
+ * #include <stddef.h> // size_t
+ * itoa_buf:
+ *   Convert an int n into a decimal C-string in dst.
+ *
+ *   - dst:       output buffer
+ *   - dst_size:  total size of dst in bytes (including space for '\0')
+ *
+ * Returns:
+ *   - number of characters written (excluding '\0') on success
+ *   - 0 on failure (e.g. dst is NULL, dst_size too small)
+ *
+ * Notes:
+ *   - Never calls malloc.
+ *   - Handles INT_MIN by promoting to long.
+ *   - Uses an internal stack buffer, then copies into dst.
+ */
+
+/*
+size_t  itoa_buf(int n, char *dst, size_t dst_size)
+{
+    char        buf[12];      // enough for "-2147483648" + '\0'
+    long        nb;
+    size_t      len;
+    size_t      i;
+    int         negative;
+
+    if (!dst || dst_size == 0)
+        return (0);
+    nb = (long)n;
+    negative = (nb < 0);
+    if (nb == 0)
+    {
+        buf[0] = '0';
+        len = 1;
+    }
+    else
+    {
+        if (nb < 0)
+            nb = -nb;
+        i = 0;
+        while (nb > 0 && i < sizeof(buf) - 1)
+        {
+            buf[i++] = (char)('0' + (nb % 10));
+            nb /= 10;
+        }
+        len = i;
+        if (negative)
+            buf[len++] = '-';
+    }
+    // Need len chars + 1 for '\0'
+    if (len + 1 > dst_size)
+        return (0);
+    // Reverse into dst
+    i = 0;
+    while (i < len)
+    {
+        dst[i] = buf[len - 1 - i];
+        i++;
+    }
+    dst[len] = '\0';
+    return (len);
+}
+*/
 
 /* ************************************************************************** */
 /* ************************************************************************** */
@@ -193,19 +279,69 @@
 
 /* ************************************************************************** */
 
-/* Alternative approach C (3 of 5): Stack-buffer and copy
+/* 
+ * Alternative approach C (3 of 5): Stack-buffer and copy
+ *
+ * Idea:
+ *  - Build the number into a small local buffer on the stack, backwards.
+ *  - Track how many chars we used.
+ *  - malloc() exactly len + 1 bytes.
+ *  - Reverse-copy from the stack buffer into the heap string. 
+ */
+
+/* #include <stdlib.h>
+
+char    *ft_itoa(int n)
+{
+    char    tmp[12];      // enough for -2147483648 (11 chars)
+    long    nb;
+    int     negative;
+    int     i;
+    int     len;
+    char    *str;
+
+    nb = (long)n;
+    negative = (nb < 0);
+    i = 0;
+    if (nb == 0)
+        tmp[i++] = '0';
+    else
+    {
+        if (nb < 0)
+            nb = -nb;
+        while (nb > 0)
+        {
+            tmp[i++] = (char)('0' + (nb % 10));
+            nb /= 10;
+        }
+        if (negative)
+            tmp[i++] = '-';
+    }
+    len = i;
+    str = (char *)malloc((size_t)len + 1);
+    if (!str)
+        return (NULL);
+    str[len] = '\0';
+    while (i > 0)
+    {
+        str[len - i] = tmp[i - 1];
+        i--;
+    }
+    return (str);
+}
+ */
+
+/* ************************************************************************** */
+
+/* 
+ * Alternativee approach D (4 of 5): Hardcoded INT_MIN case
  *
  */
 
 /* ************************************************************************** */
 
-/* Alternativee approach D (4 of 5): Hardcoded INT_MIN case
- *
- */
-
-/* ************************************************************************** */
-
-/* Alternative approach E (5 of 5): Recursion (??)
+/* 
+ * Alternative approach E (5 of 5): Recursion (??)
  *
  */
 
@@ -218,6 +354,8 @@
  *
  * Let's consider "real-life" compiler -O2 optimisation, even though 42 only
  * compiles using cc (Clang nowadays) with warning flags.
+ *
+ * THOUGH technically code without malloc heap usage will be much faster.
  *
  * Compilers (Clang/ LLVM, GCC) optimize:
  * 
