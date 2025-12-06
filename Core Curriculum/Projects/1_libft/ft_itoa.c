@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/05 09:57:42 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/06 18:08:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,37 +15,33 @@
 char	*ft_itoa(int n)
 {
 	char	*str;
-	int		is_negative;
-	int		len;
+	int	len;
+	int	is_negative;
 	long	n_long;
 	long	temp;
 
-	n_long = (long)n;
 	is_negative = (n < 0);
-	if (n_long < 0)
+	len = 0;
+	if (n == 0)
+		len = 1;
+	n_long = (long)n;
+	if (is_negative)
 		n_long = -n_long;
-	len = 1;
 	temp = n_long;
-	while (temp / 10 != 0)
-	{
+	while (temp > 0)
 		temp /= 10;
 		len++;
 	}
-	str = malloc(sizeof(char) * (is_negative + len + 1));
+	str = malloc(sizeof(char) * (is_negative + len + 1);
 	if (!str)
 		return (NULL);
-	str[len + is_negative] = '\0';
-	if (n_long == 0)
-		str[0] = '0';
-	while (n_long > 0)
-	{
-		str[--len + is negative] = '0' + (n_long % 10); 
-		/* DOESN'T WORK REWRITE ITOA WITH HELPER LEN COUNTER OR LIBC */
-		n_long /= 10;
-	}
 	if (is_negative)
-		str[--len] = '-';
+		str = '-';
+	while (n_long > 0)
+		++str = '0' + (n_long % 10);
+	++str = '\0';
 	return (str);
+	
 }
 
 int	main(void)
