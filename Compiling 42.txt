@@ -1,1 +1,1 @@
-clang -Wall -Wextra -Werror
+cc -Wall -Wextra -Werror
