@@ -12,10 +12,12 @@
 # e.g. run ./output
 # e.g. run ./output "Hello" 42 (Passing arguments)
 
-### (2) Two helper functions curproj() and syncproj().
+### (2) Three helper functions curproj() and syncproj().
 
-# curproj switches into your current 42 project folder 
+# curproj switches into your github repo's project folder 
 # and shows the last edit + last sync status.
+
+# cdmain just goes into your github repo.
 
 # syncgithub checks your working tree is clean, and 
 # pulls from GitHub. It also pushes if you made changes.
@@ -23,7 +25,7 @@
 # NOTE: It does NOT touch Vogsphere. 
 # SYNC your campus repo before submitting project!
 
-# Usage: Just type curproj or syncproj into terminal.
+# Usage: Just type curproj, cdmain, or syncproj into terminal.
 
 # Notes:
 # You MUST change a few things:
