@@ -91,12 +91,15 @@ git diff HEAD..origin/main
 - Learnt how to, wrote tutorial, made Makefile and libft.h
 - I guess I started on Libft proper. 43 functions to go. 
 #### 04/12 (Thurs 18):
-# TODAY
 - Did makefile corrections; tab means make echos; @ to silent
 - Painstakingly installed iSH on iPad with Clang/ norminette support
-
 #### 05/12 (Fri 19):
+- Did, failed 24 hours challenge without knowing it’s within a day 0000-2359
+- Started ITOA, lots of errors logically and for Norm using canonical method
+- ChatGPTherapy
 #### 06/12 (WkEnd, Sat 20):
+# TODAY
+- ITOA troubleshooting canonical method by making helper functions
 #### 07/12 (WkEnd, Sun 21):
 
 ### W4
