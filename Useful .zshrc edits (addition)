@@ -1,13 +1,16 @@
 # Set up the prompt
 
-# 3 useful things here.
+# 5 useful things here.
 
-### (1) Includes an alias 'compile' so you don't have 
-# to always type in full for 42-compliant compiling everytime.
+### (1) Includes two aliases 'compile' and 'run' so you don't have 
+# to always type in full for 42-compliant compiling/ running
+# with valgrind flags everytime.
 
 # Usage:
 # e.g. compile ft_isalpha.c
 # e.g. compile ft_isalpha.c -o output (run with ./output)
+# e.g. run ./output
+# e.g. run ./output "Hello" 42 (Passing arguments)
 
 ### (2) Two helper functions curproj() and syncproj().
 
@@ -29,11 +32,11 @@
 # on by changing variable, current_proj="<PROJECT NAME>"
 # e.g. current_proj="1_libft"
 
-# 2. Change PROJECTS_ROOTS to Project location on campus PC,
-# e.g. export PROJECTS_ROOTS="$HOME/Documents/Projects"
+# 2. Change PROJECTS_ROOTS to Project sub-folder in your repo,
+# e.g. export PROJECTS_ROOTS="Core Curriculum/Projects"
 
 # 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
-# e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/Core Curriculum"
+# e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 
 
 ###################################################################
@@ -49,15 +52,18 @@ export MAIL='hnah@student.42singapore.sg'
 current_proj="1_libft"
 
 # --- 42 paths ---
-export PROJECTS_ROOT="$HOME/Documents/Projects"
-export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD/"
+export PROJECTS_ROOT="Core Curriculum/Projects"
+export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 
-# compile helper
-alias compile='cc -Wall -Wextra -Werror'
+# compile helper with -g valgrind flag
+alias compile='cc -Wall -Wextra -Werror -g'
+
+# code execution helper with valgrind and leak flags
+alias run='valgrind --leak-check=full --show-leak-kinds=all'
 
 # jump to current 42 project (Vogsphere working copy)
 curproj() {
-  local proj_dir="$PROJECTS_ROOT/$current_proj"
+  local proj_dir="$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj"
 
   if [ ! -d "$proj_dir" ]; then
     echo "No such project directory: $proj_dir"
