@@ -6,59 +6,80 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/06 18:08:41 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/07 12:28:02 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
+static int	int_len(int n);
+
+// len-- in backwards filling loop says number length decrements every loop
 char	*ft_itoa(int n)
 {
 	char	*str;
-	int	len;
-	int	is_negative;
-	long		n_long;
-	long		temp;
+	int		len;
+	int		is_negative;
+	long	n_long;
 
 	is_negative = (n < 0);
-	len = 0;
-	if (n == 0)
-		len = 1;
+	len = int_len(n);
 	n_long = (long)n;
 	if (is_negative)
 		n_long = -n_long;
-	temp = n_long;
-	while (temp > 0)
-	{
-		temp /= 10;
-		len++;
-	}
 	str = malloc(sizeof(char) * (is_negative + len + 1));
 	if (!str)
 		return (NULL);
 	str[is_negative + len] = '\0';
 	if (is_negative)
-		 str[0] = '-';
-	if (n == 0)
+		str[0] = '-';
+	if (n_long == 0)
 		str[0] = '0';
-	while (n_long > 0)
+	while (len > 0)
 	{
-		str[is_negative + len--] = '0' + (n_long % 10);
+		str[is_negative + len - 1] = '0' + (n_long % 10);
 		n_long /= 10;
+		len--;
 	}
 	return (str);
-	
+}
+// Recap:
+// len-- in backwards filling loop says number length decrements every loop
+
+static int	int_len(int n)
+{
+	int	len;
+
+	len = 0;
+	if (n == 0)
+	{
+		len = 1;
+		return (len);
+	}
+	while (n != 0)
+	{
+		n /= 10;
+		len++;
+	}
+	return (len);
 }
 
+/*
 int	main(void)
 {
-	int	input;
 	char	*output;
+	int		input;
 
-	input = 42;
+	input = -2147483648;
 	output = ft_itoa(input);
-	write(1, &output, 3);
+	if (!output)
+		return (1);
+	write(1, output, ft_strlen(output));
+	write(1, "\n", 1);
+	free(output);
+	return (0);
 }
+*/
 
 /* ************************************************************************** */
 /* ************************************************************************** */
@@ -112,9 +133,9 @@ int	main(void)
  * 
  * This is why the negative route works (remainder operator keeps sign)
  */
- 
- /* ************************************************************************** */
- 
+
+/* ************************************************************************** */
+
 /* 
  * Idea:
  * Keep n as negative, and when you extract digits, do:
@@ -140,10 +161,10 @@ int	main(void)
  *
  * If negative, str[0] = '-'.
  */
- 
- /* ************************************************************************** */
- 
- /* PROS OF METHOD:
+
+/* ************************************************************************** */
+
+/* PROS OF METHOD:
  * NO need for a long
  * Works for INT_MIN naturally
  * Mathematically neat

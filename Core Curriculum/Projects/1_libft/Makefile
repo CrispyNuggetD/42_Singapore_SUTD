@@ -3,7 +3,7 @@ CFLAGS	= -Wall -Wextra -Werror #Standard 42 norm
 
 NAME	= libft.a #Library name
 
-SRCS	= ft_isalpha.c
+SRCS	= ft_isalpha.c ft_strlen.c ft_itoa.c
 OBJS	= $(SRCS:.c=.o)
 
 all: $(NAME)

@@ -1,23 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   libft.h                                            :+:      :+:    :+:   */
+/*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/05 10:30:18 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/07 11:59:14 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/07 12:44:41 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/07 13:34:22 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LIBFT_H
-# define LIBFT_H
-# include <stdlib.h>
-# include <unistd.h>
+int atoi(const char *nptr)
+{
+	int		is_negative;
+	long	number;
 
-int		ft_isalpha(int c);
-size_t	ft_strlen(const char *s);
-/* FILL IN MISSING FUNCTIONS HERE */
-char	*ft_itoa(int n);
-
-#endif
+	number = 0;
+	is_negative = 0;
+	if (*nptr = '-')
+	{
+		is_negative = 1;
+		nptr++;
+	}
+	else if (*nptr = '+')
+	{       
+		is_negative = 0;
+		nptr++;
+	}
+	while (*nptr && *nptr >= '0' && *nptr <= '9')
+	{
+		number = number * 10 + (*nptr - '0');
+		nptr++;
+	}
+return (number);
+}
