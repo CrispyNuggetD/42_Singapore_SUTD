@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/07 12:28:02 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/07 17:17:24 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,14 +68,27 @@ static int	int_len(int n)
 int	main(void)
 {
 	char	*output;
-	int		input;
 
-	input = -2147483648;
-	output = ft_itoa(input);
+	output = ft_itoa(-2147483648);
 	if (!output)
 		return (1);
 	write(1, output, ft_strlen(output));
-	write(1, "\n", 1);
+	output = ft_itoa(+2147483647);
+	if (!output)
+		return (1);
+	write(1, output, ft_strlen(output));
+	output = ft_itoa(0);
+	if (!output)
+		return (1);
+	write(1, output, ft_strlen(output));
+	output = ft_itoa(-1);
+	if (!output)
+		return (1);
+	write(1, output, ft_strlen(output));
+	output = ft_itoa(-2147);
+	if (!output)
+		return (1);
+	write(1, output, ft_strlen(output));
 	free(output);
 	return (0);
 }
