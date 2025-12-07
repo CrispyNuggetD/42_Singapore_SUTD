@@ -98,9 +98,10 @@ git diff HEAD..origin/main
 - Started ITOA, lots of errors logically and for Norm using canonical method
 - ChatGPTherapy
 #### 06/12 (WkEnd, Sat 20):
-# TODAY
 - ITOA troubleshooting canonical method by making helper functions
 #### 07/12 (WkEnd, Sun 21):
+ # TODAY
+- MY FIRST LIBFT ITOA IS D.O.N.E. OMG..! ONE STEP FURTHER FROM BLACKHOLE (not proud...) *sobs*
 
 ### W4
 #### 08/12 (Mon 22):
