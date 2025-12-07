@@ -6,25 +6,26 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 12:44:41 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/07 13:34:22 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/07 15:15:59 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int atoi(const char *nptr)
+// atoi supposed to return garbage on overflow
+int	ft_atoi(const char *nptr)
 {
-	int		is_negative;
-	long	number;
+	int	sign;
+	int	number;
 
 	number = 0;
-	is_negative = 0;
-	if (*nptr = '-')
+	sign = 1;
+	if (*nptr == '-')
 	{
-		is_negative = 1;
+		sign = -1;
 		nptr++;
 	}
-	else if (*nptr = '+')
-	{       
-		is_negative = 0;
+	else if (*nptr == '+')
+	{
+		sign = 1;
 		nptr++;
 	}
 	while (*nptr && *nptr >= '0' && *nptr <= '9')
@@ -32,5 +33,5 @@ int atoi(const char *nptr)
 		number = number * 10 + (*nptr - '0');
 		nptr++;
 	}
-return (number);
+	return (sign * number);
 }

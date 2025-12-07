@@ -1,6 +1,6 @@
 # Set up the prompt
 
-# 5 useful things here.
+# 6 useful things here.
 
 ### (1) Includes two aliases 'compile' and 'run' so you don't have 
 # to always type in full for 42-compliant compiling/ running
@@ -40,13 +40,45 @@
 # 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
 # e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 
+### (3) Zsh backwards cycling keybinds
+# Technically Shift + Tab was supposed to work out of the box but
+# it didn't for me so I just included it here.
 
 ###################################################################
 ### (APPEND THESE) Variables after changing and Functions       ###
 ### Do NOT replace original .zshrc file                         ###
 ###################################################################
 
+# Set up the prompt
 
+# 6 useful things here.
+
+### (1) Includes two aliases 'compile' and 'run' so you don't have 
+# to always type in full for 42-compliant compiling/ running
+# with valgrind flags everytime.
+
+# Usage:
+# e.g. compile ft_isalpha.c
+# e.g. compile ft_isalpha.c -o output (run with ./output)
+# e.g. run ./output
+# e.g. run ./output "Hello" 42 (Passing arguments)
+
+### (2) Three helper functions curproj() and syncproj().
+
+# curproj switches into your github repo's project folder 
+# and shows the last edit + last sync status.
+
+# cdmain just goes into your github repo.
+
+# syncgithub checks your working tree is clean, and 
+# pulls from GitHub. It also pushes if you made changes.
+# Run this first before working on another computer to prevent conflicts!
+# NOTE: It does NOT touch Vogsphere. 
+# SYNC your campus repo before submitting project!
+
+# Usage: Just type curproj, cdmain, or syncproj into terminal.
+
+# Notes:
 # hnah (intra) user defined
 export MAIL='hnah@student.42singapore.sg'
 
@@ -56,6 +88,10 @@ current_proj="1_libft"
 # --- 42 paths ---
 export PROJECTS_ROOT="Core Curriculum/Projects"
 export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+
+# --- Zsh backwards cycling ---
+bindkey "^[[Z" reverse-menu-complete
+bindkey "^[Z" reverse-menu-complete
 
 # compile helper with -g valgrind flag
 alias compile='cc -Wall -Wextra -Werror -g'
@@ -110,7 +146,36 @@ curproj() {
       if [ "$last_sync_date" != "$today" ] && [ "$last_sync_date" != "$yesterday" ]; then
         echo "⚠ WARNING: This project hasn't been synced to your main repo in more than a day."
       fi
-    else
+    else# Set up the prompt
+
+# 6 useful things here.
+
+### (1) Includes two aliases 'compile' and 'run' so you don't have 
+# to always type in full for 42-compliant compiling/ running
+# with valgrind flags everytime.
+
+# Usage:
+# e.g. compile ft_isalpha.c
+# e.g. compile ft_isalpha.c -o output (run with ./output)
+# e.g. run ./output
+# e.g. run ./output "Hello" 42 (Passing arguments)
+
+### (2) Three helper functions curproj() and syncproj().
+
+# curproj switches into your github repo's project folder 
+# and shows the last edit + last sync status.
+
+# cdmain just goes into your github repo.
+
+# syncgithub checks your working tree is clean, and 
+# pulls from GitHub. It also pushes if you made changes.
+# Run this first before working on another computer to prevent conflicts!
+# NOTE: It does NOT touch Vogsphere. 
+# SYNC your campus repo before submitting project!
+
+# Usage: Just type curproj, cdmain, or syncproj into terminal.
+
+# Notes:
       echo "No sync found for this project in main repo yet."
     fi
   else
@@ -196,3 +261,4 @@ syncproj() {
   fi
   echo "--------------------------------"
 }   
+
