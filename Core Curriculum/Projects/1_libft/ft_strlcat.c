@@ -49,15 +49,15 @@ int	main(void)
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_1, ft_strlen(dst_1));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret), ft_atoi(ft_itoa(ret)));
+	write(1, ft_itoa(ret), ft_strlen(ret)));
 	ret = ft_strlcat(dst_2, src, 3);
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_2, ft_strlen(dst_2));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret),ft_atoi(ft_itoa(ret)));
+	write(1, ft_itoa(ret),ft_strlen(ret)));
 	ret = ft_strlcat(dst_3, src, 8);
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_3, ft_strlen(dst_3));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret), ft_atoi(ft_itoa(ret)));
+	write(1, ft_itoa(ret), ft_strlen(ret)));
 }

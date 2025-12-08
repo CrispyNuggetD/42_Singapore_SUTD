@@ -102,6 +102,7 @@ git diff HEAD..origin/main
 #### 07/12 (WkEnd, Sun 21):
  # TODAY
 - MY FIRST LIBFT ITOA IS D.O.N.E. OMG..! ONE STEP FURTHER FROM BLACKHOLE (not proud...) *sobs*
+- Finished 4 Libft functions, left 39
 
 ### W4
 #### 08/12 (Mon 22):
