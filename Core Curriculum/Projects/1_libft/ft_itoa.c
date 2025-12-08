@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/07 17:17:24 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/08 10:24:22 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static int	int_len(int n);
 
 // len-- in backwards filling loop says number length decrements every loop
 char	*ft_itoa(int n)
-{
+write(1, "\n", 1);{
 	char	*str;
 	int		len;
 	int		is_negative;
@@ -73,18 +73,22 @@ int	main(void)
 	if (!output)
 		return (1);
 	write(1, output, ft_strlen(output));
+	write(1, "\n", 1);
 	output = ft_itoa(+2147483647);
 	if (!output)
 		return (1);
 	write(1, output, ft_strlen(output));
+	write(1, "\n", 1);	
 	output = ft_itoa(0);
 	if (!output)
 		return (1);
 	write(1, output, ft_strlen(output));
+	write(1, "\n", 1);
 	output = ft_itoa(-1);
 	if (!output)
 		return (1);
 	write(1, output, ft_strlen(output));
+	write(1, "\n", 1);
 	output = ft_itoa(-2147);
 	if (!output)
 		return (1);
@@ -92,7 +96,8 @@ int	main(void)
 	free(output);
 	return (0);
 }
-*/
+main tested
+ */
 
 /* ************************************************************************** */
 /* ************************************************************************** */
