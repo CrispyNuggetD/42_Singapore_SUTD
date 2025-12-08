@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 15:35:38 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 10:23:17 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/08 11:58:10 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ int	main(void)
 	write(1, dst_3, ft_strlen(dst_3));
 	write(1, "\nReturn val: ", 13);
 	write(1, ft_itoa(ret), ft_strlen(ft_itoa(ret)));
+	return (0);
 }
 main tested
  */

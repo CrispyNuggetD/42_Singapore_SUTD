@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 11:29:18 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 10:23:43 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/08 12:04:08 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,7 @@ int	main(void)
 	write(1, "\ninput_4 length is: \n", 21);
 	write(1, ft_itoa(ft_strlen(input_4)),
 		ft_strlen(ft_itoa(ft_strlen(input_4))) + 1);
+	return (0);
 }
 main tested
  */
-
-// if len = 27
-// itoa becomes "27", can write
-// atoi of the itoa gives "2" can know number of chars.
-// +1 to include the null terminator 
-// (in case len is 0, we don't write "0 bytes")
