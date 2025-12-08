@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 15:35:38 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/07 18:04:37 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/08 09:18:16 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,15 +49,15 @@ int	main(void)
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_1, ft_strlen(dst_1));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret), ft_strlen(ret)));
+	write(1, ft_itoa(ret), ft_strlen(ft_itoa(ret)));
 	ret = ft_strlcat(dst_2, src, 3);
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_2, ft_strlen(dst_2));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret),ft_strlen(ret)));
+	write(1, ft_itoa(ret),ft_strlen(ft_itoa(ret)));
 	ret = ft_strlcat(dst_3, src, 8);
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_3, ft_strlen(dst_3));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret), ft_strlen(ret)));
+	write(1, ft_itoa(ret), ft_strlen(ft_itoa(ret)));
 }
