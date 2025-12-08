@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 15:35:38 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 09:18:16 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/08 10:23:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,12 @@ size_t	ft_strlcat(char *dst, const char *src, size_t size)
 	return (len_dst + len_src);
 }
 
+/*
 int	main(void)
 {
 	char		dst_1[50] = "Hello";
-	char        dst_2[50] = "Hello";
-	char        dst_3[50] = "Hello";
+	char		dst_2[50] = "Hello";
+	char		dst_3[50] = "Hello";
 	const char	*src;
 	size_t		ret;
 
@@ -54,10 +55,12 @@ int	main(void)
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_2, ft_strlen(dst_2));
 	write(1, "\nReturn val: ", 13);
-	write(1, ft_itoa(ret),ft_strlen(ft_itoa(ret)));
+	write(1, ft_itoa(ret), ft_strlen(ft_itoa(ret)));
 	ret = ft_strlcat(dst_3, src, 8);
 	write(1, "\nResult dst: ", 13);
 	write(1, dst_3, ft_strlen(dst_3));
 	write(1, "\nReturn val: ", 13);
 	write(1, ft_itoa(ret), ft_strlen(ft_itoa(ret)));
 }
+main tested
+ */
