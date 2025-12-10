@@ -100,15 +100,19 @@ git diff HEAD..origin/main
 #### 06/12 (WkEnd, Sat 20):
 - ITOA troubleshooting canonical method by making helper functions
 #### 07/12 (WkEnd, Sun 21):
- # TODAY
 - MY FIRST LIBFT ITOA IS D.O.N.E. OMG..! ONE STEP FURTHER FROM BLACKHOLE (not proud...) *sobs*
 - Finished 4 Libft functions, left 39
 
 ### W4
 #### 08/12 (Mon 22):
+- Finished all ft_is* series + memset + bzero!
 #### 09/12 (Tues 23):
+- Unwell, MC, hibernated basically
 #### 10/12 (Wed 24):
+- Post-hibernation sluggishness, lethargic the whole day.
+- Finished up till memcopy (to check correctness) (another 2; 13 of 43 done)
 #### 11/12 (Thurs 25):
+ # TODAY
 #### 12/12 (Fri 26):
 #### 13/12 (WkEnd, Sat 27):
 #### 14/12 (WkEnd, Sun 28):
