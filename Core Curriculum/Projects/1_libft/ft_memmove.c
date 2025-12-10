@@ -14,6 +14,19 @@
 
 void	*ft_memmove(void *dest, const void *src, size_t n)
 {
+	const unsigned char	*src_backup;
+	unsigned char		*dest_backup;
+	unsigned char		temp[n];
+	
+	src_backup = (unsigned char *)src;
+    dest_backup = (unsigned char *)dest;
+	while (n--) // Doesn't make sense!! Goes to SIZE_MAX!!
+		temp[n] = src_backup[n];
+	while (temp[n]) // Doesn't make sense! Infinite loop!!
+		
+	// why do I need temp array can't just move if dest end add. more, 
+	// then shift by right, vice versa?
+	
 	return (dest);
 }
 

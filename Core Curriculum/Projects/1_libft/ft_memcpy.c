@@ -14,28 +14,16 @@
 
 void	*ft_memcpy(void *dest, const void *src, size_t n)
 {
-	unsigned char	*src_backup;
-	unsigned char	*dest_backup;
-	int				overlap;
+	const unsigned char	*src_backup;
+	unsigned char		*dest_backup;
 
 	src_backup = (unsigned char *)src;
     dest_backup = (unsigned char *)dest;
-	overlap = 0;
-	while (n > 0)
+	while (n--)
 	{
+		*dest_backup = *src_backup;
+		dest_backup++;
 		src_backup++;
-		if (src_backup == dest_backup)
-			overlap = 1;
-	}
-	if (overlap == 1)
-		ft_memmove(dest, src, n);
-	src_backup = (unsigned char *)src;
-    dest_backup = (unsigned char *)dest;
-	while (n > 0)
-	{
-			dest_backup = src_backup;
-			dest_backup++;
-			src_backup++;
 	}
 	return (dest);
 }
