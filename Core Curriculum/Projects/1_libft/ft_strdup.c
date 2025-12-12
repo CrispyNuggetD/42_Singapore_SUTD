@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/11 20:04:40 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/11 20:21:52 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/12 13:24:53 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,15 @@
 
 char	*ft_strdup(const char *s)
 {
-	char	*d;
-	char	*d_backup;
-	char	*s_backup;
-	int		s_len;
+	char		*d;
+	char		*d_backup;
+	char		*s_backup;
+	int			s_len;
 
 	s_len = 0;
-	s_backup = s;	
-	while (*s_backup)
-		s_backup++;
+	s_backup = (char *)s;	
+	while (*s_backup++)
+		s_len++;
 	d = malloc(s_len + 1);
 	if (!d)
 		return (NULL);
