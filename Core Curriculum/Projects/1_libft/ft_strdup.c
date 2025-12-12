@@ -16,11 +16,13 @@ char	*ft_strdup(const char *s)
 {
 	char	*d;
 	char	*d_backup;
+	char	*s_backup;
 	int		s_len;
 
 	s_len = 0;
-	while (s[s_len])
-		s_len++;
+	s_backup = s;	
+	while (*s_backup)
+		s_backup++;
 	d = malloc(s_len + 1);
 	if (!d)
 		return (NULL);
@@ -32,5 +34,5 @@ char	*ft_strdup(const char *s)
 }
 
 // Yes, it's simple coping so I did a:
-// (s_len--)
+// (s_len--) since this loops s_len times
 // 	*d++ = *s++;
