@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/10 13:18:55 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/10 13:43:05 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/11 12:55:21 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	unsigned char		*dest_backup;
 
 	src_backup = (unsigned char *)src;
-    dest_backup = (unsigned char *)dest;
+	dest_backup = (unsigned char *)dest;
 	while (n--)
 	{
 		*dest_backup = *src_backup;
@@ -27,7 +27,6 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	}
 	return (dest);
 }
-
 
 /*
  * NAME
@@ -39,8 +38,9 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
  *        void *memcpy(void *dest, const void *src, size_t n);
  * 
  * DESCRIPTION
- *        The memcpy() function copies n bytes from memory area src to memory area dest.
- *        The memory areas must not overlap.  Use memmove(3) if the memory areas do overlap.
+ *        The memcpy() function copies n bytes from memory area src
+ *        to memory area dest. The memory areas must not overlap.
+ *        Use memmove(3) if the memory areas do overlap.
  * 
  * RETURN VALUE
  *        The memcpy() function returns a pointer to dest.

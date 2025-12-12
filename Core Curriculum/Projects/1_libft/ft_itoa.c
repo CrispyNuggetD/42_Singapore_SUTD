@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 11:37:33 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 11:57:43 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/11 13:47:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ static int	int_len(int n)
 	return (len);
 }
 
- /*
+/*
 int	main(void)
 {
 	char	*output;
