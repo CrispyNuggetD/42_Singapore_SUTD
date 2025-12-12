@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 15:35:38 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 11:58:10 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/11 12:21:04 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ size_t	ft_strlcat(char *dst, const char *src, size_t size)
 
 	len_dst = 0;
 	len_src = 0;
+	copied = 0;
 	while (len_dst < size && dst[len_dst])
 		len_dst++;
 	while (src[len_src])
 		len_src++;
 	if (len_dst >= size)
 		return (size + len_src);
-	copied = 0;
 	while (src[copied] && (len_dst + copied + 1 < size))
 	{
 		dst[len_dst + copied] = src[copied];

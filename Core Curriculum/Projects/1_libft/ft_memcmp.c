@@ -1,33 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isalpha.c                                       :+:      :+:    :+:   */
+/*   ft_memcmp.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/11/24 14:40:07 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/11 13:50:17 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/11 16:18:20 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/11 16:20:13 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_isalpha(int c)
+int	ft_memcmp(const void *s1, const void *s2, size_t n)
 {
-	if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
-		return (1);
-	return (0);
-}
+	const unsigned char	*s1_move;
+	const unsigned char	*s2_move;
 
-/*
-int	main(void)
-{
-	write(1, ft_itoa(ft_isalpha('a')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('1')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('/')), 1);
-	return (0);
+	s1_move = (const unsigned char *)s1;
+	s2_move = (const unsigned char *)s2;
+	if (n == 0)
+		return (0);
+	while ((*s1_move == *s2_move) && n > 1)
+	{
+		s1_move++;
+		s2_move++;
+		n--;
+	}
+	return (*s1_move - *s2_move);
 }
-main tested
- */

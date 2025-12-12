@@ -1,33 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isalpha.c                                       :+:      :+:    :+:   */
+/*   ft_strlcpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/11/24 14:40:07 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/11 13:50:17 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/11 12:01:24 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/11 12:57:46 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_isalpha(int c)
+size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
-	if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
-		return (1);
-	return (0);
-}
+	size_t	copied;
+	size_t	len_src;
 
-/*
-int	main(void)
-{
-	write(1, ft_itoa(ft_isalpha('a')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('1')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('/')), 1);
-	return (0);
+	len_src = 0;
+	copied = 0;
+	while (src[len_src])
+		len_src++;
+	if (size == 0)
+		return (len_src);
+	while (src[copied] && (copied + 1 < size))
+	{
+		dst[copied] = src[copied];
+		copied++;
+	}
+	dst[copied] = '\0';
+	return (len_src);
 }
-main tested
- */

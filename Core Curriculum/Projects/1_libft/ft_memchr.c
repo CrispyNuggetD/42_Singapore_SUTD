@@ -1,33 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isalpha.c                                       :+:      :+:    :+:   */
+/*   ft_memchr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/11/24 14:40:07 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/11 13:50:17 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/11 15:56:47 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/11 16:17:24 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_isalpha(int c)
+void	*ft_memchr(const void *s, int c, size_t n)
 {
-	if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
-		return (1);
-	return (0);
+	const unsigned char	*s_move;
+
+	s_move = (const unsigned char *)s;
+	while (n > 0)
+	{
+		if (*s_move == (unsigned char)c)
+			return ((void *)s_move);
+		s_move++;
+		n--;
+	}
+	return (NULL);
 }
 
-/*
-int	main(void)
-{
-	write(1, ft_itoa(ft_isalpha('a')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('1')), 1);
-	write(1, "\n", 1);
-	write(1, ft_itoa(ft_isalpha('/')), 1);
-	return (0);
-}
-main tested
- */
+// Need to cast return as void*. 
+// const char* type is potentially mutable (wrong).
