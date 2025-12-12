@@ -1,38 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strdup.c                                        :+:      :+:    :+:   */
+/*   ft_strmapi.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/11 20:04:40 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/12 16:35:23 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/12 18:12:14 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/12 18:45:38 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strdup(const char *s)
+char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
 {
-	char	*d;
-	char	*d_backup;
-	char	*s_backup;
-	int		s_len;
-
-	s_len = 0;
-	s_backup = (char *)s;
-	while (*s_backup++)
-		s_len++;
-	d = malloc(s_len + 1);
-	if (!d)
+	char	*result;
+	size_t	i;
+	size_t	len;
+	
+	if (!s || !f)
 		return (NULL);
-	d_backup = d;
-	while (s_len--)
-		*d++ = *s++;
-	*d = '\0';
-	return (d_backup);
+	len = ft_strlen(s);
+	result = malloc(sizeof(char) * (len + 1));
+	if (!result)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		result[i] = f((unsigned int)i, s[i]);
+		i++;
+	}
+	result[i] = '\0';
+	return (result);
 }
-
-// Yes, it's simple coping so I did a:
-// (s_len--) since this loops s_len times
-// 	*d++ = *s++;
