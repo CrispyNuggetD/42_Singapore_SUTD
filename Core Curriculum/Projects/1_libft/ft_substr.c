@@ -23,3 +23,4 @@ char		*ft_substr(char const *s, unsigned int start, size_t len)
 }
 
 // ft_strdup("") includes both malloc and null
+// start is >= instead of > as start is using indexing from [0] of s
