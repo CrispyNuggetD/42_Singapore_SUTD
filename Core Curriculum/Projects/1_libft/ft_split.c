@@ -49,3 +49,5 @@ char	**ft_split(char const *s, char c)
 // Needed for null terminator = 1
 // Buffer w. null = 1 + 1 = 2
 // Hence, total to malloc/ strlcpy = (1-0) + 2
+//
+// Started this w/o. Stdheader (to update) at 1:37pm 13 Dec Sat 2025
