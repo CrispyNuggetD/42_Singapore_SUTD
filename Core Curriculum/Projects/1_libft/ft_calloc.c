@@ -18,6 +18,8 @@ void	*ft_calloc(size_t nmemb, size_t size)
 	unsigned char	*mallocd_moving;
 	size_t			total;
 
+	if (size == 0 || nmemb == 0)
+		return (malloc(1)));
 	if (size != 0 && nmemb > SIZE_MAX / size)
 		return (NULL);
 	total = nmemb * size;

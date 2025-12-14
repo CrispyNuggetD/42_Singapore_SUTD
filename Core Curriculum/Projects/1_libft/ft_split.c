@@ -5,14 +5,14 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/13 16:30:36 by hnah              #+#    #+#             */
+/*   Created: 2025/12/13 13:37:36 by hnah              #+#    #+#             */
 /*   Updated: 2025/12/13 18:18:40 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t size)
+/* size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
 	size_t	copied;
 	size_t	len_src;
@@ -30,7 +30,7 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 	}
 	dst[copied] = '\0';
 	return (len_src);
-}
+} */
 
 char	**ft_split(char const *s, char c)
 {
@@ -43,7 +43,15 @@ char	**ft_split(char const *s, char c)
 	len = 0;
 	if (!s)
 		return (NULL);
-	while (s[len] == c)
+	/* if (&s[len] == NULL)
+	{
+		result = malloc(sizeof(char *) * (words + 1));
+		if (!result)
+			return (NULL);
+		result[words] = NULL;
+		return (result);
+	} */
+	while (s[len] == c && s[len])
 		len++;
 	while (s[len])
 	{
@@ -73,24 +81,33 @@ char	**ft_split(char const *s, char c)
 			return (NULL);
 		}
 		ft_strlcpy(result[words - 1], &s[len], end - len + 1);
+			len--;
 		while (s[len] == c && (len > 0))
 			len--;
-		len++;
 		words--;
-	}printf("%s",result[words]);
+	}
 	return (result);
 }
 
-int	main(void)
+/* int	main(void)
 {
 	char	**test;
-	size_t	i=0;
+	size_t	i;
 
-	test = ft_split("  test wdq qwd   ", ' ');
-	while (test[i]){
-		printf("%zu | %s,\n\n", i,test[i++]);
+	i = 0;
+	test = ft_split("", ' ');
+	while (test[i])
+	{
+		printf("%zu | %s,\n\n", i, test[i]);
+		i++;
 	}
-}
+	while (i > 0)
+	{
+		free(test[i--]);
+	}
+	free(test[0]);
+	free(test);
+} */
 
 // 0		1		2:c		3	4	5		\0
 // 0		1		2:start	3	4	end:5	\0
@@ -98,5 +115,3 @@ int	main(void)
 // Str. length = (5-2) = 3
 // Needed for null terminator = 1
 // Hence, total to malloc/ strlcpy = (5-2) + 1
-//
-// Started this w/o. Stdheader (to update) at 1:37pm 13 Dec Sat 2025
