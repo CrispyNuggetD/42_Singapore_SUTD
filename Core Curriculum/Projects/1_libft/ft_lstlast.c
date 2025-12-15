@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/14 18:54:55 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/14 19:09:16 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/15 11:37:52 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,9 @@
 
 t_list	*ft_lstlast(t_list *lst)
 {
-	t_list	*last;
-
+	if (!lst)
+		return (NULL);
 	while (lst -> next)
-	{
-		last = lst;
 		lst = lst -> next;
-	}
-	return (last);
+	return (lst);
 }
