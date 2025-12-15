@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 11:19:17 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/15 12:47:58 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/15 14:32:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,37 @@
 
 void	ft_lstdelone(t_list *lst, void (*del)(void *))
 {
-	t_list	*lst_next;
-
 	if (!del || !lst)
 		return ;
 	del(lst -> content);
-	lst_next = lst -> next;
-	if (lst_next)
-	{
-		ft_memcpy(lst, lst -> next, sizeof(t_list));
-		free(lst_next);
-		return ;
-	}
 	free(lst);
 	return ;
 }
 
-/* I THOUGHT we had to relink this list and keep the new contents.
- * Meaning B -> A(del) but B.contents is not deleted (assumption = invalid).
+/*
+ * {
+    t_list  *lst_next;
+
+    if (!del || !lst)
+        return ;
+    del(lst -> content);
+    lst_next = lst -> next;
+    if (lst_next)
+    {
+        ft_memcpy(lst, lst -> next, sizeof(t_list));
+        free(lst_next);
+        return ;
+    }
+    free(lst);
+    return ;
+}
+*/
+
+/* I over-THOUGHT that we had to relink this list and keep the new contents.
+ * It's actually the caller's responsibility to ensure prev->next.
+ *
+ * Meaning I thought  B -> A(del) but B.contents is not
+ * deleted (but assumption = invalid).
  * 
  * But even by that thought:
  * free(lst_next -> next); and
@@ -51,3 +64,7 @@ void	ft_lstdelone(t_list *lst, void (*del)(void *))
  * lst points to, they will be surprised that the DATA from the next node
  * slid into that address.
  * That can break code that tracks node identity by address.
+ *
+ * Also this doesn't work on the last node cos something still
+ * points to it.
+ */
