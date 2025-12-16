@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-void	*ft_lstclear_and_null(t_list **lst, void (*del)(void *));
+static void	*ft_lstclear_and_null(t_list **lst, void (*del)(void *));
 
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
@@ -40,7 +40,7 @@ t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 	return (result);
 }
 
-void	*ft_lstclear_and_null(t_list **lst, void (*del)(void *))
+static void	*ft_lstclear_and_null(t_list **lst, void (*del)(void *))
 {
 	ft_lstclear(lst, del);
 	return (NULL);

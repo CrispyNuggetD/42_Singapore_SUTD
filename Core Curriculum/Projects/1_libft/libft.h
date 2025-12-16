@@ -23,6 +23,12 @@ typedef struct s_list
 	struct s_list	*next;
 }					t_list;
 
+typedef struct arg_squeezer
+{
+	size_t	words;
+	size_t	len;
+}			arg_squeezer;
+
 int		ft_isalpha(int c);
 int		ft_isdigit(int c);
 int		ft_isalnum(int c);
