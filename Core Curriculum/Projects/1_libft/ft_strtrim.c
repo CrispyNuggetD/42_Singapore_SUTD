@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/12 16:49:40 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/12 18:07:51 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 13:26:48 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ char	*ft_strtrim(char const *s1, char const *set)
 	size_t	length;
 	size_t	end;
 	size_t	i;
-	
+
 	if (!s1 || !set)
 		return (NULL);
 	i = 0;
@@ -26,10 +26,10 @@ char	*ft_strtrim(char const *s1, char const *set)
 		i++;
 	end = ft_strlen(s1);
 	while (end > i && ft_strchr(set, s1[end - 1]))
-    	end--;
+		end--;
 	length = end - i;
 	result = ft_substr(s1, i, length);
-	return (result);	
+	return (result);
 }
 
 /*

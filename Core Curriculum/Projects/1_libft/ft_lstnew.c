@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/14 16:24:07 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/14 16:55:29 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 13:25:37 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,5 +21,5 @@ t_list	*ft_lstnew(void *content)
 		return (NULL);
 	node -> content = content;
 	node -> next = NULL;
-	return(node);
+	return (node);
 }

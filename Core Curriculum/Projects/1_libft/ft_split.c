@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/13 13:37:36 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/13 18:18:40 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 13:27:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,39 +38,31 @@ char	**ft_split(char const *s, char c)
 	size_t	words;
 	size_t	len;
 	size_t	end;
-	
+
 	words = 0;
 	len = 0;
 	if (!s)
 		return (NULL);
-	/* if (&s[len] == NULL)
-	{
-		result = malloc(sizeof(char *) * (words + 1));
-		if (!result)
-			return (NULL);
-		result[words] = NULL;
-		return (result);
-	} */
 	while (s[len] == c && s[len])
 		len++;
 	while (s[len])
 	{
+		words++;
 		while (s[len] && s[len] != c)
 			len++;
-		words++;
 		while (s[len] && s[len] == c)
-        	len++;
+			len++;
 	}
 	result = malloc(sizeof(char *) * (words + 1));
 	if (!result)
 		return (NULL);
 	result[words] = NULL;
-	while (s[len] == c || s[len] == '\0')
+	while (len > 0 && (s[len] == c || s[len] == '\0'))
 		len--;
 	while (words > 0)
 	{
 		end = len + 1;
-		while (s[len - 1] != c && (len > 0))
+		while ((len > 0) && s[len - 1] != c)
 			len--;
 		result[words - 1] = malloc(sizeof(char) * (end - len + 1));
 		if (!result[words - 1])
@@ -81,8 +73,9 @@ char	**ft_split(char const *s, char c)
 			return (NULL);
 		}
 		ft_strlcpy(result[words - 1], &s[len], end - len + 1);
+		if (len > 0)
 			len--;
-		while (s[len] == c && (len > 0))
+		while ((len > 0) && s[len] == c)
 			len--;
 		words--;
 	}
@@ -95,7 +88,7 @@ char	**ft_split(char const *s, char c)
 	size_t	i;
 
 	i = 0;
-	test = ft_split("", ' ');
+	test = ft_split("ewar", 0);
 	while (test[i])
 	{
 		printf("%zu | %s,\n\n", i, test[i]);
