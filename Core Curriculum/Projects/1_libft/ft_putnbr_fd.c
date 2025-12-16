@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/14 15:05:29 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/14 15:06:13 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 12:12:51 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@ void	ft_putnbr_fd(int n, int fd)
 	int		is_negative;
 	long	n_long;
 	int		i;
-	
+
 	if (fd < 0)
 		return ;
-	i = 0;	
+	i = 0;
 	is_negative = (n < 0);
 	n_long = (long)n;
 	if (is_negative)
