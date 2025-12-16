@@ -12,32 +12,13 @@
 
 #include "libft.h"
 
-/* size_t	ft_strlcpy(char *dst, const char *src, size_t size)
-{
-	size_t	copied;
-	size_t	len_src;
-
-	len_src = 0;
-	copied = 0;
-	while (src[len_src])
-		len_src++;
-	if (size == 0)
-		return (len_src);
-	while (src[copied] && (copied + 1 < size))
-	{
-		dst[copied] = src[copied];
-		copied++;
-	}
-	dst[copied] = '\0';
-	return (len_src);
-} */
+static char	**factory(char const *s, char c, size_t words, size_t len);
+void	*all_freer(char **result, size_t words);
 
 char	**ft_split(char const *s, char c)
 {
-	char	**result;
 	size_t	words;
 	size_t	len;
-	size_t	end;
 
 	words = 0;
 	len = 0;
@@ -53,6 +34,14 @@ char	**ft_split(char const *s, char c)
 		while (s[len] && s[len] == c)
 			len++;
 	}
+	return(factory(s, c, words, len));
+}
+
+static char	**factory(char const *s, char c, size_t words, size_t len)
+{
+	size_t	end;
+	char	**result;	
+	
 	result = malloc(sizeof(char *) * (words + 1));
 	if (!result)
 		return (NULL);
@@ -66,12 +55,7 @@ char	**ft_split(char const *s, char c)
 			len--;
 		result[words - 1] = malloc(sizeof(char) * (end - len + 1));
 		if (!result[words - 1])
-		{
-			while (words != 0)
-				free(result[words--]);
-			free(result);
-			return (NULL);
-		}
+			return(all_freer(result, words));
 		ft_strlcpy(result[words - 1], &s[len], end - len + 1);
 		if (len > 0)
 			len--;
@@ -80,6 +64,14 @@ char	**ft_split(char const *s, char c)
 		words--;
 	}
 	return (result);
+}
+
+void	*all_freer(char **result, size_t words)
+{
+	while (words != 0)
+		free(result[words--]);
+	free(result);
+	return (NULL);
 }
 
 /* int	main(void)
