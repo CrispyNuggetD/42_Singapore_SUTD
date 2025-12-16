@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/13 13:37:36 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/16 13:27:57 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 18:47:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
 static char	**factory(char const *s, char c, size_t words, size_t len);
-void	*all_freer(char **result, size_t words);
+void		*all_freer(char **result, size_t words);
 
 char	**ft_split(char const *s, char c)
 {
@@ -68,8 +68,8 @@ static char	**factory(char const *s, char c, size_t words, size_t len)
 
 void	*all_freer(char **result, size_t words)
 {
-	while (words != 0)
-		free(result[words--]);
+	while (result[words] != NULL)
+		free(result[words++]);
 	free(result);
 	return (NULL);
 }
