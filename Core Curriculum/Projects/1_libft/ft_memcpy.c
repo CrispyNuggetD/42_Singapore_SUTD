@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/10 13:18:55 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/11 12:55:21 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/16 18:44:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	const unsigned char	*src_backup;
 	unsigned char		*dest_backup;
 
+	if (!dest && !src)
+		return (NULL);
 	src_backup = (unsigned char *)src;
 	dest_backup = (unsigned char *)dest;
 	while (n--)
