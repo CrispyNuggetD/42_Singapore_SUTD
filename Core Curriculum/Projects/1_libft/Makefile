@@ -55,8 +55,10 @@ re: fclean all
 	@#re (rebuild), full clean + rebuild everything
 	@#all (build all main targets), build the main output (libft.a)
 
+#### SEARCH: UN-COMMENT HERE OUT LATER ####
 .PHONY: all clean fclean re
 #tells make these targets aren’t real files.
+#### SEARCH: UN-COMMENT HERE OUT LATER ####
 
 #### SEARCH: COMMENT HERE OUT LATER ####
 #.PHONY: all clean fclean re bonus
