@@ -134,7 +134,9 @@ int	main(void)
 
 ---
 
-#### Example of prompts used:
+#### Example of prompts used
+
+---
 
 1. Is the following allowed in 42's Norm: is_negative = (n < 0);?
 
@@ -150,11 +152,13 @@ int	main(void)
 
 7. What are the various trade-offs of these ft_itoa algos and which is most efficient (Psst: It's the Syscall interruption that's the slowest anyway).
 
-### Example respone: (I formatted it for clarity)
-
 ---
 
+## Example respone: (I formatted it for clarity)
+
 #### 1. Canonical ft_itoa algorithm (the one ChatGPT recommends for 42)
+
+---
 
 - Goal:
 Convert an int n to a freshly malloc’d C string.
@@ -214,21 +218,19 @@ Now nb is non-negative, even if original was INT_MIN.
 
 Algorithm to count digits:
 
-1. If nb == 0, then digit count is 1 (special case)
+- If nb == 0, then digit count is 1 (special case)
 
-2. Else:
+- Else:
 
-- count = 0
+1. count = 0
 
-- while nb > 0:
+2. while nb > 0:
 
-- nb /= 10
+3. nb /= 10
 
-- count++
+4. count++
 
-- After this, count = number of decimal digits.
-
-Then total length:
+After this, count = number of decimal strings. Then total length:
 
 1. len = count
 
