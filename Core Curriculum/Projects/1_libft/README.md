@@ -37,9 +37,9 @@ Defined as follows:
 ```c
 typedef struct s_list
 {
-	void		*content;
+	void			*content;
 	struct s_list	*next;
-			t_list;
+}					t_list;
 ```
 
 This node:
