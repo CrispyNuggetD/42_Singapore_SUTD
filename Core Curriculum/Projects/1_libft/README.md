@@ -1,7 +1,5 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
----
-
 # Description
 
 - This is the first "baby project" in 42 Core Curriculum, after students pass the Piscine entry bootcamp/ exam. 
@@ -21,8 +19,6 @@
 2. "Additional functions" that are non-libc functions that will be useful for our later projects. (itoa, file descriptor functions, ft_strtrim for trimming strings somehow from BOTH front and back, etc.)
 
 3. Linked Lists :D
-
----
 
 # Instructions
 
@@ -80,8 +76,6 @@ int	main(void)
 
 5. Run program with ./output.
 
----
-
 # Resources
 
 
@@ -122,7 +116,7 @@ int	main(void)
 ---
 
 
-#### ChatGPT's "Computer Science" - 7 Custom Instructions:
+### ChatGPT's "Computer Science" - 7 Custom Instructions:
 
 1. I am interested in computing in general rather than just trying to “score/ pass/ get the best answer or algo”, so things like theoretical computing (P=NP) or hardware and engineering (L1 Cache, Assembly) are relevant or interesting too (I.e. trivia can be given but convo should not “stray too far”). 
 
@@ -156,20 +150,16 @@ int	main(void)
 
 7. What are the various trade-offs of these ft_itoa algos and which is most efficient (Psst: It's the Syscall interruption that's the slowest anyway).
 
----
-
-#### Example respone: (I formatted it for clarity)
+### Example respone: (I formatted it for clarity)
 
 ---
 
-##### Canonical ft_itoa algorithm (the one I recommend for 42)
-
----
+#### 1. Canonical ft_itoa algorithm (the one ChatGPT recommends for 42)
 
 - Goal:
 Convert an int n to a freshly malloc’d C string.
 
-- Key constraints:
+Key constraints:
 
 1. Works for all int values (including INT_MIN)
 
@@ -202,17 +192,17 @@ From here on, all logic is done using nb.
 
 ---
 
-- Algorithm:
+Algorithm:
 
 1. is_negative = (nb < 0)
 
-- If negative:
+If negative:
 
 1. remember this (need one extra char for -)
 
 2. set nb = -nb (safe now, because nb is long)
 
-- Now nb is non-negative, even if original was INT_MIN.
+Now nb is non-negative, even if original was INT_MIN.
 
 ---
 
@@ -220,9 +210,9 @@ From here on, all logic is done using nb.
 
 ---
 
-We now have a non-negative nb.
+- We now have a non-negative nb.
 
-- Algorithm to count digits:
+Algorithm to count digits:
 
 1. If nb == 0, then digit count is 1 (special case)
 
@@ -246,13 +236,13 @@ Then total length:
 
 3. Plus one more for ‘\0’ when allocating
 
-- So we will malloc(len + 1) bytes:
+So we will malloc(len + 1) bytes:
 
 1. len characters
 
 2. 1 null terminator
 
-3. (Implementation detail: some people fold “+1 for \0” into len itself; doesn’t matter conceptually.)
+(Implementation detail: some people fold “+1 for \0” into len itself; doesn’t matter conceptually.)
 
 ---
 
@@ -260,15 +250,15 @@ Then total length:
 
 ---
 
-Now we reconstruct the number backwards.
+- Now we reconstruct the number backwards.
 
-- We reset nb again to the absolute value of n (as long):
+We reset nb again to the absolute value of n (as long):
 
 1. If original n was 0 → handle as special case: string is “0”
 
 2. Else:
 
-- Conceptual algorithm:
+Conceptual algorithm:
 
 1. Put the string terminator at the end: str[len] = ‘\0’
 
@@ -294,7 +284,7 @@ Now we reconstruct the number backwards.
 
 ---
 
-- nb = -123 → negative → is_negative = 1 → nb = 123
+nb = -123 → negative → is_negative = 1 → nb = 123
 
 1. digits = 3
 
@@ -302,7 +292,7 @@ Now we reconstruct the number backwards.
 
 3. allocate 5 bytes (4 chars + \0)
 
-- fill: Index progression:
+Fill: Index progression:
 
 1. str[4] = ‘\0’
 
@@ -316,7 +306,7 @@ Now we reconstruct the number backwards.
 
 6. since negative → str[0] = ‘-‘
 
-- Result: “-123”.
+Result: “-123”.
 
 ---
 
@@ -324,7 +314,7 @@ Now we reconstruct the number backwards.
 
 ---
 
-- Why this is “nice”
+##### Why this is “nice”
 
 1. No hardcoded limits
 
@@ -336,7 +326,7 @@ Now we reconstruct the number backwards.
 
 5. (Algorithmic) Complexity is 0 (number of digits)
 
-- This is the one I’d call “best” for libft: clear, safe, portable enough, and norm-friendly.
+This is the one I’d call “best” for libft: clear, safe, portable enough, and norm-friendly.
 
 ---
 
@@ -346,7 +336,7 @@ Now we reconstruct the number backwards.
 
 - This is conceptually fun: you never take absolute value, so you never overflow on INT_MIN.
 
-- Idea:
+Idea:
 
 1. Keep n as negative, and when you extract digits, do:
 
@@ -354,11 +344,11 @@ Now we reconstruct the number backwards.
 
 3. then n /= 10 (still negative, approaching 0)
 
-- Algorithm sketch:
+Algorithm sketch:
 
 - ```blah blah blah...```
 
-- Pros:
+Pros:
 
 1. No need for a long
 
@@ -366,7 +356,7 @@ Now we reconstruct the number backwards.
 
 3. Mathematically neat
 
-- Cons:
+Cons:
 
 1. Slightly unintuitive: % on negative numbers is confusing
 
@@ -374,7 +364,7 @@ Now we reconstruct the number backwards.
 
 3. If you haven’t internalised negative modulo semantics in C, it’s bug-prone
 
-- Still perfectly valid though, and kind of elegant once your brain locks it in.
+Still perfectly valid though, and kind of elegant once your brain locks it in.
 
 ---
 
@@ -382,7 +372,7 @@ Now we reconstruct the number backwards.
 
 ---
 
-This is a hybrid approach: use a local array, fill it, then malloc the exact size and copy.
+- This is a hybrid approach: use a local array, fill it, then malloc the exact size and copy.
 
 Conceptual idea:
 
@@ -394,16 +384,16 @@ blah blah blah
 
 ## Contact Details
 
-For further queries/ help:
+##### For further queries/ help:
 
-- I (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
+I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 
 1. Email: christopher_nah@yahoo.com.sg
 
 2. LinkedIn: linkedin.com/in/crispynugget/
 
-```c
+```
 42born2code
 ```
 
-- EOF :D
+##### EOF :D
