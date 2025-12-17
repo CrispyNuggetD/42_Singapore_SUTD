@@ -12,11 +12,16 @@
 
 ## Mid-Nov
 ### W1
-#### 17/11 (Mon 1): Orientation, nearly got TIG’d for coffee :’)
-#### 18/11 (Tues 2): Sick
-#### 19/11 (Wed 3): Sick + Doc’s Appt + Family stuff
-#### 20/11 (Thurs 4): Sick
-#### 20/11 (Fri 5): Went school late (Still Sick)
+#### 17/11 (Mon 1): 
+- Orientation, nearly got TIG’d for coffee :’)
+#### 18/11 (Tues 2):
+- Sick
+#### 19/11 (Wed 3):
+- Sick + Doc’s Appt + Family stuff
+#### 20/11 (Thurs 4):
+- Sick
+#### 20/11 (Fri 5):
+- Went school late (Still Sick)
 #### 22/11 (WkEnd, Sat 6) WFH (Still Sick):
 - Set up working environment (iPad + Keyboard + “Working Copy” IDE/ Application for Git Versioning).
 - ChatGPT “refined” Post-piscine custom project instructions for “Computer Science” folder/ project
