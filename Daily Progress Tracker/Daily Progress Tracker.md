@@ -112,16 +112,34 @@ git diff HEAD..origin/main
 - Post-hibernation sluggishness, lethargic the whole day.
 - Finished up till memcopy (to check correctness) (another 2; 13 of 43 done)
 #### 11/12 (Thurs 25):
- # TODAY
+- Finished part 1 functions.
 #### 12/12 (Fri 26):
+- Started part 2 functions
 #### 13/12 (WkEnd, Sat 27):
+- Started ft_split
+- Learnt VSC GDB debugging (thanks thtay!)
+- ft_split debugging pain.
 #### 14/12 (WkEnd, Sun 28):
+- ft_split debugging.
+- Did putchar series and finished part 2.
+- Started linked lists.
 
 ### W5
 #### 15/12 (Mon 29):
+- Finished coding linked lists but last one lstmap having memory leaks.
 #### 16/12 (Tues 30):
+- Fixed double malloc invalid freeing bug in ft_split, hence finishing libft! :D
+- Finished proj. except read me.
 #### 17/12 (Wed 31):
+- Finished README for libft, proj. complete
+- Submitted Proj, not yet eval
+- Mock eval by thtay (thanks!!)
 #### 18/12 (Thurs 32):
+
+
+# TODAY 
+
+
 #### 19/12 (Fri 33):
 #### 20/12 (WkEnd, Sat 34):
 #### 21/12 (WkEnd, Sun 35):
