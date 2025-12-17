@@ -1,362 +1,418 @@
-This project has been created as part of the 42 curriculum by hnah. 
+# Introduction
+
+---
+
+### This project has been created as part of the 42 curriculum by hnah.
+
+---
+
+# Description
+
+---
+
+- This is the first "baby project" in 42 Core Curriculum, after students pass the Piscine entry bootcamp/ exam. 
+
+- It can be included in later projects as helper functions.
+
+- It challenges students with a re-creation (not to be confused with having a "recreation" - It's not. :D) of libc.
+
+- But, practically it's more of a simplfied version - "musl" than "libc".
+
+- It's not really libc as that's 1. Architecture-specific (x86, ARM, RISC-V...), 2. Safety/ Branch prediction tricks, Optimisation, 3. Has assembly..., etc.
+
+## 3 Parts of Libft:
+
+1. Basic musl/ libc functions (Character checking, string/ memory functions, atoi, simple malloc like Calloc implementation).
+
+2. "Additional functions" that are non-libc functions that will be useful for our later projects. (itoa, file descriptor functions, ft_strtrim for trimming strings somehow from BOTH front and back, etc.)
+
+3. Linked Lists :D
+
+---
+
+# Instructions
+
+---
+
+1. Open "terminal", ```cd``` to desired storage directory, ```git clone``` my repository, ```cd``` into the libft directory.
+
+## Make main.c file to test
+
+Copy-and-paste and save as a "main.c" file using text-editor (make plain text):
+
+```c
+#include <stdio.h>
+#include "libft.h"
+
+int	main(void)
+{
+	printf("Your output is: %li", ft_strlen("Hello World!"));
+}
+
+/*
+ * Running instructions:
+ * 2 steps.
+ *
+ * 1. Change %li to the type of output function gives (first argument, left hand side)
+ * 
+ * Common ones:
+ * %c 		- Single Character
+ * %s 		- (char *) String (Null terminated, containing '\0' AKA ASCII 0)
+ * %i/ %d	- Signed Decimal Integer
+ * %u		- Unsigned Integer
+ * %li/ %ld	- Long Decimal Integer
+ * %lu		- Unsigned Long
+ * %zu		- size_t
+ * %p		- Pointer Address (Prints in Hexadecimal)
+ *
+ * BTW void functions don't "return" anything so
+ * you can't "print the output" as is.
+ *
+ * Chain it with/ Pipe into other functions.
+ *
+ * 2. Change the function to evaluate (second argument, right side)
+ *
+ * Choose return type for %return_type based on function.
+ */
+```
+
+## Terminal commands to compile and run program
+
+1. There is a Makefile needed to compile the header file (libft.h) into a library (libft.a) to be used for compilation.
+
+2. Again, cd to libft directory, then run command "make".
+
+3. Compile the needed .c file using ```cc main.c libft.a -o output -Wall -Wextra -Werror```
+
+4. NOTE: -Wall -Wextra -Werror (42 uses these 3 warning flags during compilation).
+
+5. Run program with ./output.
+
+---
+
+# Resources
+
+---
+
+## Resources used:
+
+- Harvard CS50 Youtube Series (up till Linked Lists), by David J. Malan.
+- Various Stackover Flow forum Q&As, mostly for debugging error codes or finding out best practices.
+- Several posts and videos about how NOT to code (inefficiencies, silent bugs).
+- Peer-shared web-articles.
+- Of course needless to say, my peers also were great help in providing invaluable "irl" advice you can't find online :)
+
+## Usage of A.I.
+
+- Other than Google search's own generative A.I. responses (mostly for VIM commands like :set nonu)
+- I subscribe to ChatGPT Plus, so that's the only coding "advisor" I use.
+
+### Usage of ChatGPT
+- I have a Custom Folder "Computer Science", whatever help or nerding out goes inside.
+- Things like "What 'is' computation?", or "Why is M-series Chips' designed with so much L1-I Cache?" or "Why is division so expensive", goes inside there.
+- I often ask for "many ways to do the same thing", such as 5 types of algos (hardcoding INT_MIN, fixed buffer, recursion...) and the tradeoffs.
+- I use it for help with projects, which brings me to:
+
+---
+
+### ChatGPT for coding:
+
+#### Summary of A.I. usage
 
 
+- Lots of A.I. used, but systematic and no vibe-coding.
 
-Blah blah write up later. 
+- Explain till I understand, and (I try my best to) internalise.
 
-# My Main Prompt (Part 1)
+- Asks and learns "more than required" with A.I.
 
-Sure. Feel free to tell me other various ways to do (itoa) too and what are pros and cons and which is best
+- Also partly (along with many MCs) reason why I took 30 days for this project, Libft, instead of Pace 12 - 12 days.
 
-# ChatGPT’s Reply
+---
 
-Nice, we’re in “design a real function” mode now. This is where libft stops feeling like chores and starts feeling like engineering.
+---
 
-You asked for:
+#### ChatGPT's "Computer Science" - 7 Custom Instructions:
 
-The exact algorithm for a good itoa, including INT_MIN and sign.
+1. I am interested in computing in general rather than just trying to “score/ pass/ get the best answer or algo”, so things like theoretical computing (P=NP) or hardware and engineering (L1 Cache, Assembly) are relevant or interesting too (I.e. trivia can be given but convo should not “stray too far”). 
 
-Other ways to do it, with pros/cons.
+2. In working on programming problems, especially starting on “new projects” (copy pasting questions/ projects of 42), do NOT give code or model answer immediately. 
 
-Which is “best”.
+3. Assist and guide in computational thinking/ problem solving (including mathematical/ intuition simplification of presented problem). 
 
-Let’s do that systematically, no code dump, just clear algorithms.
+4. This will help develop me into a problem solver/ thinker rather than a prompt engineer/ vibe-coder.
 
-## 1. Canonical ft_itoa algorithm (the one I’d recommend for 42)
+5. When “stuck”, clues guiding to “derivation” of the state-of-the-art algo (e.g. sorting/ path-finding algos) can be assisted.
 
-Goal:
+6. Final best algo name and code should only be given “at end” or when “stuck”. 
+
+7. Make sure all (if any), generated code conforms to Norm/ norminette as per version 4 (V4).
+
+---
+
+#### Example of prompts used:
+
+1. Is the following allowed in 42's Norm: is_negative = (n < 0);?
+
+2. Is (return None if n < 0 else value) valid C? (Psst: It's not - That's Python).
+
+3. (Sometimes) Clarifying subject.pdf interpretation (I'm not too good at understanding extent required of questions yet, oops)
+
+4. Checking whether I'm over-complicating things (Some are responsibility of Caller, e.g. I'm NOT supposed to think of 'hacking' a prev->next idea, shown below).
+
+5. Checking my flawed assumptions (I type my interpretation of the question and check, sometimes I'm wrong. E.g. Aforementioned hack: memcpy *next to current, link, del and free(next))
+
+6. Of course, S.O.S. when I'm stuck/ no idea how to start, asking: "Do NOT give me any code (or solution when debugging), guide me through".
+
+7. What are the various trade-offs of these ft_itoa algos and which is most efficient (Psst: It's the Syscall interruption that's the slowest anyway).
+
+#### Example response:
+
+---
+
+##### Canonical ft_itoa algorithm (the one I recommend for 42)
+
+---
+
+- Goal:
 Convert an int n to a freshly malloc’d C string.
 
-Key constraints:
+- Key constraints:
 
-Works for all int values (including INT_MIN)
+1. Works for all int values (including INT_MIN)
 
-Allocates exact length (no waste)
+2. Allocates exact length (no waste)
 
-No hardcoded magic constants like 12 if possible
+3. No hardcoded magic constants like 12 if possible
 
-Caller must be able to free the result
+4. Caller must be able to free the result
 
-Step 0 — Promote to wider type
+---
 
-Problem: INT_MIN cannot be negated in int range.
+##### Step 0 — Promote to wider type
+
+---
+
+- Problem: INT_MIN cannot be negated in int range.
 
 So we do this conceptually:
 
-Take input int n
+- Take input int n
 
-Create long nb = n;
+- Create long nb = n;
 (now nb can hold +2147483648 safely on usual 64-bit machines)
 
 From here on, all logic is done using nb.
 
-Step 1 — Determine if negative
+---
 
-Algorithm:
+##### Step 1 — Determine if negative
 
-is_negative = (nb < 0)
+---
 
-If negative:
+- Algorithm:
 
-remember this (need one extra char for -)
+1. is_negative = (nb < 0)
 
-set nb = -nb (safe now, because nb is long)
+- If negative:
 
-Now nb is non-negative, even if original was INT_MIN.
+1. remember this (need one extra char for -)
 
-Step 2 — Count digits
+2. set nb = -nb (safe now, because nb is long)
+
+- Now nb is non-negative, even if original was INT_MIN.
+
+---
+
+##### Step 2 — Count digits
+
+---
 
 We now have a non-negative nb.
 
-Algorithm to count digits:
+- Algorithm to count digits:
 
-If nb == 0, then digit count is 1 (special case)
+1. If nb == 0, then digit count is 1 (special case)
 
-Else:
+2. Else:
 
-count = 0
+- count = 0
 
-while nb > 0:
+- while nb > 0:
 
-nb /= 10
+- nb /= 10
 
-count++
+- count++
 
-After this, count = number of decimal digits.
+- After this, count = number of decimal digits.
 
 Then total length:
 
-len = count
+1. len = count
 
-If is_negative, len++ for ‘-‘
+2. If is_negative, len++ for ‘-‘
 
-Plus one more for ‘\0’ when allocating
+3. Plus one more for ‘\0’ when allocating
 
-So we will malloc(len + 1) bytes:
+- So we will malloc(len + 1) bytes:
 
-len characters
+1. len characters
 
-1 null terminator
+2. 1 null terminator
 
-(Implementation detail: some people fold “+1 for \0” into len itself; doesn’t matter conceptually.)
+3. (Implementation detail: some people fold “+1 for \0” into len itself; doesn’t matter conceptually.)
 
-Step 3 — Fill the string from the end
+---
+
+##### Step 3 — Fill the string from the end
 
 Now we reconstruct the number backwards.
 
-We reset nb again to the absolute value of n (as long):
+- We reset nb again to the absolute value of n (as long):
 
-If original n was 0 → handle as special case: string is “0”
+1. If original n was 0 → handle as special case: string is “0”
 
-Else:
+2. Else:
 
-Conceptual algorithm:
+- Conceptual algorithm:
 
-Put the string terminator at the end: str[len] = ‘\0’
+1. Put the string terminator at the end: str[len] = ‘\0’
 
-Start from index i = len - 1
+2. Start from index i = len - 1
 
-While nb > 0:
+3. While nb > 0:
 
-last_digit = nb % 10 (gives 0–9)
+4. last_digit = nb % 10 (gives 0–9)
 
-convert digit to char: ‘0’ + last_digit
+5. convert digit to char: ‘0’ + last_digit
 
-place at str[i]
+6. place at str[i]
 
-i—
+7. i—
 
-nb /= 10
+8. nb /= 10
 
-If is_negative, put ‘-‘ at str[0]
+9. If is_negative, put ‘-‘ at str[0]
 
-Example with n = -123:
+---
 
-nb = -123 → negative → is_negative = 1 → nb = 123
+##### Example with n = -123:
 
-digits = 3
+---
 
-len = 4 (3 digits + 1 sign)
+- nb = -123 → negative → is_negative = 1 → nb = 123
 
-allocate 5 bytes (4 chars + \0)
+1. digits = 3
 
-fill:
+2. len = 4 (3 digits + 1 sign)
 
-Index progression:
+3. allocate 5 bytes (4 chars + \0)
 
-str[4] = ‘\0’
+- fill:
+- Index progression:
 
-i = 3, nb = 123 → digit = 3 → str[3] = ‘3’
+1. str[4] = ‘\0’
 
-nb = 12, i = 2 → digit = 2 → str[2] = ‘2’
+2. i = 3, nb = 123 → digit = 3 → str[3] = ‘3’
 
-nb = 1, i = 1 → digit = 1 → str[1] = ‘1’
+3. nb = 12, i = 2 → digit = 2 → str[2] = ‘2’
 
-nb = 0 → stop
+4. nb = 1, i = 1 → digit = 1 → str[1] = ‘1’
 
-since negative → str[0] = ‘-‘
+5. nb = 0 → stop
 
-Result: “-123”.
+6. since negative → str[0] = ‘-‘
 
-Why this is “nice”
+- Result: “-123”.
 
-No hardcoded limits
+---
 
-Works for all ints
+##### ChatGPT's explanation of algorithmic choice/ design
 
-Clear conceptual flow
+---
 
-Single malloc call, no extra copies
+- Why this is “nice”
 
-Complexity is O(number of digits)
+1. No hardcoded limits
 
-This is the one I’d call “best” for libft: clear, safe, portable enough, and norm-friendly.
+2. Works for all ints
 
-## 2. Alternative Strategy A — All-negative route (no long)
+3. Clear conceptual flow
 
-This is conceptually fun: you never take absolute value, so you never overflow on INT_MIN.
+4. Single malloc call, no extra copies
 
-Idea:
-Keep n as negative, and when you extract digits, do:
+5. (Algorithmic) Complexity is 0 (number of digits)
 
-last_digit = -(n % 10) (gives positive 0–9)
+- This is the one I’d call “best” for libft: clear, safe, portable enough, and norm-friendly.
 
-then n /= 10 (still negative, approaching 0)
+---
 
-Algorithm sketch:
+#### 2. Alternative Strategy A — All-negative route (no long)
 
-If n == 0, handle “0” special case.
+- This is conceptually fun: you never take absolute value, so you never overflow on INT_MIN.
 
-is_negative = (n < 0)
+- Idea:
 
-Count digits while n != 0 using division by 10, but keep it negative.
+1. Keep n as negative, and when you extract digits, do:
 
-Allocate length = digits + (is_negative ? 1 : 0) + 1 for \0.
+2. last_digit = -(n % 10) (gives positive 0–9)
 
-Fill from end:
+3. then n /= 10 (still negative, approaching 0)
 
-digit = -(n % 10)
+- Algorithm sketch:
 
-str[i] = ‘0’ + digit
+blah blah blah...
 
-n /= 10
+- Pros:
 
-If negative, str[0] = ‘-‘.
+1. No need for a long
 
-Pros
+2. Works for INT_MIN naturally
 
-No need for a long
+3. Mathematically neat
 
-Works for INT_MIN naturally
+- Cons:
 
-Mathematically neat
+1. Slightly unintuitive: % on negative numbers is confusing
 
-Cons
+2. Can be harder to reason about under sleep deprivation
 
-Slightly unintuitive: % on negative numbers is confusing
+3. If you haven’t internalised negative modulo semantics in C, it’s bug-prone
 
-Can be harder to reason about under sleep deprivation
+- Still perfectly valid though, and kind of elegant once your brain locks it in.
 
-If you haven’t internalised negative modulo semantics in C, it’s bug-prone
+---
 
-Still perfectly valid though, and kind of elegant once your brain locks it in.
+##### 3. Alternative Strategy B — Temporary fixed-size buffer on the stack
 
-## 3. Alternative Strategy B — Temporary fixed-size buffer on the stack
+---
 
 This is a hybrid approach: use a local array, fill it, then malloc the exact size and copy.
 
 Conceptual idea:
 
-Use a local char tmp[12]; (enough for INT_MIN + \0).
+```
+blah blah blah
+```
 
-Fill digits backwards into tmp from the end (like manual print).
+---
 
-Compute how many characters were actually written.
+## Contact Details
 
-malloc only that many + \0.
+---
 
-Copy from tmp into freshly allocated result.
+For further queries/ help:
 
-Pros
+- hnah (Christopher Hui-Kang Nah) is contactable via:
 
-Logic for filling digits can be simpler—you don’t have to pre-count digits separately if you track how many you wrote
+1. Email: christopher_nah@yahoo.com.sg
 
-tmp ensures you never overflow during filling if you choose a big enough size (12 for 32-bit int)
+2. LinkedIn: linkedin.com/in/crispynugget/
 
-Cons
+---
 
-Hardcodes type size: assumes 32-bit int
+```c
+born to code
+```
 
-Slightly more work (need an extra copy step)
-
-Less “clean” and general than the length-first approach
-
-For 42, it’s acceptable if you’re consistent about 32-bit int assumption (which is true on Linux/macos for the projects), but the “pure length-computation then malloc” feels more mathematically clean.
-
-## 4. Alternative Strategy C — Hardcoding INT_MIN as a special case
-
-This is the “efficient but ugly” hack.
-
-Algorithm:
-
-If n == INT_MIN, directly return a malloc’d copy of the literal string “-2147483648”.
-
-Else, handle the normal case (negate if negative, etc.).
-
-Pros
-
-Simplest logic for the main code path
-
-Avoids overflow safely
-
-Conceptually straightforward
-
-Cons
-
-Hardcoded to 32-bit int range
-
-Not portable across architectures where int has different size
-
-“Magic string” and duplication of knowledge
-
-A bit hacky and less elegant
-
-For 42, some people do this and pass.
-But from a “I actually understand C” and future-career perspective, it’s not ideal.
-
-## 5. Alternative Strategy D — Recursive digit construction
-
-You see this pattern used for ft_putnbr_fd, where you write directly to a file descriptor:
-
-Recursively print n / 10, then print n % 10.
-
-To turn this into itoa, you’d conceptually:
-
-First compute length (maybe recursively).
-
-Allocate string of exact size.
-
-Use a recursive helper that fills characters at a given index.
-
-Pros
-
-Conceptually elegant: naturally matches the number’s decimal structure
-
-Good for pure printing (ft_putnbr_fd-style)
-
-Cons
-
-Recursion depth = number of digits; not a real problem here, but unnecessary
-
-More complex to manage indexes and return values when building strings
-
-42 doesn’t push recursion at libft level; iterative is simpler and clearer
-
-So for itoa, recursion is more of a “fun academic variant” than a good practical choice.
-
-## 6. So which one is actually best for libft?
-
-Weighting what 42 cares about and what future-you cares about:
-
-✅ Correct for all int values
-
-✅ No magic constants if possible
-
-✅ Understandable while tired
-
-✅ No static/shared state
-
-✅ Norm-friendly, no recursion needed
-
-## The winner is:
-
-Length-first, long-promoted, backwards-fill malloc approach
-(What we called the “canonical” algorithm)
-
-Concretely:
-
-Promote n to long nb
-
-Track is_negative, make nb positive if needed
-
-Count digits with division
-
-Compute total length including sign + \0
-
-malloc(length + 1)
-
-Fill from end using % 10 and / 10
-
-Add ‘-‘ at start if needed
-
-That one balances elegance, portability, clarity, and 42 friendliness.
-
-This gives you the mental blueprint so that when we eventually write ft_itoa in C, your fingers are just acting out something your brain already understands deeply.
-
-Next in The Plan (still Phase 2 / malloc territory) we’ll zoom out from itoa and look at:
-
-general malloc patterns
-
-double malloc / char ** (e.g. ft_split)
-
-how to avoid leaks and segfaults via mental models, not trial-and-error.
+- EOF :D
