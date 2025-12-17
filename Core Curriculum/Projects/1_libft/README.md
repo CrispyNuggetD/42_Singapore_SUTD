@@ -18,7 +18,45 @@
 
 2. "Additional functions" that are non-libc functions that will be useful for our later projects. (itoa, file descriptor functions, ft_strtrim for trimming strings somehow from BOTH front and back, etc.)
 
-3. Linked Lists :D
+3. Linked lists :D
+
+## The libft.h header file (Library created)
+
+Contains:
+
+1. Basic unix/ C libraries used (```stduni.h``` for writing or ```stdint.h``` for ```INT_MIN/ INT_MAX``` values)
+
+2. Structs for linked list.
+
+3. Prototypes for all the functions that other .c files can "see" to be used as helper functions.
+
+### Struct for the linked list
+
+Defined as follows:
+
+```c
+typedef struct s_list
+{
+	void		*content;
+	struct s_list	*next;
+			t_list;
+```
+
+This node:
+
+1. Accepts any ```(void *)``` type of content
+
+2. A pointer ```(*next)``` to the next node in the linked list.
+
+### Prototype functions for libft project
+
+- Contains 43 prototypes for each of the functions contained in each .c file.
+
+- t_list type prototypes are for when nodes (as return value) in linked list functions are involved.
+
+- Other local functions are kept in each .c file with static function type to limit linkage.
+
+- Further infomation found in libft.h file.
 
 # Instructions
 

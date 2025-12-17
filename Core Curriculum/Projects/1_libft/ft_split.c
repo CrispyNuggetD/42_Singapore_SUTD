@@ -11,9 +11,10 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+//#include <stdio.h>
 
 static char	**factory(char const *s, char c, size_t words, size_t len);
-void		*all_freer(char **result, size_t words);
+static void	*all_freer(char **result, size_t words);
 
 char	**ft_split(char const *s, char c)
 {
@@ -66,7 +67,7 @@ static char	**factory(char const *s, char c, size_t words, size_t len)
 	return (result);
 }
 
-void	*all_freer(char **result, size_t words)
+static void	*all_freer(char **result, size_t words)
 {
 	while (result[words] != NULL)
 		free(result[words++]);
@@ -80,10 +81,10 @@ void	*all_freer(char **result, size_t words)
 	size_t	i;
 
 	i = 0;
-	test = ft_split("ewar", 0);
+	test = ft_split(" ewar asd qw gfgg qqq d     ''f ^^&    ", ' ');
 	while (test[i])
 	{
-		printf("%zu | %s,\n\n", i, test[i]);
+		printf("%zu | %s \n\n", i, test[i]);
 		i++;
 	}
 	while (i > 0)
