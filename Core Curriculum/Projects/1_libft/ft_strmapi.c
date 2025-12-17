@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/12 18:12:14 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/12 18:45:38 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/17 16:37:29 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
 	char	*result;
 	size_t	i;
 	size_t	len;
-	
+
 	if (!s || !f)
 		return (NULL);
 	len = ft_strlen(s);

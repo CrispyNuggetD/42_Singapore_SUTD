@@ -125,6 +125,38 @@ int	main(void)
 - Peer-shared web-articles.
 - Of course needless to say, my peers also were great help in providing invaluable "irl" advice you can't find online :)
 
+## Differences between glibc and BSD libc
+
+We were challenged to be curious to explore the differences between glibc and BSD libc. Summary:
+
+1. glibc (GNU C Library) is the dominant libc on most Linux distros.
+
+2. BSD libc (FreeBSD / OpenBSD / NetBSD each ship their own libc as part of the OS “base system”).
+
+Hence:
+
+- glibc (GNU C Library)
+
+1. Lots of ABIs (Application binary interface, which is the: Interface to software defined in terms of in-process, machine code access)
+
+2. Lots of legacy software
+
+3. Lots of extensions, and
+
+4. Strong backward compatibility expectations.
+
+The GNU manual frames it as ISO C + POSIX (and more) for GNU/Linux systems.
+
+Then:
+
+- BSD libc
+
+1. Tends to be tightly integrated with that OS’s kernel + userland conventions, and
+
+2. Often includes BSD APIs by default (because the OS owns the whole stack).
+
+*Cool beans.*
+
 ## Usage of A.I.
 
 - Other than Google search's own generative A.I. responses (mostly for VIM commands like :set nonu)

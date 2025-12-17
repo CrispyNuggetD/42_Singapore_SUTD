@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/13 13:37:36 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/16 18:47:17 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/17 16:37:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,14 @@ char	**ft_split(char const *s, char c)
 		while (s[len] && s[len] == c)
 			len++;
 	}
-	return(factory(s, c, words, len));
+	return (factory(s, c, words, len));
 }
 
 static char	**factory(char const *s, char c, size_t words, size_t len)
 {
 	size_t	end;
-	char	**result;	
-	
+	char	**result;
+
 	result = malloc(sizeof(char *) * (words + 1));
 	if (!result)
 		return (NULL);
@@ -56,7 +56,7 @@ static char	**factory(char const *s, char c, size_t words, size_t len)
 			len--;
 		result[words - 1] = malloc(sizeof(char) * (end - len + 1));
 		if (!result[words - 1])
-			return(all_freer(result, words));
+			return (all_freer(result, words));
 		ft_strlcpy(result[words - 1], &s[len], end - len + 1);
 		if (len > 0)
 			len--;
