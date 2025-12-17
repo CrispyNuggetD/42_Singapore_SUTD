@@ -32,6 +32,7 @@
             
 ### W2
 
+
 #### 24/11 (Mon 8):
 - Join Run Club as Core first time
 - Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
@@ -117,6 +118,7 @@ git diff HEAD..origin/main
 - Post-hibernation sluggishness, lethargic the whole day.
 - Finished up till memcopy (to check correctness) (another 2; 13 of 43 done)
 #### 11/12 (Thurs 25):
+- 11.5 hours working. Genuinely horrifying. I still like coding, so- that's fine I guess.
 - Finished part 1 functions.
 #### 12/12 (Fri 26):
 - Started part 2 functions
