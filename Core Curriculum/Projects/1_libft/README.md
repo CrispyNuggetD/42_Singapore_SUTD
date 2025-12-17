@@ -1,14 +1,8 @@
-# Introduction
-
----
-
-### This project has been created as part of the 42 curriculum by hnah.
+*This project has been created as part of the 42 curriculum by hnah.*
 
 ---
 
 # Description
-
----
 
 - This is the first "baby project" in 42 Core Curriculum, after students pass the Piscine entry bootcamp/ exam. 
 
@@ -32,9 +26,7 @@
 
 # Instructions
 
----
-
-1. Open "terminal", ```cd``` to desired storage directory, ```git clone``` my repository, ```cd``` into the libft directory.
+1. Open ```terminal```, ```cd``` to desired storage directory, ```git clone``` my repository, ```cd``` into the libft directory.
 
 ## Make main.c file to test
 
@@ -92,7 +84,6 @@ int	main(void)
 
 # Resources
 
----
 
 ## Resources used:
 
@@ -130,7 +121,6 @@ int	main(void)
 
 ---
 
----
 
 #### ChatGPT's "Computer Science" - 7 Custom Instructions:
 
@@ -166,7 +156,9 @@ int	main(void)
 
 7. What are the various trade-offs of these ft_itoa algos and which is most efficient (Psst: It's the Syscall interruption that's the slowest anyway).
 
-#### Example response:
+---
+
+#### Example respone: (I formatted it for clarity)
 
 ---
 
@@ -266,6 +258,8 @@ Then total length:
 
 ##### Step 3 — Fill the string from the end
 
+---
+
 Now we reconstruct the number backwards.
 
 - We reset nb again to the absolute value of n (as long):
@@ -308,8 +302,7 @@ Now we reconstruct the number backwards.
 
 3. allocate 5 bytes (4 chars + \0)
 
-- fill:
-- Index progression:
+- fill: Index progression:
 
 1. str[4] = ‘\0’
 
@@ -349,6 +342,8 @@ Now we reconstruct the number backwards.
 
 #### 2. Alternative Strategy A — All-negative route (no long)
 
+---
+
 - This is conceptually fun: you never take absolute value, so you never overflow on INT_MIN.
 
 - Idea:
@@ -361,7 +356,7 @@ Now we reconstruct the number backwards.
 
 - Algorithm sketch:
 
-blah blah blah...
+- ```blah blah blah...```
 
 - Pros:
 
@@ -399,20 +394,16 @@ blah blah blah
 
 ## Contact Details
 
----
-
 For further queries/ help:
 
-- hnah (Christopher Hui-Kang Nah) is contactable via:
+- I (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 
 1. Email: christopher_nah@yahoo.com.sg
 
 2. LinkedIn: linkedin.com/in/crispynugget/
 
----
-
 ```c
-born to code
+42born2code
 ```
 
 - EOF :D
