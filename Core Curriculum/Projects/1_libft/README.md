@@ -158,8 +158,6 @@ int	main(void)
 
 #### 1. Canonical ft_itoa algorithm (the one ChatGPT recommends for 42)
 
----
-
 - Goal:
 Convert an int n to a freshly malloc’d C string.
 
