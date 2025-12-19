@@ -224,7 +224,7 @@ Then:
 
 ---
 
-## Example respone: (I formatted it for clarity)
+## Example response: (I formatted it for clarity)
 
 #### 1. Canonical ft_itoa algorithm (the one ChatGPT recommends for 42)
 
