@@ -524,6 +524,8 @@ ar rcs $(NAME) $(OBJS)
 vim +123 filename.txt
 ```
 
+##### [Back to contents list](#contents)
+
 ---
 
 #### 9. Short note on va_lists
@@ -531,6 +533,8 @@ vim +123 filename.txt
 ---
 
 - va_list feels spooky: it’s not a list, it’s a cursor over raw call-frame memory (or register save areas).
+
+##### [Back to contents list](#contents)
 
 ---
 
