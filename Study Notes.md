@@ -576,6 +576,34 @@ return_type function_name(type fixed_arg, ...);
 
 > “More arguments exist on the call stack, but the compiler won’t help you anymore.”
 
+##### [Back to contents list](#contents)
+
+##### Putting it together: what ss -tuln answers
+
+```shell
+: '
+ss: Stands for socket statistics. It’s the modern replacement for netstat (faster, more accurate, reads kernel data directly).
+You use it to answer: “What network endpoints exist right now on this machine?”
+
+-t: Display TCP sockets. SSH uses the TCP protocol. 
+-u: Display UDP sockets. 
+-l: Display listening sockets. These are sockets that are waiting for incoming connections. 
+-n: Do not resolve service names. This shows port numbers instead of names like ssh or http.
+'
+```
+
+In one command, you are asking:
+
+> “Which TCP and UDP ports is this machine currently listening on, shown as raw numbers?”
+
+That’s exactly the question you want to ask when checking:
+
+- SSH exposure
+
+- Firewall correctness
+
+- Accidental open services
+
 ---
 
 ##### [Back to contents list](#contents)
