@@ -8,7 +8,9 @@
 6. [How to "just check" for potential conflicts without messing up git repo before pulling.](#6-how-to-just-check-for-potential-conflicts-without-messing-up-git-repo-before-pulling)
 7. [Four targets 42 enforces in Makefiles.](#7-four-targets-42-enforces-in-makefiles)
 8. [Vim: Opening a file directly to a line number.](#8-vim-opening-a-file-directly-to-a-line-number)
- 
+9. [Short note on va_lists](#9-short-note-on-va_lists)
+10. [What is a variadic functions in C?](#10-what-is-a-variadic-functions-in-c)
+
 
 ##### [Back to top of contents list](#contents)
 ## Note to self:
@@ -521,6 +523,54 @@ ar rcs $(NAME) $(OBJS)
 ```sh
 vim +123 filename.txt
 ```
+
+---
+
+#### 9. Short note on va_lists
+
+---
+
+- va_list feels spooky: it’s not a list, it’s a cursor over raw call-frame memory (or register save areas).
+
+---
+
+#### 10. What is a variadic functions in C?
+
+---
+
+You already know fixed-arity functions like::
+
+```c
+int add(int a, int b);
+```
+
+A variadic function says instead: “I know some arguments for sure… and then I’ll accept however many more you want.”
+
+- The canonical example is printf:
+
+```c
+printf("x = %d, y = %f\n", x, y);
+```
+
+##### The syntax, stripped to its bones
+
+A variadic function has three defining features:
+
+1. At least one named parameter
+
+2. An ellipsis ... at the end
+
+3. The ```<stdarg.h>``` machinery inside
+
+Prototype shape:
+
+```c
+return_type function_name(type fixed_arg, ...);
+```
+
+- That ... is not magic values; it’s a promise:
+
+> “More arguments exist on the call stack, but the compiler won’t help you anymore.”
 
 ---
 
