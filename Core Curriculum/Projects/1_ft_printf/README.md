@@ -122,7 +122,7 @@ int	main(void)
 
 ---
 
-1. Is the following allowed in 42's Norm: is_negative = (n < 0);?
+1. What is a variadic functions in C?
 
 2. Is (return None if n < 0 else value) valid C? (Psst: It's not - That's Python).
 
@@ -140,229 +140,54 @@ int	main(void)
 
 ## Example respone: (I formatted it for clarity)
 
-#### 1. Canonical ft_itoa algorithm (the one ChatGPT recommends for 42)
+#### What is a variadic functions in C?
 
-- Goal:
-Convert an int n to a freshly malloc’d C string.
+You already know fixed-arity functions like::
 
-Key constraints:
+```c
+int add(int a, int b);
+```
 
-1. Works for all int values (including INT_MIN)
+A variadic function says instead: “I know some arguments for sure… and then I’ll accept however many more you want.”
 
-2. Allocates exact length (no waste)
+- The canonical example is printf:
 
-3. No hardcoded magic constants like 12 if possible
+```c
+printf("x = %d, y = %f\n", x, y);
+```
 
-4. Caller must be able to free the result
+##### The syntax, stripped to its bones
 
----
+A variadic function has three defining features:
 
-##### Step 0 — Promote to wider type
+1. At least one named parameter
 
----
+2. An ellipsis ... at the end
 
-- Problem: INT_MIN cannot be negated in int range.
+3. The ```<stdarg.h>``` machinery inside
 
-So we do this conceptually:
+Prototype shape:
 
-- Take input int n
+```c
+return_type function_name(type fixed_arg, ...);
+```
 
-- Create long nb = n;
-(now nb can hold +2147483648 safely on usual 64-bit machines)
+- That ... is not magic values; it’s a promise:
 
-From here on, all logic is done using nb.
+> “More arguments exist on the call stack, but the compiler won’t help you anymore.”
 
----
+So the burden shifts to you.
 
-##### Step 1 — Determine if negative
+##### How C actually makes this work (important mental model)
 
----
+C does NOT track:
 
-Algorithm:
-
-1. is_negative = (nb < 0)
-
-If negative:
-
-1. remember this (need one extra char for -)
-
-2. set nb = -nb (safe now, because nb is long)
-
-Now nb is non-negative, even if original was INT_MIN.
-
----
-
-##### Step 2 — Count digits
-
----
-
-- We now have a non-negative nb.
-
-Algorithm to count digits:
-
-- If nb == 0, then digit count is 1 (special case)
-
-- Else:
-
-1. count = 0
-
-2. while nb > 0:
-
-3. nb /= 10
-
-4. count++
-
-After this, count = number of decimal strings. Then total length:
-
-1. len = count
-
-2. If is_negative, len++ for ‘-‘
-
-3. Plus one more for ‘\0’ when allocating
-
-So we will malloc(len + 1) bytes:
-
-1. len characters
-
-2. 1 null terminator
-
-(Implementation detail: some people fold “+1 for \0” into len itself; doesn’t matter conceptually.)
-
----
-
-##### Step 3 — Fill the string from the end
-
----
-
-- Now we reconstruct the number backwards.
-
-We reset nb again to the absolute value of n (as long):
-
-1. If original n was 0 → handle as special case: string is “0”
-
-2. Else:
-
-Conceptual algorithm:
-
-1. Put the string terminator at the end: str[len] = ‘\0’
-
-2. Start from index i = len - 1
-
-3. While nb > 0:
-
-4. last_digit = nb % 10 (gives 0–9)
-
-5. convert digit to char: ‘0’ + last_digit
-
-6. place at str[i]
-
-7. i—
-
-8. nb /= 10
-
-9. If is_negative, put ‘-‘ at str[0]
-
----
-
-##### Example with n = -123:
-
----
-
-nb = -123 → negative → is_negative = 1 → nb = 123
-
-1. digits = 3
-
-2. len = 4 (3 digits + 1 sign)
-
-3. allocate 5 bytes (4 chars + \0)
-
-Fill: Index progression:
-
-1. str[4] = ‘\0’
-
-2. i = 3, nb = 123 → digit = 3 → str[3] = ‘3’
-
-3. nb = 12, i = 2 → digit = 2 → str[2] = ‘2’
-
-4. nb = 1, i = 1 → digit = 1 → str[1] = ‘1’
-
-5. nb = 0 → stop
-
-6. since negative → str[0] = ‘-‘
-
-Result: “-123”.
-
----
-
-##### ChatGPT's explanation of algorithmic choice/ design
-
----
-
-##### Why this is “nice”
-
-1. No hardcoded limits
-
-2. Works for all ints
-
-3. Clear conceptual flow
-
-4. Single malloc call, no extra copies
-
-5. (Algorithmic) Complexity is 0 (number of digits)
-
-This is the one I’d call “best” for libft: clear, safe, portable enough, and norm-friendly.
-
----
-
-#### 2. Alternative Strategy A — All-negative route (no long)
-
----
-
-- This is conceptually fun: you never take absolute value, so you never overflow on INT_MIN.
-
-Idea:
-
-1. Keep n as negative, and when you extract digits, do:
-
-2. last_digit = -(n % 10) (gives positive 0–9)
-
-3. then n /= 10 (still negative, approaching 0)
-
-Algorithm sketch:
-
-- ```blah blah blah...```
-
-Pros:
-
-1. No need for a long
-
-2. Works for INT_MIN naturally
-
-3. Mathematically neat
-
-Cons:
-
-1. Slightly unintuitive: % on negative numbers is confusing
-
-2. Can be harder to reason about under sleep deprivation
-
-3. If you haven’t internalised negative modulo semantics in C, it’s bug-prone
-
-Still perfectly valid though, and kind of elegant once your brain locks it in.
-
----
-
-##### 3. Alternative Strategy B — Temporary fixed-size buffer on the stack
-
----
-
-- This is a hybrid approach: use a local array, fill it, then malloc the exact size and copy.
-
-Conceptual idea:
+- How many... 
 
 ```
-blah blah blah
+(Blah blah blah)
 ```
+
 
 ---
 
