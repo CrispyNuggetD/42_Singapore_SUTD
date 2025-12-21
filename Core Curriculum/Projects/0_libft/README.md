@@ -463,7 +463,7 @@ I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 2. LinkedIn: linkedin.com/in/crispynugget/
 
 ```
-42born2code
+42 BEYOND THE CODE
 ```
 
 ##### EOF :D
