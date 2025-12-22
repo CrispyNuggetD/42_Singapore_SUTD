@@ -32,7 +32,7 @@
 
 # 1. Change and point the project you're working
 # on by changing variable, current_proj="<PROJECT NAME>"
-# e.g. current_proj="1_libft"
+# e.g. current_proj="0_libft"
 
 # 2. Change PROJECTS_ROOTS to Project sub-folder in your repo,
 # e.g. export PROJECTS_ROOTS="Core Curriculum/Projects"
@@ -83,7 +83,7 @@
 export MAIL='hnah@student.42singapore.sg'
 
 # current project name (change as needed, then `source ~/.zshrc`)
-export current_proj="1_libft"
+export current_proj="0_libft"
 
 # --- 42 paths ---
 export PROJECTS_ROOT="Core Curriculum/Projects"

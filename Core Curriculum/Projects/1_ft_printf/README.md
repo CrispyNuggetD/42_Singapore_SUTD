@@ -36,6 +36,7 @@ int	main(void)
  * %lu		- Unsigned Long
  * %zu		- size_t
  * %p		- Pointer Address (Prints in Hexadecimal)
+ * %x		- Unsigned Integer (Prints in Hexadecimal)
  *
  * BTW void functions don't "return" anything so
  * you can't "print the output" as is.
@@ -122,19 +123,17 @@ int	main(void)
 
 ---
 
-1. What is a variadic functions in C?
+1. What is a variadic function in C?
 
-2. Is (return None if n < 0 else value) valid C? (Psst: It's not - That's Python).
+2. How might I make me printf extensible?
 
-3. (Sometimes) Clarifying subject.pdf interpretation (I'm not too good at understanding extent required of questions yet, oops)
+3. What's a dispatch table and how can I use it?
 
 4. Checking whether I'm over-complicating things (Some are responsibility of Caller, e.g. I'm NOT supposed to think of 'hacking' a prev->next idea, shown below).
 
 5. Checking my flawed assumptions (I type my interpretation of the question and check, sometimes I'm wrong. E.g. Aforementioned hack: memcpy *next to current, link, del and free(next))
 
 6. Of course, S.O.S. when I'm stuck/ no idea how to start, asking: "Do NOT give me any code (or solution when debugging), guide me through".
-
-7. What are the various trade-offs of these ft_itoa algos and which is most efficient (Psst: It's the Syscall interruption that's the slowest anyway).
 
 ---
 
@@ -188,8 +187,139 @@ C does NOT track:
 (Blah blah blah)
 ```
 
+#### How might I make me printf extensible?
+
+##### The mental model
+
+printf work naturally separates into 3 layers:
+
+1. Parser
+Reads the format string, and when it sees %..., it builds a small description of what it wants:
+
+- conversion: c/s/p/d/i/u/x/X/%
+- (optional later) flags, width, precision
+
+2. Dispatcher
+Takes that description and decides which handler function should run.
+
+3. Handlers (small, single-purpose functions)
+- Each handler prints one conversion type and returns “how many chars I wrote”.
+
+- When these are separate, adding a conversion becomes:
+	- add one handler + register it (instead of rewriting parsing logic).
+
+##### The Goal of printf/ writing code (in 42):
+- “locality” beats cleverness
+- Extensible doesn’t mean abstract for abstract’s sake. In 42, you want:
+- small C files per concern,
+- ```static``` helpers in each file,
+- minimal global shared state (ideally none),
+- and a single clear data flow: ```parse → dispatch → handler → write```.
+
+That stays readable under stress — which is the real goal.
+
+#### What's a dispatch table and how can I use it?
+Then why does the indexed table exist at all?
+
+Good question. Three reasons:
+
+1. Algorithmic clarity
+
+Indexed dispatch is O(1) by construction.
+Linear scan is O(N).
+
+Even if N is small today, the intent is different.
+
+2. Scalability
+
+In:
+
+- Instruction decoders
+- syscalls
+- interpreters
+- protocol parsers
+
+N can be 100s or 1000s.
+
+Then:
+
+- linear scan becomes expensive
+- indexed dispatch stays flat
+
+```printf``` is tiny. CPUs are not.
+
+3. Predictability
+
+Indexed lookup:
+- no branches
+- no data-dependent control flow
+
+This matters in:
+- real-time systems
+- kernels
+- hot loops
+
+Not your ```ft_printf```, but the idea transfers.
+
+#### Bad code (so I don't do it)
+
+```c
+if (spec == 'c')
+{
+    count += print_char(va_arg(args, int));
+}
+else if (spec == 's')
+{
+    count += print_string(va_arg(args, char *));
+}
+else if (spec == 'd' || spec == 'i')
+{
+    count += print_int(va_arg(args, int));
+}
+else if (spec == 'u')
+{
+    count += print_unsigned(va_arg(args, unsigned int));
+}
+else if (spec == 'x')
+{
+    count += print_hex(va_arg(args, unsigned int), 0);
+}
+else if (spec == 'X')
+{
+    count += print_hex(va_arg(args, unsigned int), 1);
+}
+else if (spec == '%')
+{
+    count += write(1, "%", 1);
+}
+```
+
+##### (Of huge relevance) 3. Unrelated cases are now coupled
+
+This code:
+- violates “no risk of breaking unrelated cases”
+
+This one is subtle and important. If you:
+- reorder conditions
+-refactor one branch
+-add flags logic (#, +, width, precision)
+
+You are editing a single tightly coupled control structure.
 
 ---
+
+##### Example failure modes:
+
+> **%d and %i share logic --> one change affects both**
+
+> **%x and %X share helper --> branch logic leaks**
+
+> **adding flags introduces nested ifs inside each branch**
+
+
+Now changes are non-local: touching one thing risks others.
+
+That’s the opposite of extensible.
 
 ## Contact Details
 
@@ -202,7 +332,7 @@ I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 2. LinkedIn: linkedin.com/in/crispynugget/
 
 ```
-42 BEYOND THE CODE
+42BeyondTheCode
 ```
 
 ##### EOF :D
