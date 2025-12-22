@@ -142,20 +142,24 @@ git diff HEAD..origin/main
 - Submitted Proj, not yet eval
 - Mock eval by thtay (thanks!!)
 #### 18/12 (Thurs 32):
-
-
-# TODAY 
-
-
+- Stressing out over live coding for evaluations; revising for evaluations. 
+- Losing sleep over evals is kinda overkill but yea. 
 #### 19/12 (Fri 33):
+- PASSED Libft evals..!!!!
+- 2nd and 3rd was ok. 
+- 1st eval chose isalnum for live coding; I can’t believe I actually didn’t manage to do my int Main(void) properly because I was soooo sleep deprived. 
+- IMHO, she shouldn’t have passed me but she did anyway. I’ll buck up I guess. 
 #### 20/12 (WkEnd, Sat 34):
+— Took a break after Libft!!
+- Ended up hibernating the day away. 
 #### 21/12 (WkEnd, Sun 35):
-
-# NOTE TO SELF: 
-# REGENERATE TEMPLATE HERE
+- Evaluating others:
+- A Born2beroot that I should’ve failed in hindsight (borderline, blackholing)
+- Remi’s excellent minishell
 
 ### W6
 #### 22/12 (Mon 36):
+- Came in late: friend meet up last evening. 
 #### 23/12 (Tues 37):
 #### 24/12 (Wed 38):
 #### 25/12 (Thurs 39):
@@ -201,4 +205,35 @@ git diff HEAD..origin/main
 #### 22/01 (Thurs 67):
 #### 23/01 (Fri 68):
 #### 24/01 (WkEnd, Sat 69):
-#### 25/01 (WkEnd, Sun 70)
+#### 25/01 (WkEnd, Sun 70):
+
+
+### W11
+#### 26/01 (Mon 71):
+#### 27/01 (Tues 72):
+#### 28/01 (Wed 73):
+#### 29/01 (Thurs 74):
+#### 30/01 (Fri 75):
+#### 31/01 (WkEnd, Sat 76):
+
+# Feb
+#### 01/02 (WkEnd, Sun 77):
+
+### W12
+#### 02/02 (Mon 78):
+#### 03/02 (Tues 79):
+#### 04/02 (Wed 80):
+#### 05/02 (Thurs 81):
+#### 06/02 (Fri 82):
+#### 07/02 (WkEnd, Sat 83):
+#### 08/02 (WkEnd, Sun 84):
+
+### W13
+#### 09/02 (Mon 85):
+#### 10/02 (Tues 86):
+#### 11/02 (Wed 87):
+#### 12/02 (Thurs 88):
+#### 13/02 (Fri 89):
+#### 14/02 (WkEnd, Sat 90):
+#### 15/02 (WkEnd, Sun 91):
+
