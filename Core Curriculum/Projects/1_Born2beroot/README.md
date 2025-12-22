@@ -36,6 +36,7 @@ int	main(void)
  * %lu		- Unsigned Long
  * %zu		- size_t
  * %p		- Pointer Address (Prints in Hexadecimal)
+ * %x		- Unsigned Integer (Prints in Hexadecimal)
  *
  * BTW void functions don't "return" anything so
  * you can't "print the output" as is.
@@ -377,7 +378,7 @@ I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 2. LinkedIn: linkedin.com/in/crispynugget/
 
 ```
-42 BEYOND THE CODE
+42BeyondTheCode
 ```
 
 ##### EOF :D
