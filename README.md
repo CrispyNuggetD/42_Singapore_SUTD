@@ -47,10 +47,16 @@ Week 2: (Starting up motor)
 - Also zsh setup guide for syncproj (copy cur. proj to public GitHub - THIS - and git push), 
 - Synced folder libft.
 
+1 Month:
+- Finished Libft, but I'm Pace 22 now. Whoops. But expected due to my challenges.
+- Partook in peer discussions/ debates for get\_next\_line, and using indexing table with function points for ft\_printf to not "change logic" during evaluations?
+- Started on ft\_printf
+
 # PLAN FOR THIS WEEK
 
-Week: 2
-- Re-learn finish C fundamentals/ Piscine content.
-- Up till Malloc at least.
-- Solve the “String of strings” exam question I kept getting wrong during. (Segfault)
- 
+Week: 6 (By End 2025)
+- Refresh ft\_split to learn double malloc + double freeing
+- Master function pointer void prototypes and typedefs
+- Learn finish what entails a good Parser
+- Finish looking through subject.pdf of ft\_printf
+- Finish Parser (1 of 3) of ft\_printf (Parser --> Dispatcher --> Handler)
