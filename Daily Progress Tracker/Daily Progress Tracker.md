@@ -172,7 +172,7 @@ git diff HEAD..origin/main
 - Ended up hibernating the day away. 
 #### 21/12 (WkEnd, Sun 35):
 - Evaluating others:
-- A Born2beroot that I could've potentially failed in hindsight due to lack of interest in answering my questions (Borderline, but blackholing. But she could sysadmin from memory so for what it's worth it's good enough for this project)
+- A Born2beroot that I could've potentially failed in hindsight due to lack of interest in answering my questions (Borderline, but blackholing. But she could sysadmin from memory so for what it's worth it's good enough for this project).
 - Remi’s excellent minishell
 
 ### W6
@@ -188,8 +188,8 @@ git diff HEAD..origin/main
 - Updated study notes, daily progress tracker.
 #### 25/12 (Thurs 39):
 - Merry Christmas! I'm bored, so why not study something I love?
-- Made ft_printf makefile, learnt and links to libft in other directory using -I flag
-- Edited libft makefile for clarity (for evaluator) and correctness
+- Made ft_printf makefile, learnt and links to libft in other directory using -I flag.
+- Edited libft makefile for clarity (for evaluator) and correctness.
 - Makefile works and test of main function of ft\_printf able to call Libft's ft\_itoa.
 - Updated main repo Readme.md to account for current 1 month progress and this week's goals.
 - Updated printf Readme for description and explanation of how my program works (the 3 modules).
