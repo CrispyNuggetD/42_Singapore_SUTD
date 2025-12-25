@@ -75,7 +75,9 @@ int	main(void)
  * %lu		- Unsigned Long
  * %zu		- size_t
  * %p		- Pointer Address (Prints in Hexadecimal)
- * %x		- Unsigned Integer (Prints in Hexadecimal)
+ * %x		- Unsigned Integer (lowercase Hexadecimal)
+ * %X		- Unsigned Integer (UPPERCASE Hexadecimal)
+ * %%		- Prints a percent sign
  *
  * BTW void functions don't "return" anything so
  * you can't "print the output" as is.
