@@ -159,8 +159,16 @@ git diff HEAD..origin/main
 
 ### W6
 #### 22/12 (Mon 36):
-- Came in late: friend meet up last evening. 
+- Came in late: friend meet up last evening.
+- ChatGPT about printf learning ways to do it.
+- Readme printf update of the ways I used ChatGPT (Proj. Exploration).
 #### 23/12 (Tues 37):
+- bralee whiteboard code jam/ lesson on Milestone 1:
+	- Makefiles
+	- Tips and Tricks
+	- Get Next Line
+	- Clarifications (Pipex, minishell actual bash piping both is child)
+	- My Qn about logic change vs data change (printf indexing table). 
 #### 24/12 (Wed 38):
 #### 25/12 (Thurs 39):
 #### 26/12 (Fri 40):
