@@ -163,12 +163,25 @@ git diff HEAD..origin/main
 - ChatGPT about printf learning ways to do it.
 - Readme printf update of the ways I used ChatGPT (Proj. Exploration).
 #### 23/12 (Tues 37):
-- bralee whiteboard code jam/ lesson on Milestone 1:
+- @bralee peer learning/ whiteboard code jam and lesson on Milestone 1:
 	- Makefiles
 	- Tips and Tricks
 	- Get Next Line
 	- Clarifications (Pipex, minishell actual bash piping both is child)
-	- My Qn about logic change vs data change (printf indexing table). 
+- GNL Tutorial from @bralee (Thank you!!)
+- Debate on meaning of “do not change ```logic``` during evaluation re-coding.
+	- My Qn about logic change vs data change (printf indexing table) 
+- Debate on meaning of “refactoring”, whether any features should change or just code structure.
+#### 24/12 (Wed 38):
+- More ChatGPT, learn typedefs and void function pointers.
+- Updated study notes, daily progress tracker.
+#### 25/12 (Thurs 39):
+- Merry Christmas! I’m bored, so why not study something I love?
+- Made ft_printf makefile, learnt and links to libft in other directory using -I flag.
+- Edited libft makefile for clarity (for evaluator) and correctness.
+- Makefile works and test of main function of ft\_printf able to call Libft’s ft\_itoa.
+- Updated main repo Readme.md to account for current 1 month progress and this week’s goals.
+- Updated printf Readme for description and explanation of how my program works (the 3 modules).  
 #### 24/12 (Wed 38):
 #### 25/12 (Thurs 39):
 #### 26/12 (Fri 40):
