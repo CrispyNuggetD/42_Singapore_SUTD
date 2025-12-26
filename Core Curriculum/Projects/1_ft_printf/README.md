@@ -9,7 +9,74 @@
 
 ## About my project
 
-- Instead of convuluted ```if; else if; else if; else;``` statements, project uses modular technique:
+My ft_printf supports the following input syntax:
+
+```c
+%[-][0][width][.prec][type]
+```
+
+Where the type is one letter.
+
+- An example will be something like ```%-08.2u``` (Just like actual ```printf()```)
+
+### Struct for data handling
+
+My program uses the following struct:
+
+```c
+
+```
+
+```char flags``` is used to contain the bits needed for bitmask representation of the flags **as well as** ```precision```.
+
+### ```.``` is not truly a flag it just *introduces* precision.
+
+Unlike ```42's Subject.pdf``` bonus lumping ```.``` with the other flags, in ```printf``` semantics it's *not* really a type (as you can see from input syntax).
+
+However, just like ```42's Subject.pdf```, my implementation combines existence of ```.``` with bitwise flags.
+
+- This prevents needing to define another ```int``` or ```_Bool``` just for ```has_precision```, as ```precision``` is **not** a flag.
+
+---
+
+### Modularisation is used instead of convuluted bad-habit non-extensible coding:
+
+Consider:
+
+```c
+if (a = condition_a)
+{
+    do_a(complicated_a_input);
+}
+else if (b = condition_b)
+{
+    do_b(complicated_b_input);
+}
+else if (c = condition_c)
+{
+    do_c(complicated_c_input);
+}
+else if (d = condition_d)
+{
+    do_d(complicated_d_input);
+}
+else
+{
+    do_something_dangerous(excluding_everything_else_is_error_prone);
+    
+}
+// Non-extensible code? Difficult to shift condition 'z' else if somewhere into nested loops?
+else if (z = condition_z)
+{
+    do_z(complicated_z_input_does_not_conflict_with_original_else_statement_exclusions);
+}
+```
+
+Statements. It is error prone to code, to maintain, to extend.
+
+- Hence, my project uses a modular technique:
+
+---
 
 ### Modular technique:
 
@@ -43,6 +110,105 @@ Takes that description and decides which handler function should run.
 - Each handler prints one conversion type and returns “how many chars I wrote”.
 - When these are separate, adding a conversion becomes:
 	- add one handler + register it (instead of rewriting parser logic).
+
+---
+
+### About my bonus ft_printf segment
+
+---
+
+The hardest bonus interactions are around numbers, especially when value is ```0```.
+
+- If precision is specified as 0 and the number is 0, the digit string becomes empty (for many conversions). **Width still applies.**
+- Then prefixes/signs interact with emptiness.
+
+We cannot assume numeric code always at least one digit, so “digits building” is designed to allow empty output for the core digits, while still allowing prefix/ padding.
+
+### Clashes and conflict rules
+
+There are 4 conflict rules as follows:
+
+---
+
+#### 1. ```-``` with ```0```
+
+- ```%-05d```
+
+Rule:
+
+- ```-``` wins
+- Zero padding is disabled
+
+Output:
+
+```42   (spaces on right)```
+
+---
+
+#### 2. ```+``` with space
+
+- ```%+ d```
+
+Rule:
+
+- ```+``` wins
+- Space is ignored
+
+Output:
+
+```+42```
+
+---
+
+#### Precision with ```0``` (numeric)
+
+- ```%0.5d```
+
+Rule:
+
+- Precision wins
+- '''0''' flag ignored
+
+Output:
+
+```00042```
+
+The zeroes come from precision, not the 0 flag.
+
+---
+
+#### ```#``` with ```x/X``` (and zero)
+
+- ```%#x with 0```
+
+Rule:
+
+- No redundant prefix
+
+Output:
+Prints ```0```, not ```0x0```
+
+#### **BUT:**
+
+- ```%#x with 42```
+
+Output:
+
+```0x2a```
+
+**This is why prefix handling must be conditional.**
+
+---
+
+### Difference with conventional "mandatory-only" code
+
+Mandatory-only implementations often:
+
+- Parse % then immediately execute
+
+Bonus-ready implementations:
+
+- Parse % into a spec struct, normalize conflicts, then execute
 
 # Instructions
 

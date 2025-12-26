@@ -16,7 +16,14 @@
 # include <stdarg.h>
 # include "libft/libft.h"
 
-typedef void	(*t_handler)(void);
+typedef void    (*t_handler)(void);
+typedef struct  s_spec
+{
+    unsigned char   flags;
+    int             width;
+    int             precision;
+    char            conversion;
+}                   t_spec;
 
 void	print_d_i(void);
 int 	ft_printf(const char *key, ...);

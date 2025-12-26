@@ -21,19 +21,34 @@ int					ft_printf(const char *key, ...);
 // Main function
 int	main(void)
 {
-	ft_printf("i");
-	return (0);
+	int	len;
+
+	len = ft_printf("i");
 }
 // printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
 
-// This function is summoned from main to print stuff
-int	ft_printf(const char *key, ...)
+// This function is summoned from main to parse the input
+int ft_printf(const char *key, ...)
 {
-	int			printer;
+	int		printer;
+	va_list	list;
+	t_spec	spec;
 
 	printer = 0;
+	va_start(list, arg);
 	if (!key)
 		return (0);
+	while (*key)
+	{
+		if (*key == '#')
+			parse_spec(&spec, &p);
+		/*
+			dispatch(spec, ...)
+		else
+			emit literal *p
+			p++
+		*/
+	}
 	dispatch_key((unsigned char)key[0]);
 	return (printer);
 }
