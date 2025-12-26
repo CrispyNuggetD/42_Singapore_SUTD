@@ -1,24 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_printf.h                                        :+:      :+:    :+:   */
+/*   ft_printf_handler.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/26 09:48:52 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
+/*   Updated: 2025/12/26 09:54:26 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_PRINTF_H
-# define FT_PRINTF_H
+#include "ft_printf.h"
 
-# include <stdarg.h>
-# include "libft/libft.h"
+static void	print_d_i(void)
+{
+	char	*str;
 
-typedef void	(*t_handler)(void);
-
-int			ft_printf(const char *input, ...);
-static void	print_d_i(void);
-
-#endif
+	str = "print_d_i\n";
+	write(1, str, ft_strlen(str));
+	return ;
+}
