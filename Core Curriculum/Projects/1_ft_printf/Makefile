@@ -7,7 +7,7 @@ INCS	= -I. -Ilibft #Where to look for header files
 
 NAME	= libftprintf.a #Library name
 
-SRCS	= ft_printf.c # ft_parse.c ft_print_c.c ft_print_s.c ft_print_nbr.c \
+SRCS	= ft_printf.c ft_print_d_i.c #ft_print_c.c ft_print_s.c ft_print_nbr.c \
 		#ft_print_hex.c ft_print_ptr.c
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
@@ -37,7 +37,7 @@ $(NAME): $(LIBFT) $(OBJS)
 	cp $(LIBFT) $(NAME)
 	@echo "\nShifted Libft library!\n" #My echo
 	@echo "\nArchiving Main Project..." #My echo
-	$(AR) $(ARFLAGS) $(NAME) $(OBJS)
+	$(AR) $(AR_FLAGS) $(NAME) $(OBJS)
 	@echo "\nMain project library archived!\n" #My echo
 
 	#### SEARCH: COMMENT HERE OUT LATER ####

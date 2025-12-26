@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/26 09:48:52 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/26 10:23:01 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 typedef void	(*t_handler)(void);
 
-int			ft_printf(const char *input, ...);
-static void	print_d_i(void);
+void	print_d_i(void);
+int 	ft_printf(const char *key, ...);
 
 #endif
