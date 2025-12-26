@@ -4,13 +4,19 @@
 
 ### (1) Includes two aliases 'compile' and 'run' so you don't have 
 # to always type in full for 42-compliant compiling/ running
-# with valgrind flags everytime.
+# You can also stack with valgrind flags.
 
 # Usage:
 # e.g. compile ft_isalpha.c
 # e.g. compile ft_isalpha.c -o output (run with ./output)
 # e.g. run ./output
 # e.g. run ./output "Hello" 42 (Passing arguments)
+
+# So, feel free to check with memory leaks with -g valgrind flag, i.e.:
+# compile -g ft_isalpha.c
+
+# You need to compile with library (behind .c file, order matters) if .a exists, i.e.:
+# compile -g ft_isalpha.c libft.a -o output (run with ./output)
 
 ### (2) Three helper functions curproj() and syncproj().
 
@@ -93,8 +99,11 @@ export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 bindkey "^[[Z" reverse-menu-complete
 bindkey "^[Z" reverse-menu-complete
 
-# compile helper with -g valgrind flag
-alias compile='cc -Wall -Wextra -Werror -g'
+# compile helper
+alias compile='cc -Wall -Wextra -Werror'
+
+# Feel free to check with memory leaks with -g valgrind flag, i.e.
+#compile -g
 
 # code execution helper with valgrind and leak flags
 alias run='valgrind --leak-check=full --show-leak-kinds=all'

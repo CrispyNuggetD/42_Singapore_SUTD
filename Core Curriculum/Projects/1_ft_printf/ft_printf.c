@@ -6,45 +6,62 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/26 10:02:47 by hnah             ###   ########.fr       */
+/*   Updated: 2025/12/26 11:18:32 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 #include <stdio.h>
 
-int	ft_printf(const char *input, ...)
+// Let main stay on top (readability) with prototypes
+static t_handler	*get_handlers(void);
+static void			dispatch_key(unsigned char key);
+int					ft_printf(const char *key, ...);
+
+// Main function
+int	main(void)
 {
-	int					printer;
-	static t_handler	g_handlers[256];
+	ft_printf("i");
+	return (0);
+}
+// printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
+
+// This function is summoned from main to print stuff
+int	ft_printf(const char *key, ...)
+{
+	int			printer;
 
 	printer = 0;
-	(void)input;
+	if (!key)
+		return (0);
+	dispatch_key((unsigned char)key[0]);
 	return (printer);
 }
-//type_handler global_handler
 
-static void	init_handlers(void)
+// The below function initialises (by mapping) the function handlers
+// Variables mean type_handler, global_handler
+static void	dispatch_key(unsigned char key)
 {
-	g_handlers[(unsigned char)('i')] ||
-		g_handlers[(unsigned char)('d')] = print_d_i;
-}
-
-static void	dispatch_key(int key)
-{
+	t_handler	*handlers;
 	t_handler	fn;
-	
-	if (key < 0 || key > 255)
-		return;
-	fn = g_handlers[(unsigned char)key];
+
+	handlers = get_handlers();
+	fn = handlers[key];
 	if (fn)
 		fn();
 }
 
-
-int	main(void)
+// Allows dispatcher to fetch initialised keys
+static t_handler	*get_handlers(void)
 {
-	dispatch_key('i');
-	return (0);
+	static t_handler	handlers[256];
+	static int			initialized;
+
+	if (!initialized)
+	{
+		handlers[(unsigned char)('i')] = print_d_i;
+		handlers[(unsigned char)('d')] = print_d_i;
+		initialized = 1;
+	}
+	return (handlers);
 }
-// printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));

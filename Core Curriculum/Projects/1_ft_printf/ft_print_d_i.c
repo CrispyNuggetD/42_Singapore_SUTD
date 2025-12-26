@@ -12,11 +12,11 @@
 
 #include "ft_printf.h"
 
-static void	print_d_i(void)
+void	print_d_i(void)
 {
 	char	*str;
 
-	str = "print_d_i\n";
+	str = "test print of print_d_i\n";
 	write(1, str, ft_strlen(str));
 	return ;
 }
