@@ -117,7 +117,7 @@ Capabilities:
 
 Example of parsing:
 
-- (“flags: [precision=1, ```-``` + ```0```], width=5, , precision=3, conv=```d```”)
+- (“flags: [precision=1, ```-``` + ```0```], width=5, , precision=3, conversion=```d```”)
 
 #### Dispatcher
 
@@ -168,12 +168,12 @@ Precision is “present or not”, and if present it has a number
 ### Extra Bonus "Challenging Scenarios"
 
 1. Flags can appear in any order, and may repeat.
-2. Width can be multilple disigts (Or absent)
+2. Width can be multiple digits. (Or absent)
 3. Precision may be absent OR present with no digits
     - The “zero value with percision zero" rule (Big trap, explained in conflict rule 3)
 4. Even with conflict rules (below), width applies to the whole formatted field (sign, spaces, prefixes e.g. ```0x```, digits that can be zero-padded with precision).
 5. “Padding location” depends on flags and precision
-6. ```%``` conversion is special (width and ```-``` still applies, but present doesn't and ignored.)
+6. ```%``` conversion is special (width and ```-``` still applies but precision present (```.```) doesn't and is ignored.)
 
 #### The hardest bonus interactions are around numbers
 
@@ -273,7 +273,7 @@ When ```%```, do these 5 steps:
 
 - if ```-``` set -> clear ```0```
 - if ```+``` set -> clear ```space```
-- if precision specified numeric conv -> clear ```0``` padding behavior
+- if precision specified numeric conversion -> clear ```0``` padding behavior
 
 ---
 
