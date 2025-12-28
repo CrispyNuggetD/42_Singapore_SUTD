@@ -102,7 +102,7 @@ Three compartmentalised parts to prevent large refactoring requirements/ logic b
 
 An explanation of the modules are as follows:
 
-#### Parser
+### Parser
 
 Reads the format string, and when it sees %..., it builds a small description of what it wants:
 
@@ -119,7 +119,22 @@ Example of parsing:
 
 - (“flags: [precision=1, ```-``` + ```0```], width=5, , precision=3, conversion=```d```”)
 
-#### Dispatcher
+---
+
+#### How parsing is done
+
+TL;DR
+
+- The parser takes a ```const char **``` cursor into the format string and advances it as it consumes the conversion specifier.
+
+Or also AKA:
+
+- The parser takes a pointer to pointer (pointer to caller's cursor that shows the format-string of the input string after a ```%``` is detected).
+- It advances the caller's cursor AKA the pointed-to pointer (```*ptr```) inside that function hence consuming the flags, etc.
+
+---
+
+### Dispatcher
 
 Takes that description and decides which handler function should run.
 
@@ -127,7 +142,7 @@ Example of Dispatching:
 
 - (“conv = ```d```  -> call the integer handler”)
 
-#### Handlers (small, single-purpose functions)
+### Handlers (small, single-purpose functions)
 
 - Each handler prints one conversion type and returns “how many chars I wrote”.
 - When these are separate, adding a conversion becomes:
