@@ -19,15 +19,28 @@ Where the type is one letter.
 
 - An example will be something like ```%-08.2u``` (Just like actual ```printf()```)
 
-### Struct for data handling
+### ```typedefs``` for data handling
 
-My program uses the following struct:
+My program uses the following ```typedef``` to work with ```t_handler``` that are ```(void)``` function pointers:
 
 ```c
-
+typedef void    (*t_handler)(void);
 ```
 
-```char flags``` is used to contain the bits needed for bitmask representation of the flags **as well as** ```precision```.
+It also uses the following ```struct``` to contain the input data to be parsed:
+
+```c
+typedef struct  s_spec
+{
+    unsigned char   flags;
+    int             width;
+    int             precision;
+    char            conversion;
+}                   t_spec;
+```
+### About the ```flags```
+
+```unsigned char flags``` is used to contain the bits needed for bitmask representation of the flags **as well as** ```precision```.
 
 ### ```.``` is not truly a flag it just *introduces* precision.
 
@@ -72,7 +85,7 @@ else if (z = condition_z)
 }
 ```
 
-Statements. It is error prone to code, to maintain, to extend.
+Statements. It is error prone to code, to maintain, to extend, and separation of implementation portions if ever needed can cause “branch explosion”
 
 - Hence, my project uses a modular technique:
 
@@ -82,9 +95,10 @@ Statements. It is error prone to code, to maintain, to extend.
 
 Three compartmentalised parts to prevent large refactoring requirements/ logic bugs:
 
-1. Parser
-2. Dispatcher
-3. Handler
+1. Initialization / Registration (Function keys -> handlers)
+2. Parser (turn ```%...``` into a spec description)
+3. Dispatcher (choose which handler to call)
+4. Handlers (do the actual formatting/output)
 
 An explanation of the modules are as follows:
 
@@ -99,11 +113,19 @@ Reads the format string, and when it sees %..., it builds a small description of
 Capabilities:
 
 - conversion: c/s/p/d/i/u/x/X/%
-- (optional later) flags, width, precision
+- flags, width, precision
+
+Example of parsing:
+
+- (“flags: [precision=1, ```-``` + ```0```], width=5, , precision=3, conv=```d```”)
 
 #### Dispatcher
 
 Takes that description and decides which handler function should run.
+
+Example of Dispatching:
+
+- (“conv = ```d```  -> call the integer handler”)
 
 #### Handlers (small, single-purpose functions)
 
@@ -111,22 +133,58 @@ Takes that description and decides which handler function should run.
 - When these are separate, adding a conversion becomes:
 	- add one handler + register it (instead of rewriting parser logic).
 
+Example of Handling:
+
+- (“print integer using spec rules; update count”)
+
 ---
 
 ### About my bonus ft_printf segment
 
 ---
 
-The hardest bonus interactions are around numbers, especially when value is ```0```.
+### The 7 bonus features (5 flags + Precision specifier + Minimum Field Width)
+
+#### (A) The 5 Flag characters
+
+1. ```0``` flag (zero pad)
+
+If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
+
+2. ```-``` left align
+
+3. ```+``` always show sign for signed conversions
+
+4. space (``` ```) leading space for positive signed conversions
+
+5. ```#``` alternate form (prefix for hex, etc.)
+
+#### (B) Precision (via ```.```)
+
+- ```.``` + digits (**OR only just** ```.```) specifies precision
+Precision is “present or not”, and if present it has a number
+- (Number is possible to be 0).
+
+### Extra Bonus "Challenging Scenarios"
+
+1. Flags can appear in any order, and may repeat.
+2. Width can be multilple disigts (Or absent)
+3. Precision may be absent OR present with no digits
+    - The “zero value with percision zero" rule (Big trap, explained in conflict rule 3)
+4. Even with conflict rules (below), width applies to the whole formatted field (sign, spaces, prefixes e.g. ```0x```, digits that can be zero-padded with precision).
+5. “Padding location” depends on flags and precision
+6. ```%``` conversion is special (width and ```-``` still applies, but present doesn't and ignored.)
+
+#### The hardest bonus interactions are around numbers
+
+Especially when value is ```0```.
 
 - If precision is specified as 0 and the number is 0, the digit string becomes empty (for many conversions). **Width still applies.**
 - Then prefixes/signs interact with emptiness.
 
 We cannot assume numeric code always at least one digit, so “digits building” is designed to allow empty output for the core digits, while still allowing prefix/ padding.
 
-### Clashes and conflict rules
-
-There are 4 conflict rules as follows:
+#### 4 conflict rules as follows:
 
 ---
 
@@ -197,6 +255,25 @@ Output:
 ```0x2a```
 
 **This is why prefix handling must be conditional.**
+
+### Parsing technique henceforth
+
+When ```%```, do these 5 steps:
+
+#### (A) Flags
+
+1. Read flags: while current char is in ```"-0+ #"```
+2. Then read width: while digit and before ```.```
+3. Then precision: if ```.``` then mark precision specified; parse digits (or 0 if none)
+4. Finally, read the conversion: next char is the specifier
+
+---
+
+#### (B) Then do **bitwise normalisation**:
+
+- if ```-``` set -> clear ```0```
+- if ```+``` set -> clear ```space```
+- if precision specified numeric conv -> clear ```0``` padding behavior
 
 ---
 

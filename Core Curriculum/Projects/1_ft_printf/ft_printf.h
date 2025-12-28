@@ -16,7 +16,7 @@
 # include <stdarg.h>
 # include "libft/libft.h"
 
-typedef void    (*t_handler)(void);
+typedef void    (*t_handler)(void *context);
 typedef struct  s_spec
 {
     unsigned char   flags;
