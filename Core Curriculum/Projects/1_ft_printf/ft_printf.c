@@ -47,6 +47,8 @@ int ft_printf(const char *key, ...)
 		else
 			emit literal *p
 			p++
+		write out all printf cases first
+		read the manual	
 		*/
 	}
 	dispatch_key((unsigned char)key[0]);
