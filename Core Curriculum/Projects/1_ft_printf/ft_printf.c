@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 // Let main stay on top (readability) with prototypes
-static t_handler	*get_handlers(void);
+static t_handler	init_get_handlers(unsigned char fn_keys);
 static void			dispatch_key(unsigned char key);
 int					ft_printf(const char *key, ...);
 
@@ -23,25 +23,35 @@ int	main(void)
 {
 	int	len;
 
-	len = ft_printf("i");
+	printf("TesT");
+	//len = ft_printf("i");
 }
 // printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
 
 // This function is summoned from main to parse the input
-int ft_printf(const char *key, ...)
+int ft_printf(const char *str, ...)
 {
 	int		printer;
-	va_list	list;
+	va_list	input;
 	t_spec	spec;
 
 	printer = 0;
-	va_start(list, arg);
-	if (!key)
+	va_start(input, str);
+	if (!str)
 		return (0);
-	while (*key)
+	while (*str)
 	{
-		if (*key == '#')
-			parse_spec(&spec, &p);
+		if (*str != '%')
+		{
+			ft_putchar_fd(*str, 1);
+			str++;
+			continue;
+		}
+		else if (*str == '%')
+		{
+			str++;
+			parse_spec(&spec, &str);
+		}
 		/*
 			dispatch(spec, ...)
 		else
@@ -51,7 +61,7 @@ int ft_printf(const char *key, ...)
 		read the manual	
 		*/
 	}
-	dispatch_key((unsigned char)key[0]);
+	//dispatch_key((unsigned char)key[0]);
 	return (printer);
 }
 
@@ -59,26 +69,26 @@ int ft_printf(const char *key, ...)
 // Variables mean type_handler, global_handler
 static void	dispatch_key(unsigned char key)
 {
-	t_handler	*handlers;
 	t_handler	fn;
 
-	handlers = get_handlers();
-	fn = handlers[key];
-	if (fn)
-		fn();
+	fn = get_handler((unsigned char)key);
+	//if (fn)
+		//fn();
 }
 
-// Allows dispatcher to fetch initialised keys
-static t_handler	*get_handlers(void)
+// Parses the key specifiers with flags and everything and moves pointer
+static void parse_spec(t_spec *spec, const char **ptr)
 {
-	static t_handler	handlers[256];
-	static int			initialized;
+	while (**ptr == '-' || **ptr == '+' || **ptr == ' ' || **ptr == '#' ||
+			**ptr == '.' || (**ptr >= '0' && **ptr <= '9') || (the conv)
 
-	if (!initialized)
-	{
-		handlers[(unsigned char)('i')] = print_d_i;
-		handlers[(unsigned char)('d')] = print_d_i;
-		initialized = 1;
-	}
-	return (handlers);
 }
+// Initialise keys and also allows dispatcher to fetch those keys
+/*static t_handler	init_get_handlers(unsigned char fn_keys)
+{
+	static t_handler const	handlers[256] = {
+		['i'] = print_d_i;
+		['d'] = print_d_i;
+	};
+	return (handlers[fn_keys]);
+}*/
