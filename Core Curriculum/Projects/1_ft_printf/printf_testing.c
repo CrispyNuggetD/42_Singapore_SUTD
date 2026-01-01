@@ -24,7 +24,7 @@ int	main(void)
 {
 	int test = (0 == -0); // passing -0 is same as passing 0 (NULL)
 	
-	printf("%i\n",,);
+	printf("%i\n",,); // compiler error
 	printf("%i\n",test);  // NORMAL print
 	printf("%s","huh\n");  // NORMAL print
 	//printf(%s);  // Does not allow/ compile fail
