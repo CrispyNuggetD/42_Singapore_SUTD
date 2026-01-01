@@ -16,6 +16,13 @@
 # include <stdarg.h>
 # include "libft/libft.h"
 
+# define FLAG_MINUS (1 << 0)
+# define FLAG_ZERO  (1 << 1)
+# define FLAG_HASH  (1 << 2)
+# define FLAG_SPACE (1 << 3)
+# define FLAG_PLUS  (1 << 4)
+# define FLAG_PREC  (1 << 5)
+
 typedef void    (*t_handler)(void *context);
 typedef struct  s_spec
 {
@@ -26,6 +33,8 @@ typedef struct  s_spec
 }                   t_spec;
 
 void	print_d_i(void);
+void	parse_spec(t_spec *spec, const char **ptr);
 int 	ft_printf(const char *key, ...);
 
 #endif
+
