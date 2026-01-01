@@ -15,7 +15,7 @@
 
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
-static void			dispatch_key(unsigned char key);
+static void			dispatch_key(t_spec *spec, va_list *input);
 int					ft_printf(const char *key, ...);
 
 // Main function
@@ -36,7 +36,7 @@ int ft_printf(const char *str, ...)
 	va_list	input;
 	t_spec	spec;
 
-	printer = 0;
+	printed = 0;
 	va_start(input, str);
 	if (!str)
 		return (0);
@@ -46,29 +46,29 @@ int ft_printf(const char *str, ...)
 		{
 			ft_putchar_fd(*str, 1);
 			str++;
-			printed++;
+			printed += 1;
 		}
 		else if (*str == '%')
 		{
 			str++;
 			parsing_passed = parse_spec(&spec, &str);
-			printed += dispatch_key(&spec, ...)
+			printed += dispatch_key(&spec, &input);
 		}
 	}
-	//dispatch_key((unsigned char)key[0]);
-	return (printer);
+	va_end(input);
+	return (printed);
 }
 
 // The below function initialises (by mapping) the function handlers
 // Variables mean type_handler, global_handler
-static int	dispatch_key(t_spec *spec, void *context)
+static int	dispatch_key(t_spec *spec, va_list *input)
 {
 	t_handler	fn;
 	int			len_printed;
 
 	fn = init_get_handlers(spec -> conversion);
-	if (fn);
-		fn(context);
+	if (fn)
+		len_printed = fn(spec, input);
 	return (len_printed);
 }
 
@@ -76,8 +76,8 @@ static int	dispatch_key(t_spec *spec, void *context)
 static t_handler	init_get_handlers(unsigned char fn_keys)
 {
 	static t_handler const	handlers[256] = {
-		['i'] = print_d_i;
-		['d'] = print_d_i;
+		['i'] = print_d_i,
+		['d'] = print_d_i,
 	};
 	return (handlers[fn_keys]);
 }

@@ -16,9 +16,6 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
 static void	normalise_flags(t_spec *spec);
 static int	is_numeric_conv(int conversion);
 
-
-
-
 // Parses the key specifiers with flags and everything and moves pointer
 int	parse_spec(t_spec *spec, const char **ptr)
 {
@@ -45,7 +42,7 @@ int	parse_spec(t_spec *spec, const char **ptr)
 	}
 	if (**ptr == '%')
 	{
-		ft_putchar_fd('%');
+		spec -> conversion = **ptr;
 		(*ptr)++;
 	}
 	else
@@ -78,11 +75,11 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 
 static void	normalise_flags(t_spec *spec)
 {
-	if (spec->flags & FLAG_MINUS)
-		spec->flags &= ~FLAG_ZERO;
-	if ((spec->flags & FLAG_PREC) && is_numeric_conv(spec->conversion))
-		spec->flags &= ~FLAG_ZERO;
-	if (spec->flags & FLAG_PLUS)
+	if (spec -> flags & FLAG_MINUS)
+		spec -> flags &= ~FLAG_ZERO;
+	if ((spec -> flags & FLAG_PREC) && is_numeric_conv(spec->conversion))
+		spec -> flags &= ~FLAG_ZERO;
+	if (spec -> flags & FLAG_PLUS)
 		spec -> flags &= ~FLAG_SPACE;
 }
 
