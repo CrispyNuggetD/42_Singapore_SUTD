@@ -1,6 +1,6 @@
 # Set up the prompt
 
-# 6 useful things here.
+# 6 useful things here. +1 Random Daily Login syncing for all these function.
 
 ### (1) Includes two aliases 'compile' and 'run' so you don't have 
 # to always type in full for 42-compliant compiling/ running
@@ -271,3 +271,7 @@ syncproj() {
   echo "--------------------------------"
 }   
 
+dailylogin() {
+  cd "$HOME/Documents/42_Singapore_SUTD/Random scripts" || exit 1
+  sh "./daily_login.sh"
+}
