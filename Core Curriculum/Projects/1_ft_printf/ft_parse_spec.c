@@ -40,14 +40,16 @@ int	parse_spec(t_spec *spec, const char **ptr)
 		spec -> conversion = **ptr;
 		(*ptr)++;
 	}
-	if (**ptr == '%')
+	else if (**ptr == '%')
 	{
 		spec -> conversion = **ptr;
 		(*ptr)++;
 	}
 	else
-		ft_putendl_fd("Invalid conversion. Do error handling.", 1);
-	normalise_flags(spec);
+		ft_putendl_fd("Invalid conversion not yet accounted for. Do error handling.", 1);
+	if (spec -> conversion)
+		normalise_flags(spec);
+	return (spec -> conversion);
 }
 
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr)

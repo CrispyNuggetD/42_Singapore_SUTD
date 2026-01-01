@@ -12,12 +12,21 @@
 
 #include "ft_printf.h"
 
-static int	print_d_i(void *context, va_list *input)
+static int	print_d_i(t_context *context)
 {
-	int	output_len;
+	char	*text;
+	int		output;
+	size_t	output_len;
+	ssize_t	print_success;
 	
-	
-	output_len = ft_itoa(decimal); // Change to no malloc later
-	
-	return (str_len);
+	output = va_arg(*(context -> input), int);
+	text = ft_itoa(output); // Change to no malloc later
+	if (!text)
+		return (-1);
+	output_len = ft_strlen(text);
+	print_success = write(1, text, output_len);
+	free(text);
+	if (print_success < 0)
+		return (-1);
+	return (output_len);
 }
