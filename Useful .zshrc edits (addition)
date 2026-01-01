@@ -68,7 +68,7 @@
 export MAIL='hnah@student.42singapore.sg'
 
 # current project name (change as needed, then `source ~/.zshrc`)
-export current_proj="0_libft"
+export current_proj="1_ft_printf"
 
 # --- 42 paths ---
 export PROJECTS_ROOT="Core Curriculum/Projects"
@@ -442,28 +442,24 @@ divider() {
 }
 
 dailylogin() {
-
   divider
   echo "Days that I logged in before 12nn"
   divider
-  
-  zsh -ic 'loginbefore12'
-  
+  loginbefore12
+
   divider
   echo "Hours logged for (50 hrs Intra_Award)"
   divider
-  
-  zsh -ic 'hourslogged'
-  
+  hourslogged
+
   divider
   echo "sync proj. with github"
   divider
-  
-  zsh -ic 'syncproj'
-  
+  syncproj
+
   divider
   echo "cd to current project"
   divider
-  
-  zsh -ic 'curproj'
+  curproj
 }
+
