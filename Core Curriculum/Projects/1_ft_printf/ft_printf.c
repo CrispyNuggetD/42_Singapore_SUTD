@@ -31,7 +31,8 @@ int	main(void)
 // This function is summoned from main to parse the input
 int ft_printf(const char *str, ...)
 {
-	int		printer;
+	int		printed;
+	int		parsing_passed;
 	va_list	input;
 	t_spec	spec;
 
@@ -45,21 +46,14 @@ int ft_printf(const char *str, ...)
 		{
 			ft_putchar_fd(*str, 1);
 			str++;
-			continue;
+			printed++;
 		}
 		else if (*str == '%')
 		{
 			str++;
-			parse_spec(&spec, &str);
+			parsing_passed = parse_spec(&spec, &str);
+			printed += dispatch_key(&spec, ...)
 		}
-		/*
-			dispatch(spec, ...)
-		else
-			emit literal *p
-			p++
-		write out all printf cases first
-		read the manual	
-		*/
 	}
 	//dispatch_key((unsigned char)key[0]);
 	return (printer);
@@ -67,68 +61,23 @@ int ft_printf(const char *str, ...)
 
 // The below function initialises (by mapping) the function handlers
 // Variables mean type_handler, global_handler
-static void	dispatch_key(unsigned char key)
+static int	dispatch_key(t_spec *spec, void *context)
 {
 	t_handler	fn;
+	int			len_printed;
 
-	fn = get_handler((unsigned char)key);
-	//if (fn)
-		//fn();
+	fn = init_get_handlers(spec -> conversion);
+	if (fn);
+		fn(context);
+	return (len_printed);
 }
 
-// Parses the key specifiers with flags and everything and moves pointer
-static void parse_spec(t_spec *spec, const char **ptr)
-{
-	while (**ptr == '-' || **ptr == '0' || **ptr == '#' || **ptr == ' ' ||
-			**ptr == '+')
-	{
-		if (**ptr == '-')
-			spec -> flags += 1;
-		if (**ptr == '0')
-			spec -> flags += 2;
-		if (**ptr == '#')
-			spec -> flags += 4;
-		if (**ptr == ' ')
-			spec -> flags += 8;
-		if (**ptr == '+')
-			spec -> flags += 16;
-		(*ptr)++;
-	}
-	(*ptr)++;
-	while (**ptr >= '0' && **ptr <= '9')
-	{
-		spec -> width = spec -> width * 10 + (**ptr- '0');
-		(*ptr)++; 
-	}
-	if (**ptr == '.')
-	{
-		spec -> flags += 32;
-		(*ptr)++;
-		if (**ptr >= '0' && **ptr <= '9')
-		{
-			while (**ptr >= '0' && **ptr <= '9')
-			{
-				spec -> precision = spec -> precision * 10 + **ptr - '0';
-				(*ptr)++;
-			}
-		}
-		else
-			spec -> precision = 0;
-	}
-	if ((**ptr == 'd' || **ptr == 'i') && **(ptr + 1))
-	{	
-		spec -> conversion = **ptr;
-		(*ptr)++;
-	}
-	else
-		ft_putendl_fd("Invalid conversion. To do error handling", 1)
-}
 // Initialise keys and also allows dispatcher to fetch those keys
-/*static t_handler	init_get_handlers(unsigned char fn_keys)
+static t_handler	init_get_handlers(unsigned char fn_keys)
 {
 	static t_handler const	handlers[256] = {
 		['i'] = print_d_i;
 		['d'] = print_d_i;
 	};
 	return (handlers[fn_keys]);
-}*/
+}
