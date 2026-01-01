@@ -12,13 +12,12 @@
 
 #include "ft_printf.h"
 
-int	print_d_i(void *context)
+static int	print_d_i(void *context, va_list *input)
 {
-	char	*str;
-	int		str_len;
+	int	output_len;
 	
-	str_len = ft_strlen(str);
-	str = "test print of print_d_i\n";
-	write(1, str, str_len);
+	
+	output_len = ft_itoa(decimal); // Change to no malloc later
+	
 	return (str_len);
 }

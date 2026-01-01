@@ -23,7 +23,6 @@
 # define FLAG_PLUS  (1 << 4)
 # define FLAG_PREC  (1 << 5)
 
-typedef void    (*t_handler)(void *context);
 typedef struct  s_spec
 {
     unsigned char   flags;
@@ -32,9 +31,18 @@ typedef struct  s_spec
     char            conversion;
 }                   t_spec;
 
-void	print_d_i(void);
-void	parse_spec(t_spec *spec, const char **ptr);
-int 	ft_printf(const char *key, ...);
+typedef struct s_context
+{
+    va_list *input;
+    t_spec  *spec;
+}           t_context;
+
+typedef int (*t_handler)(t_context *context);
+
+
+int print_d_i(void *context, int *va_list);
+int parse_spec(t_spec *spec, const char **ptr)
+int ft_printf(const char *key, ...);
 
 #endif
 
