@@ -39,9 +39,8 @@ typedef struct s_context
 
 typedef int (*t_handler)(t_context *context);
 
-
-int print_d_i(void *context, int *va_list);
-int parse_spec(t_spec *spec, const char **ptr)
+int print_d_i(t_context *context);
+int parse_spec(t_spec *spec, const char **ptr);
 int ft_printf(const char *key, ...);
 
 #endif

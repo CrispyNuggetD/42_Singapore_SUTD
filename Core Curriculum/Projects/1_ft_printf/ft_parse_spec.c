@@ -20,6 +20,8 @@ static int	is_numeric_conv(int conversion);
 int	parse_spec(t_spec *spec, const char **ptr)
 {
 	clear_set_spec_flags(spec, ptr);
+	if (**ptr == '\0')
+		return (0);
 	while (ft_isdigit(**ptr))
 	{
 		spec -> width = spec -> width * 10 + (**ptr - '0');
