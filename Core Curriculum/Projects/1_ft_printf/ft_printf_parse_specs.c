@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_parse_spec.c                                    :+:      :+:    :+:   */
+/*   ft_printf_parse_spec.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/29 15:15:30 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/02 11:16:30 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static void	normalise_flags(t_spec *spec);
 static int	is_numeric_conv(int conversion);
 
 // Parses the key specifiers with flags and everything and moves pointer
-int	parse_spec(t_spec *spec, const char **ptr)
+int	ft_printf_parse_spec(t_spec *spec, const char **ptr)
 {
 	clear_set_spec_flags(spec, ptr);
 	if (**ptr == '\0')
