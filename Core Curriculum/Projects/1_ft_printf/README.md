@@ -132,8 +132,8 @@ Or also AKA:
 - The parser takes a pointer to pointer (pointer to caller's cursor that shows the format-string of the input string after a ```%``` is detected).
 - It advances the caller's cursor AKA the pointed-to pointer (```*ptr```) inside that function hence consuming the flags, etc.
 
-For ```va_list```:
-- Although we can pass a va_list to another function, but if that function uses va_arg(abc, ...), then the value of abc back in the caller will become indeterminate, meaning it could be garbage and we should not use it afterwards, except for ```va_end```)
+(According to C standards) Why is ```va_list``` passed as a pointer to that list?
+- Although we can pass a va_list to another function, but if that function uses va_arg(abc, ...), then the value of abc back in the caller will become indeterminate, meaning it could be garbage and we should not use it afterwards (except for ```va_end```)
 - Hence, I need to pass a pointer to it (```va_list *```), so the handler consumes arguments and the updated state persists.
 
 ---

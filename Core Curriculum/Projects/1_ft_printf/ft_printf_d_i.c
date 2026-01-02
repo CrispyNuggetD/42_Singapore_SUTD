@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_printf_handler.c                                :+:      :+:    :+:   */
+/*   ft_printf_d_i.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/26 09:54:26 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/02 11:16:36 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	print_d_i(t_context *context)
+int	ft_printf_d_i(t_context *context)
 {
 	char	*text;
 	int		output;
