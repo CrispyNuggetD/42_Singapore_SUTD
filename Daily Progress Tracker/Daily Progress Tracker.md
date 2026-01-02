@@ -211,19 +211,57 @@ git diff HEAD..origin/main
 - Updated main repo Readme.md to account for current 1 month progress and this week's goals.
 - Updated printf Readme for description and explanation of how my program works (the 3 modules).
 #### 26/12 (Fri 40):
+- Started serious progress on ft\_printf, learning from ChatGPT.
+- Decided to do BOTH bonuses 'cos why not ;) I get to learn and stand to benefit from it much too.
+- Decided on framework with extensibility for modular programming design (parser, dispatcher, handler)
+- Uses function pointers
 #### 27/12 (WkEnd, Sat 41):
+- MC
 #### 28/12 (WkEnd, Sun 42):
+- Spent 2 hours making not-so-random .zshrc scripts for convenience 
+- (and also fun, i.e. 50 hours intra tracker for points)
+- Another script to show (all) session details for days that I come in before noon 
+- (That's for personal 42 learning journey's accountability/ punctuality)
+- Large chunk of ft\_printf parser made
+- libc comparison and edge tests to understand requirement for code,
+- i.e. no warning flags, cc compilation during evals
 
 ### W7
 #### 29/12 (Mon 43):
+- Spent another 2 hours adding dailylogin function to .zshrc, daily log on/off automations.
+- Separated/ refactored .c files to a parsing .c, updated headers.
+- Defined bitmask bitshifting values to use with bitmapping using turning on or off or toggling (|= or &=~opp or ^=flip)
+- Learnt toggling/ inverting everything except a bitwise operation (^= ~a)
+
 #### 30/12 (Tues 44):
+- Didn't feel well, slept in. (MC)
+- Plus, overseas relatives came over unannounced at night, hosted relatives
 #### 31/12 (Wed 45):
+- Had to host relatives
+- Happy 2026, lol
 
 # 2026
 
 # Jan
 #### 01/01 (Thurs 46):
+- Started using stdarg.h, using va\_lists as parameters.
+- Define function pointer typedef in headers
+- Define a struct, t\_spec, to hold specs/ flags
+- Another struct called tcontext, context holder for passing mutable address (pointers to t\_specs AND va\_list input)
+- By EOD, rough script for printing decimals and integers ('d' and 'i' which printf is similar).
+- Struct handling in main .c
 #### 02/01 (Fri 47):
+- ft\_printf compiles finally with types and prototypes and makefiles sorted
+- Redo via ChatGPT for VSC tasks.json and launch.json, as not available from Libft (deleted during repo proj. clean-up)
+- Made function to print % (for '%%')
+- Norminetting and helper function .c file (currently only holds error handling va\_end and returns -1)
+- Corrected early return inf. loop SIGSEGV bug 
+- (cannot return "return" of handler, need check separately for error first, as while loop.)
+- (Hence, debugged by making a ptr to point to current ptr for norm-friendly "printer" function with ptr advancement)
+- Studied edge cases (like %q) that I have to code later
+- Removed warning flag compilation to test cc warning edge cases error handling.
+- Pulled all-nighter "for-fun" 'cos why not? Embracing 42 Core while I am privileged to be here.
+- By midnight, backlog edit Daily Prog. Tracker for 26/12 onwards, lol. Using git commit details. (Gon' take break now)
 #### 03/01 (WkEnd, Sat 48):
 #### 04/01 (WkEnd, Sun 49):
 

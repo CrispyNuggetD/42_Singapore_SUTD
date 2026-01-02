@@ -6,12 +6,18 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/02 19:03:40 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 00:08:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 #include <stdio.h>
+// WARNING DO NOT REMOVE UNTIL STDIO GETS REMOVED: 
+// CHANGE MAKEFILE WARNING FLAGS BACK
+// NORMINETTE
+// HIDDEN FILES
+// SUBMISSION CONTENTS
+// CHECK INSTANT FAILS OF EVALS
 
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);

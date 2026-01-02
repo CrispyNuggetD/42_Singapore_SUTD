@@ -1,8 +1,15 @@
 # Set up the prompt
 
-# There's a 'dailylogin' function to run when logged in that runs the 2 
-# fun functions (mentioned below) as well as the 2 essential functions.
-# (syncing with github and cd to current proj.)
+# There's a 'dailylogin' function that can both be run when logged in/ logout during
+# EOD [End of day] syncing. 
+
+# This function runs the 2 fun functions (mentioned below) 
+# as well as the 2 essential functions that does 4 main things:
+
+# 1. cd to [custom-defined variable] for current project
+# 2. Opens Visual Studio Code
+# 3. makes fclean to clean up library objects for, then, 
+# 4. Proper syncing with github), amongst other auxillary checks and error handling.
 
 ##### (A) Fun functions:
 # 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
@@ -30,6 +37,12 @@
 
 # curproj switches into your github repo's project folder 
 # and shows the last edit + last sync status.
+# Pre-cleans library objects from directory with 'make fclean' (Comment out if unnecessary).
+# Rationale: Cleaning useful for EOD [End of day] syncing with GitHub.
+
+# Also Launches Visual Studio Code. 
+# (Expected behavior. When EOD [End of day] syncing with 'dailylogin' too, 
+# just ignore and lock computer for auto-logout anyway after syncing is done for the day.)
 
 # cdmain just goes into your github repo.
 
@@ -100,6 +113,12 @@ curproj() {
 
   echo "Now working on: $current_proj"
   echo "Location: $proj_dir"
+  
+  echo "Pre-cleaning"
+  make fclean || return 1
+  
+  echo "Launching Visual Studio Code"
+  code . || return 1
 
   # --- Last edit (in the 42/Vogsphere clone) ---
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -453,12 +472,12 @@ dailylogin() {
   hourslogged
 
   divider
-  echo "sync proj. with github"
-  divider
-  syncproj
-
-  divider
   echo "cd to current project"
   divider
   curproj
+  
+  divider
+  echo "sync proj. with github"
+  divider
+  syncproj
 }
