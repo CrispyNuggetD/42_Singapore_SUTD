@@ -27,7 +27,9 @@ My program uses the following ```typedef``` to work with ```t_handler``` that ar
 typedef void    (*t_handler)(void);
 ```
 
-It also uses the following ```struct``` to contain the input data to be parsed:
+### ```t_spec``` holds input's bonus flags
+
+It also uses the following ```struct``` to contain the input flags data to be parsed:
 
 ```c
 typedef struct  s_spec
@@ -50,11 +52,60 @@ However, just like ```42's Subject.pdf```, my implementation combines existence 
 
 - This prevents needing to define another ```int``` or ```_Bool``` just for ```has_precision```, as ```precision``` is **not** a flag.
 
+### ```t_field``` holds output pieces (sign/ prefix/ core/ padding)
+
+While the aforementioned ```t_spec``` de facto holds the “contract / request”:
+
+- Another ```t_field struct``` holds the “invoice / final bill” (exact pieces and lengths)
+
+It is defined as:
+
+```c
+typedef struct  s_print
+{
+	char	sign;
+	char	*core;
+	size_t	core_len;
+	char	*prefix;
+	size_t	prefix_len;
+	int		prec_zeros;
+	int		pad_len;
+	char	pad_char;
+	int		left;
+}			t_print;
+```
+Where ```int left``` works as a de facto Boolean type just to contain the minus flag's toggle.
+
+### Why ```t_spec``` alone isn’t enough for the printer (```ft_printf_printer```)
+
+```t_spec``` alone does not hold *"final"* info the printer needs. 
+
+- Example:
+
+> %08.3d with value -12
+
+Now, ```t_spec``` already holds: ```width=8```, ```precision=3```, flags include ```0``` and ```.```
+
+But my printer also need to know:
+
+1. sign = ```'-'```
+2. digits = ```"12"``` (core)
+3. prec_zeros = ```1``` (to make ```012```)
+4. pad_len = ```8 - (1 sign + 1 prec_zero + 2 digits) = 4```
+
+#### **Furthermore**, complication is to be handled (pad_char must be ```' '``` not ```'0'```)
+
+That's because precision suppresses zero-padding for numerics, which is detailed in a later section covering flags conflict resolution.
+
+- My normalizer bitmasking ```normalise_flags``` function resets the bit to do ```' '``` and not ```'0'```.
+
 ---
 
-### Modularisation is used instead of convuluted bad-habit non-extensible coding:
+### Why my implementation choice is that of Modularisation
 
-Consider:
+Modularisation is used instead of convuluted bad-habit non-extensible coding:
+
+- Why? Consider:
 
 ```c
 if (a = condition_a)
@@ -132,9 +183,15 @@ Or also AKA:
 - The parser takes a pointer to pointer (pointer to caller's cursor that shows the format-string of the input string after a ```%``` is detected).
 - It advances the caller's cursor AKA the pointed-to pointer (```*ptr```) inside that function hence consuming the flags, etc.
 
+#### ```va_list``` is passed as a pointer 
 (According to C standards) Why is ```va_list``` passed as a pointer to that list?
 - Although we can pass a va_list to another function, but if that function uses va_arg(abc, ...), then the value of abc back in the caller will become indeterminate, meaning it could be garbage and we should not use it afterwards (except for ```va_end```)
 - Hence, I need to pass a pointer to it (```va_list *```), so the handler consumes arguments and the updated state persists.
+
+#### ```is_numeric``` needed for bitwise normalisation
+In real printf behavior, precision suppresses 0 padding only for numeric conversions (e.g., d i u x X, etc.).
+
+- ```is_numeric()``` is a tiny helper that returns true for ```d i u x X``` and thus gives conversion info at normalization time
 
 ---
 

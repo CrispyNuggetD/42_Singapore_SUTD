@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 00:08:05 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 02:17:06 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
 static int			dispatch_key(t_context *context);
-static int			printer(const char **str, int *printed, va_list *input);
+static int			main_coordinator(const char **str, int *printed, va_list *input);
 
 // Main function
 int	main(void)
@@ -66,7 +66,7 @@ int	ft_printf(const char *str, ...)
 		}
 		else
 		{
-			is_success = printer(&str, &printed, &input);
+			is_success = main_coordinator(&str, &printed, &input);
 			if (is_success < 0)
 				return (is_success);
 		}
@@ -103,20 +103,20 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	return (handlers[fn_key]);
 }
 
-static int	printer(const char **str, int *printed, va_list *input)
+static int	main_coordinator(const char **str, int *printed, va_list *input)
 {
 	int			current_len;
 	t_context	context;
 	t_spec		spec;
 
 	(*str)++;
-	if (!ft_printf_parse_spec(&spec, str))
-		return (error_end_stream(input));
+	if (!ft_printf_parse_specs(&spec, str))
+		return (ft_printf_error_end_stream(input));
 	context.input = input;
 	context.spec = &spec;
 	current_len = dispatch_key(&context);
 	if (current_len < 0)
-		return (error_end_stream(input));
+		return (ft_printf_error_end_stream(input));
 	*printed += current_len;
 	return (0);
 }
