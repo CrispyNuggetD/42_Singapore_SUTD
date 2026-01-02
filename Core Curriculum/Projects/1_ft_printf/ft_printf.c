@@ -15,7 +15,8 @@
 
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
-static void			dispatch_key(t_spec *spec, va_list *input);
+static int			dispatch_key(t_context *context);
+static int			end_stream(va_list *input);
 int					ft_printf(const char *key, ...);
 
 // Main function
@@ -23,8 +24,10 @@ int	main(void)
 {
 	int	len;
 
-	printf("TesT");
-	//len = ft_printf("i");
+	//intf("TesT");
+	len = ft_printf("test %d", 123123123);
+	write(1,"\n",1);
+	ft_putnbr_fd(len, 1);
 }
 // printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
 
@@ -32,7 +35,6 @@ int	main(void)
 int ft_printf(const char *str, ...)
 {
 	int			printed;
-	int			parsing_passed;
 	int			current_len;
 	t_context	context;
 	t_spec		spec;
@@ -49,29 +51,17 @@ int ft_printf(const char *str, ...)
 			ft_putchar_fd(*str, 1);
 			str++;
 			printed += 1;
+			continue;
 		}
-		else if (*str == '%')
-		{
-			str++;
-			parsing_passed = parse_spec(&spec, &str);
-			if (parsing_passed)
-			{
-				context.input = &input;
-				context.spec = &spec;
-				current_len = dispatch_key(&context);
-				if (current_len < 0)
-				{
-					va_end(input);
-					return (-1);
-				}
-				printed += current_len;
-			}
-			else
-			{
-				va_end(input);
-				return (-1);
-			}
-		}
+		str++;
+		if (!parse_spec(&spec, &str))
+			return (end_stream(&input));
+		context.input = &input;
+		context.spec = &spec;
+		current_len = dispatch_key(&context);
+		if (current_len < 0)
+			return (end_stream(&input));
+		printed += current_len;
 	}
 	va_end(input);
 	return (printed);
@@ -100,4 +90,11 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 		['d'] = print_d_i,
 	};
 	return (handlers[fn_key]);
+}
+
+// Close va_list and return error
+static int	end_stream(va_list *input)
+{
+	va_end(*input);
+	return (-1);
 }

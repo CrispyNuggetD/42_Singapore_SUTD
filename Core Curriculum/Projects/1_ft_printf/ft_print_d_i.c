@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-static int	print_d_i(t_context *context)
+int	print_d_i(t_context *context)
 {
 	char	*text;
 	int		output;
