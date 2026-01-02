@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "make: libftprintf.a",
+      "type": "shell",
+      "command": "make",
+      "args": ["-C", "${workspaceFolder}", "all"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "prep: mkdir .vscode/bin",
+      "type": "shell",
+      "command": "/bin/mkdir",
+      "args": ["-p", "${workspaceFolder}/.vscode/bin"],
+      "problemMatcher": []
+    },
+    {
+      "label": "build: debug active file (link libftprintf.a)",
+      "type": "shell",
+      "dependsOn": ["make: libftprintf.a", "prep: mkdir .vscode/bin"],
+      "command": "/usr/bin/cc",
+      "args": [
+        "-Wall", "-Wextra", "-Werror",
+        "-g", "-O0",
+        "-I.", "-Ilibft",
+        "${file}",
+        "${workspaceFolder}/libftprintf.a",
+        "-o",
+        "${workspaceFolder}/.vscode/bin/${fileBasenameNoExtension}"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$gcc"],
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/02 13:01:07 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/02 17:46:23 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	ft_printf_percent(t_context *context)
 {
 	ssize_t	print_success;
 	
-	va_arg(*(context -> input), int);
+	(void)context;
 	print_success = write(1, "%", 1);
 	if (print_success < 0)
 		return (-1);
