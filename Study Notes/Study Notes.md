@@ -878,7 +878,9 @@ i.e.:
 
 - Success of ```func()``` alone causes an **early** ```return```.
 - ```error()``` being true **also** causes ```return```.
-- Both ```false```, condition is ```false```, **NO** ```return```
+- Both ```false```
+	- condition is ```false```
+	- **NO** ```return```
 	- Execution continues
 
 #### Expanded version (no ```||```, fully explicit)
@@ -909,26 +911,32 @@ For ```A && B```:
 So ```&&```is basically: “Only do the second thing if the first thing succeeded, i.e. it **did NOT** ```return (0)```(was ```true```).”
 
 i.e.:
-- ```func()``` returns ```0``` (```false```) causes ```ok()``` to **NOT** be called, **NO** return.
-- 
-Case 2: func() returns non-zero (true), ok() returns non-zero (true)
+- ```func()``` returns ```0``` (```false```)
+	- causes ```ok()``` to **NOT** be called, 
+	- **NO** return.
+- ```func()``` returns non-zero (```true```)
+	-```ok()``` IS called
+	- ```ok()``` returns non-zero (```true```)
+	- condition ```true```
+	- ```return``` **happens**
+- ```func()``` returns non-zero (```true```)
+	- ```ok()``` called,
+	- ```ok()``` returns ```0``` (```false```)
+	- condition ```false```
+	- ```return``` **skipped**
 
-ok() IS called
+#### Expanded version (no ```&&```, fully explicit)
 
-condition true
+```c
+if (func())
+{
+	if (ok())
+		return (0);
+}
+```
 
-return happens
-
-Case 3: func() returns non-zero (true), ok() returns 0 (false)
-
-ok() called
-
-condition false
-
-return skipped
-
-
-
----
+- 3 Lines saved.
 
 ##### [Back to contents list](#contents)
+
+---
