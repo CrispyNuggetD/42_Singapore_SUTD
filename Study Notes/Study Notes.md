@@ -937,6 +937,18 @@ if (func())
 
 - 3 Lines saved.
 
+---
+
+### "Normal" Non-Boolean return: Short-circuit style by conversion to boolean in the condition
+
+
+```c
+if (printer(...) < 0 || other(...) < 0)
+	return (-1);
+```
+
+- This is safe because ```(printer(...) < 0)``` is ```boolean``` (```0``` or ```1```).
+
 ##### [Back to contents list](#contents)
 
 ---
