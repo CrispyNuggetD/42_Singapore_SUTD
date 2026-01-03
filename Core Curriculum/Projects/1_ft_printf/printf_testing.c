@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/02 11:16:35 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 07:36:32 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ int	main(void)
 {
 	int test = (0 == -0); // passing -0 is same as passing 0 (NULL)
 	
-	printf("%",AA); // ??????
-	printf("%i\n",,); // compiler error
+	printf("%"); // ??????
+	// printf("%i\n",,); // compiler error
 	printf("%i\n",test);  // NORMAL print
 	printf("%s","huh\n");  // NORMAL print
 	//printf(%s);  // Does not allow/ compile fail

@@ -14,6 +14,7 @@
 12. [About the integer constant 0 in C (NUL isn't NULL)](#12-about-the-integer-constant-0-in-c-nul-isnt-null)
 13. [Function pointer array indexing table initialisation (Best or most correct form)](#13-function-pointer-array-indexing-table-initialisation-best-or-most-correct-form)
 14. [Initialisation of function pointers using static](#14-initialisation-of-function-pointers-using-static)
+15. [Short-circuiting 2 function execution with logical operators](#15-short-circuiting-2-function-execution-with-logical-operators)
 
 ##### [Back to top of contents list](#contents)
 
@@ -830,6 +831,103 @@ static t_handler g_handlers[256];
 **Avoid ```{NULL}``` for function pointer arrays.**
 
 #### **Use 0 (or implicit zero-init), not NULL, when initializing function pointers..!**
+
+##### [Back to contents list](#contents)
+
+---
+
+### 15. Short-circuiting 2 function execution with logical operators
+
+---
+
+#### Key intuition: 
+
+``||`` is “fallback”, ```&&``` is “gate”
+
+- ```A || B``` → try A; if not, try B
+- ```A && B``` → only try B if A worked
+
+That’s why in shell we see:
+
+- ```make && make install``` (install only if build succeeded)
+- ```cd dir || exit 1 ```(bail out if cd failed)
+
+#### Boolean facts
+
+- 0 = ```false```
+- non-zero = ```true```
+	- **INCLUDING** ```-1```
+
+---
+
+### Rule of ```||``` in C (short-circuit ```OR```)
+
+For ```A || B```:
+
+1. Evaluate ```A```
+2. If ```A``` is true (non-zero) 
+	- whole expression is true
+	- ```B``` is NOT evaluated
+3. If ```A``` is ```false``` (0)
+	- evaluate ```B```
+4. Result depends on ```B```
+
+So ```||``` is basically: “Only do the second thing if the first thing failed, i.e. it ```return (0)``` (was ```false```).”
+
+i.e.:
+
+- Success of ```func()``` alone causes an **early** ```return```.
+- ```error()``` being true **also** causes ```return```.
+- Both ```false```, condition is ```false```, **NO** ```return```
+	- Execution continues
+
+#### Expanded version (no ```||```, fully explicit)
+
+```c
+if (func())
+	return (0);
+if (error())
+	return (0);
+```
+
+- 2 Lines saved.
+
+---
+
+### Rule of ```&&``` in C (short-circuit ```AND```)
+
+For ```A && B```:
+
+1. Evaluate ```A```
+2. If ```A``` is false (0)
+	- whole expression is false
+	- do NOT evaluate ```B```
+3. If ```A``` is true (non-zero)
+	- evaluate ```B```
+4. Result depends on ```B```
+
+So ```&&```is basically: “Only do the second thing if the first thing succeeded, i.e. it **did NOT** ```return (0)```(was ```true```).”
+
+i.e.:
+- ```func()``` returns ```0``` (```false```) causes ```ok()``` to **NOT** be called, **NO** return.
+- 
+Case 2: func() returns non-zero (true), ok() returns non-zero (true)
+
+ok() IS called
+
+condition true
+
+return happens
+
+Case 3: func() returns non-zero (true), ok() returns 0 (false)
+
+ok() called
+
+condition false
+
+return skipped
+
+
 
 ---
 

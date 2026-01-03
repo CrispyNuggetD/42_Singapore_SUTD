@@ -63,18 +63,16 @@ It is defined as:
 ```c
 typedef struct  s_print
 {
-	char	sign;
-	char	*core;
-	size_t	core_len;
-	char	*prefix;
-	size_t	prefix_len;
-	int		prec_zeros;
-	int		pad_len;
-	char	pad_char;
-	int		left;
-}			t_print;
+	char		sign;
+	const char	*core;
+	size_t		core_len;
+	const char	*prefix;
+	size_t		prefix_len;
+	size_t		prec_zeros;
+	size_t		pad_len;
+	char		pad_char;
+}				t_print;
 ```
-Where ```int left``` works as a de facto Boolean type just to contain the minus flag's toggle.
 
 ### Why ```t_spec``` alone isn’t enough for the printer (```ft_printf_printer```)
 
