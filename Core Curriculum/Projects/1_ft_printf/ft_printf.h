@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 02:17:02 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 07:35:16 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,18 @@ typedef struct s_context
 	va_list	*input;
 	t_spec	*spec;
 }			t_context;
+
+typedef struct  s_print
+{
+	char		sign;
+	const char	*core;
+	size_t		core_len;
+	const char	*prefix;
+	size_t		prefix_len;
+	size_t		prec_zeros;
+	size_t		pad_len;
+	char		pad_char;
+}				t_print;
 
 typedef int	(*t_handler)(t_context *context);
 
