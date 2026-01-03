@@ -6,30 +6,25 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/03 02:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 07:32:49 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 13:46:21 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	ft_printf_printer(t_context *context)
+int	ft_print_printer(t_context *context, const t_print *paper)
 {
-	char	*text;
-	int		output;
-	size_t	output_len;
-	ssize_t	print_success;
-	
-	output = va_arg(*(context -> input), int);
-	text = ft_itoa(output); // Change to no malloc later
-	if (!text)
-		return (-1);
-	output_len = ft_strlen(text);
-	print_success = write(1, text, output_len);
-	free(text);
-	if (print_success < 0)
-		return (-1);
-	return (output_len);
+	(void)context;
+	(void)paper;
+	return (2);
 }
+
+/*
+Ignored-when-irrelevant:
++ / space only make sense for signed conversions (d/i). They’re ignored for u, x, X, p.
+# matters for x/X (and some others in full libc printf), but is ignored for plain decimal d/i.
+Precision for %c is typically ignored; precision for %s limits max chars printed; precision for integers is “minimum digits”.
+*/
 
 /*
 3) Decide ownership (important!)

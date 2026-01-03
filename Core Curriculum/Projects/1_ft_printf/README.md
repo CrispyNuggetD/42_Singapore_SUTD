@@ -9,7 +9,40 @@
 
 ## About my project
 
-My ft_printf supports the following input syntax:
+### Preface: TL;DR
+
+- I was inspired by intra ```dthoo```'s poor life choices (```\lighthearted```)
+- Hence, I also somehow managed to convince myself to do BOTH bonuses (Although only 1 required)
+	- Why?
+		- It's more *complete* (albeit *without* buffer management)
+		- I *LEARNT* a lot from the process (Considerations for codebase's design choice, etc.)
+		- It was painstaking to code, but was *REAL FUN* and totally *WORTH IT* working on it in hindsight
+		- Debugging became increasingly easy due to chosen ```Modular``` and ```extensible``` codebase.
+- This ```README.md``` documents:
+	- What *exactly* are the bonuses
+	- What *are* the *edge cases* considered
+	- How that lead to *final* programmatic framework.
+- My program is extensible and modular in nature, using these 4 modules:
+	1. Initialiser / Registration (Function keys -> handlers)
+	2. Parser (turn ```%...``` into a spec description)
+	3. Dispatcher (choose which handler to call)
+	4. Handlers (do the actual formatting/output)
+
+---
+
+#### --> Difference in Implementation (with ```dthoo```): 
+
+Yes, I *apparently* did not copy his work. (*Audience gasps!*)
+
+- So, he had many confusing convuluted functions (to me) that needs many parameters
+- I have many ```structs``` and ```modules```, and use ```function pointers```.
+	- Whether "too many" depends on your preference and perception
+	- But it was very painful to code
+		- Maybe I'm new to this
+		- Or maybe it's just 'cos ```function pointers```
+		- \#cope
+
+### My ft_printf supports the following input syntax:
 
 ```c
 %[-][0][width][.prec][type]
@@ -19,15 +52,115 @@ Where the type is one letter.
 
 - An example will be something like ```%-08.2u``` (Just like actual ```printf()```)
 
-### ```typedefs``` for data handling
+## Requirements for Bonus
 
+Let's first find out more about the Bonus segments first which influenced how my project is designed (e.g. Structs, Modularisation, etc.):
+
+### The 7 bonus features (5 flags + Precision specifier + Minimum Field Width)
+
+#### (Class A) 5 Flag characters
+
+1. ```0``` flag (zero pad)
+
+If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
+
+2. ```-``` left align
+
+3. ```+``` always show sign for signed conversions
+
+4. space (``` ```) leading space for positive signed conversions
+
+5. ```#``` alternate form (prefix for hex, etc.)
+
+#### (Class B) 2 Precision features (via ```.```)
+
+6. ```.``` + digits (**OR only just** ```.```) specifies precision
+7. Precision is “present or not”, and if present it has a number
+	- (Number **CAN BE** 0).
+
+---
+
+### "Challenging Scenarios" of Extra Bonus 
+
+1. Flags can appear in any order, and may repeat.
+2. Width can be multiple digits. (Or absent)
+3. Precision may be absent OR present with no digits
+    - The “zero value with percision zero" rule (Big trap, explained in conflict rule 3)
+4. Even with conflict rules (below), width applies to the whole formatted field (sign, spaces, prefixes e.g. ```0x```, digits that can be zero-padded with precision).
+5. “Padding location” depends on flags and precision
+6. ```%``` conversion is special (width and ```-``` still applies but precision present (```.```) doesn't and is ignored.)
+
+#### --> The hardest bonus interactions are around numbers
+
+Especially when value is ```0```.
+
+- If precision is specified as 0 and the number is 0, the digit string becomes empty (for many conversions). **Width still applies.**
+- Then prefixes/signs interact with emptiness.
+
+We cannot assume numeric code always at least one digit, so “digits building” is designed to allow empty output for the core digits, while still allowing prefix/ padding.
+
+## The 4 conflict rules
+
+#### 1. ```-``` with ```0```
+
+> ```%-05d```
+
+Rule: ```-``` wins, **HENCE**, Zero padding is disabled
+
+- Output: ```42   (spaces on right)```
+
+---
+
+#### 2. ```+``` with space
+
+> ```%+ d```
+
+Rule: ```+``` wins, **HENCE**, Space is ignored
+
+- Output: ```+42```
+
+---
+
+#### 3. Precision with ```0``` (numeric)
+
+> ```%0.5d```
+
+Rule: Precision wins, **AND SO**, '''0''' flag ignored
+
+- Output: ```00042```
+
+#### --> The zeroes come from precision, not the 0 flag.
+
+---
+
+#### 4. ```#``` with ```x/X``` (and ```zero```)
+
+> ```%#x with 0```
+
+Rule: No redundant prefix
+
+- Output: Prints ```0```, not ```0x0```
+
+#### --> **BUT AGAIN: Prefix handling must be conditional**
+
+> ```%#x with 42```
+
+- "Normal" ``0x`` Output: ```0x2a```
+
+## Back to my implementation
+
+These are the defined 3 ```typedefs``` for tackling data handling
+
+### 1. ```t_handler``` that are (void) function pointers
 My program uses the following ```typedef``` to work with ```t_handler``` that are ```(void)``` function pointers:
 
 ```c
 typedef void    (*t_handler)(void);
 ```
 
-### ```t_spec``` holds input's bonus flags
+---
+
+### 2. ```t_spec``` holds input's bonus flags
 
 It also uses the following ```struct``` to contain the input flags data to be parsed:
 
@@ -40,11 +173,11 @@ typedef struct  s_spec
     char            conversion;
 }                   t_spec;
 ```
-### About the ```flags```
+### --> About the ```flags```
 
 ```unsigned char flags``` is used to contain the bits needed for bitmask representation of the flags **as well as** ```precision```.
 
-### ```.``` is not truly a flag it just *introduces* precision.
+#### --> ```.``` is not truly a flag it just *introduces* precision.
 
 Unlike ```42's Subject.pdf``` bonus lumping ```.``` with the other flags, in ```printf``` semantics it's *not* really a type (as you can see from input syntax).
 
@@ -52,7 +185,9 @@ However, just like ```42's Subject.pdf```, my implementation combines existence 
 
 - This prevents needing to define another ```int``` or ```_Bool``` just for ```has_precision```, as ```precision``` is **not** a flag.
 
-### ```t_field``` holds output pieces (sign/ prefix/ core/ padding)
+---
+
+### 3. ```t_field``` holds output pieces (sign/ prefix/ core/ padding)
 
 While the aforementioned ```t_spec``` de facto holds the “contract / request”:
 
@@ -74,7 +209,9 @@ typedef struct  s_print
 }				t_print;
 ```
 
-### Why ```t_spec``` alone isn’t enough for the printer (```ft_printf_printer```)
+---
+
+### --> But why is ```t_spec``` alone not enough for the printer (```ft_printf_printer```)?
 
 ```t_spec``` alone does not hold *"final"* info the printer needs. 
 
@@ -91,11 +228,19 @@ But my printer also need to know:
 3. prec_zeros = ```1``` (to make ```012```)
 4. pad_len = ```8 - (1 sign + 1 prec_zero + 2 digits) = 4```
 
-#### **Furthermore**, complication is to be handled (pad_char must be ```' '``` not ```'0'```)
+#### --> **Furthermore**, complication is to be handled (pad_char must be ```' '``` not ```'0'```)
 
 That's because precision suppresses zero-padding for numerics, which is detailed in a later section covering flags conflict resolution.
 
 - My normalizer bitmasking ```normalise_flags``` function resets the bit to do ```' '``` and not ```'0'```.
+
+---
+
+### --> One more benefit of using ```t_print```: 
+- My design also works for:
+	- ```%c``` too (core_len = ```1```)
+	- And for the “precision makes core empty” case (```%.0d``` with ```0```) 
+		- Because core_len can legitimately be ```0```...!
 
 ---
 
@@ -136,22 +281,42 @@ else if (z = condition_z)
 
 Statements. It is error prone to code, to maintain, to extend, and separation of implementation portions if ever needed can cause “branch explosion”
 
-- Hence, my project uses a modular technique:
-
 ---
 
-### Modular technique:
+### Hence, Modular technique:
 
-Three compartmentalised parts to prevent large refactoring requirements/ logic bugs:
+Four compartmentalised parts to prevent large refactoring requirements/ logic bugs:
 
-1. Initialization / Registration (Function keys -> handlers)
+1. Initialiser / Registration (Function keys -> handlers)
 2. Parser (turn ```%...``` into a spec description)
 3. Dispatcher (choose which handler to call)
 4. Handlers (do the actual formatting/output)
 
 An explanation of the modules are as follows:
 
-### Parser
+### 1. Initialiser and Registration
+
+Makes function pointers fixed at compile, not run time.
+
+- Example:
+
+```c
+// Initialise keys and also allows dispatcher to fetch those keys
+static t_handler	init_get_handlers(unsigned char fn_key)
+{
+	static t_handler const	handlers[256] = {
+	['i'] = ft_printf_d_i,
+	['d'] = ft_printf_d_i,
+	['%'] = ft_printf_percent,
+	(...),
+	};
+
+	return (handlers[fn_key])'
+```
+
+---
+
+### 2. Parser
 
 Reads the format string, and when it sees %..., it builds a small description of what it wants:
 
@@ -170,7 +335,7 @@ Example of parsing:
 
 ---
 
-#### How parsing is done
+### --> How parsing is done (reading and string advancement with pointer-to-pointer)
 
 TL;DR
 
@@ -181,158 +346,16 @@ Or also AKA:
 - The parser takes a pointer to pointer (pointer to caller's cursor that shows the format-string of the input string after a ```%``` is detected).
 - It advances the caller's cursor AKA the pointed-to pointer (```*ptr```) inside that function hence consuming the flags, etc.
 
-#### ```va_list``` is passed as a pointer 
+### --> For the context ```struct```, ```va_list``` is passed as a pointer 
 (According to C standards) Why is ```va_list``` passed as a pointer to that list?
 - Although we can pass a va_list to another function, but if that function uses va_arg(abc, ...), then the value of abc back in the caller will become indeterminate, meaning it could be garbage and we should not use it afterwards (except for ```va_end```)
 - Hence, I need to pass a pointer to it (```va_list *```), so the handler consumes arguments and the updated state persists.
 
-#### ```is_numeric``` needed for bitwise normalisation
-In real printf behavior, precision suppresses 0 padding only for numeric conversions (e.g., d i u x X, etc.).
-
-- ```is_numeric()``` is a tiny helper that returns true for ```d i u x X``` and thus gives conversion info at normalization time
-
 ---
 
-### Dispatcher
+### Parsing steps for flags retrieval thereafter
 
-Takes that description and decides which handler function should run.
-
-Example of Dispatching:
-
-- (“conv = ```d```  -> call the integer handler”)
-
-### Handlers (small, single-purpose functions)
-
-- Each handler prints one conversion type and returns “how many chars I wrote”.
-- When these are separate, adding a conversion becomes:
-	- add one handler + register it (instead of rewriting parser logic).
-
-Example of Handling:
-
-- (“print integer using spec rules; update count”)
-
----
-
-### About my bonus ft_printf segment
-
----
-
-### The 7 bonus features (5 flags + Precision specifier + Minimum Field Width)
-
-#### (A) The 5 Flag characters
-
-1. ```0``` flag (zero pad)
-
-If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
-
-2. ```-``` left align
-
-3. ```+``` always show sign for signed conversions
-
-4. space (``` ```) leading space for positive signed conversions
-
-5. ```#``` alternate form (prefix for hex, etc.)
-
-#### (B) Precision (via ```.```)
-
-- ```.``` + digits (**OR only just** ```.```) specifies precision
-Precision is “present or not”, and if present it has a number
-- (Number is possible to be 0).
-
-### Extra Bonus "Challenging Scenarios"
-
-1. Flags can appear in any order, and may repeat.
-2. Width can be multiple digits. (Or absent)
-3. Precision may be absent OR present with no digits
-    - The “zero value with percision zero" rule (Big trap, explained in conflict rule 3)
-4. Even with conflict rules (below), width applies to the whole formatted field (sign, spaces, prefixes e.g. ```0x```, digits that can be zero-padded with precision).
-5. “Padding location” depends on flags and precision
-6. ```%``` conversion is special (width and ```-``` still applies but precision present (```.```) doesn't and is ignored.)
-
-#### The hardest bonus interactions are around numbers
-
-Especially when value is ```0```.
-
-- If precision is specified as 0 and the number is 0, the digit string becomes empty (for many conversions). **Width still applies.**
-- Then prefixes/signs interact with emptiness.
-
-We cannot assume numeric code always at least one digit, so “digits building” is designed to allow empty output for the core digits, while still allowing prefix/ padding.
-
-#### 4 conflict rules as follows:
-
----
-
-#### 1. ```-``` with ```0```
-
-- ```%-05d```
-
-Rule:
-
-- ```-``` wins
-- Zero padding is disabled
-
-Output:
-
-```42   (spaces on right)```
-
----
-
-#### 2. ```+``` with space
-
-- ```%+ d```
-
-Rule:
-
-- ```+``` wins
-- Space is ignored
-
-Output:
-
-```+42```
-
----
-
-#### Precision with ```0``` (numeric)
-
-- ```%0.5d```
-
-Rule:
-
-- Precision wins
-- '''0''' flag ignored
-
-Output:
-
-```00042```
-
-The zeroes come from precision, not the 0 flag.
-
----
-
-#### ```#``` with ```x/X``` (and zero)
-
-- ```%#x with 0```
-
-Rule:
-
-- No redundant prefix
-
-Output:
-Prints ```0```, not ```0x0```
-
-#### **BUT:**
-
-- ```%#x with 42```
-
-Output:
-
-```0x2a```
-
-**This is why prefix handling must be conditional.**
-
-### Parsing technique henceforth
-
-When ```%```, do these 5 steps:
+When hit ```%```, do these 5 steps:
 
 #### (A) Flags
 
@@ -341,13 +364,16 @@ When ```%```, do these 5 steps:
 3. Then precision: if ```.``` then mark precision specified; parse digits (or 0 if none)
 4. Finally, read the conversion: next char is the specifier
 
----
-
 #### (B) Then do **bitwise normalisation**:
 
 - if ```-``` set -> clear ```0```
 - if ```+``` set -> clear ```space```
-- if precision specified numeric conversion -> clear ```0``` padding behavior
+- if precision specified numeric conversion (```is_numeric```, explained **below**) -> clear ```0``` padding behavior
+
+#### --> ```is_numeric``` to tell if numeric conversions
+In real printf behavior, precision suppresses 0 padding only for numeric conversions (e.g., d i u x X, etc.).
+
+- ```is_numeric()``` is a tiny helper that returns true for ```d i u x X``` and thus gives conversion info at normalization time
 
 ---
 
@@ -356,10 +382,47 @@ When ```%```, do these 5 steps:
 Mandatory-only implementations often:
 
 - Parse % then immediately execute
+- No ```structs``` required
 
 Bonus-ready implementations:
 
 - Parse % into a spec struct, normalize conflicts, then execute
+
+---
+
+### 3. Dispatcher
+
+Takes that description and decides which handler function should run.
+
+Example of Dispatching:
+
+- (“conv = ```d```  -> call the integer handler”)
+
+Then, dispatches that identified function with a function call with ```t_context``` (```flags``` + ```input```)
+
+- ```va_list``` stored elsewhere in another ```struct```
+
+---
+
+### 4. Handlers (small, single-purpose functions)
+
+Handler builds ```t_print struct``` fields (members) using ```t_context struct``` and passes to ```ft_printf_printer``` function to format and print the final output string.
+
+- Each handler prints one conversion type and returns “how many chars I wrote"
+- Since implementation separates handlers, adding another conversion becomes:
+	- add one handler + register it (instead of rewriting parser logic!)
+
+#### --> ```ft_printf_printer``` formats and prints final output
+
+This function, *finally*, prints the final formatted string.
+
+- With the following format:
+> \[pad][sign][prefix][precision-zeroes][core][pad]
+
+It does this while first considering:
+
+- Whether the padding is on the **right**, and 
+- ```0``` decides whether the **left** padding is zeros (with *some* rules).
 
 # Instructions
 

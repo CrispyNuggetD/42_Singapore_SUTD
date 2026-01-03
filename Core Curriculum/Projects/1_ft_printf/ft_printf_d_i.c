@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/02 11:16:36 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 13:45:11 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,10 @@ int	ft_printf_d_i(t_context *context)
 	int		output;
 	size_t	output_len;
 	ssize_t	print_success;
-	
+	t_print paper;
+
+	init_t_print(&paper);	
+
 	output = va_arg(*(context -> input), int);
 	text = ft_itoa(output); // Change to no malloc later
 	if (!text)

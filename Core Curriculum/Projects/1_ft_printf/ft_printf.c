@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 02:17:06 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/03 13:47:08 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,34 @@ int	main(void)
 	int	len2;
 	//char *input = "tes %% te %i tes";
 
-	len = ft_printf("ttt%bca%q", 12);
-	ft_printf("\nlen is: %i\n\n", len);
-	len2 = printf("tt%b", 12);
+	//len = ft_printf("ttt%bca%q", 12);
+	//ft_printf("\nlen is: %i\n\n", len);
+	len2 = printf("%*s", 10, "asd");
 	printf("\nlen2 is: %i\n\n", len2);
 }
 //intf("TesT");
 // printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
+
+/* %[-][0][width][.prec][type]
+
+ 1. ```0``` flag (zero pad)
+
+If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
+
+2. ```-``` left align
+
+3. ```+``` always show sign for signed conversions
+
+4. space (``` ```) leading space for positive signed conversions
+
+5. ```#``` alternate form (prefix for hex, etc.)
+
+#### (Class B) 2 Precision features (via ```.```)
+
+6. ```.``` + digits (**OR only just** ```.```) specifies precision
+7. Precision is “present or not”, and if present it has a number
+	- (Number **CAN BE** 0).
+ */
 
 /*
 len = ft_printf(input, 1, 54, INT_MAX, INT_MIN, 0, -1, 42);
@@ -74,6 +95,24 @@ int	ft_printf(const char *str, ...)
 	va_end(input);
 	return (printed);
 }
+
+static int	main_coordinator(const char **str, int *printed, va_list *input)
+{
+	int			current_len;
+	t_context	context;
+	t_spec		spec;
+
+	(*str)++;
+	if (!ft_printf_parse_specs(&spec, str))
+		return (ft_printf_error_end_stream(input));
+	context.input = input;
+	context.spec = &spec;
+	current_len = dispatch_key(&context);
+	if (current_len < 0)
+		return (ft_printf_error_end_stream(input));
+	*printed += current_len;
+	return (0);
+}
 // check actual error code if (!str); return (0); 
 // The below function initialises (by mapping) the function handlers
 // Variables mean type_handler, global_handler
@@ -82,6 +121,7 @@ static int	dispatch_key(t_context *context)
 {
 	t_handler	fn;
 	int			len_printed;
+	t_print		paper;
 
 	fn = init_get_handlers(context -> spec -> conversion);
 	if (fn)
@@ -103,25 +143,16 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	return (handlers[fn_key]);
 }
 
-static int	main_coordinator(const char **str, int *printed, va_list *input)
-{
-	int			current_len;
-	t_context	context;
-	t_spec		spec;
 
-	(*str)++;
-	if (!ft_printf_parse_specs(&spec, str))
-		return (ft_printf_error_end_stream(input));
-	context.input = input;
-	context.spec = &spec;
-	current_len = dispatch_key(&context);
-	if (current_len < 0)
-		return (ft_printf_error_end_stream(input));
-	*printed += current_len;
-	return (0);
-}
+/* 
 
-/* EDGE CASES
+
+EDGE CASES
+
+ALWAYS CHECK MEMORY LEAKS AND MALLOC AND FREEING
+
+"%*s", 2, *str_ptr
+
 1) Unknown conversion specifier
 
 %q, %y, %k, %!, %= …
