@@ -263,6 +263,12 @@ git diff HEAD..origin/main
 - Pulled all-nighter "for-fun" 'cos why not? Embracing 42 Core while I am privileged to be here.
 - By midnight, backlog edit Daily Prog. Tracker for 26/12 onwards, lol. Using git commit details. (Gon' take break now)
 #### 03/01 (WkEnd, Sat 48):
+- Handler builds a (new, third) ```t_print``` struct with context info for actual printing template
+- ```t_print``` passed to ```printer``` function to parse with actual output format printing.
+- Learnt various programming knowledge with ChatGPT
+- Massive refactoring, addition of info to ```README.md``` of ```ft_printf```
+- Got to network, open up, and talk to a lot of my peers!
+- Ended 42 marathon after 9am->12mn->4pm (31 hours)
 #### 04/01 (WkEnd, Sun 49):
 
 ### W8
