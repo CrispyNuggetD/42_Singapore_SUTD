@@ -31,7 +31,7 @@
 ## Mid-Nov
 ### W1
 #### 17/11 (Mon 1): 
-- Orientation, nearly got TIG’d for coffee :’)
+- Orientation, nearly got TIG’d for coffee :’\)
 #### 18/11 (Tues 2):
 - Sick
 #### 19/11 (Wed 3):
@@ -65,18 +65,18 @@
 - Learnt itoa, 5 algos (simple, -ve trick, efficient, hardcoding, theoretical/ cute/dumb i.e. recursion)
 #### 26/11 (Wed 10):
 - (Malloc, char**) “re-solidifying” of C fundamentals/ Piscine contents
-- Alex senior taught 7 bitwise operations (^ XOR, |, &, ~ inversion, ! NOT, << bit shift, >>)
+- Alex senior taught 7 bitwise operations ```(^``` XOR, ```|```,``` &```, ```~``` inversion, ```!``` NOT, ```<<``` bit shift, ```>>```\)
 - Learnt file descriptors (fd), and how UNIX represents things as “files”
 - write(fd), where 1 (stdout) and 2 (stderr) both point to terminal, but 1 can be piped to file.
-- How ft_putchar_fd is deceptively simple (need test edge cases but don’t go too extreme than libc)
-- Alex corrected ft_putchar_fd‘s char c requires addressing (in hindsight, duh!)
+- How ```ft_putchar_fd``` is deceptively simple (need test edge cases but don’t go too extreme than libc)
+- Alex corrected ```ft_putchar_fd```‘s char c requires addressing (in hindsight, duh!)
 - Alex also taught how bitwise can be used for comparison (isprintable, iseven in isdigit…)
 - Alex also explained why HIS IMPLEMENTATION isdigit functions returns in powers of 2 (helps bitwise comparison).
 - But apparently ChatGPT says that’s secretly cursed because powers of 2 is internal, guaranteed returns are 0, 1.
 - Alex however (anyway) advised for purpose of libft, we “don’t have to go until so complicated”, i.e. return 1,0 good enough.
 - Ran 2.95KM to end-of-PIE Plane Spotting area with the gang!
 #### 27/11 (Thurs 11):
-- Made Study Notes.md, something I should have started long ago w. ChatGPT learning
+- Made ```Study Notes.md```, something I should have started long ago w. ChatGPT learning
 - Inspiration from alleow's notes.txt
 - Learnt a lot about structs and enums today (and using them together for simple reading).
 - Learnt (side-track) what "computation" even is (and alternative computation models); how can one not know what they're learning?
@@ -141,11 +141,11 @@ git diff HEAD..origin/main
 #### 12/12 (Fri 26):
 - Started part 2 functions
 #### 13/12 (WkEnd, Sat 27):
-- Started ft_split
-- Learnt VSC GDB debugging (thanks @thtay!)
-- ft_split debugging pain.
+- Started ```ft_split```
+- Learnt VSC GDB debugging (thanks ```@thtay```!)
+- ```ft_split``` debugging pain.
 #### 14/12 (WkEnd, Sun 28):
-- ft_split debugging.
+- ```ft_split``` debugging.
 - Did putchar series and finished part 2.
 - Started linked lists.
 
@@ -158,7 +158,7 @@ git diff HEAD..origin/main
 #### 17/12 (Wed 31):
 - Finished README for libft, proj. complete
 - Submitted Proj, not yet eval
-- Mock eval by @thtay (thanks!!)
+- Mock eval by ```@thtay``` (thanks!!)
 #### 18/12 (Thurs 32):
 - Stressing out over live coding for evaluations; revising for evaluations. 
 - Losing sleep over evals is kinda overkill but yea. 
@@ -168,7 +168,7 @@ git diff HEAD..origin/main
 - 1st eval chose isalnum for live coding; I can’t believe I actually didn’t manage to do my int Main(void) properly because I was soooo sleep deprived. 
 - IMHO, she shouldn’t have passed me but she did anyway. I’ll buck up I guess. 
 #### 20/12 (WkEnd, Sat 34):
-- I took a break after Libft!!
+- I took a break after ```Libft```!!
 - Ended up hibernating the day away. 
 #### 21/12 (WkEnd, Sun 35):
 - Evaluating others:
@@ -181,7 +181,7 @@ git diff HEAD..origin/main
 - ChatGPT about printf learning ways to do it.
 - Readme printf update of the ways I used ChatGPT (Proj. Exploration).
 #### 23/12 (Tues 37):
-- @bralee peer learning/ whiteboard code jam and lesson on Milestone 1:
+- ```@bralee``` peer learning/ whiteboard code jam and lesson on Milestone 1:
 	- Makefiles
 	- Tips and Tricks
 	- Get Next Line
@@ -191,13 +191,13 @@ git diff HEAD..origin/main
 	- My Qn about logic change vs data change (printf indexing table) 
 - Debate on meaning of “refactoring”, whether any features should change or just code structure.
 #### 24/12 (Wed 38):
-- More ChatGPT, learn typedefs and void function pointers.
+- More ChatGPT, learn ```typedefs``` and ```void``` function pointers.
 - Updated study notes, daily progress tracker.
 #### 25/12 (Thurs 39):
 - Merry Christmas! I’m bored, so why not study something I love?
-- Made ft_printf makefile, learnt and links to libft in other directory using -I flag.
+- Made ```ft_printf``` makefile, learnt and links to libft in other directory using -I flag.
 - Edited libft makefile for clarity (for evaluator) and correctness.
-- Makefile works and test of main function of ft\_printf able to call Libft’s ft\_itoa.
+- Makefile works and test of main function of ```ft_printf``` able to call Libft’s ```ft_itoa```.
 - Updated main repo Readme.md to account for current 1 month progress and this week’s goals.
 - Updated printf Readme for description and explanation of how my program works (the 3 modules).  
 #### 24/12 (Wed 38):
@@ -207,12 +207,12 @@ git diff HEAD..origin/main
 - Merry Christmas! I'm bored, so why not study something I love?
 - Made ft_printf makefile, learnt and links to libft in other directory using -I flag.
 - Edited libft makefile for clarity (for evaluator) and correctness.
-- Makefile works and test of main function of ft\_printf able to call Libft's ft\_itoa.
+- Makefile works and test of main function of ```ft_printf``` able to call Libft's ```ft_itoa```.
 - Updated main repo Readme.md to account for current 1 month progress and this week's goals.
 - Updated printf Readme for description and explanation of how my program works (the 3 modules).
 #### 26/12 (Fri 40):
-- Started serious progress on ft\_printf, learning from ChatGPT.
-- Decided to do BOTH bonuses 'cos why not ;) I get to learn and stand to benefit from it much too.
+- Started serious progress on ```ft_printf```, learning from ChatGPT.
+- Decided to do BOTH bonuses 'cos why not ;\) I get to learn and stand to benefit from it much too.
 - Decided on framework with extensibility for modular programming design (parser, dispatcher, handler)
 - Uses function pointers
 #### 27/12 (WkEnd, Sat 41):
@@ -222,7 +222,7 @@ git diff HEAD..origin/main
 - (and also fun, i.e. 50 hours intra tracker for points)
 - Another script to show (all) session details for days that I come in before noon 
 - (That's for personal 42 learning journey's accountability/ punctuality)
-- Large chunk of ft\_printf parser made
+- Large chunk of ```ft_printf``` parser made
 - libc comparison and edge tests to understand requirement for code,
 - i.e. no warning flags, cc compilation during evals
 
@@ -230,8 +230,8 @@ git diff HEAD..origin/main
 #### 29/12 (Mon 43):
 - Spent another 2 hours adding dailylogin function to .zshrc, daily log on/off automations.
 - Separated/ refactored .c files to a parsing .c, updated headers.
-- Defined bitmask bitshifting values to use with bitmapping using turning on or off or toggling (|= or &=~opp or ^=flip)
-- Learnt toggling/ inverting everything except a bitwise operation (^= ~a)
+- Defined bitmask bitshifting values to use with bitmapping using turning on or off or toggling (```|=``` or ```&=~opp``` or ```^=flip```)
+- Learnt toggling/ inverting everything except a bitwise operation (```^= ~a```)
 
 #### 30/12 (Tues 44):
 - Didn't feel well, slept in. (MC)
@@ -244,21 +244,21 @@ git diff HEAD..origin/main
 
 # Jan
 #### 01/01 (Thurs 46):
-- Started using stdarg.h, using va\_lists as parameters.
+- Started using stdarg.h, using ```va_lists``` as parameters.
 - Define function pointer typedef in headers
-- Define a struct, t\_spec, to hold specs/ flags
-- Another struct called tcontext, context holder for passing mutable address (pointers to t\_specs AND va\_list input)
+- Define a struct, ```t_spec```, to hold specs/ flags
+- Another struct called tcontext, context holder for passing mutable address (pointers to ```t_specs``` AND ```va_list``` input)
 - By EOD, rough script for printing decimals and integers ('d' and 'i' which printf is similar).
 - Struct handling in main .c
 #### 02/01 (Fri 47):
-- ft\_printf compiles finally with types and prototypes and makefiles sorted
+- ```ft_printf``` compiles finally with types and prototypes and makefiles sorted
 - Redo via ChatGPT for VSC tasks.json and launch.json, as not available from Libft (deleted during repo proj. clean-up)
-- Made function to print % (for '%%')
-- Norminetting and helper function .c file (currently only holds error handling va\_end and returns -1)
+- Made function to print % (for '```%%```')
+- Norminetting and helper function .c file (currently only holds error handling ```va_end``` and returns ```-1```)
 - Corrected early return inf. loop SIGSEGV bug 
 - (cannot return "return" of handler, need check separately for error first, as while loop.)
 - (Hence, debugged by making a ptr to point to current ptr for norm-friendly "printer" function with ptr advancement)
-- Studied edge cases (like %q) that I have to code later
+- Studied edge cases (like %q) that I have to code later (EDIT 04/01/26: Not needed conversion!)
 - Removed warning flag compilation to test cc warning edge cases error handling.
 - Pulled all-nighter "for-fun" 'cos why not? Embracing 42 Core while I am privileged to be here.
 - By midnight, backlog edit Daily Prog. Tracker for 26/12 onwards, lol. Using git commit details. (Gon' take break now)
@@ -270,6 +270,16 @@ git diff HEAD..origin/main
 - Got to network, open up, and talk to a lot of my peers!
 - Ended 42 marathon after 9am->12mn->4pm (31 hours)
 #### 04/01 (WkEnd, Sun 49):
+- ```ft_printf``` now prevents partial printing of ```C``` strings with ```write_all_guaranteed```
+- ```write_repeat``` repeats one character. Calls ```write_all_guaranteed``` to not duplicate error handling.
+- Did an ```itoa_no_sign``` implementation that does not use malloc (uses pointers and changes buffer immediately)
+- This ```itoa_no_sign``` also doesn't return sign (duh), as sign is stored in ```struct``` (e.g. prevents ```--42``` being printed)
+- Building of ```t_print``` relevant in ```d_i.c``` completed.
+- All other building of remainder of ```t_print``` done in ```printer.c```
+- ```if``` clamping done to prevent underflows (when core_len > precision and subtract from precision = 0);
+- TO-DO: Prototype static functions (that are in reverse order).
+- TO-DO: Update ```ft_printf``` ```Readme.md```
+- TO-DO: Work on ```send_for_printing``` by understanding the multi-line comment in code about the 3 different output formats (e.g. pad left/ right)
 
 ### W8
 #### 05/01 (Mon 50):

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 13:44:43 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/04 10:58:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	ft_printf_percent(t_context *context)
 	t_print paper;
 
 	(void)context;
-	init_t_print(&paper);
+	ft_printf_init_t_print(&paper);
 	print_success = write(1, "%", 1);
 	if (print_success < 0)
 		return (-1);
