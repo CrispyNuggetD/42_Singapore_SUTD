@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 13:47:08 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/04 18:26:56 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
 static int			dispatch_key(t_context *context);
-static int			main_coordinator(const char **str, int *printed, va_list *input);
+static int			main_coordinator(const char **str, t_context *context, va_list *input);
 
 // Main function
 int	main(void)
@@ -69,9 +69,10 @@ len = ft_printf(input, 1, 54, INT_MAX, INT_MIN, 0, -1, 42);
 // This function is summoned from main to parse the input
 int	ft_printf(const char *str, ...)
 {
-	int		printed;
-	int		is_success;
-	va_list	input;
+	int			printed;
+	int			is_success;
+	t_context	context;
+	va_list		input;
 
 	printed = 0;
 	if (!str)
@@ -83,11 +84,11 @@ int	ft_printf(const char *str, ...)
 		{
 			ft_putchar_fd(*str, 1);
 			str++;
-			printed += 1;
+			context.printed += 1;
 		}
 		else
 		{
-			is_success = main_coordinator(&str, &printed, &input);
+			is_success = main_coordinator(&str, &context, &input);
 			if (is_success < 0)
 				return (is_success);
 		}
@@ -96,21 +97,19 @@ int	ft_printf(const char *str, ...)
 	return (printed);
 }
 
-static int	main_coordinator(const char **str, int *printed, va_list *input)
+static int	main_coordinator(const char **str, t_context *context, va_list *input)
 {
-	int			current_len;
-	t_context	context;
+	int			dispatch_success;
 	t_spec		spec;
 
 	(*str)++;
 	if (!ft_printf_parse_specs(&spec, str))
 		return (ft_printf_error_end_stream(input));
-	context.input = input;
-	context.spec = &spec;
-	current_len = dispatch_key(&context);
-	if (current_len < 0)
+	context -> input = input;
+	context -> spec = &spec;
+	dispatch_success = dispatch_key(context);
+	if (dispatch_success < 0)
 		return (ft_printf_error_end_stream(input));
-	*printed += current_len;
 	return (0);
 }
 // check actual error code if (!str); return (0); 
@@ -121,7 +120,6 @@ static int	dispatch_key(t_context *context)
 {
 	t_handler	fn;
 	int			len_printed;
-	t_print		paper;
 
 	fn = init_get_handlers(context -> spec -> conversion);
 	if (fn)

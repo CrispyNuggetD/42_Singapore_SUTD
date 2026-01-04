@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/02 12:17:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 13:40:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/04 13:25:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,15 @@ int	ft_printf_error_end_stream(va_list *input)
 	return (-1);
 }
 
-void	init_t_print(t_print *paper)
+void	ft_printf_init_t_print(t_print *paper)
 {
 	*paper = (t_print){0};
 	paper -> pad_char = ' ';
 }
+
+
+
+
 /* 
 Compound literal (t_print){0} creates a temporary t_print value.
 Because of {0}, the first field is init 0, 

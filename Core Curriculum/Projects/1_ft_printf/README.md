@@ -41,6 +41,7 @@ Yes, I *apparently* did not copy his work. (*Audience gasps!*)
 		- Maybe I'm new to this
 		- Or maybe it's just 'cos ```function pointers```
 		- \#cope
+- Also, my program handles ```write``` syscall partial printing issues. :D Cool right? I hope you agree :\(
 
 ### My ft_printf supports the following input syntax:
 
@@ -423,6 +424,35 @@ It does this while first considering:
 
 - Whether the padding is on the **right**, and 
 - ```0``` decides whether the **left** padding is zeros (with *some* rules).
+
+#### --> ```ft_printf_printer``` handles partial printing too
+
+- ```write()``` returns ```(size_t)``` length printed, can be use to check for partial printing.
+- Implementation can use loops to check total length have been printed, and pointer advancements to print remainder if any, as such:
+
+```c
+while (len > 0)
+{
+	w = write(1, p, len);
+	if (w < 0)
+		return (-1);
+	p += w;
+	len -= (size_t)w;
+}
+```
+
+#### Could ```write()``` ever be partial?
+
+Sometimes, when we request syscall of ```write()``` and have (especially), a long buffer and length to print, some can end up being trimmed/ not fully printed.
+
+##### --> This is learnt from ChatGPT:
+
+Even to stdout, it often writes everything, but it’s not guaranteed. Partial writes commonly happen with:
+
+- pipes or sockets
+- non-blocking file descriptors
+- signals interrupting syscalls
+- full buffers or backpressure
 
 # Instructions
 
