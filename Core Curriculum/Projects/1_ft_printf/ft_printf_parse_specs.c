@@ -6,15 +6,16 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/03 12:44:05 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/06 13:25:34 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
-static void	normalise_flags(t_spec *spec);
 static int	is_numeric_conv(int conversion);
+static void	normalise_flags(t_spec *spec);
+static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
+
 
 // Parses the key specifiers with flags and everything and moves pointer
 int	ft_printf_parse_specs(t_spec *spec, const char **ptr)

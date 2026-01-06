@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/04 18:23:35 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/06 14:38:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,8 @@ int		ft_printf_parse_specs(t_spec *spec, const char **ptr);
 int		ft_printf_error_end_stream(va_list *input);
 int		ft_printf_d_i(t_context *context);
 int		ft_printf_percent(t_context *context);
-int		ft_printf_set_print_format(t_context *context, const t_print *paper);
+int		ft_printf_print_config(t_context *context, t_print *paper);
+int		send_for_printing(t_context *context, t_print *paper);
 void	ft_printf_init_t_print(t_print *paper);
 
 #endif
