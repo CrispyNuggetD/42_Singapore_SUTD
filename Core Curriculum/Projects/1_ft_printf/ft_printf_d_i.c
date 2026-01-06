@@ -6,13 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/04 18:49:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/06 13:27:23 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-# PROTOTYPES
+static size_t	itoa_no_sign(int n, char buf[12], const char **start);
+static void	print_sign(const t_context *context, t_print *paper, int arg);
 
 int	ft_printf_d_i(t_context *context)
 {
@@ -24,15 +25,15 @@ int	ft_printf_d_i(t_context *context)
 
 	ft_printf_init_t_print(&paper);	
 	arg = va_arg(*(context -> input), int);
-	print_sign_handler(context, &paper, arg);
+	print_sign(context, &paper, arg);
 	paper.core_len = itoa_no_sign(arg, text, &start);
 	paper.core = start;
-	printer_len = print_printer(context, &paper);
+	printer_len = ft_printf_print_config(context, &paper);
 	return (printer_len);
 }
 //sign is supposed to be handled by ft_print_sign_handler
 
-static void	print_sign_handler(const t_context *context, t_print *paper, int arg)
+static void	print_sign(const t_context *context, t_print *paper, int arg)
 {
 	if (arg < 0)
 		paper -> sign = '-';

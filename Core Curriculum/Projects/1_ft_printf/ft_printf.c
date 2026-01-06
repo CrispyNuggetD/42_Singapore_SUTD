@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/04 18:26:56 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/06 13:45:34 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,59 +22,58 @@
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
 static int			dispatch_key(t_context *context);
-static int			main_coordinator(const char **str, t_context *context, va_list *input);
+static int			main_coordinator(const char **str, t_context *context,\
+									va_list *input);
 
 // Main function
 int	main(void)
 {
 	int	len;
 	int	len2;
-	//char *input = "tes %% te %i tes";
+	char *input = "tes %% te %i tes";
+
+	len = ft_printf(input, 12);
+	ft_printf("\nlen is: %i\n\n", len);
+	len2 = printf(input, 12);
+	ft_printf("\nlen2 is: %i\n\n", len2);
 
 	//len = ft_printf("ttt%bca%q", 12);
 	//ft_printf("\nlen is: %i\n\n", len);
-	len2 = printf("%*s", 10, "asd");
-	printf("\nlen2 is: %i\n\n", len2);
+	
 }
-//intf("TesT");
-// printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
+//len2 = printf("%*s", 10, "asd");
+//printf("\nlen2 is: %i\n\n", len2);
+//printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
 
-/* %[-][0][width][.prec][type]
+/* 
+%[-][0][width][.prec][type]
 
- 1. ```0``` flag (zero pad)
+#### (Class A) 5 Flags
 
-If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
-
-2. ```-``` left align
-
-3. ```+``` always show sign for signed conversions
-
-4. space (``` ```) leading space for positive signed conversions
-
-5. ```#``` alternate form (prefix for hex, etc.)
+	1. ```0``` flag (zero pad)
+		If padding is needed to reach the minimum field width, 
+		pad with '0' characters instead of spaces.
+	2. ```-``` left align
+	3. ```+``` always show sign for signed conversions
+	4. space (``` ```) leading space for positive signed conversions
+	5. ```#``` alternate form (prefix for hex, etc.)
 
 #### (Class B) 2 Precision features (via ```.```)
 
-6. ```.``` + digits (**OR only just** ```.```) specifies precision
-7. Precision is “present or not”, and if present it has a number
-	- (Number **CAN BE** 0).
- */
-
-/*
-len = ft_printf(input, 1, 54, INT_MAX, INT_MIN, 0, -1, 42);
-	ft_printf("\nlen is: %i\n\n", len);
-	len2 = printf(input, 1, 54, INT_MAX, INT_MIN, 0, -1, 42);
-	ft_printf("\nlen2 is: %i\n\n", len2);*/
+	6. ```.``` + digits (**OR only just** ```.```) specifies precision
+	7. Precision is “present or not”, and if present it has a number
+		- (Number **CAN BE** 0).
+*/
 
 // This function is summoned from main to parse the input
 int	ft_printf(const char *str, ...)
 {
-	int			printed;
+	//int			printed;
 	int			is_success;
 	t_context	context;
 	va_list		input;
 
-	printed = 0;
+	context.printed = 0;
 	if (!str)
 		return (0);
 	va_start(input, str);
@@ -94,7 +93,7 @@ int	ft_printf(const char *str, ...)
 		}
 	}
 	va_end(input);
-	return (printed);
+	return (context.printed);
 }
 
 static int	main_coordinator(const char **str, t_context *context, va_list *input)
@@ -137,7 +136,6 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	['d'] = ft_printf_d_i,
 	['%'] = ft_printf_percent,
 	};
-
 	return (handlers[fn_key]);
 }
 

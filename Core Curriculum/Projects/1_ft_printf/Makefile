@@ -1,8 +1,8 @@
 CC	= cc
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-# CFLAGS	= -Wall -Wextra -Werror #Standard 42 norm
+CFLAGS	= -Wall -Wextra -Werror -g #Standard 42 norm
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-CFLAGS	:=
+#CFLAGS	:= 
 AR = ar
 AR_FLAGS = rcs
 
@@ -10,8 +10,8 @@ INCS	= -I. -Ilibft #Where to look for header files
 
 NAME	= libftprintf.a #Library name
 
-SRCS	= ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_d_i.c ft_printf_percent.c #ft_print_c.c ft_print_s.c ft_print_nbr.c \
-		#ft_print_hex.c ft_print_ptr.c
+SRCS	= ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_print_config.c \
+			ft_printf_printer.c ft_printf_d_i.c ft_printf_percent.c \
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
 #BONUS := ft_lstnew.c ft_lstadd_front.c 

@@ -65,7 +65,7 @@ Let's first find out more about the Bonus segments first which influenced how my
 
 If padding is needed to reach the minimum field width, pad with '0' characters instead of spaces.
 
-2. ```-``` left align
+2. ```-``` left align (pad on right)
 
 3. ```+``` always show sign for signed conversions
 
