@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 13:15:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 14:23:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static int	is_numeric_conv(int conversion);
 static void	normalise_flags(t_spec *spec);
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
 
-/* // Parses the key specifiers with flags and everything and moves pointer
+// Parses the key specifiers with flags and everything and moves pointer
 int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 {
 	clear_set_spec_flags(spec, ptr);
@@ -37,12 +37,8 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 			(*ptr)++;
 		}
 	}
-	if ((**ptr == 'd' || **ptr == 'i'))
-	{
-		spec -> conversion = **ptr;
-		(*ptr)++;
-	}
-	else if (**ptr == '%')
+	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
+		 **ptr == 's' || **ptr == 'u')
 	{
 		spec -> conversion = **ptr;
 		(*ptr)++;
@@ -52,7 +48,7 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 	if (spec -> conversion)
 		normalise_flags(spec);
 	return (spec -> conversion);
-} */
+}
 
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 {
