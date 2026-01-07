@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/02 12:17:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/04 13:25:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 12:46:09 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,39 @@ void	ft_printf_init_t_print(t_print *paper)
 	paper -> pad_char = ' ';
 }
 
+void	ft_printf_init_t_context(t_context *context)
+{
+	*context = (t_context){0};
+}
 
+int	write_guaranteed(t_context *context, const char *buf, size_t len)
+{
+	ssize_t		written;
 
+	while (len > 0)
+	{
+		written = write(1, buf, len);
+		if (written <= 0)
+			return (-1);
+		context -> printed += (size_t)written;
+		buf += written;
+		len -= (size_t)written;
+	}
+	return (0);
+}
+//This is the actual writer. len > 0 settles partial printing.
+
+int	write_repeat(t_context *context, char c, size_t count)
+{
+	while (count > 0)
+	{
+		if (write(1, &c, 1) < 0)
+			return (-1);
+		context -> printed += 1;
+		count--;
+	}
+	return (0);
+}
 
 /* 
 Compound literal (t_print){0} creates a temporary t_print value.

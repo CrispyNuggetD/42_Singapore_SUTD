@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/06 13:45:34 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 13:00:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,18 +28,13 @@ static int			main_coordinator(const char **str, t_context *context,\
 // Main function
 int	main(void)
 {
-	int	len;
+	int	len1;
 	int	len2;
-	char *input = "tes %% te %i tes";
 
-	len = ft_printf(input, 12);
-	ft_printf("\nlen is: %i\n\n", len);
-	len2 = printf(input, 12);
-	ft_printf("\nlen2 is: %i\n\n", len2);
-
-	//len = ft_printf("ttt%bca%q", 12);
-	//ft_printf("\nlen is: %i\n\n", len);
-	
+	len1 = ft_printf("%-5%");
+	printf("\nft len = %d\n\n", len1);
+	len2 = printf("%-5%");
+	printf("\nlibc len = %d\n\n", len2);
 }
 //len2 = printf("%*s", 10, "asd");
 //printf("\nlen2 is: %i\n\n", len2);
@@ -68,14 +63,13 @@ int	main(void)
 // This function is summoned from main to parse the input
 int	ft_printf(const char *str, ...)
 {
-	//int			printed;
 	int			is_success;
 	t_context	context;
 	va_list		input;
 
-	context.printed = 0;
+	ft_printf_init_t_context(&context);
 	if (!str)
-		return (0);
+		return (-1);
 	va_start(input, str);
 	while (*str)
 	{
@@ -96,7 +90,8 @@ int	ft_printf(const char *str, ...)
 	return (context.printed);
 }
 
-static int	main_coordinator(const char **str, t_context *context, va_list *input)
+static int	main_coordinator(const char **str, t_context *context,\
+			va_list *input)
 {
 	int			dispatch_success;
 	t_spec		spec;
@@ -136,9 +131,9 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	['d'] = ft_printf_d_i,
 	['%'] = ft_printf_percent,
 	};
+
 	return (handlers[fn_key]);
 }
-
 
 /* 
 
@@ -153,41 +148,6 @@ ALWAYS CHECK MEMORY LEAKS AND MALLOC AND FREEING
 
 %q, %y, %k, %!, %= …
 
-% followed by end-of-string: "abc%"
-
-Common libc behaviors vary wildly: some print % then stop, some return -1, some print nothing.
-Your ft_printf: pick one rule and stick to it. The most defensible is: return -1, print nothing further, stop.
-
-2) % + garbage after valid flags/width/precision/length
-
-Examples:
-
-"%-0+# 12.5llq" (valid-looking prefix, invalid final)
-
-"%10.zd" (precision dot with non-digit, then conversion)
-
-"%#..3x" (multiple dots)
-
-These are fun because your parser can accidentally:
-
-mis-advance pointer
-
-get stuck (infinite loop)
-
-“accept” nonsense and then dispatch wrong
-
-3) Duplicate or contradictory flags (valid in libc, but easy to mishandle)
-
-Even if you treat them as “valid”, they have precedence rules:
-
-%-0d → 0 ignored because - wins
-
-%+ d → space ignored because + wins
-
-%.0d with value 0 → prints nothing (except width padding)
-
-These aren’t UB, but they produce “weird” outcomes that look like bugs.
-
 4) Width/precision overflow
 
 "%999999999999999999d" (width integer overflow)
@@ -198,13 +158,18 @@ These aren’t UB, but they produce “weird” outcomes that look like bugs.
 
 "%.*s" with precision huge
 
-If you store width/precision in int, parsing can overflow and go negative or wrap. Pedants love this because it creates memory explosions.
+If you store width/precision in int, parsing 
+can overflow and go negative or wrap.
+Pedants love this because it creates memory explosions.
 
-Safe policy: clamp at something sane (e.g., INT_MAX), or detect overflow and error out.
+Safe policy: clamp at something sane (e.g., INT_MAX), or detect 
+overflow and error out.
 
 5) * width/precision with missing arguments (va_list misuse)
 
-Format says "%*d" but caller didn’t pass the width arg. That’s UB at the call site; you can’t fully defend. But your code must not make it worse by:
+Format says "%*d" but caller didn’t pass the width arg. 
+That’s UB at the call site; 
+you can’t fully defend. But your code must not make it worse by:
 
 reading extra args due to parse bugs
 
@@ -222,7 +187,8 @@ Examples:
 
 "%s" but passed int (or bad pointer)
 
-This is UB by the caller. Your job is: if your parser mis-parses length, you’ll pull the wrong type even when the caller is correct → that’s on you.
+This is UB by the caller. Your job is: if your parser mis-parses length, 
+you’ll pull the wrong type even when the caller is correct → that’s on you.
 
 7) Length modifier weirdness and invalid combos
 
@@ -239,7 +205,9 @@ Edge cases:
 
 "%qd" (historical/extension in some worlds)
 
-Your ft_printf likely supports only a subset (42 usually: cspdiuxX% without length). If your parser sees length modifiers but you don’t support them, define what you do:
+Your ft_printf likely supports only a subset (42 usually: cspdiuxX% without
+length). If your parser sees length modifiers but 
+you don’t support them, define what you do:
 
 treat as invalid spec and return -1, or
 
@@ -251,7 +219,8 @@ ignore unsupported length carefully (but don’t desync pointer)
 
 "%.0s"
 
-"%.*s" with precision negative (standard: negative precision is “as if precision not specified”)
+"%.*s" with precision negative (standard: negative 
+precision is “as if precision not specified”)
 
 "%s" with NULL pointer (common: prints (null); but 42 testers vary)
 
@@ -260,7 +229,8 @@ Even if not UB, this is a frequent “gotcha”.
 9) NUL characters in output
 
 "%c" with '\0'
-This is valid. Output length should still count it. Many student ft_printf fail because they rely on string functions.
+This is valid. Output length should still count it. Many student 
+ft_printf fail because they rely on string functions.
 
 10) INT_MIN and negation overflow
 
@@ -269,8 +239,11 @@ If you do n = -n in int, overflow. Must handle specially (or use long).
 
 11) Hex/unsigned conversions and sign mishandling
 
-"%x" with -1 passed as int but read as unsigned: behavior depends on how you cast.
-In standard printf, "%x" expects unsigned int; passing int is UB. But testers sometimes still do it. If you want to be robust, cast via unsigned int after reading as unsigned int.
+"%x" with -1 passed as int but read as unsigned: 
+behavior depends on how you cast.
+In standard printf, "%x" expects unsigned int; passing int is UB. But 
+testers sometimes still do it. If you want to be robust, 
+cast via unsigned int after reading as unsigned int.
 
 12) Pointer formatting oddities
 
@@ -300,7 +273,8 @@ Pointer-advance bugs show up immediately here.
 
 15) Embedded invalid UTF-8 / non-ASCII in format
 
-Not UB per se, but if you treat char as signed and index handler table with negative values, you’ll crash:
+Not UB per se, but if you treat char as signed and index
+ handler table with negative values, you’ll crash:
 
 format contains byte 0xFF
 If you do handlers[(char)c] and char is signed ⇒ negative index.
@@ -309,8 +283,10 @@ Fix: always cast to unsigned char for table indexing.
 
 16) Reentrancy / state leakage in your t_spec
 
-If you reuse a t_spec struct across conversions and forget to reset fields, you get “phantom flags”.
-This shows up in stacked conversions like %i%d%i (your earlier bug smelled like pointer advancement, but spec reset issues can compound it).
+If you reuse a t_spec struct across conversions and forget to 
+reset fields, you get “phantom flags”.
+This shows up in stacked conversions like %i%d%i (your earlier bug 
+smelled like pointer advancement, but spec reset issues can compound it).
 
 17) Format pointer advancement on error
 
@@ -328,7 +304,8 @@ returning early without va_end
 
 calling va_end twice
 
-passing va_list* around and accidentally copying incorrectly (platform-dependent)
+passing va_list* around and accidentally 
+copying incorrectly (platform-dependent)
 
 In your code, early returns need a va_end.
 */

@@ -1,8 +1,8 @@
 CC	= cc
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-CFLAGS	= -Wall -Wextra -Werror -g #Standard 42 norm
+#CFLAGS	= -Wall -Wextra -Werror -g #Standard 42 norm
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-#CFLAGS	:= 
+CFLAGS	:= 
 AR = ar
 AR_FLAGS = rcs
 
@@ -14,12 +14,13 @@ SRCS	= ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_print_c
 			ft_printf_printer.c ft_printf_d_i.c ft_printf_percent.c \
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
-#BONUS := ft_lstnew.c ft_lstadd_front.c 
+BONUS := 
 	#### SEARCH: COMMENT HERE OUT LATER ####
 
 OBJS	= $(SRCS:.c=.o)
+
 	#### SEARCH: COMMENT HERE OUT LATER ####
-#BONUS_OBJ := $(BONUS:.c=.o)
+BONUS_OBJ := $(BONUS:.c=.o)
 	#### SEARCH: COMMENT HERE OUT LATER ####
 
 LIBFT_DIR	= libft
@@ -44,8 +45,8 @@ $(NAME): $(LIBFT) $(OBJS)
 	@echo "\nMain project library archived!\n" #My echo
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
-#bonus: $@ $(BONUS_OBJ)
-#	$(AR) $(AR_FLAGS) $(NAME) $(BONUS_OBJ)
+bonus: $@ $(BONUS_OBJ)
+	$(AR) $(AR_FLAGS) $(NAME) $(BONUS_OBJ)
 	#### SEARCH: COMMENT HERE OUT LATER ####
 
 %.o: %.c ft_printf.h
@@ -68,12 +69,12 @@ fclean: clean
 re: fclean all 
 	@echo "\nProject library re-built!" #My echo
 
-	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-.PHONY: all clean fclean re
-	#### SEARCH: UN-COMMENT HERE OUT LATER ####
+#	#### SEARCH: UN-COMMENT HERE OUT LATER ####
+#.PHONY: all clean fclean re
+#	#### SEARCH: UN-COMMENT HERE OUT LATER ####
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
-#.PHONY: all clean fclean re bonus
+.PHONY: all clean fclean re bonus
 	#### SEARCH: COMMENT HERE OUT LATER ####
 
 

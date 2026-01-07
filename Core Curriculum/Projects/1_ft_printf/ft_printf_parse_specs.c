@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/06 13:25:34 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 13:15:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@ static int	is_numeric_conv(int conversion);
 static void	normalise_flags(t_spec *spec);
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
 
-
-// Parses the key specifiers with flags and everything and moves pointer
+/* // Parses the key specifiers with flags and everything and moves pointer
 int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 {
 	clear_set_spec_flags(spec, ptr);
@@ -26,7 +25,7 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 	while (ft_isdigit(**ptr))
 	{
 		spec -> width = spec -> width * 10 + (**ptr - '0');
-		(*ptr)++; 
+		(*ptr)++;
 	}
 	if (**ptr == '.')
 	{
@@ -39,7 +38,7 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 		}
 	}
 	if ((**ptr == 'd' || **ptr == 'i'))
-	{	
+	{
 		spec -> conversion = **ptr;
 		(*ptr)++;
 	}
@@ -49,11 +48,11 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 		(*ptr)++;
 	}
 	else
-		ft_putendl_fd("Invalid conversion not yet accounted for. Do error handling.", 1);
+		return (-1);
 	if (spec -> conversion)
 		normalise_flags(spec);
 	return (spec -> conversion);
-}
+} */
 
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 {
@@ -61,8 +60,8 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 	spec -> width = 0;
 	spec -> precision = 0;
 	spec -> conversion = 0;
-	while (**ptr == '-' || **ptr == '0' || **ptr == '#' || **ptr == ' ' ||
-			**ptr == '+')
+	while (**ptr == '-' || **ptr == '0' || **ptr == '#' || \
+			**ptr == ' ' || **ptr == '+')
 	{
 		if (**ptr == '-')
 			spec -> flags |= FLAG_MINUS;
@@ -89,14 +88,16 @@ static void	normalise_flags(t_spec *spec)
 }
 /*
 Conflicts (one wins):
-- (left align) overrides 0 (zero padding) → if both present, you pad with spaces, not zeros.
+- (left align) overrides 0 (zero padding) → 
+if both present, you pad with spaces, not zeros.
 + overrides space flag → you don’t get both; + wins.
-For integers, having a precision usually disables 0 padding (because precision controls leading zeros more explicitly).
+For integers, having a precision usually disables 0 
+padding (because precision controls leading zeros more explicitly).
 */
 
 static int	is_numeric_conv(int conversion)
 {
-	if ((conversion) == 'd' || (conversion) == 'i' || (conversion) == 'u' ||
+	if ((conversion) == 'd' || (conversion) == 'i' || (conversion) == 'u' || \
 		(conversion) == 'x' || (conversion) == 'X')
 		return (1);
 	return (0);
