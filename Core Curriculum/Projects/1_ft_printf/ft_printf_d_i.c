@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/06 13:27:23 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 13:20:27 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
 static size_t	itoa_no_sign(int n, char buf[12], const char **start);
-static void	print_sign(const t_context *context, t_print *paper, int arg);
+static void		print_sign(const t_context *context, t_print *paper, int arg);
 
 int	ft_printf_d_i(t_context *context)
 {
@@ -21,9 +21,9 @@ int	ft_printf_d_i(t_context *context)
 	const char	*start;
 	int			arg;
 	int			printer_len;
-	t_print 	paper;
+	t_print		paper;
 
-	ft_printf_init_t_print(&paper);	
+	ft_printf_init_t_print(&paper);
 	arg = va_arg(*(context -> input), int);
 	print_sign(context, &paper, arg);
 	paper.core_len = itoa_no_sign(arg, text, &start);
@@ -70,4 +70,3 @@ static size_t	itoa_no_sign(int n, char buf[12], const char **start)
 }
 // 4 will be i = 9
 // 42 will be i = 8
-
