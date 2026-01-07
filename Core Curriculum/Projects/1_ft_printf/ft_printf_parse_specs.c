@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 14:23:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 19:31:45 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 static int	is_numeric_conv(int conversion);
 static void	normalise_flags(t_spec *spec);
+static int	identify_conversion(t_spec *spec, const char **ptr);
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
 
 // Parses the key specifiers with flags and everything and moves pointer
@@ -27,23 +28,7 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 		spec -> width = spec -> width * 10 + (**ptr - '0');
 		(*ptr)++;
 	}
-	if (**ptr == '.')
-	{
-		spec -> flags |= FLAG_PREC;
-		(*ptr)++;
-		while (ft_isdigit(**ptr))
-		{
-			spec -> precision = spec -> precision * 10 + (**ptr - '0');
-			(*ptr)++;
-		}
-	}
-	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
-		 **ptr == 's' || **ptr == 'u')
-	{
-		spec -> conversion = **ptr;
-		(*ptr)++;
-	}
-	else
+	if (identify_conversion(spec, ptr) < 0)
 		return (-1);
 	if (spec -> conversion)
 		normalise_flags(spec);
@@ -57,7 +42,7 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 	spec -> precision = 0;
 	spec -> conversion = 0;
 	while (**ptr == '-' || **ptr == '0' || **ptr == '#' || \
-			**ptr == ' ' || **ptr == '+')
+**ptr == ' ' || **ptr == '+')
 	{
 		if (**ptr == '-')
 			spec -> flags |= FLAG_MINUS;
@@ -71,6 +56,28 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 			spec -> flags |= FLAG_PLUS;
 		(*ptr)++;
 	}
+}
+
+static int	identify_conversion(t_spec *spec, const char **ptr)
+{
+	if (**ptr == '.')
+	{
+		spec -> flags |= FLAG_PREC;
+		(*ptr)++;
+		while (ft_isdigit(**ptr))
+		{
+			spec -> precision = spec -> precision * 10 + (**ptr - '0');
+			(*ptr)++;
+		}
+	}
+	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
+**ptr == 's' || **ptr == 'u')
+	{
+		spec -> conversion = **ptr;
+		(*ptr)++;
+	}
+	else
+		return (-1);
 }
 
 static void	normalise_flags(t_spec *spec)
@@ -94,7 +101,7 @@ padding (because precision controls leading zeros more explicitly).
 static int	is_numeric_conv(int conversion)
 {
 	if ((conversion) == 'd' || (conversion) == 'i' || (conversion) == 'u' || \
-		(conversion) == 'x' || (conversion) == 'X')
+(conversion) == 'x' || (conversion) == 'X')
 		return (1);
 	return (0);
 }

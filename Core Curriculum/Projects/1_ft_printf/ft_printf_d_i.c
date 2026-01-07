@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 13:20:27 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 19:43:46 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,22 @@ int	ft_printf_d_i(t_context *context)
 	char		text[12];
 	const char	*start;
 	int			arg;
-	int			printer_len;
+	size_t		digit_len;
 	t_print		paper;
 
 	ft_printf_init_t_print(&paper);
 	arg = va_arg(*(context -> input), int);
 	print_sign(context, &paper, arg);
-	paper.core_len = itoa_no_sign(arg, text, &start);
+	digit_len = itoa_no_sign(arg, text, &start);
+	if ((context -> spec -> flags & FLAG_PREC) && \
+context -> spec -> precision == 0 && arg == 0)
+		digit_len = 0;
+	if ((context -> spec -> flags & FLAG_PREC) && \
+&& precision >= 0 && (size_t)context -> spec -> precision > digit_len)
+		paper.prec_zeros = context -> spec -> precision - digit_len;
+	paper.core_len = digit_len + paper.prec_zeros;
 	paper.core = start;
-	printer_len = ft_printf_print_config(context, &paper);
-	return (printer_len);
+	return (ft_printf_print_config(context, &paper));
 }
 //sign is supposed to be handled by ft_print_sign_handler
 
