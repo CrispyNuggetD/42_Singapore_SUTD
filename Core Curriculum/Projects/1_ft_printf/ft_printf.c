@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 22:00:52 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 04:18:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,16 +26,16 @@ static int			main_coordinator(const char **str, t_context *context,\
 									va_list *input);
 
 // Main function
-int	main(void)
+/* int	main(void)
 {
 	int	len1;
 	int	len2;
 
-	len1 = ft_printf("%s", " - ");
+	len1 = ft_printf("%%");
 	printf("\n%i\n\n", len1);
-	len2 = printf("%s", " - ");
+	len2 = printf("%x",16);
 	printf("\n%i\n\n", len2);
-}
+} */
 //len2 = printf("%*s", 10, "asd");
 //printf("\nlen2 is: %i\n\n", len2);
 //printf("Test ft_itoa(31)\nResult is: %s", ft_itoa(31));
@@ -133,6 +133,9 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	['u'] = ft_printf_unsigned_int,
 	['s'] = ft_printf_string,
 	['c'] = ft_printf_character,
+	['x'] = ft_printf_hex_small,
+	['X'] = ft_printf_hex_big,
+	['p'] = ft_printf_pointer,
 	};
 
 	return (handlers[fn_key]);
