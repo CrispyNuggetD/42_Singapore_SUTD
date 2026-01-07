@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/03 02:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 18:56:30 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 22:01:13 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,19 +17,19 @@ int	ft_printf_print_config(t_context *context, t_print *paper)
 	size_t	content_len;
 	int		sign_len;
 
-	sign_len = (paper -> sign != 0);
-	if ((context -> spec -> flags & FLAG_PREC) && \
-context -> spec -> precision > 0 && \
-(size_t)context -> spec -> precision > paper -> core_len)
-		paper -> prec_zeros = (size_t)context -> spec -> precision - \
-paper -> core_len;
-	content_len = (size_t)sign_len + paper -> prefix_len + \
-paper -> prec_zeros + paper -> core_len;
-	if (context -> spec -> width > 0 && \
-(size_t)context -> spec -> width > content_len)
-		paper -> pad_len = (size_t)context -> spec -> width - content_len;
-	if (context -> spec -> flags & FLAG_ZERO)
-		paper -> pad_char = '0';
+	sign_len = (paper->sign != 0);
+	if ((context->spec->flags & FLAG_PREC) && \
+context->spec->precision > 0 && \
+(size_t)context->spec->precision > paper->core_len)
+		paper->prec_zeros = (size_t)context->spec->precision - \
+paper->core_len;
+	content_len = (size_t)sign_len + paper->prefix_len + \
+paper->prec_zeros + paper->core_len;
+	if (context->spec->width > 0 && \
+(size_t)context->spec->width > content_len)
+		paper->pad_len = (size_t)context->spec->width - content_len;
+	if (context->spec->flags & FLAG_ZERO)
+		paper->pad_char = '0';
 	return (send_for_printing(context, paper));
 }
 

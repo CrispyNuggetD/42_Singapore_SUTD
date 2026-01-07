@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 19:41:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 22:01:03 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,15 @@ int	ft_printf_unsigned_int(t_context *context)
 	t_print		paper;
 
 	ft_printf_init_t_print(&paper);
-	arg = va_arg(*(context -> input), unsigned int);
+	arg = va_arg(*(context->input), unsigned int);
 	print_sign(context, &paper, arg);
 	digit_len = itoa_no_sign(arg, text, &start);
-	if ((context -> spec -> flags & FLAG_PREC) && \
-context -> spec -> precision == 0 && arg == 0)
+	if ((context->spec->flags & FLAG_PREC) && \
+context->spec->precision == 0 && arg == 0)
 		digit_len = 0;
-	if ((context -> spec -> flags & FLAG_PREC) && \
-(size_t)context -> spec -> precision > digit_len)
-		paper.prec_zeros = context -> spec -> precision - digit_len;
+	if ((context->spec->flags & FLAG_PREC) && \
+(size_t)context->spec->precision > digit_len)
+		paper.prec_zeros = context->spec->precision - digit_len;
 	paper.core_len = digit_len + paper.prec_zeros;
 	paper.core = start;
 	return (ft_printf_print_config(context, &paper));
@@ -42,11 +42,11 @@ context -> spec -> precision == 0 && arg == 0)
 static void	print_sign(const t_context *context, t_print *paper, int arg)
 {
 	if (arg < 0)
-		paper -> sign = '-';
-	else if (context -> spec -> flags & FLAG_PLUS)
-		paper -> sign = '+';
-	else if (context -> spec -> flags & FLAG_SPACE)
-		paper -> sign = ' ';
+		paper->sign = '-';
+	else if (context->spec->flags & FLAG_PLUS)
+		paper->sign = '+';
+	else if (context->spec->flags & FLAG_SPACE)
+		paper->sign = ' ';
 }
 
 static size_t	itoa_no_sign(unsigned int n, char buf[12], const char **start)

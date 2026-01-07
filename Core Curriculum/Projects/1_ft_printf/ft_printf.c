@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 19:32:18 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 22:00:52 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,8 @@ static int	main_coordinator(const char **str, t_context *context,\
 	(*str)++;
 	if (!ft_printf_parse_specs(&spec, str))
 		return (ft_printf_error_end_stream(input));
-	context -> input = input;
-	context -> spec = &spec;
+	context->input = input;
+	context->spec = &spec;
 	dispatch_success = dispatch_key(context);
 	if (dispatch_success < 0)
 		return (ft_printf_error_end_stream(input));
@@ -115,7 +115,7 @@ static int	dispatch_key(t_context *context)
 	t_handler	fn;
 	int			len_printed;
 
-	fn = init_get_handlers(context -> spec -> conversion);
+	fn = init_get_handlers(context->spec->conversion);
 	if (fn)
 		len_printed = fn(context);
 	else
