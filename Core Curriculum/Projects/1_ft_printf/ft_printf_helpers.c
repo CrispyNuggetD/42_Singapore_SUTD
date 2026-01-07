@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/02 12:17:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 12:46:09 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/07 22:21:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	ft_printf_error_end_stream(va_list *input)
 void	ft_printf_init_t_print(t_print *paper)
 {
 	*paper = (t_print){0};
-	paper -> pad_char = ' ';
+	paper->pad_char = ' ';
 }
 
 void	ft_printf_init_t_context(t_context *context)
@@ -39,7 +39,7 @@ int	write_guaranteed(t_context *context, const char *buf, size_t len)
 		written = write(1, buf, len);
 		if (written <= 0)
 			return (-1);
-		context -> printed += (size_t)written;
+		context->printed += (size_t)written;
 		buf += written;
 		len -= (size_t)written;
 	}
@@ -53,7 +53,7 @@ int	write_repeat(t_context *context, char c, size_t count)
 	{
 		if (write(1, &c, 1) < 0)
 			return (-1);
-		context -> printed += 1;
+		context->printed += 1;
 		count--;
 	}
 	return (0);
@@ -67,14 +67,14 @@ and all the rest become 0 too.
 This simplistic init is same as:
 static void	init_t_print(t_print *paper)
 {
-	paper -> sign = 0;
-	paper -> prefix = NULL;
-	paper -> prefix_len = 0;
-	paper -> core = NULL;
-	paper -> core_len = 0;
-	paper -> prec_zeros = 0;
-	paper -> pad_len = 0;
-	paper -> pad_char = ' ';
-	paper -> left = 0;
+	paper->sign = 0;
+	paper->prefix = NULL;
+	paper->prefix_len = 0;
+	paper->core = NULL;
+	paper->core_len = 0;
+	paper->prec_zeros = 0;
+	paper->pad_len = 0;
+	paper->pad_char = ' ';
+	paper->left = 0;
 }
 */
