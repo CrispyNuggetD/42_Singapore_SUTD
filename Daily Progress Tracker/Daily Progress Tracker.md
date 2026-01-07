@@ -279,12 +279,18 @@ git diff HEAD..origin/main
 - ```if``` clamping done to prevent underflows (when core_len > precision and subtract from precision = 0);
 - TO-DO: Prototype static functions (that are in reverse order).
 - TO-DO: Update ```ft_printf``` ```Readme.md```
-- TO-DO: Work on ```send_for_printing``` by understanding the multi-line comment in code about the 3 different output formats (e.g. pad left/ right)
+- TO-DO: Work on ```send\_for\_printing``` by understanding the multi-line comment in code about the 3 different output formats (e.g. pad left/ right)
 
 ### W8
 #### 05/01 (Mon 50):
+- Not feeling well/ overworked (MC)
 #### 06/01 (Tues 51):
+- Refectoring including printer split to ```print\_config``` for len, etc. calculations before actual printing.
+- Update makefile
 #### 07/01 (Wed 52):
+- Libfttester for d/i bonus for ```0``` (of d/i) passes
+- Basic (most) norminette errors settled
+- Some error values and refactoring.
 #### 08/01 (Thurs 53):
 #### 09/01 (Fri 54):
 #### 10/01 (WkEnd, Sat 55):
