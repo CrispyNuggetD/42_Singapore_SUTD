@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/03 02:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 22:00:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 02:57:55 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int	send_for_printing(t_context *context, t_print *paper)
 	{
 		if (print_minus(context, paper) < 0)
 			return (-1);
+		return(0);
 	}
 	if (paper->pad_char == '0')
 	{

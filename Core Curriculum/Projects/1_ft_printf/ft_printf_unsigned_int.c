@@ -6,14 +6,13 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 22:01:03 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 03:57:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static size_t	itoa_no_sign (unsigned int n, char buf[12], const char **start);
-static void		print_sign(const t_context *context, t_print *paper, int arg);
+static size_t	itoa_no_sign(unsigned int n, char buf[12], const char **start);
 
 int	ft_printf_unsigned_int(t_context *context)
 {
@@ -25,34 +24,24 @@ int	ft_printf_unsigned_int(t_context *context)
 
 	ft_printf_init_t_print(&paper);
 	arg = va_arg(*(context->input), unsigned int);
-	print_sign(context, &paper, arg);
 	digit_len = itoa_no_sign(arg, text, &start);
 	if ((context->spec->flags & FLAG_PREC) && \
 context->spec->precision == 0 && arg == 0)
 		digit_len = 0;
-	if ((context->spec->flags & FLAG_PREC) && \
-(size_t)context->spec->precision > digit_len)
-		paper.prec_zeros = context->spec->precision - digit_len;
+	if ((context->spec->flags & FLAG_PREC) && context->spec->precision >= 0 \
+&& (size_t)context->spec->precision > digit_len)
+		paper.prec_zeros = (size_t)context->spec->precision - digit_len;
 	paper.core_len = digit_len + paper.prec_zeros;
 	paper.core = start;
 	return (ft_printf_print_config(context, &paper));
 }
 //sign is supposed to be handled by ft_print_sign_handler
 
-static void	print_sign(const t_context *context, t_print *paper, int arg)
-{
-	if (arg < 0)
-		paper->sign = '-';
-	else if (context->spec->flags & FLAG_PLUS)
-		paper->sign = '+';
-	else if (context->spec->flags & FLAG_SPACE)
-		paper->sign = ' ';
-}
-
 static size_t	itoa_no_sign(unsigned int n, char buf[12], const char **start)
 {
-	int i = 10;
+	int	i;
 
+	i = 10;
 	buf[11] = '\0';
 	if (n == 0)
 	{
@@ -67,7 +56,7 @@ static size_t	itoa_no_sign(unsigned int n, char buf[12], const char **start)
 		i--;
 	}
 	*start = &buf[i + 1];
-	return ((size_t)(10 - i));
+	return ((size_t)(&buf[11] - *start));
 }
 // 4 will be i = 9
 // 42 will be i = 8

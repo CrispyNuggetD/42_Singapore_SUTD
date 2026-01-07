@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 22:00:53 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 03:47:26 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ static int	identify_conversion(t_spec *spec, const char **ptr)
 		}
 	}
 	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
-**ptr == 's' || **ptr == 'u')
+**ptr == 's' || **ptr == 'u' || **ptr == 'x')
 	{
 		spec->conversion = **ptr;
 		(*ptr)++;

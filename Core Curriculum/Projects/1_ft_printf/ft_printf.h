@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/07 14:24:49 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 04:18:13 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,9 @@ int		ft_printf_error_end_stream(va_list *input);
 int		ft_printf_percent(t_context *context);
 int		ft_printf_d_i(t_context *context);
 int		ft_printf_unsigned_int(t_context *context);
+int		ft_printf_hex_small(t_context *context);
+int		ft_printf_hex_big(t_context *context);
+int		ft_printf_pointer(t_context *context);
 int		ft_printf_string(t_context *context);
 int		ft_printf_character(t_context *context);
 int		ft_printf_print_config(t_context *context, t_print *paper);

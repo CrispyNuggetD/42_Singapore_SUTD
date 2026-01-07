@@ -1,4 +1,4 @@
-CC	= cc
+CC	= cc -g
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
 #CFLAGS	= -Wall -Wextra -Werror -g #Standard 42 norm
 	#### SEARCH: UN-COMMENT HERE OUT LATER ####
@@ -12,7 +12,7 @@ NAME	= libftprintf.a #Library name
 
 SRCS	= ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_print_config.c \
 			ft_printf_printer.c ft_printf_d_i.c ft_printf_percent.c ft_printf_character.c\
-			ft_printf_string.c ft_printf_unsigned_int.c \
+			ft_printf_string.c ft_printf_unsigned_int.c ft_printf_hex.c ft_printf_pointer.c\
 
 	#### SEARCH: COMMENT HERE OUT LATER ####
 BONUS := 
