@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 04:18:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 12:17:27 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,11 @@ static int			main_coordinator(const char **str, t_context *context,\
 {
 	int	len1;
 	int	len2;
+	char	c = 57;
 
-	len1 = ft_printf("%%");
+	len1 = ft_printf("%-192.131%");
 	printf("\n%i\n\n", len1);
-	len2 = printf("%x",16);
+	len2 = printf("%-192.131%");
 	printf("\n%i\n\n", len2);
 } */
 //len2 = printf("%*s", 10, "asd");

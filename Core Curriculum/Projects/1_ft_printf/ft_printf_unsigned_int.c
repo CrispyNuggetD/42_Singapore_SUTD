@@ -31,7 +31,7 @@ context->spec->precision == 0 && arg == 0)
 	if ((context->spec->flags & FLAG_PREC) && context->spec->precision >= 0 \
 && (size_t)context->spec->precision > digit_len)
 		paper.prec_zeros = (size_t)context->spec->precision - digit_len;
-	paper.core_len = digit_len + paper.prec_zeros;
+	paper.core_len = digit_len;
 	paper.core = start;
 	return (ft_printf_print_config(context, &paper));
 }

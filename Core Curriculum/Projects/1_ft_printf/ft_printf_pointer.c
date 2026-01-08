@@ -6,46 +6,48 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 04:17:45 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 11:51:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static void	set_prefix(uintptr_t addr, t_print *paper);
-static size_t	itohtoa_no_sign_small(unsigned int n, char buf[12], const char **start);
+static void		set_prefix(t_context *context, t_print *paper, \
+unsigned int arg);
+static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[12], \
+const char **start);
 
 int	ft_printf_pointer(t_context *context)
 {
-	char		text[12];
+	char		text[20];
 	const char	*start;
-	uintptr_t	addr;
+	uintptr_t	arg;
 	size_t		digit_len;
 	t_print		paper;
 
 	ft_printf_init_t_print(&paper);
-	addr = (uintptr_t)va_arg(*(context->input), void *);
-	digit_len = itohtoa_no_sign_small(addr, text, &start);
-	//if ((context->spec->flags & FLAG_PREC) && \
-context->spec->precision == 0 && arg == 0)
-	if (addr == 0)
+	arg = (uintptr_t)va_arg(*(context->input), void *);
+	if (!arg)
 	{
-		digit_len = 1;
-		paper.core = "0";
+		digit_len = 5;
+		start = "(nil)";
 	}
-	if ((context->spec->flags & FLAG_PREC) && context->spec->precision >= 0 \
-&& (size_t)context->spec->precision > digit_len)
-		paper.prec_zeros = (size_t)context->spec->precision - digit_len;
-	paper.core_len = digit_len + paper.prec_zeros;
+	else
+		digit_len = itohtoa_no_sign_small(arg, text, &start);
+	/* if ((context->spec->flags & FLAG_PREC) && context->spec->precision >= 0 \
+&& (size_t)context->spec->precision > (digit_len + 2))
+		paper.prec_zeros = (size_t)context->spec->precision - digit_len; */
+	paper.core_len = digit_len;
 	paper.core = start;
-	set_prefix(addr, &paper);
+	set_prefix(context, &paper, arg);
 	return (ft_printf_print_config(context, &paper));
 }
 //sign is supposed to be handled by ft_print_sign_handler
 //If ever support *, negative precision means “precision not specified"
 //hence keep precision >= 0
 
-static size_t	itohtoa_no_sign_small(unsigned int n, char buf[12], const char **start)
+static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[20], \
+const char **start)
 {
 	const char *hex_buf = "0123456789abcdef";
 	int	i;
@@ -70,11 +72,13 @@ static size_t	itohtoa_no_sign_small(unsigned int n, char buf[12], const char **s
 	return ((size_t)(&buf[11] - *start));
 }
 
-static void	set_prefix(uintptr_t addr, t_print *paper)
+static void	set_prefix(t_context *context, t_print *paper, \
+unsigned int arg)
 {
-	if (addr != 0)
+	if (arg)
 	{
 		paper->prefix = "0x";
 		paper->prefix_len = 2;
 	}
 }
+//prefix is always "0x" even for NULL
