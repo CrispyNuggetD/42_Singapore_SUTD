@@ -6,14 +6,13 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 11:51:05 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 14:56:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static void		set_prefix(t_context *context, t_print *paper, \
-unsigned int arg);
+static void		set_prefix(t_print *paper, unsigned int arg);
 static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[12], \
 const char **start);
 
@@ -39,7 +38,7 @@ int	ft_printf_pointer(t_context *context)
 		paper.prec_zeros = (size_t)context->spec->precision - digit_len; */
 	paper.core_len = digit_len;
 	paper.core = start;
-	set_prefix(context, &paper, arg);
+	set_prefix(&paper, arg);
 	return (ft_printf_print_config(context, &paper));
 }
 //sign is supposed to be handled by ft_print_sign_handler
@@ -72,8 +71,7 @@ const char **start)
 	return ((size_t)(&buf[11] - *start));
 }
 
-static void	set_prefix(t_context *context, t_print *paper, \
-unsigned int arg)
+static void	set_prefix(t_print *paper, unsigned int arg)
 {
 	if (arg)
 	{

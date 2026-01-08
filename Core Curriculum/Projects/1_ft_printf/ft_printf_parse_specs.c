@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 12:16:12 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 15:50:11 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static int	is_numeric_conv(int conversion);
 static void	normalise_flags(t_spec *spec);
+static void	get_length(t_spec *spec, const char **ptr);
 static int	identify_conversion(t_spec *spec, const char **ptr);
 static void	clear_set_spec_flags(t_spec *spec, const char **ptr);
 
@@ -43,6 +43,7 @@ static void	clear_set_spec_flags(t_spec *spec, const char **ptr)
 	spec->width = 0;
 	spec->precision = 0;
 	spec->conversion = 0;
+	spec->length = LEN_NONE;
 	while (**ptr == '-' || **ptr == '0' || **ptr == '#' || \
 **ptr == ' ' || **ptr == '+')
 	{
@@ -72,6 +73,7 @@ static int	identify_conversion(t_spec *spec, const char **ptr)
 			(*ptr)++;
 		}
 	}
+	get_length(spec, ptr);
 	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
 **ptr == 's' || **ptr == 'u' || **ptr == 'x' || **ptr == 'X' || **ptr == 'p')
 	{
@@ -81,6 +83,33 @@ static int	identify_conversion(t_spec *spec, const char **ptr)
 	else
 		return (-1);
 	return (0);
+}
+
+static void	get_length(t_spec *spec, const char **ptr)
+{
+	{
+		if ((*ptr)[0] == 'h')
+		{
+			if ((*ptr)[1] == 'h')
+			{
+				spec->length = LEN_HH;
+				(*ptr)++;
+			}
+			else
+				spec->length = LEN_H;
+		}
+		else if ((*ptr)[0] == 'l')
+		{
+			if ((*ptr)[1] == 'l')
+			{
+				spec->length = LEN_LL;
+				(*ptr)++;
+			}
+			else
+				spec->length = LEN_L;
+		}
+		(*ptr)++;
+	}
 }
 
 static void	normalise_flags(t_spec *spec)
@@ -100,14 +129,3 @@ if both present, you pad with spaces, not zeros.
 For integers, having a precision usually disables 0 
 padding (because precision controls leading zeros more explicitly).
 */
-
-static int	is_numeric_conv(int conversion)
-{
-	if ((conversion) == 'd' || (conversion) == 'i' || (conversion) == 'u' || \
-(conversion) == 'x' || (conversion) == 'X')
-		return (1);
-	return (0);
-}
-
-// && is_numeric(spec->conversion)
-// Needed as precision suppresses 0 padding only for numeric conversions

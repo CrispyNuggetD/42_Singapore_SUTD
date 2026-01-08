@@ -6,25 +6,27 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 03:41:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 17:31:07 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static size_t	itoa_no_sign(int n, char buf[12], const char **start);
-static void		print_sign(const t_context *context, t_print *paper, int arg);
+static size_t		itoa_no_sign(long long n, char buf[21], const char **start);
+static void			print_sign(const t_context *context, t_print *paper, \
+long long arg);
+static long long	read_signed(va_list arg, t_length length);
 
 int	ft_printf_d_i(t_context *context)
 {
-	char		text[12];
+	char		text[21];
 	const char	*start;
-	int			arg;
+	long long	arg;
 	size_t		digit_len;
 	t_print		paper;
 
 	ft_printf_init_t_print(&paper);
-	arg = va_arg(*(context->input), int);
+	arg = read_signed(*(context->input), context->spec->length);
 	print_sign(context, &paper, arg);
 	digit_len = itoa_no_sign(arg, text, &start);
 	if ((context->spec->flags & FLAG_PREC) && \
@@ -41,7 +43,24 @@ context->spec->precision == 0 && arg == 0)
 //If ever support *, negative precision means “precision not specified"
 //hence keep precision >= 0
 
-static void	print_sign(const t_context *context, t_print *paper, int arg)
+static long long	read_signed(va_list arg, t_length length)
+{
+	long long	temp_arg;
+
+	if (length == LEN_NONE)
+		temp_arg = (long long)va_arg(arg, int);
+	else if (length == LEN_HH)
+		temp_arg = (long long)(signed char)va_arg(arg, int);
+	else if (length == LEN_H)
+		temp_arg = (long long)(short)va_arg(arg, int);
+	else if (length == LEN_L)
+		temp_arg = (long long)va_arg(arg, long);
+	else if (length == LEN_LL)
+		temp_arg = va_arg(arg, long long);
+	return temp_arg;
+}
+
+static void	print_sign(const t_context *context, t_print *paper, long long arg)
 {
 	if (arg < 0)
 		paper->sign = '-';
@@ -51,26 +70,27 @@ static void	print_sign(const t_context *context, t_print *paper, int arg)
 		paper->sign = ' ';
 }
 
-static size_t	itoa_no_sign(int n, char buf[12], const char **start)
+static size_t	itoa_no_sign(long long n, char buf[21], const char **start)
 {
-	int		i;
-	long	n_long;
+	int					i;
+	unsigned long long	n_magnitude;
 
 	i = 10;
-	n_long = (long)n;
-	if (n < 0)
-		n_long = -n_long;
-	buf[11] = '\0';
-	if (n_long == 0)
+	if (n >= 0)
+		n_magnitude = (unsigned long long)(n);
+	else
+		n_magnitude = (unsigned long long)(-(n + 1)) + 1;
+	buf[20] = '\0';
+	if (n_magnitude == 0)
 	{
 		buf[i] = '0';
 		*start = &buf[i];
 		return (1);
 	}
-	while (n_long != 0)
+	while (n_magnitude != 0)
 	{
-		buf[i] = '0' + (n_long % 10);
-		n_long /= 10;
+		buf[i] = '0' + (n_magnitude % 10);
+		n_magnitude /= 10;
 		i--;
 	}
 	*start = &buf[i + 1];
