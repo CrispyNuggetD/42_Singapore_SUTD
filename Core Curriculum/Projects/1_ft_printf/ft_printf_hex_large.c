@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 17:31:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 23:07:39 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ static size_t				itohtoa_no_sign_big(unsigned long long n, \
 char buf[17], const char **start);
 static unsigned long long	read_unsigned(va_list arg, t_length length);
 
-
 int	ft_printf_hex_big(t_context *context)
 {
 	char				text[17];
@@ -28,7 +27,7 @@ int	ft_printf_hex_big(t_context *context)
 	t_print				paper;
 
 	ft_printf_init_t_print(&paper);
-	arg = va_arg(*(context->input), unsigned int);
+	arg = read_unsigned(*(context->input), context->spec->length);
 	digit_len = itohtoa_no_sign_big(arg, text, &start);
 	if ((context->spec->flags & FLAG_PREC) && \
 context->spec->precision == 0 && arg == 0)
@@ -45,7 +44,7 @@ context->spec->precision == 0 && arg == 0)
 
 static unsigned long long	read_unsigned(va_list arg, t_length length)
 {
-	long long	temp_arg;
+	unsigned long long	temp_arg;
 
 	if (length == LEN_NONE)
 		temp_arg = (unsigned long long)va_arg(arg, unsigned int);
@@ -53,38 +52,38 @@ static unsigned long long	read_unsigned(va_list arg, t_length length)
 		temp_arg = \
 (unsigned long long)(unsigned char)va_arg(arg, unsigned int);
 	else if (length == LEN_H)
-		temp_arg = (unsigned long long)(short)va_arg(arg, unsigned int);
+		temp_arg = \
+(unsigned long long)(unsigned short)va_arg(arg, unsigned int);
 	else if (length == LEN_L)
 		temp_arg = (unsigned long long)va_arg(arg, unsigned long);
 	else if (length == LEN_LL)
 		temp_arg = va_arg(arg, unsigned long long);
-	return temp_arg;
+	return (temp_arg);
 }
 
 static size_t	itohtoa_no_sign_big(unsigned long long n, char buf[17], \
 const char **start)
 {
-	const char *hex_buf = "0123456789ABCDEF";
+	const char	*hex_buf = "0123456789ABCDEF";
 	int			i;
 	int			hex_temp;
 
-	i = 10;
-	buf[16] = '\0';
+	i = 16;
+	buf[i] = '\0';
 	if (n == 0)
 	{
-		buf[i] = '0';
+		buf[--i] = '0';
 		*start = &buf[i];
 		return (1);
 	}
 	while (n != 0)
 	{
 		hex_temp = n % 16;
-		buf[i] = hex_buf[hex_temp];
+		buf[--i] = hex_buf[hex_temp];
 		n /= 16;
-		i--;
 	}
-	*start = &buf[i + 1];
-	return ((size_t)(&buf[11] - *start));
+	*start = &buf[i];
+	return ((size_t)(&buf[16] - *start));
 }
 
 static void	set_prefix(t_context *context, t_print *paper, \

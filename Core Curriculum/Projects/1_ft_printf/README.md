@@ -28,7 +28,12 @@
 	1. Initialiser / Registration (Function keys -> handlers)
 	2. Parser (turn ```%...``` into a spec description)
 	3. Dispatcher (choose which handler to call)
-	4. Handlers (do the actual formatting/output)
+	4. Handlers (do the actual formatting/ output)
+- 4 main limitations of my ```ft_printf``` is documented near the bottom of this ```README.md```
+	1. Positional arguments (```$1```, i.e. first argument)
+	2. Other specifiers not required by ```Subject.PDF``` ```(f F e E g G a A)```
+	3. Wide characters (```L"hello"```)
+	4. Four of the "Less common/ more complicated" length type modifiers ```(j z t L)```
 
 ---
 
@@ -43,7 +48,14 @@ Yes, I *apparently* did not copy his work. (*Audience gasps!*)
 		- Maybe I'm new to this
 		- Or maybe it's just 'cos ```function pointers```
 		- \#cope
-- Also, my program handles ```write``` syscall partial printing issues. :D Cool right? I hope you agree :\(
+- Also, my program:
+	- Doesn't uses any ```malloc```
+	- Handles length specifiers
+	- Handles ```write``` syscall partial printing issues. 
+
+##### :D Cool right? I hope you agree :\(
+
+---
 
 ### My ft_printf supports the following input syntax:
 
@@ -79,23 +91,9 @@ If padding is needed to reach the minimum field width, pad with '0' characters i
 
 6. ```.``` + digits (**OR only just** ```.```) specifies precision
 7. Precision is “present or not”, and if present it has a number
-	- (Number **CAN BE** 0).
+	- (Number **CAN BE** 0)!
 
 ---
-
-#### Length Modifiers
-
-- The length sub-specifier modifies the length of the data type.
-- Simplier, supported, and more common ones (add unsigned for non decimal):
-	1. hh (signed char)
-	2. h (short int)
-	3. l (long int)
-	4. ll (long long int)
-- Others (UPDATE: Not supported due to way out of scope + needing ```<stdint.h>``` / ```<stddef.h>```):
-	5. j (intmax_t/ uintmax_t for non decimal)
-	6. z (size_t)
-	7. t (ptrdiff_t)
-	- L (long double)/ none (double) not relevant as other specifiers not required (f F e E g G a A)
 
 ### "Challenging Scenarios" of Extra Bonus 
 
@@ -105,7 +103,6 @@ If padding is needed to reach the minimum field width, pad with '0' characters i
     - The “zero value with percision zero" rule (Big trap, explained in conflict rule 3)
 4. Even with conflict rules (below), width applies to the whole formatted field (sign, spaces, prefixes e.g. ```0x```, digits that can be zero-padded with precision).
 5. “Padding location” depends on flags and precision
-6. ```%``` conversion is special (width and ```-``` still applies but precision present (```.```) doesn't and is ignored.)
 
 #### --> The hardest bonus interactions are around numbers
 
@@ -166,6 +163,45 @@ Rule: No redundant prefix
 
 ## Back to my implementation
 
+
+### Length Modifiers
+
+The length sub-specifier modifies the length of the data type.
+
+- Simplier, supported, and more common ones (add unsigned for non decimal):
+	1. hh (signed char)
+	2. h (short int)
+	3. l (long int)
+	4. ll (long long int)
+- Others (UPDATE: Not supported due to way out of scope + needing ```<stdint.h>``` / ```<stddef.h>```):
+	1. j (intmax_t/ uintmax_t for non decimal)
+	2. z (size_t)
+	3. t (ptrdiff_t)
+	4. The L (long double)/ none (double) are not relevant as other specifiers not required (f F e E g G a A)
+
+##### --> Implementation of length modifiers
+
+For example (for d/i):
+
+- no length: read int
+- l: read long
+- ll: read long long
+- h: read int, then cast to short (because default argument promotions)
+- hh: read int, then cast to signed char
+
+For u/x/X:
+
+- no length: unsigned int
+- l: unsigned long
+- ll: unsigned long long
+- h/hh: read unsigned int, cast down
+
+For c/s/p/%:
+
+- length modifiers are basically irrelevant (or invalid/ignored).
+
+### Structs, typedefs, bitmaps and bitwise, to tackle bonus:
+
 These are the defined 3 ```typedefs``` for tackling data handling
 
 ### 1. ```t_handler``` that are (void) function pointers
@@ -190,7 +226,7 @@ typedef struct  s_spec
     char            conversion;
 }                   t_spec;
 ```
-### --> About the ```flags```
+#### --> About the ```flags```
 
 ```unsigned char flags``` is used to contain the bits needed for bitmask representation of the flags **as well as** ```precision```.
 
@@ -228,7 +264,7 @@ typedef struct  s_print
 
 ---
 
-### --> But why is ```t_spec``` alone not enough for the printer (```ft_printf_printer```)?
+#### --> But why is ```t_spec``` alone not enough for the printer (```ft_printf_printer```)?
 
 ```t_spec``` alone does not hold *"final"* info the printer needs. 
 
@@ -253,7 +289,7 @@ That's because precision suppresses zero-padding for numerics, which is detailed
 
 ---
 
-### --> One more benefit of using ```t_print```: 
+### One more benefit of using ```t_print```: 
 - My design also works for:
 	- ```%c``` too (core_len = ```1```)
 	- And for the “precision makes core empty” case (```%.0d``` with ```0```) 
@@ -352,7 +388,7 @@ Example of parsing:
 
 ---
 
-### --> How parsing is done (reading and string advancement with pointer-to-pointer)
+#### --> How parsing is done (reading and string advancement with pointer-to-pointer)
 
 TL;DR
 
@@ -363,7 +399,7 @@ Or also AKA:
 - The parser takes a pointer to pointer (pointer to caller's cursor that shows the format-string of the input string after a ```%``` is detected).
 - It advances the caller's cursor AKA the pointed-to pointer (```*ptr```) inside that function hence consuming the flags, etc.
 
-### --> For the context ```struct```, ```va_list``` is passed as a pointer 
+#### --> For the context ```struct```, ```va_list``` is passed as a pointer 
 (According to C standards) Why is ```va_list``` passed as a pointer to that list?
 - Although we can pass a va_list to another function, but if that function uses va_arg(abc, ...), then the value of abc back in the caller will become indeterminate, meaning it could be garbage and we should not use it afterwards (except for ```va_end```)
 - Hence, I need to pass a pointer to it (```va_list *```), so the handler consumes arguments and the updated state persists.
@@ -386,6 +422,7 @@ When hit ```%```, do these 5 steps:
 - if ```-``` set -> clear ```0```
 - if ```+``` set -> clear ```space```
 - if precision specified numeric conversion (```is_numeric```, explained **below**) -> clear ```0``` padding behavior
+- if character, string or ```%%``` -> also clear ```0``` padding behavior
 
 #### --> ```is_numeric``` to tell if numeric conversions
 In real printf behavior, precision suppresses 0 padding only for numeric conversions (e.g., d i u x X, etc.).
@@ -470,27 +507,89 @@ Even to stdout, it often writes everything, but it’s not guaranteed. Partial w
 - signals interrupting syscalls
 - full buffers or backpressure
 
+# Limitations
+
+At least these 3 (or more) are not handled:
+
+### 1. Positional arguments
+
+```ft_printf("%1$s", NULL)```
+
+- Mine: 
+	- Output:
+	- Length: -1
+- Actual printf: 
+	- Output: (null)
+	- Length: 6
+
+#### --> Why not?
+
+- Additional layer of complexitity, argument table layer needed
+
+### 2. Other specifiers (including floats, ```%f```)
+
+Other non-Subject.PDF specifiers not implemented, including:
+
+- (f F e E g G a A)
+
+Example:
+
+```ft_printf("%-f", 42.5)```
+
+- Mine: 
+	- Output:
+	- Length: -1
+- Actual printf: 
+	- Output: 42.500000
+	- Length: 9
+
+#### --> Why not?
+
+- Specifier not needed, in fact I might as well leave it for live coding
+
+### 3. Wide characters
+
+```ft_printf("%ls", L"hello")```
+
+- Mine: 
+	- Output: h
+	- Length: 1
+- Actual printf: 
+	- Output: hello
+	- Length: 5
+
+#### --> Why not?
+
+Unnecessary even more addition of something that's of medium-to-high complexity:
+
+- New converter path
+- New buffer management
+- Careful precision handling
+- Likely new helpers/files
+
+### 4. Four of the "Less common/ more complicated" length type modifiers ```(j z t L)```
+
+Only (l ll h hh) are supported.
+
+#### --> Why not the others?
+
+Refactoring and additional complexity required.
+
 # Instructions
 
 1. Open ```terminal```, ```cd``` to desired storage directory, ```git clone``` my repository, ```cd``` into the ft_printf directory.
 
 ## Make main.c file to test
 
-Copy-and-paste and save as a "main.c" file using Vim, Visual Studio Code, or any text-editor (make plain text):
+1. Uncomment ```int main(void)``` of ```ft_printf.c``` using Vim, Visual Studio Code, or any text-editor (make plain text).
+2. Edit printf commands as desired.
 
 ```c
-#include "ft_printf.h"
-
-int	main(void)
-{
-	ft_printf("Your output is: %li", ft_strlen("Hello World!"));
-}
-
 /*
  * Running instructions:
  * 2 steps.
  *
- * 1. Change %li to the type of output function gives (first argument, left hand side)
+ * 1. Change %<current command> to the type of output function gives (first argument, left hand side)
  * 
  * Common ones:
  * %c 		- Single Character
@@ -519,13 +618,9 @@ int	main(void)
 ## Terminal commands to compile and run program
 
 1. There is a Makefile needed to compile the header file (ft_printf.h) into a library (libftprintf.a) to be used for compilation.
-
 2. Again, cd to ft_printf directory, then run command "make".
-
-3. Compile the needed .c file using ```cc main.c libftprintf.a -o output -Wall -Wextra -Werror```
-
-4. NOTE: -Wall -Wextra -Werror (42 uses these 3 warning flags during compilation).
-
+3. Compile the needed .c file using ```cc ft_printf.c libftprintf.a -o output```
+4. NOTE: -Wall -Wextra -Werror (42 uses these 3 extra warning flags during compilation).
 5. Run program with ./output.
 
 # Resources
@@ -773,8 +868,8 @@ This code:
 
 This one is subtle and important. If you:
 - reorder conditions
--refactor one branch
--add flags logic (#, +, width, precision)
+- refactor one branch
+- add flags logic (#, +, width, precision)
 
 You are editing a single tightly coupled control structure.
 
