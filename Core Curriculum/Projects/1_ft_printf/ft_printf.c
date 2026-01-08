@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 12:17:27 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 14:59:52 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,12 +99,18 @@ static int	main_coordinator(const char **str, t_context *context,\
 
 	(*str)++;
 	if (!ft_printf_parse_specs(&spec, str))
-		return (ft_printf_error_end_stream(input));
+	{
+		va_end(*input);
+		return (-1);
+	}
 	context->input = input;
 	context->spec = &spec;
 	dispatch_success = dispatch_key(context);
 	if (dispatch_success < 0)
-		return (ft_printf_error_end_stream(input));
+	{
+		va_end(*input);
+		return (-1);
+	}
 	return (0);
 }
 // check actual error code if (!str); return (0); 

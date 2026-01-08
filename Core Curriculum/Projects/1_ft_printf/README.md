@@ -2,7 +2,9 @@
 
 # Description
 
-- This project recodes a minimally functional ```printf()``` function as per found in ```<stdio.h>```.
+- This project recodes a *somewhat relatively* functional ```printf()``` function as per found in ```<stdio.h>```.
+- It differs from most other 42 implementations where I also did both bonuses (all flags, precision)
+- I also implemented length modifiers, since it's ambiguous whether it's needed, plus it's fun and I get to learn more! (Most students do not attempt length modifiers.)
 - However, it does **NOT** implement the buffer management of the original ```printf()```
 - It references "Libft" project which is our own 42-student made glibc/ musl implementation.
 - This projects also highlights how a makefile can be used to compile another Libft sub-directory makefile properly.
@@ -46,7 +48,7 @@ Yes, I *apparently* did not copy his work. (*Audience gasps!*)
 ### My ft_printf supports the following input syntax:
 
 ```c
-%[-][0][width][.prec][type]
+%[flags][width][.precision][length]specifier
 ```
 
 Where the type is one letter.
@@ -80,6 +82,20 @@ If padding is needed to reach the minimum field width, pad with '0' characters i
 	- (Number **CAN BE** 0).
 
 ---
+
+#### Length Modifiers
+
+- The length sub-specifier modifies the length of the data type.
+- Simplier, supported, and more common ones (add unsigned for non decimal):
+	1. hh (signed char)
+	2. h (short int)
+	3. l (long int)
+	4. ll (long long int)
+- Others (UPDATE: Not supported due to way out of scope + needing ```<stdint.h>``` / ```<stddef.h>```):
+	5. j (intmax_t/ uintmax_t for non decimal)
+	6. z (size_t)
+	7. t (ptrdiff_t)
+	- L (long double)/ none (double) not relevant as other specifiers not required (f F e E g G a A)
 
 ### "Challenging Scenarios" of Extra Bonus 
 

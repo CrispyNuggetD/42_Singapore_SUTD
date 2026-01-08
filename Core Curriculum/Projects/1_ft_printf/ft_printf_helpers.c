@@ -6,18 +6,18 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/02 12:17:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 03:15:02 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 14:42:55 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
 // Close va_list and return error
-int	ft_printf_error_end_stream(va_list *input)
+/* int	ft_printf_error_end_stream(va_list *input)
 {
 	va_end(*input);
 	return (-1);
-}
+} */
 
 void	ft_printf_init_t_print(t_print *paper)
 {
@@ -58,6 +58,17 @@ int	write_repeat(t_context *context, char c, size_t count)
 	}
 	return (0);
 }
+
+int	is_numeric_conv(int conversion)
+{
+	if ((conversion) == 'd' || (conversion) == 'i' || (conversion) == 'u' || \
+(conversion) == 'x' || (conversion) == 'X')
+		return (1);
+	return (0);
+}
+
+// && is_numeric(spec->conversion)
+// Needed as precision suppresses 0 padding only for numeric conversions
 
 /* 
 Compound literal (t_print){0} creates a temporary t_print value.

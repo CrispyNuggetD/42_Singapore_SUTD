@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 04:18:13 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 15:42:35 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,22 @@
 # define FLAG_SPACE 16
 # define FLAG_PLUS  32
 
+typedef enum e_length
+{
+	LEN_NONE,
+	LEN_HH,
+	LEN_H,
+	LEN_L,
+	LEN_LL
+}	t_length;
+
 typedef struct s_spec
 {
 	unsigned char	flags;
 	int				width;
 	int				precision;
 	char			conversion;
+	t_length		length;
 }					t_spec;
 
 typedef struct s_context
@@ -67,6 +77,7 @@ int		ft_printf_character(t_context *context);
 int		ft_printf_print_config(t_context *context, t_print *paper);
 int		write_guaranteed(t_context *context, const char *buf, size_t len);
 int		write_repeat(t_context *context, char c, size_t count);
+int		is_numeric_conv(int conversion);
 int		send_for_printing(t_context *context, t_print *paper);
 void	ft_printf_init_t_print(t_print *paper);
 void	ft_printf_init_t_context(t_context *context);
