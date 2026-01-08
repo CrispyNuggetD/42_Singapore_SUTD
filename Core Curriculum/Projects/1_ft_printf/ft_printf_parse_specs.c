@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/29 15:15:24 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 03:47:26 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 12:16:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ int	ft_printf_parse_specs(t_spec *spec, const char **ptr)
 	}
 	if (identify_conversion(spec, ptr) < 0)
 		return (-1);
+	if (spec->conversion == '%')
+		spec->width = 0;
 	if (spec->conversion)
 		normalise_flags(spec);
 	return (spec->conversion);
@@ -71,13 +73,14 @@ static int	identify_conversion(t_spec *spec, const char **ptr)
 		}
 	}
 	if (**ptr == 'd' || **ptr == 'i' || **ptr == '%' || **ptr == 'c' || \
-**ptr == 's' || **ptr == 'u' || **ptr == 'x')
+**ptr == 's' || **ptr == 'u' || **ptr == 'x' || **ptr == 'X' || **ptr == 'p')
 	{
 		spec->conversion = **ptr;
 		(*ptr)++;
 	}
 	else
 		return (-1);
+	return (0);
 }
 
 static void	normalise_flags(t_spec *spec)
