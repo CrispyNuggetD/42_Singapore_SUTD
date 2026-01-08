@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 14:56:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 23:30:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static void		set_prefix(t_print *paper, unsigned int arg);
-static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[12], \
+static void		set_prefix(t_print *paper, uintptr_t arg);
+static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[20], \
 const char **start);
 
 int	ft_printf_pointer(t_context *context)
@@ -33,9 +33,6 @@ int	ft_printf_pointer(t_context *context)
 	}
 	else
 		digit_len = itohtoa_no_sign_small(arg, text, &start);
-	/* if ((context->spec->flags & FLAG_PREC) && context->spec->precision >= 0 \
-&& (size_t)context->spec->precision > (digit_len + 2))
-		paper.prec_zeros = (size_t)context->spec->precision - digit_len; */
 	paper.core_len = digit_len;
 	paper.core = start;
 	set_prefix(&paper, arg);
@@ -48,30 +45,29 @@ int	ft_printf_pointer(t_context *context)
 static size_t	itohtoa_no_sign_small(uintptr_t n, char buf[20], \
 const char **start)
 {
-	const char *hex_buf = "0123456789abcdef";
-	int	i;
-	int	hex_temp;
+	const char	*hex_buf = "0123456789abcdef";
+	int			i;
+	int			hex_temp;
 
-	i = 10;
-	buf[11] = '\0';
+	i = 19;
+	buf[i] = '\0';
 	if (n == 0)
 	{
-		buf[i] = '0';
+		buf[--i] = '0';
 		*start = &buf[i];
 		return (1);
 	}
 	while (n != 0)
 	{
 		hex_temp = n % 16;
-		buf[i] = hex_buf[hex_temp];
+		buf[--i] = hex_buf[hex_temp];
 		n /= 16;
-		i--;
 	}
-	*start = &buf[i + 1];
-	return ((size_t)(&buf[11] - *start));
+	*start = &buf[i];
+	return ((size_t)(&buf[19] - *start));
 }
 
-static void	set_prefix(t_print *paper, unsigned int arg)
+static void	set_prefix(t_print *paper, uintptr_t arg)
 {
 	if (arg)
 	{

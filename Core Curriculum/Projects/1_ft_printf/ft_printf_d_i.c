@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 17:31:07 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/08 23:08:30 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ static long long	read_signed(va_list arg, t_length length)
 		temp_arg = (long long)va_arg(arg, long);
 	else if (length == LEN_LL)
 		temp_arg = va_arg(arg, long long);
-	return temp_arg;
+	return (temp_arg);
 }
 
 static void	print_sign(const t_context *context, t_print *paper, long long arg)
@@ -75,26 +75,25 @@ static size_t	itoa_no_sign(long long n, char buf[21], const char **start)
 	int					i;
 	unsigned long long	n_magnitude;
 
-	i = 10;
+	i = 20;
 	if (n >= 0)
 		n_magnitude = (unsigned long long)(n);
 	else
 		n_magnitude = (unsigned long long)(-(n + 1)) + 1;
-	buf[20] = '\0';
+	buf[i] = '\0';
 	if (n_magnitude == 0)
 	{
-		buf[i] = '0';
+		buf[--i] = '0';
 		*start = &buf[i];
 		return (1);
 	}
 	while (n_magnitude != 0)
 	{
-		buf[i] = '0' + (n_magnitude % 10);
+		buf[--i] = '0' + (n_magnitude % 10);
 		n_magnitude /= 10;
-		i--;
 	}
-	*start = &buf[i + 1];
-	return ((size_t)(&buf[11] - *start));
+	*start = &buf[i];
+	return ((size_t)(&buf[20] - *start));
 }
 // 4 will be i = 9
 // 42 will be i = 8
