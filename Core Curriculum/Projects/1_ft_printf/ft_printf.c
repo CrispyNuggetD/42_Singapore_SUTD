@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/09 03:42:24 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/09 18:25:26 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ va_list *input);
 	printf(" ===== MANDATORY BELOW ===== \n");
 	printf("\n ===== STRINGS ===== \n");
 	ft_printf("My output is:\n");
-	mylen = ft_printf(" %s 123aa ", "test");
+	mylen = ft_printf("% aewfa e %s awer", "test");
 	printf("\nMy ft_printf return value:%i\n\n", mylen);
 
 	ft_printf("Actual printf output is:\n");
-	printf_len = printf(" %s 123aa ", "test");
+	printf_len = printf("% aewfa e %s awer", "test");
 	printf("\nActual printf return value:%i\n\n", printf_len);
 
 	printf("\n ===== POINTERS MIN MAX ===== \n");
@@ -46,7 +46,7 @@ va_list *input);
 	printf("\nActual printf return value:%i\n\n", printf_len);
 
 	printf("\n\n\n ===== BONUSES BELOW ===== \n");
-	printf("\n ===== WITH ERRORS ===== \n");
+	printf("\n ===== INVALID INPUT ===== \n");
 	ft_printf("My output is:\n");
 	mylen = ft_printf("%5%");
 	printf("\nMy ft_printf return value:%i\n\n", mylen);
@@ -64,15 +64,24 @@ va_list *input);
 	printf_len = printf("|%05p|", (void*)0x1);
 	printf("\nActual printf return value:%i\n\n", printf_len);
 
+	printf("\n ===== DECIMAL PAD AND PRECISION ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("%08.5d", 42);
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("%08.5d", 42);
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
 	printf("\n ===== COMPLEX EXAMPLES ===== \n");
 	ft_printf("My output is:\n");
-	mylen = ft_printf("%#37llXabc42isgreat_42^&NULL%-010.3hhu", 
+	mylen = ft_printf("%#37llXabc42isgreat_42^&NULL %6.3hx", 
 	\
 522337203685470ull, 12642);
 	printf("\nMy ft_printf return value:%i\n\n", mylen);
 
 	ft_printf("Actual printf output is:\n");
-	printf_len = printf("%#37llXabc42isgreat_42^&NULL%-010.3hhu", 
+	printf_len = printf("%#37llXabc42isgreat_42^&NULL %6.3hx", 
 	\
 522337203685470ull, 12642);
 	printf("\nActual printf return value:%i\n\n", printf_len);

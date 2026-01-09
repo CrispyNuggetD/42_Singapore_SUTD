@@ -292,7 +292,9 @@ git diff HEAD..origin/main
 - Basic (most) norminette errors settled
 - Some error values and refactoring.
 #### 08/01 (Thurs 53):
+- Finished checking and printf at 3:45am
 #### 09/01 (Fri 54):
+- Evaluation and live coding went well. Apparently it's not a new conversion like ```%f``` float. Just custom specifier and inserting predefined string.
 #### 10/01 (WkEnd, Sat 55):
 #### 11/01 (WkEnd, Sun 56):
 

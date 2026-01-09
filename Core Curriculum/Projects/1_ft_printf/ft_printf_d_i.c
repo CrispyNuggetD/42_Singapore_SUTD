@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/08 23:08:30 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/09 17:57:20 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ static long long	read_signed(va_list arg, t_length length)
 {
 	long long	temp_arg;
 
+	temp_arg = 0;
 	if (length == LEN_NONE)
 		temp_arg = (long long)va_arg(arg, int);
 	else if (length == LEN_HH)
@@ -55,7 +56,7 @@ static long long	read_signed(va_list arg, t_length length)
 		temp_arg = (long long)(short)va_arg(arg, int);
 	else if (length == LEN_L)
 		temp_arg = (long long)va_arg(arg, long);
-	else if (length == LEN_LL)
+	else
 		temp_arg = va_arg(arg, long long);
 	return (temp_arg);
 }
