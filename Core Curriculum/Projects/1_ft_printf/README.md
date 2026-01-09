@@ -205,10 +205,10 @@ For c/s/p/%:
 These are the defined 3 ```typedefs``` for tackling data handling
 
 ### 1. ```t_handler``` that are (void) function pointers
-My program uses the following ```typedef``` to work with ```t_handler``` that are ```(void)``` function pointers:
+My program uses the following ```typedef``` to work with ```t\_handler``` that are ```int``` function pointers, each function taking a pointer to a ```t\_context``` ```struct```:
 
 ```c
-typedef void    (*t_handler)(void);
+typedef int	(*t_handler)(t_context *context);
 ```
 
 ---

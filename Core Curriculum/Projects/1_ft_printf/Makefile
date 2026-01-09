@@ -1,8 +1,6 @@
 CC = cc
-	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-CFLAGS	= -Wall -Wextra -Werror -g #Standard 42 norm
-	#### SEARCH: UN-COMMENT HERE OUT LATER ####
-#CFLAGS	:= 
+CFLAGS = -Wall -Wextra -Werror #Standard 42 norm
+#CFLAGS = :=
 AR = ar
 AR_FLAGS = rcs
 

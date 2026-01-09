@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/09 03:42:24 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/09 18:55:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "get_next_line.h"
 //#include <stdio.h>
 
 // Let main stay on top (readability) with prototypes
