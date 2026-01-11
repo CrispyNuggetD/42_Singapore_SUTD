@@ -364,7 +364,8 @@ static t_handler	init_get_handlers(unsigned char fn_key)
 	(...),
 	};
 
-	return (handlers[fn_key])'
+	return (handlers[fn_key]);
+}
 ```
 
 ---
