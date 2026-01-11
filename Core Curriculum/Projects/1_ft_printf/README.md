@@ -34,6 +34,7 @@
 	2. Other specifiers not required by ```Subject.PDF``` ```(f F e E g G a A)```
 	3. Wide characters (```L"hello"```)
 	4. Four of the "Less common/ more complicated" length type modifiers ```(j z t L)```
+	5. Wildcard dynamic arguments (e.g. "%.*s", 2, "test")
 
 ---
 
