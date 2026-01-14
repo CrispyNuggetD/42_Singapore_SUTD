@@ -295,13 +295,21 @@ git diff HEAD..origin/main
 - Finished checking and printf at 3:45am
 #### 09/01 (Fri 54):
 - Evaluation and live coding went well. Apparently it's not a new conversion like ```%f``` float. Just custom specifier and inserting predefined string.
+- But! (GAHH!!) Moulinette failed, uninitialised ```temp_arg```.
+- ```cc``` didn't warn as somehow mapped to ```gcc``` although supposed to be ```clang```.
 #### 10/01 (WkEnd, Sat 55):
 #### 11/01 (WkEnd, Sun 56):
 
 ### W9
 #### 12/01 (Mon 57):
 #### 13/01 (Tues 58):
+- Overnight
+- Chat with ```twtan``` and ```thtay```.
+- Discussion (```twtan```) of push\_swap techniques (techniques - recursion sort of ```twtan```)
+- Discussion (```twtan```) of get\_next\_line (edge cases? Null terminator in file? Possible to implement with flags in caller but in scope??)
 #### 14/01 (Wed 59):
+- Socialising and connecting with peers.
+- Mental break/ physical exhaustion (I'm going home for a good rest tonight!!)
 #### 15/01 (Thurs 60):
 #### 16/01 (Fri 61):
 #### 17/01 (WkEnd, Sat 62):
