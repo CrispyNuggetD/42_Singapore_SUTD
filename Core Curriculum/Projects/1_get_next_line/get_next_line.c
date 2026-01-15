@@ -5,160 +5,53 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/09 18:55:17 by hnah             ###   ########.fr       */
+/*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
+/*   Updated: 2026/01/15 21:12:30 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-//#include <stdio.h>
-
-// Let main stay on top (readability) with prototypes
-static t_handler	init_get_handlers(unsigned char fn_keys);
-static int			dispatch_key(t_context *context);
-static int			error_and_return(va_list *input);
-static int			main_coordinator(const char **str, t_context *context, \
-va_list *input);
-
-// Main function
-/* int	main(void)
+	
+char  *get_next_line(int fd)
 {
-	int	mylen;
-	int	printf_len;
-
-	printf(" ===== MANDATORY BELOW ===== \n");
-	printf("\n ===== STRINGS ===== \n");
-	ft_printf("My output is:\n");
-	mylen = ft_printf(" %s 123aa ", "test");
-	printf("\nMy ft_printf return value:%i\n\n", mylen);
-
-	ft_printf("Actual printf output is:\n");
-	printf_len = printf(" %s 123aa ", "test");
-	printf("\nActual printf return value:%i\n\n", printf_len);
-
-	printf("\n ===== POINTERS MIN MAX ===== \n");
-	ft_printf("My output is:\n");
-	mylen = ft_printf(" %p %p ", LONG_MIN, LONG_MAX);
-	printf("\nMy ft_printf return value:%i\n\n", mylen);
-
-	ft_printf("Actual printf output is:\n");
-	printf_len = printf(" %p %p ", LONG_MIN, LONG_MAX);
-	printf("\nActual printf return value:%i\n\n", printf_len);
-
-	printf("\n\n\n ===== BONUSES BELOW ===== \n");
-	printf("\n ===== WITH ERRORS ===== \n");
-	ft_printf("My output is:\n");
-	mylen = ft_printf("%5%");
-	printf("\nMy ft_printf return value:%i\n\n", mylen);
-
-	ft_printf("Actual printf output is:\n");
-	printf_len = printf("%5%");
-	printf("\nActual printf return value:%i\n\n", printf_len);
-
-	printf("\n ===== STR POINTER WITH PADDING ===== \n");
-	ft_printf("My output is:\n");
-	mylen = ft_printf("|%05p|", (void*)0x1);
-	printf("\nMy ft_printf return value:%i\n\n", mylen);
-
-	ft_printf("Actual printf output is:\n");
-	printf_len = printf("|%05p|", (void*)0x1);
-	printf("\nActual printf return value:%i\n\n", printf_len);
-
-	printf("\n ===== COMPLEX EXAMPLES ===== \n");
-	ft_printf("My output is:\n");
-	mylen = ft_printf("%#37llXabc42isgreat_42^&NULL%-010.3hhu", 
-	\
-522337203685470ull, 12642);
-	printf("\nMy ft_printf return value:%i\n\n", mylen);
-
-	ft_printf("Actual printf output is:\n");
-	printf_len = printf("%#37llXabc42isgreat_42^&NULL%-010.3hhu", 
-	\
-522337203685470ull, 12642);
-	printf("\nActual printf return value:%i\n\n", printf_len);
-} */
-
-// This function is summoned from main to parse the input
-int	ft_printf(const char *str, ...)
-{
-	t_context	context;
-	va_list		input;
-
-	ft_printf_init_t_context(&context);
-	if (!str)
-		return (-1);
-	va_start(input, str);
-	while (*str)
-	{
-		if (*str != '%')
-		{
-			if (write_guaranteed(&context, str, 1) < 0)
-				return (error_and_return(&input));
-			str++;
-		}
-		else
-		{
-			if (main_coordinator(&str, &context, &input) < 0)
-				return (error_and_return(&input));
-		}
-	}
-	va_end(input);
-	return (context.printed);
+	ssize_t		read_num;
+		written;
+	char		*placeholder;
+	char		placeholder2;
+	static char	*stash;
+	
+	i = 0;
+	read_num = 0;
+	if (fd < 0 || BUFFER_SIZE <= 0 || SIZE_MAX - BUFFER_SIZE < 0)
+		return (NULL);
+	read_num = read(fd, CURRENTSTASHPOINTERTHATCANTAKE THE BUFFER SIZE, BUFFER_SIZE);
+	if (function_placeholder(input) < 0)
+		return (something of type char* that means something);
+	return (the nex));
 }
 
-static int	main_coordinator(const char **str, t_context *context,\
-			va_list *input)
-{
-	int			dispatch_success;
-	t_spec		spec;
+/*
+SEARCH "IMPORTANT"
+cases = 
+1. read returns < buffer size MEANS EOF reached or STDIN < buffsize\
+2. read returns == buffer size
+	2.1 a) function 1 (Check read if contains important info)
+	1. \n is present
+		1.1 possible ways:
+		1.1.1 last character
+			2.1.1 \n = newline encountered at this very end of read instance where buffersize is actually apparently filled and last is get next line
+				2.1.1.1 Implications : 
+					A) IMPORTANT STASH CAN BE EMPTY AFTER CLEARANCE
+		1.1.2 first
+			A) CANNOT DEREF BEFORE AN ARRAY ALWAYS DANGEROUS
+		1.1.3 mid
+		b) send to printer if GNL'd
+			c) clear and reset stash after printer with the current situation of the stash:
+				1. 
 
-	(*str)++;
-	if (!ft_printf_parse_specs(&spec, str))
-		return (-1);
-	context->input = input;
-	context->spec = &spec;
-	dispatch_success = dispatch_key(context);
-	if (dispatch_success < 0)
-		return (-1);
-	return (0);
-}
-// check actual error code if (!str); return (0); 
-// The below function initialises (by mapping) the function handlers
-// Variables mean type_handler, global_handler
 
-static int	error_and_return(va_list *input)
-{
-	va_end(*input);
-	return (-1);
-}
+*/
 
-static int	dispatch_key(t_context *context)
-{
-	t_handler	fn;
-	int			len_printed;
-
-	fn = init_get_handlers(context->spec->conversion);
-	if (fn)
-		len_printed = fn(context);
-	else
-		return (-1);
-	return (len_printed);
-}
-
-// Initialise keys and also allows dispatcher to fetch those keys
-static t_handler	init_get_handlers(unsigned char fn_key)
-{
-	static t_handler const	handlers[256] = {
-	['%'] = ft_printf_percent,
-	['d'] = ft_printf_d_i,
-	['i'] = ft_printf_d_i,
-	['u'] = ft_printf_unsigned_int,
-	['s'] = ft_printf_string,
-	['c'] = ft_printf_character,
-	['x'] = ft_printf_hex_small,
-	['X'] = ft_printf_hex_big,
-	['p'] = ft_printf_pointer,
-	};
-
-	return (handlers[fn_key]);
-}
+/*
+possible situations: nothing in file, file only new linees and empty, file has a line as long as buffer (need to guard NULL wrongly, do i need to? and if i need to, how?), and the situation of reaching the end of file directly (buff = empty) as well as buffer containing EOF (what's EOF in read? or is it just '\0' or that buffer is empty/ null?)) so first get buffer, while not rewline character (or null?), static append.
+*/
