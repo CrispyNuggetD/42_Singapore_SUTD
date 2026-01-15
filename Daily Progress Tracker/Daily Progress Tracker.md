@@ -311,6 +311,9 @@ git diff HEAD..origin/main
 - Socialising and connecting with peers.
 - Mental break/ physical exhaustion (I'm going home for a good rest tonight!!)
 #### 15/01 (Thurs 60):
+- Evaluated 1 person during points sale
+- Started coding ```get_next_line``` (42 mins elapsed).
+- Stayed overnight on campus.
 #### 16/01 (Fri 61):
 #### 17/01 (WkEnd, Sat 62):
 #### 18/01 (WkEnd, Sun 63):
