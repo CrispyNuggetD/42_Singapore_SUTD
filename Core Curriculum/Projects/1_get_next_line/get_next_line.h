@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/09 18:58:17 by hnah             ###   ########.fr       */
-/*                                                                            */
+/*																			*/
+/*														:::	  ::::::::   */
+/*   get_next_line.h									:+:	  :+:	:+:   */
+/*													+:+ +:+		 +:+	 */
+/*   By: hnah <hnah@student.42singapore.sg>		 +#+  +:+	   +#+		*/
+/*												+#+#+#+#+#+   +#+		   */
+/*   Created: 2025/12/25 13:22:29 by hnah			  #+#	#+#			 */
+/*   Updated: 2026/01/09 18:58:17 by hnah			 ###   ########.fr	   */
+/*																			*/
 /* ************************************************************************** */
 
 #ifndef FT_PRINTF_H
@@ -19,68 +19,6 @@
 # include <unistd.h>
 # include <stdint.h>
 
-# define FLAG_MINUS 1
-# define FLAG_ZERO  2
-# define FLAG_PREC  4
-# define FLAG_HASH  8
-# define FLAG_SPACE 16
-# define FLAG_PLUS  32
-
-typedef enum e_length
-{
-	LEN_NONE,
-	LEN_HH,
-	LEN_H,
-	LEN_L,
-	LEN_LL
-}	t_length;
-
-typedef struct s_spec
-{
-	unsigned char	flags;
-	int				width;
-	int				precision;
-	char			conversion;
-	t_length		length;
-}					t_spec;
-
-typedef struct s_context
-{
-	va_list	*input;
-	t_spec	*spec;
-	size_t	printed;
-}			t_context;
-
-typedef struct s_print
-{
-	char		sign;
-	const char	*core;
-	size_t		core_len;
-	const char	*prefix;
-	size_t		prefix_len;
-	size_t		prec_zeros;
-	size_t		pad_len;
-	char		pad_char;
-}				t_print;
-
-typedef int	(*t_handler)(t_context *context);
-
-int		ft_printf(const char *key, ...);
-int		ft_printf_parse_specs(t_spec *spec, const char **ptr);
-int		ft_printf_percent(t_context *context);
-int		ft_printf_d_i(t_context *context);
-int		ft_printf_unsigned_int(t_context *context);
-int		ft_printf_hex_small(t_context *context);
-int		ft_printf_hex_big(t_context *context);
-int		ft_printf_pointer(t_context *context);
-int		ft_printf_string(t_context *context);
-int		ft_printf_character(t_context *context);
-int		ft_printf_print_config(t_context *context, t_print *paper);
-int		write_guaranteed(t_context *context, const char *buf, size_t len);
-int		write_repeat(t_context *context, char c, size_t count);
-int		is_numeric_conv(int conversion);
-int		send_for_printing(t_context *context, t_print *paper);
-void	ft_printf_init_t_print(t_print *paper);
-void	ft_printf_init_t_context(t_context *context);
+char  *get_next_line(int fd);
 
 #endif
