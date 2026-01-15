@@ -9,7 +9,7 @@
 # 1. cd to [custom-defined variable] for current project
 # 2. Opens Visual Studio Code
 # 3. makes fclean to clean up library objects for, then, 
-# 4. Proper syncing with github), amongst other auxillary checks and error handling.
+# 4. Proper syncing with github, amongst other auxillary checks and error handling.
 
 ##### (A) Fun functions:
 # 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
@@ -114,8 +114,9 @@ curproj() {
   echo "Now working on: $current_proj"
   echo "Location: $proj_dir"
   
-  echo "Pre-cleaning"
-  make fclean || return 1
+  #Uncomment to clean library files before committing pipeline
+  #echo "Pre-cleaning"
+  #make fclean || return 1
   
   echo "Launching Visual Studio Code"
   code . || return 1
