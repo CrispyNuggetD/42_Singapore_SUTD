@@ -279,13 +279,13 @@ git diff HEAD..origin/main
 - ```if``` clamping done to prevent underflows (when core_len > precision and subtract from precision = 0);
 - TO-DO: Prototype static functions (that are in reverse order).
 - TO-DO: Update ```ft_printf``` ```Readme.md```
-- TO-DO: Work on ```send\_for\_printing``` by understanding the multi-line comment in code about the 3 different output formats (e.g. pad left/ right)
+- TO-DO: Work on ```send_for_printing``` by understanding the multi-line comment in code about the 3 different output formats (e.g. pad left/ right)
 
 ### W8
 #### 05/01 (Mon 50):
 - Not feeling well/ overworked (MC)
 #### 06/01 (Tues 51):
-- Refectoring including printer split to ```print\_config``` for len, etc. calculations before actual printing.
+- Refectoring including printer split to ```print_config``` for len, etc. calculations before actual printing.
 - Update makefile
 #### 07/01 (Wed 52):
 - Libfttester for d/i bonus for ```0``` (of d/i) passes
@@ -297,30 +297,41 @@ git diff HEAD..origin/main
 - Evaluation and live coding went well. Apparently it's not a new conversion like ```%f``` float. Just custom specifier and inserting predefined string.
 - But! (GAHH!!) Moulinette failed, uninitialised ```temp_arg```.
 - ```cc``` didn't warn as somehow mapped to ```gcc``` although supposed to be ```clang```.
-#### 10/01 (WkEnd, Sat 55):
+#### 10/01 (WkEnd, Sat 55);
+- SUTD Funny Machines Finals (Attended as public, wrote and shared write-ups)
+- Typing practice with mechanical keyboard loaned from ```zchoo``` (thanks!)
 #### 11/01 (WkEnd, Sun 56):
+- ```ft_printf``` complete, moving on to ```get_next_line```
 
 ### W9
 #### 12/01 (Mon 57):
+- 
 #### 13/01 (Tues 58):
 - Overnight
 - Chat with ```twtan``` and ```thtay```.
-- Discussion (```twtan```) of push\_swap techniques (techniques - recursion sort of ```twtan```)
-- Discussion (```twtan```) of get\_next\_line (edge cases? Null terminator in file? Possible to implement with flags in caller but in scope??)
+- Discussion (```twtan```) of ```push_swap``` techniques (techniques - recursion sort of ```twtan```)
+- Discussion (```twtan```) of ```get_next_line``` (edge cases? Null terminator in file? Possible to implement with flags in caller but in scope??)
 #### 14/01 (Wed 59):
 - Socialising and connecting with peers.
 - Mental break/ physical exhaustion (I'm going home for a good rest tonight!!)
 #### 15/01 (Thurs 60):
-- Evaluated 1 person during points sale
+- Evaluated 1 person during points sale (2 points)
 - Started coding ```get_next_line``` (42 mins elapsed).
 - Stayed overnight on campus.
 #### 16/01 (Fri 61):
+- 4 more evals during points sale (14 + 2 = 16 total)
+- 18 points balance
 #### 17/01 (WkEnd, Sat 62):
+- Had to go home for DHL delivery
 #### 18/01 (WkEnd, Sun 63):
+- Unproductive due to worsening mental health (and also OCD)
 
 ### W10
 #### 19/01 (Mon 64):
+- OCD-induced depressive breakdown
+- Attempted recovery, minimal, no typing, whiteboard code designing
 #### 20/01 (Tues 65):
+- Largely more productive. Typing at 20% speed but managed to finish first complete draft of ```get_next_line``` in 9 hours by dinner. 
 #### 21/01 (Wed 66):
 #### 22/01 (Thurs 67):
 #### 23/01 (Fri 68):

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/15 21:12:30 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/20 18:12:47 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,41 @@
 	
 char  *get_next_line(int fd)
 {
-	ssize_t		read_num;
-		written;
-	char		*placeholder;
-	char		placeholder2;
 	static char	*stash;
+	char		*new_stash;
+	int			is_event;
+	ssize_t		read_num;
+	ssize_t		stash_len;
 	
-	i = 0;
-	read_num = 0;
-	if (fd < 0 || BUFFER_SIZE <= 0 || SIZE_MAX - BUFFER_SIZE < 0)
+	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || SIZE_MAX - BUFFER_SIZE < 0)
 		return (NULL);
-	read_num = read(fd, CURRENTSTASHPOINTERTHATCANTAKE THE BUFFER SIZE, BUFFER_SIZE);
-	if (function_placeholder(input) < 0)
-		return (something of type char* that means something);
-	return (the nex));
+	is_event = -1;
+	while (is_event >= -1)
+	{
+		stash_len = find(stash, NULL);
+		new_stash = malloc(sizeof(char) * (stash_len + BUFFER_SIZE + 1));
+		if (!new_stash)
+			return (NULL);
+		read_num = read(fd, new_stash + stash_len, BUFFER_SIZE);
+		new_stash[stash_len + read_num] = '\0';
+		is_event = check_char(new_stash + stash_len);
+		while (stash_len--)
+			new_stash[stash_len] = stash[stash_len];
+		if (read_num < 0)
+			return (NULL);
+		if (is_event >= 0)
+			return (gnl_strjoin(stash, new_stash, read_num));
+		else if (is_event == -1) //is_event is -1, continue
+		{
+			free(stash);
+			stash = new_stash;
+		}
+		else
+		{
+			free(new_stash);
+			return (NULL);
+		}
+	}
 }
 
 /*
@@ -35,7 +56,7 @@ SEARCH "IMPORTANT"
 cases = 
 1. read returns < buffer size MEANS EOF reached or STDIN < buffsize\
 2. read returns == buffer size
-	2.1 a) function 1 (Check read if contains important info)
+3 a) function 1 (Check read if contains important info)
 	1. \n is present
 		1.1 possible ways:
 		1.1.1 last character
@@ -43,11 +64,14 @@ cases =
 				2.1.1.1 Implications : 
 					A) IMPORTANT STASH CAN BE EMPTY AFTER CLEARANCE
 		1.1.2 first
-			A) CANNOT DEREF BEFORE AN ARRAY ALWAYS DANGEROUS
+					B) CANNOT DEREF BEFORE AN ARRAY ALWAYS DANGEROUS
 		1.1.3 mid
+					C) need to rmb function that "clears stash" needs to push back original content after \n to stash too
+					
 		b) send to printer if GNL'd
-			c) clear and reset stash after printer with the current situation of the stash:
-				1. 
+		c) clear and reset stash after printer with the current situation of the stash:
+			1. Nothing: Reset to NULL again
+			2. SOmething:
 
 
 */
