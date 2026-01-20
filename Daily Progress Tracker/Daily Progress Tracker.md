@@ -305,9 +305,12 @@ git diff HEAD..origin/main
 
 ### W9
 #### 12/01 (Mon 57):
-- 
+- Overnight, ChatGPT till morning
+- Derived segmented tables, counting sort for ```push_swap```
+- Learnt that properly defining problems scope and universe size is most important for tackling problem statements
 #### 13/01 (Tues 58):
 - Overnight
+- Badminton
 - Chat with ```twtan``` and ```thtay```.
 - Discussion (```twtan```) of ```push_swap``` techniques (techniques - recursion sort of ```twtan```)
 - Discussion (```twtan```) of ```get_next_line``` (edge cases? Null terminator in file? Possible to implement with flags in caller but in scope??)
@@ -332,6 +335,7 @@ git diff HEAD..origin/main
 - Attempted recovery, minimal, no typing, whiteboard code designing
 #### 20/01 (Tues 65):
 - Largely more productive. Typing at 20% speed but managed to finish first complete draft of ```get_next_line``` in 9 hours by dinner. 
+- Took more than an hour to retroactively update this ```README.md``` at 10% OCD typing speed! :/(
 #### 21/01 (Wed 66):
 #### 22/01 (Thurs 67):
 #### 23/01 (Fri 68):
