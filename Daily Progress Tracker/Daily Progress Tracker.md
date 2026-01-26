@@ -337,14 +337,19 @@ git diff HEAD..origin/main
 - Largely more productive. Typing at 20% speed but managed to finish first complete draft of ```get_next_line``` in 9 hours by dinner. 
 - Took more than an hour to retroactively update this ```README.md``` at 10% OCD typing speed! :/(
 #### 21/01 (Wed 66):
+- A.I. Singapore talk thing
 #### 22/01 (Thurs 67):
+- Reading Hackernews and updating myself with current events
 #### 23/01 (Fri 68):
+- Debug ```get_next_line``` + Table Tennis
 #### 24/01 (WkEnd, Sat 69):
+- Rest (and sort of fell sick in the afternoon)
 #### 25/01 (WkEnd, Sun 70):
-
+- Rest
 
 ### W11
 #### 26/01 (Mon 71):
+- ```get_next_line``` Debug + Running.
 #### 27/01 (Tues 72):
 #### 28/01 (Wed 73):
 #### 29/01 (Thurs 74):
