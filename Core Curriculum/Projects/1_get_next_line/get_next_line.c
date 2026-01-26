@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/23 18:33:08 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/26 12:57:51 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ char  *get_next_line(int fd)
 	while (1)
 	{
 		if (find_len(stash, '\0') != find_len(stash, '\n'))
-			return (gnl_strjoin_ret(&stash, &new_stash, read_num));
+			return (gnl_strjoin_ret(&stash, &new_stash, find_len(stash, '\n')));
 		stash_len = find_len(stash, '\0');
 		new_stash = malloc(sizeof(char) * (stash_len + BUFFER_SIZE + 1));
 		if (!new_stash)
