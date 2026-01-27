@@ -6,13 +6,106 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/26 12:57:50 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/27 18:22:40 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int	check_char(char *new_stash)
+
+/* ssize_t	newline_index(char *str)
+{
+	ssize_t len;
+	int		found;
+
+	len = 0;
+	found = -1;
+	while (*str)
+	{
+		if (*str == '\n')
+		{
+			found = 1;
+			break;
+		}
+		len++;
+		str++;
+	}
+	if (found)
+		return (len);
+	return (-1);
+} */
+
+char	*stash_append(char **stash, char *buf, ssize_t nread)
+{
+
+}
+
+/* char	*stash_trim_ret(char **stash)
+{
+	ssize_t	len;
+	int		cut;
+	char	*stash_backup;
+	char	*ret;
+	char	*remainder;
+
+	len = 0;
+	stash_backup = *stash;
+	if (!stash_backup || *stash_backup == '\0')
+		return (NULL);
+	len = ft_strlen(stash_backup);
+	cut = newline_index(stash_backup) + 1;
+	if (newline_index(stash_backup) < 0)
+		cut = len;
+	ret = malloc(sizeof(char) * (cut + 1));
+	if (!ret)
+		return (NULL);
+	ret[cut] = '\0';
+	ft_memcpy(ret, stash_backup, cut);
+	if (len - cut == 0)
+		remainder = NULL;
+	else
+		remainder = malloc(sizeof(char) * (len - cut + 1));
+	if (!remainder)
+		return (NULL);
+	remainder[len - cut] = '\0';
+	ft_memcpy(remainder, stash_backup + cut, len - cut);
+	free(stash_backup);
+	*stash = remainder;
+	return (ret);
+} */
+
+/* ssize_t	ft_strlen(const char *s)
+{
+	size_t	len;
+
+	len = 0;
+	while (*s)
+	{
+		len++;
+		s++;
+	}
+	return (len);
+} */
+
+/* void	*ft_memcpy(void *dest, const void *src, size_t n)
+{
+	const unsigned char	*src_backup;
+	unsigned char		*dest_backup;
+
+	if (!dest && !src)
+		return (NULL);
+	src_backup = (unsigned char *)src;
+	dest_backup = (unsigned char *)dest;
+	while (n--)
+	{
+		*dest_backup = *src_backup;
+		dest_backup++;
+		src_backup++;
+	}
+	return (dest);
+}
+ */
+/* int	check_char(char *new_stash)
 {
 	if (*new_stash == '\0')
 		return (-2);
@@ -25,11 +118,11 @@ int	check_char(char *new_stash)
 		new_stash++;
 	}
 	return (-1);
-}
+} */
 
 /*
 *gnl_strjoin_ret always frees temporary stash used by overwriting before returning.
-if i want to use for both, 2 cases, 1 continue (no /n) another is ys (\n)
+if i want to use for both, 2 cases, 1 continue (no /n) another is yes (\n)
 Cases: GNL (if contains \n == TRUE, Immediately):
 Case 1:
 12\n45678\0x (len might be < BUFFER_SIZE + 1 but definitely \0)
@@ -39,7 +132,7 @@ Else Cases...:
 Case 2,3: GNL continue (GOTO)
 
 =====
-B: Index (+1 if \n):
+B: Find index (+1 if \n):
 Case 1:
 \n OR \0: 2+1 = 3
 \0 8
@@ -53,12 +146,17 @@ Case 1: GNL (if contains \n == TRUE, Immediately,):
 
 =====
 Running(*gnl_strjoin_ret):
-Case 1: \n OR \0 at 2
+Case 1: \n OR \0 at [2]
 (2+1)+1 = 4
 3* cpy + \0 = 12\n\0 (new_buf overwrite)
 -----
+
+Case 1:
+12\n45678\0x
+
+
 Case 1 continued: \0 at 8
-remainder = 8 read - 3 = 5
+remainder = 8 input - 3 = 5
 5+1*cpy+\0 = 45678\0
 (buf overwrite)
 (new_buf return)
@@ -93,7 +191,7 @@ Case 2: \n OR \0 at 5
 5*cpy + \0 = 12345\0 (new_buf overwrite)
 -----
 Case 2 continued: \0 at 5
-remainder = 5 read - 5 = 0
+remainder = 5 input - 5 = 0
 01*cpy+\0 = 0\0
 (buf overwrite)
 (new_buf return)
@@ -101,24 +199,74 @@ END case 2:
 buf = \0 (Case 2)
 new_buf = 12345\0
 =====
-Case 3:
+Case 3 none:
 12345678901234567890\0 (Or that of case 1 or 2 next loop)
 -----
 Running(*gnl_strjoin_ret):
-Case 3: \n OR \0 at 20
-20*cpy + \0 = 12345678901234567890\0 (new_buf overwrite)
+Case 3: \n OR \0 at 19
+if read != buffer size:
+19*cpy + \0 = 2345678901234567890\0 (new_buf overwrite)
 -----
-Case 3 continued: \0 at 20
-remainder = 20 read - 20 = 0
+Case 3 continued: 
+else: \0 at 19
+remainder = 19 input - 19 = 0
 01*cpy+\0 = 0\0
 (buf overwrite)
 (new_buf return)
 END case 3:
 buf = \0 (Case 3)
-new_buf = 12345678901234567890\0
+new_buf = 2345678901234567890\0
 =====
-Case 4:
+Case 4 during entry of loop:
 \0 (Or that of case 1 or 2 next loop)
+	s = *stash;
+	if (!s || !*s)
+		return (NULL);
+	len = ft_strlen(s);
+	cut = newline_index(s);
+	if (cut < 0)
+		cut = len;
+	else
+		cut++;
+	ret = malloc(cut + 1);
+	if (!ret)
+		return (NULL);
+	ft_memcpy(ret, s, cut);
+	ret[cut] = '\0';
+	if (cut == len)
+		return (free(s), *stash = NULL, ret);
+	rem = malloc(len - cut + 1);
+	if (!rem)
+		return (free(ret), NULL);
+	ft_memcpy(rem, s + cut, len - cut);
+	s = *stash;
+	if (!s || !*s)
+		return (NULL);
+	len = ft_strlen(s);
+	cut = newline_index(s);
+	if (cut < 0)
+		cut = len;
+	else
+		cut++;
+	ret = malloc(cut + 1);
+	if (!ret)
+		return (NULL);
+	ft_memcpy(ret, s, cut);
+	ret[cut] = '\0';
+	if (cut == len)
+		return (free(s), *stash = NULL, ret);
+	rem = malloc(len - cut + 1);
+	if (!rem)
+		return (free(ret), NULL);
+	ft_memcpy(rem, s + cut, len - cut);
+	rem[len - cut] = '\0';
+	free(s);
+	*stash = rem;
+	return (r
+	rem[len - cut] = '\0';
+	free(s);
+	*stash = rem;
+	return (r
 -----
 Running(*gnl_strjoin_ret):
 Case 4: \n OR \0 at 0
@@ -134,28 +282,41 @@ buf = \0 (Case 4)
 new_buf = \0
 =====
 (FROM GOTO NEXT) GNL (if contains \n == FALSE)
-If EOF, buf = NULL, If new_buf, return new_buf. Else, return new_buf
+If EOF, buf = NULL, If new_buf, return new_buf. Else, if new_buf is null doesn't that mean EOF
+
+Dual use split_swap_return(char **buf, char **new, ssize_t nread)
+//single dual-meaning return for 25 lines. I mean you just ignore the return if not needed
+//new = buf + newly read
+make a temp_buf;
+optional: 
+if (\n exist){
+whatever not before an \n (i.e. or after) to temp_buf;
+whatever that exist until "an \n", free new, malloc and copy to new;
+set buf to temp_buf}
+else {set buf to new}
+also return (new) // ignore in base GNL function if ran at start to check \n, else return as the GNL line
+
 
 */
 
 char	*gnl_strjoin_ret(char **buf, char **new_buf, ssize_t read_len)
 {
-	char	*imposter_buf;
+	char	*temp_buf;
 	char	*gnl_buf;
 	ssize_t	suffix;
 	ssize_t	char_pos;
 
 	suffix = read_len - find_len(new_buf, '\n');
-	imposter_buf = malloc(sizeof(char) * (suffix + 1));
+	temp_buf = malloc(sizeof(char) * (suffix + 1));
 	char_pos = find_len(buf, '\0') + read_len - suffix;
-	if (!imposter_buf)
+	if (!temp_buf)
 		return (NULL);
-	imposter_buf[suffix] = '\0';
+	temp_buf[suffix] = '\0';
 	while (suffix--)
-		imposter_buf[suffix] = new_buf[find_len(buf, '\0') + \
+		temp_buf[suffix] = new_buf[find_len(buf, '\0') + \
 read_len - suffix];
 	free(buf);
-	buf = imposter_buf;
+	buf = temp_buf;
 	gnl_buf = malloc(sizeof(char) * (char_pos + 1));
 	if (!gnl_buf)
 		return (NULL);
@@ -166,17 +327,17 @@ read_len - suffix];
 	return (gnl_buf);
 }
 
-ssize_t	find_len(const char *s, const char *look_for)
+ssize_t	find_len(const char *s, int look_for)
 {
 	size_t	len;
 
 	len = 0;
-	while (*s && *s != *look_for)
+	while (*s && *s != look_for)
 	{
 		len++;
 		s++;
 	}
-	if (*s == * look_for)
+	if (*s && *s == look_for)
 		len++;
 	return (len);
 }

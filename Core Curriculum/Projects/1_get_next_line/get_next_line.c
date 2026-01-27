@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/26 12:57:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/01/27 18:22:43 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ char  *get_next_line(int fd)
 			return (NULL);
 		} 
 	}
-}
+} 
+
 
 /*
 SEARCH "IMPORTANT"
