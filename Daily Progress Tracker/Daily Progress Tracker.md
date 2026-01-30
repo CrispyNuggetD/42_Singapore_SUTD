@@ -351,9 +351,14 @@ git diff HEAD..origin/main
 #### 26/01 (Mon 71):
 - ```get_next_line``` Debug + Running.
 #### 27/01 (Tues 72):
+- Wasted effort useless ChatGPT debug (extra helpers, etc.) not Norm compliant.
 #### 28/01 (Wed 73):
+- Psychiatrist appointment
+- Back to basics pseudocode debugging
 #### 29/01 (Thurs 74):
+- TCA Clonipramine side-effects; rest/ unproductive
 #### 30/01 (Fri 75):
+- Still not feeling well. Neuroadaptation might take 2 weeks... QAQ!
 #### 31/01 (WkEnd, Sat 76):
 
 # Feb
