@@ -29,6 +29,7 @@
 - Computer textbooks 
 
 ## Mid-Nov
+
 ### W1
 #### 17/11 (Mon 1): 
 - Orientation, nearly got TIG’d for coffee :’\)
@@ -49,8 +50,6 @@
 - Continue setting up working environment (ChatGPT custom instructions to fit 42 A.I. pedagogy).
             
 ### W2
-
-
 #### 24/11 (Mon 8):
 - Join Run Club as Core first time
 - Added zsh setup guide for curproj (cd to cur. proj. + Check git status), 
@@ -105,6 +104,7 @@ git diff HEAD..origin/main
 - Out of campus (Charity event, Run For Rice 3.0, volunteer.give.asia/activity/run-for-rice-3)
 
 ## Dec
+
 ### W3
 #### 01/12 (Mon 15):
 - Urgent wisdom tooth extraction, suffered for 2 days straight afterwards. (Bleeding complications)
@@ -232,7 +232,6 @@ git diff HEAD..origin/main
 - Separated/ refactored .c files to a parsing .c, updated headers.
 - Defined bitmask bitshifting values to use with bitmapping using turning on or off or toggling (```|=``` or ```&=~opp``` or ```^=flip```)
 - Learnt toggling/ inverting everything except a bitwise operation (```^= ~a```)
-
 #### 30/12 (Tues 44):
 - Didn't feel well, slept in. (MC)
 - Plus, overseas relatives came over unannounced at night, hosted relatives
@@ -353,20 +352,28 @@ git diff HEAD..origin/main
 #### 27/01 (Tues 72):
 - Wasted effort useless ChatGPT debug (extra helpers, etc.) not Norm compliant.
 #### 28/01 (Wed 73):
-- Psychiatrist appointment
+- Psychiatrist appointment; new medicine
 - Back to basics pseudocode debugging
 #### 29/01 (Thurs 74):
 - TCA Clonipramine side-effects; rest/ unproductive
 #### 30/01 (Fri 75):
 - Still not feeling well. Neuroadaptation might take 2 weeks... QAQ!
 #### 31/01 (WkEnd, Sat 76):
+- Rest and friend hangout
 
 # Feb
 #### 01/02 (WkEnd, Sun 77):
+- Family errands, then,
+- Family outing
 
 ### W12
 #### 02/02 (Mon 78):
+- Not feeling well, slept 28 hours
 #### 03/02 (Tues 79):
+- Not feeling well but managed to drag myself to come to school.
+- Reset circadian rhythm with afternoon walk.
+- Did minimal work (mental) + Progress Tracker.
+- Left earlier (5:30) for earlier rest tonight.
 #### 04/02 (Wed 80):
 #### 05/02 (Thurs 81):
 #### 06/02 (Fri 82):
