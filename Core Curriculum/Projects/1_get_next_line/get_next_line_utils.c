@@ -299,7 +299,7 @@ also return (new) // ignore in base GNL function if ran at start to check \n, el
 
 */
 
-char	*gnl_strjoin_ret(char **buf, char **new_buf, ssize_t read_len)
+/*char	*gnl_strjoin_ret(char **buf, char **new_buf, ssize_t read_len)
 {
 	char	*temp_buf;
 	char	*gnl_buf;
@@ -325,6 +325,13 @@ read_len - suffix];
 		gnl_buf[char_pos] = new_buf[char_pos];
 	free(new_buf);
 	return (gnl_buf);
+}*/
+
+char *gnl_strjoin_ret(char **buf, char **new_buf, ssize_t read_len)
+{
+	char	*temp_buf;
+	
+	temp_buf = malloc(sizeof(char) * (
 }
 
 ssize_t	find_len(const char *s, int look_for)
@@ -340,4 +347,4 @@ ssize_t	find_len(const char *s, int look_for)
 	if (*s && *s == look_for)
 		len++;
 	return (len);
-}
+} -
