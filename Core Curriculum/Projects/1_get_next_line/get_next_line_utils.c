@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/30 17:46:49 by hnah             ###   ########.fr       */
+/*   Updated: 2026/02/04 18:52:24 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -327,11 +327,52 @@ read_len - suffix];
 	return (gnl_buf);
 }*/
 
-char *gnl_strjoin_ret(char **buf, char **new_buf, ssize_t read_len)
+char	*newline_ret(char **buf, char **new_buf, ssize_t read_len)
 {
 	char	*temp_buf;
+	char	*gnl_buf;
+	ssize_t	suffix;
+	ssize_t	char_pos;
+
+	suffix = read_len - find_len(new_buf, '\n');
+	temp_buf = malloc(sizeof(char) * (suffix + 1));
+	char_pos = find_len(buf, '\0') + read_len - suffix;
+	if (!temp_buf)
+		return (NULL);
+	temp_buf[suffix] = '\0';
+	while (suffix--)
+		temp_buf[suffix] = new_buf[find_len(buf, '\0') + \
+read_len - suffix];
+	free(buf);
+	buf = temp_buf;
+	gnl_buf = malloc(sizeof(char) * (char_pos + 1));
+	if (!gnl_buf)
+		return (NULL);
+	gnl_buf[char_pos] = '\0';
+	while (char_pos--)
+		gnl_buf[char_pos] = new_buf[char_pos];
+	free(new_buf);
+	return (gnl_buf);
+}
+
+void	gnl_strjoin(char **buf, char **new_buf)
+{
+	char	*temp_buf;
+	ssize_t	new_buf_len;
+	ssize_t	buf_len;
 	
-	temp_buf = malloc(sizeof(char) * (
+	new_buf_len = find_len(new_buf, '\0');
+	buf_len = find_len(buf_len, '\0');
+	temp_buf = malloc(sizeof(char) * (new_buf_len + buf_len + 1));
+	if(!temp_buf)
+		return (NULL);
+	temp_buf[new_buf_len + buf_len] = '\0';
+	while(new_buf_len--)
+		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
+	while(buf_len--)
+		temp_buf[buf_len] = buf[buf_len];
+	free(buf);
+	buf = temp_buf;
 }
 
 ssize_t	find_len(const char *s, int look_for)
@@ -347,4 +388,4 @@ ssize_t	find_len(const char *s, int look_for)
 	if (*s && *s == look_for)
 		len++;
 	return (len);
-} -
+}
