@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/02/04 18:52:24 by hnah             ###   ########.fr       */
+/*   Updated: 2026/02/08 16:45:14 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,14 +355,14 @@ read_len - suffix];
 	return (gnl_buf);
 }
 
-void	gnl_strjoin(char **buf, char **new_buf)
+char	*gnl_strjoin(char *buf, char *new_buf)
 {
 	char	*temp_buf;
 	ssize_t	new_buf_len;
 	ssize_t	buf_len;
 	
 	new_buf_len = find_len(new_buf, '\0');
-	buf_len = find_len(buf_len, '\0');
+	buf_len = find_len(buf, '\0');
 	temp_buf = malloc(sizeof(char) * (new_buf_len + buf_len + 1));
 	if(!temp_buf)
 		return (NULL);
@@ -371,15 +371,16 @@ void	gnl_strjoin(char **buf, char **new_buf)
 		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
 	while(buf_len--)
 		temp_buf[buf_len] = buf[buf_len];
-	free(buf);
-	buf = temp_buf;
+	return (temp_buf);
 }
 
 ssize_t	find_len(const char *s, int look_for)
 {
-	size_t	len;
+	ssize_t	len;
 
 	len = 0;
+	if (!s)
+		return (0);
 	while (*s && *s != look_for)
 	{
 		len++;
