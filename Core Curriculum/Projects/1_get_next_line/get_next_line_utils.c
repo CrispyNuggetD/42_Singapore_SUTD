@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/02/08 16:45:14 by hnah             ###   ########.fr       */
+/*   Updated: 2026/02/09 14:58:20 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -327,31 +327,32 @@ read_len - suffix];
 	return (gnl_buf);
 }*/
 
-char	*newline_ret(char **buf, char **new_buf, ssize_t read_len)
+char	*newline_ret(char **buf)
 {
 	char	*temp_buf;
 	char	*gnl_buf;
+	ssize_t	prefix;
 	ssize_t	suffix;
-	ssize_t	char_pos;
 
-	suffix = read_len - find_len(new_buf, '\n');
+	prefix = find_len(*buf, '\n');
+	suffix = find_len(*buf, '\0') - prefix;
 	temp_buf = malloc(sizeof(char) * (suffix + 1));
-	char_pos = find_len(buf, '\0') + read_len - suffix;
 	if (!temp_buf)
 		return (NULL);
 	temp_buf[suffix] = '\0';
 	while (suffix--)
-		temp_buf[suffix] = new_buf[find_len(buf, '\0') + \
-read_len - suffix];
-	free(buf);
-	buf = temp_buf;
-	gnl_buf = malloc(sizeof(char) * (char_pos + 1));
+		temp_buf[suffix] = (*buf)[prefix + suffix];
+	gnl_buf = malloc(sizeof(char) * (prefix + 1));
 	if (!gnl_buf)
+	{
+		free(temp_buf);
 		return (NULL);
-	gnl_buf[char_pos] = '\0';
-	while (char_pos--)
-		gnl_buf[char_pos] = new_buf[char_pos];
-	free(new_buf);
+	}
+	gnl_buf[prefix] = '\0';
+	while (prefix--)
+		gnl_buf[prefix] = (*buf)[prefix];
+	free(*buf);
+	*buf = temp_buf;
 	return (gnl_buf);
 }
 

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/27 18:22:43 by hnah             ###   ########.fr       */
+/*   Updated: 2026/02/09 18:12:23 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,40 +16,38 @@ char  *get_next_line(int fd)
 {
 	static char	*stash;
 	char		*new_stash;
-	char		*last_stash;// ?????
-	int			is_event;
+	char		*ret_line;
 	ssize_t		read_num;
-	ssize_t		stash_len;
 	
 	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || SIZE_MAX - BUFFER_SIZE < 0)
 		return (NULL);
 	while (1)
 	{
 		if (find_len(stash, '\0') != find_len(stash, '\n'))
-			return (gnl_strjoin_ret(&stash, &new_stash, find_len(stash, '\n')));
-		stash_len = find_len(stash, '\0');
-		new_stash = malloc(sizeof(char) * (stash_len + BUFFER_SIZE + 1));
+			return (newline_ret(&stash));
+		new_stash = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 		if (!new_stash)
 			return (NULL);
-		read_num = read(fd, new_stash + stash_len, BUFFER_SIZE);
+		read_num = read(fd, new_stash, BUFFER_SIZE);
 		if (read_num < 0)
-			if (stash)
-				free(stash);
-			return (NULL);
-		if (read_num == 0)
-			if (stash)
-				
-				free(stash);
-		new_stash[stash_len + read_num] = '\0';
-		while (stash_len--)
-			new_stash[stash_len] = stash[stash_len];
-		is_event = check_char(new_stash);
-		if (is_event >= 0)
-			return (gnl_strjoin_ret(&stash, &new_stash, read_num));
-		else if (is_event == -1) //is_event is -1, continue
-			gnl_strjoin_ret(&stash, &new_stash, read_num);
-		else if (is_event == -2)
 		{
+			if (stash)
+				free(stash);
+			if (new_stash)
+				free(new_stash);
+			return (NULL);
+		}
+		??? = gnl_strjoin(stash, new_stash);
+		if (read_num == 0)
+		{
+			if (find_len(stash, '\0') != find_len(stash, '\n'))
+				return (newline_ret(&stash));
+			ret_line = stash;
+			stash = NULL;
+			return (ret_line);
+				
+			return (gnl_strjoin_ret(&stash, &new_stash, read_num));
+		
 			if (stash)
 				return (stash);
 			free(stash);
