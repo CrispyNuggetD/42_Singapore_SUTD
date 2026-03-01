@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/02/12 18:02:44 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/01 21:27:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,29 +33,28 @@ char  *get_next_line(int fd)
 		{
 			if (stash)
 				free(stash);
-			if (new_stash)
-				free(new_stash);
-			return (NULL);
-		}
-		??? = gnl_strjoin(stash, new_stash);
-		if (read_num == 0)
-		{
-			if (find_len(stash, '\0') != find_len(stash, '\n'))
-				return (newline_ret(&stash));
-			ret_line = stash;
-			stash = NULL;
-			return (ret_line);
-				
-			return (gnl_strjoin_ret(&stash, &new_stash, read_num));
-		
-			if (stash)
-				return (stash);
-			free(stash);
 			free(new_stash);
 			return (NULL);
+		}
+		stash = gnl_strjoin(stash, new_stash);
+		if (read_num == 0)
+		{
+			if (stash[0] != '\0')
+			{
+				ret_line = newline_ret(&stash);
+				stash = NULL;
+				return (ret_line);
+			}
+			else
+			{
+				stash = NULL;
+				free(stash);
+				free(new_stash);
+				return (NULL);
+			}
 		} 
 	}
-} 
+}
 
 
 /*
