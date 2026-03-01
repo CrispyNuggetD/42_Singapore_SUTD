@@ -19,6 +19,17 @@
 # include <unistd.h>
 # include <stdint.h>
 
-char  *get_next_line(int fd);
+char	*get_next_line(int fd);
+char	*newline_ret(char **buf);
+char	*gnl_strjoin(char *buf, char *new_buf);
+ssize_t	find_len(const char *s, int look_for);
+
+
+
+void readdoc(void);
+
+
+
+
 
 #endif
