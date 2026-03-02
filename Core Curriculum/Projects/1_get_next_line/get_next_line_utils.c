@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/03/01 22:31:33 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/02 19:56:06 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ char	*gnl_strjoin(char *buf, char *new_buf)
 		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
 	while(buf_len--)
 		temp_buf[buf_len] = buf[buf_len];
+	free(buf);
+	free(new_buf);
 	return (temp_buf);
 }
 

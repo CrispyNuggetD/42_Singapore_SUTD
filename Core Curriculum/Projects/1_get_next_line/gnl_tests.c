@@ -3,16 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   gnl_tests.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thtay <thtay@student.42singapore.sg>       +#+  +:+       +#+        */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/12 14:13:01 by thtay             #+#    #+#             */
-/*   Updated: 2026/01/12 14:13:03 by thtay            ###   ########.fr       */
+/*   Updated: 2026/03/02 16:55:29 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <fcntl.h>
 #include <stdio.h>
+
+char	*ft_strdup(const char *s)
+{
+	size_t	i;
+	char	*new;
+
+	i = 0;
+	while (s[i])
+		i++;
+	new = malloc(i + 1);
+	if (!new)
+		return (NULL);
+	i = 0;
+	while (s[i])
+	{
+		new[i] = s[i];
+		i++;
+	}
+	new[i] = '\0';
+	return (new);
+}
 
 void readdoc(void)
 {

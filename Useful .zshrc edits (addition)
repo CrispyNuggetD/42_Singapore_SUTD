@@ -478,6 +478,11 @@ dailylogin() {
   curproj
   
   divider
+  echo "Launching Google Chrome"
+  google-chrome >/dev/null 2>&1 &
+  divider
+  
+  divider
   echo "sync proj. with github"
   divider
   syncproj
