@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/03/01 21:27:12 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/02 19:56:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ char  *get_next_line(int fd)
 	char		*ret_line;
 	ssize_t		read_num;
 	
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || SIZE_MAX - BUFFER_SIZE < 0)
+	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
 		return (NULL);
 	while (1)
 	{
@@ -29,6 +29,7 @@ char  *get_next_line(int fd)
 		if (!new_stash)
 			return (NULL);
 		read_num = read(fd, new_stash, BUFFER_SIZE);
+		new_stash[read_num] = '\0';
 		if (read_num < 0)
 		{
 			if (stash)
@@ -55,6 +56,17 @@ char  *get_next_line(int fd)
 		} 
 	}
 }
+
+/*
+if (read_num == 0)
+{
+    free(new_stash);
+    if (stash && stash[0] != '\0')
+        return (newline_ret(&stash));
+    free(stash);
+    stash = NULL;
+    return (NULL);
+}*/
 
 
 /*
