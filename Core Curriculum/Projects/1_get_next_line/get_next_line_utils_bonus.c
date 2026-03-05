@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*   get_next_line_utils_bonus.c                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/03/02 22:56:14 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/05 18:17:39 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,25 +41,33 @@ char	*newline_ret(char **buf)
 	return (gnl_buf);
 }
 
+char	*read_error(char **stash, char *new_stash)
+{
+	free(new_stash);
+	free(*stash);
+	*stash = NULL;
+	return (NULL);
+}
+
 char	*gnl_strjoin(char *buf, char *new_buf)
 {
 	char	*temp_buf;
 	ssize_t	new_buf_len;
 	ssize_t	buf_len;
-	
+
 	new_buf_len = find_len(new_buf, '\0');
 	buf_len = find_len(buf, '\0');
 	temp_buf = malloc(sizeof(char) * (new_buf_len + buf_len + 1));
 	if (!temp_buf)
-	{	
+	{
 		free(buf);
 		free(new_buf);
 		return (NULL);
 	}
 	temp_buf[new_buf_len + buf_len] = '\0';
-	while(new_buf_len--)
+	while (new_buf_len--)
 		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
-	while(buf_len--)
+	while (buf_len--)
 		temp_buf[buf_len] = buf[buf_len];
 	free(buf);
 	free(new_buf);
@@ -81,4 +89,13 @@ ssize_t	find_len(const char *s, int look_for)
 	if (*s && *s == look_for)
 		len++;
 	return (len);
+}
+
+char	*fd_end_handler(char **stash)
+{
+	if (*stash && (*stash)[0] != '\0')
+		return (newline_ret(stash));
+	free(*stash);
+	*stash = NULL;
+	return (NULL);
 }
