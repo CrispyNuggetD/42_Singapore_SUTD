@@ -1,25 +1,8 @@
 #include "get_next_line.h"
 #include <stdio.h>
-#include <fcntl.h>
-/*
-static int muh_putnbr(int n)
-{
-	char a;
-	int t = 1;
-	if (n < 0)
-	{
-		write(1, "-", 1);
-		n = 0 - n;
-	}
-	while (n / t > 9)
-		t *= 10;
-	while (t)
-	{
-		a = ((n / t) % 10) + '0';
-	}
-}
-*/
-static int muh_atoi(char *v)
+#include <fcntl.h> 
+
+static int gnl_atoi(char *v)
 {
 	int i = 0;
 	int a = 0;
@@ -30,7 +13,7 @@ static int muh_atoi(char *v)
 		i ++;
 	}
 	if (!a)
-		write(1, "wtf\n", 4);
+		write(1, "invalid integer\n", 4);
 	return (a);
 }
 
@@ -39,21 +22,21 @@ int main(int c, char **v)
 	int	i = 0;
 	if (c < 3)
 		return (1);
-	int fd = open(v[1], O_RDONLY);
+	int fd = open(v[1], O_RDONLY); //change to '0' for stdin
 	if (fd < 0)
-		return ((write(1, "no open\n", 8)), 1);
-	int line = muh_atoi(v[2]);
-	char *receive = NULL;
+		return ((write(1, "u no the allow open\n", 8)), 1);
+	int line = gnl_atoi(v[2]);
+	char *the_line = NULL;
 	while (line)
 	{
-		receive = get_next_line(fd);
-		if (receive == NULL)
-			return ((write(1, "how\n", 4)), (close(fd)), 1);
-		while (receive[i])
+		the_line = get_next_line(fd);
+		if (the_line == NULL)
+			return ((write(1, "finish le\n", 4)), (close(fd)), 1);
+		while (the_line[i])
 			i++;
-		write(1, receive, i);
-		line --;
+		write(1, the_line, i);
+		line--;
 	}	
-	free(receive);
+	free(the_line);
 	close(fd);
 }
