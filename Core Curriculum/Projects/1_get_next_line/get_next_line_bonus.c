@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 20:23:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/03/02 23:01:25 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/02 22:54:44 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 	
 char  *get_next_line(int fd)
 {
-	static char	*stash;
+	static char	*stash[1024];
 	char		*new_stash;	
 	ssize_t		read_num;
 	ssize_t		nl;
@@ -23,30 +23,30 @@ char  *get_next_line(int fd)
 		return (NULL);
 	while (1)
 	{
-		nl = find_len(stash, '\n');
-		if (nl > 0 && stash[nl - 1] == '\n')
-			return (newline_ret(&stash));
+		nl = find_len(stash[fd], '\n');
+		if (nl > 0 && stash[fd][nl - 1] == '\n')
+			return (newline_ret(&stash[fd]));
 		new_stash = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 		if (!new_stash)
 			return (NULL);
 		read_num = read(fd, new_stash, BUFFER_SIZE);
 		if (read_num < 0)
 		{
-			if (stash)
-				free(stash);
+			if (stash[fd])
+				free(stash[fd]);
 			free(new_stash);
 			return (NULL);
 		}
 		new_stash[read_num] = '\0';
-		stash = gnl_strjoin(stash, new_stash);
-		if (!stash)
+		stash[fd] = gnl_strjoin(stash[fd], new_stash);
+		if (!stash[fd])
 			return (NULL);
 		if (read_num == 0)
 		{
-			if (stash && stash[0] != '\0')
-				return (newline_ret(&stash));
-			free(stash);
-			stash = NULL;
+			if (stash[fd] && stash[fd][0] != '\0')
+				return (newline_ret(&stash[fd]));
+			free(stash[fd]);
+			stash[fd] = NULL;
 			return (NULL);
 		}
 	}
