@@ -6,11 +6,28 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:19:21 by hnah              #+#    #+#             */
-/*   Updated: 2026/03/05 18:04:54 by hnah             ###   ########.fr       */
+/*   Updated: 2026/03/06 18:54:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+
+ssize_t	find_len(const char *s, int look_for)
+{
+	ssize_t	len;
+
+	len = 0;
+	if (!s)
+		return (0);
+	while (*s && *s != look_for)
+	{
+		len++;
+		s++;
+	}
+	if (*s && *s == look_for)
+		len++;
+	return (len);
+}
 
 char	*newline_ret(char **buf)
 {
@@ -72,23 +89,6 @@ char	*gnl_strjoin(char *buf, char *new_buf)
 	free(buf);
 	free(new_buf);
 	return (temp_buf);
-}
-
-ssize_t	find_len(const char *s, int look_for)
-{
-	ssize_t	len;
-
-	len = 0;
-	if (!s)
-		return (0);
-	while (*s && *s != look_for)
-	{
-		len++;
-		s++;
-	}
-	if (*s && *s == look_for)
-		len++;
-	return (len);
 }
 
 char	*fd_end_handler(char **stash)
