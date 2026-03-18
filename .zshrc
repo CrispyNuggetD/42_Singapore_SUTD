@@ -1,0 +1,556 @@
+# Set up the prompt
+
+# There's a 'dailylogin' function that can both be run when logged in/ logout during
+# EOD [End of day] syncing. 
+
+# This function runs the 2 fun functions (mentioned below) 
+# as well as the 2 essential functions that does 4 main things:
+
+# 1. cd to [custom-defined variable] for current project
+# 2. Opens Visual Studio Code
+# 3. makes fclean to clean up library objects for, then, 
+# 4. Proper syncing with github, amongst other auxillary checks and error handling.
+
+##### (A) Fun functions:
+# 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
+# and 'hourslogged' to find out if you will hit intra's 50 hours clocked 
+# per week's bonus score.
+
+##### (B) 6 Useful functions:
+### (1-2) Includes two aliases 'compile' and 'run' so you don't have 
+# to always type in full for 42-compliant compiling/ running
+# You can also stack with valgrind flags.
+
+# Usage:
+# e.g. compile ft_isalpha.c
+# e.g. compile ft_isalpha.c -o output (run with ./output)
+# e.g. run ./output
+# e.g. run ./output "Hello" 42 (Passing arguments)
+
+# So, feel free to check with memory leaks with -g valgrind flag, i.e.:
+# compile -g ft_isalpha.c
+
+# You need to compile with library (behind .c file, order matters) if .a exists, i.e.:
+# compile -g ft_isalpha.c libft.a -o output (run with ./output)
+
+### (3-5) Three helper functions cdmain(), curproj() and syncproj().
+
+# curproj switches into your github repo's project folder 
+# and shows the last edit + last sync status.
+# Pre-cleans library objects from directory with 'make fclean' (Comment out if unnecessary).
+# Rationale: Cleaning useful for EOD [End of day] syncing with GitHub.
+
+# Also Launches Visual Studio Code. 
+# (Expected behavior. When EOD [End of day] syncing with 'dailylogin' too, 
+# just ignore and lock computer for auto-logout anyway after syncing is done for the day.)
+
+# cdmain just goes into your github repo.
+
+# syncgithub checks your working tree is clean, and 
+# pulls from GitHub. It also pushes if you made changes.
+# Run this first before working on another computer to prevent conflicts!
+# NOTE: It does NOT touch Vogsphere. 
+# SYNC your campus repo before submitting project!
+
+# Usage: Just type curproj, cdmain, or syncproj into terminal.
+
+# Notes:
+# You MUST change a few things:
+
+# 1. Change and point the project you're working
+# on by changing variable, current_proj="<PROJECT NAME>"
+# e.g. current_proj="0_libft"
+
+# 2. Change PROJECTS_ROOTS to Project sub-folder in your repo,
+# e.g. export PROJECTS_ROOTS="Core Curriculum/Projects"
+
+# 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
+# e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+
+### (6) Zsh backwards cycling keybinds
+# Technically Shift + Tab was supposed to work out of the box but
+# it didn't for me so I just included it here.
+
+###################################################################
+### (APPEND THESE) Variables after changing and Functions       ###
+### Do NOT replace original .zshrc file                         ###
+###################################################################
+
+# Notes:
+# hnah (intra) user defined
+export MAIL='hnah@student.42singapore.sg'
+
+# current project name (change as needed, then `source ~/.zshrc`)
+export current_proj="1_get_next_line"
+
+# --- 42 paths ---
+export PROJECTS_ROOT="Core Curriculum/Projects"
+export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+
+# --- Zsh backwards cycling ---
+bindkey "^[[Z" reverse-menu-complete
+bindkey "^[Z" reverse-menu-complete
+
+# compile helper
+alias compile='cc -Wall -Wextra -Werror'
+
+# Feel free to check with memory leaks with -g valgrind flag, i.e.
+#compile -g
+
+# code execution helper with valgrind and leak flags
+alias run='valgrind --leak-check=full --show-leak-kinds=all'
+
+# jump to current 42 project (Vogsphere working copy)
+curproj() {
+  local proj_dir="$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj"
+
+  if [ ! -d "$proj_dir" ]; then
+    echo "No such project directory: $proj_dir"
+    return 1
+  fi
+  cd "$proj_dir" || return 1
+
+  echo "Now working on: $current_proj"
+  echo "Location: $proj_dir"
+  
+  #Uncomment to clean library files before committing pipeline
+  #echo "Pre-cleaning"
+  #make fclean || return 1
+  
+  echo "Launching Visual Studio Code"
+  code . || return 1
+
+  # --- Last edit (in the 42/Vogsphere clone) ---
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Last local git activity (this 42 project):"
+    git log -1 --pretty="  %h %s (%cr)"
+  else
+    echo "Not a git repo here (no .git found)."
+  fi
+
+  # --- Last sync to main GitHub repo ---
+  if [ -d "$MAIN_REPO_ROOT/.git" ]; then
+    # Get last commit in main repo that touched this project folder
+    local last_sync_line
+    last_sync_line=$(git -C "$MAIN_REPO_ROOT" log -1 \
+      --pretty="%h %s (%cr)" \
+      -- "Projects/$current_proj" 2>/dev/null)
+
+    if [ -n "$last_sync_line" ]; then
+      echo "Last sync to main repo (GitHub) for this project:"
+      echo "  $last_sync_line"
+
+      # Get last sync date in YYYY-MM-DD form
+      local last_sync_date today yesterday
+      last_sync_date=$(git -C "$MAIN_REPO_ROOT" log -1 \
+        --date=short --pretty="%cd" \
+        -- "Projects/$current_proj" 2>/dev/null)
+
+      today=$(date +%Y-%m-%d)
+      yesterday=$(date -d 'yesterday' +%Y-%m-%d)
+
+      # Warn if last sync was not today or yesterday
+      if [ "$last_sync_date" != "$today" ] && [ "$last_sync_date" != "$yesterday" ]; then
+        echo "⚠ WARNING: This project hasn't been synced to your main repo in more than a day."
+      fi
+    else
+      echo "No sync found for this project in main repo yet."
+    fi
+  else
+    echo "Main repo not found or not a git repo at: $MAIN_REPO_ROOT"
+  fi
+}
+
+# jump to main GitHub repo
+cdmain() {
+  cd "$MAIN_REPO_ROOT" || {
+    echo "No such main repo directory: $MAIN_REPO_ROOT"
+    return 1
+  }
+} 
+
+# sync current main GitHub repo: pull, then commit & push local changes
+syncproj() {
+  if [ -z "$MAIN_REPO_ROOT" ]; then
+    echo "MAIN_REPO_ROOT is not set. Please set it in your .zshrc."
+    return 1
+  fi
+
+  if [ ! -d "$MAIN_REPO_ROOT/.git" ]; then
+    echo "No git repo found at: $MAIN_REPO_ROOT"
+    return 1
+  fi
+
+  # jump into main repo
+  cd "$MAIN_REPO_ROOT" || {
+    echo "Failed to cd into $MAIN_REPO_ROOT"
+    return 1
+  }
+
+  echo "Syncing main GitHub repo at:"
+  echo "  $MAIN_REPO_ROOT"
+  echo
+
+  # 1) Always pull latest from GitHub first
+  echo "Pulling from remote..."
+  git pull
+  echo
+
+  # 2) Show current status
+  echo "Current status:"
+  git status
+  echo
+
+  # 3) If no changes, we're done
+  if [[ -z "$(git status --porcelain)" ]]; then
+    echo "No local changes to commit. Repo is up to date."
+    return 0
+  fi
+
+  # 4) Stage everything (tracked + untracked + deletions)
+  git add -A
+
+  # show status so you see what will be committed
+  echo
+  echo "Changes staged for commit:"
+  git status
+  echo
+
+  # 5) Ask for commit title/body (zsh style)
+  read "title?Commit title (main repo): "
+  read "body?Commit details (optional, leave blank if none): "
+
+  if [[ -n "$body" ]]; then
+    git commit -m "$title" -m "$body"
+  else
+    git commit -m "$title"
+  fi
+
+  # 6) Push to GitHub
+  git push
+
+  echo
+  echo "Committed & pushed with message:"
+  echo "--------------------------------"
+  echo "$title"
+  if [[ -n "$body" ]]; then
+    echo
+    echo "$body"
+  fi
+  echo "--------------------------------"
+}   
+
+loginbefore12() {
+  last "$USER" | awk '
+  # Only process normal login lines where $7 is a time like H:MM or HH:MM
+  $7 ~ /^[0-9]?[0-9]:[0-9][0-9]$/ {
+    day = $4 " " $5 " " $6
+
+    # If we moved to a new day, reset state + buffer
+    if (day != cur_day) {
+      cur_day = day
+      ok = 0
+      printed = 0
+      nbuf = 0
+    }
+
+    # Build exactly the output you wanted (same fields as your print)
+    line = $1 " " $4 " " $5 " " $6 " " $7
+    for (i=8; i<=13; i++) line = line " " $i
+
+    # Buffer lines until we know the day qualifies
+    if (!printed) {
+      buf[++nbuf] = line
+    }
+
+    # Check if this login was before 12:00
+    split($7, t, ":")
+    if ((t[1] + 0) < 12) ok = 1
+
+    # If the day qualifies and we haven’t printed it yet, dump the buffer
+    if (ok && !printed) {
+      for (j=1; j<=nbuf; j++) print buf[j]
+      printed = 1
+    } else if (printed) {
+      # Once we’re printing this day, print subsequent lines immediately
+      print line
+    }
+  }'
+}
+
+hourslogged() {
+  #!/bin/sh
+  # login_award_7day.sh
+
+  set -u
+
+  TARGET_HOURS=50
+  TARGET_MIN=$((TARGET_HOURS * 60))
+
+  YEAR="$(date +%Y)"
+
+  # Build last 7 ISO dates (oldest -> newest) with NO trailing blank line.
+  LAST7_DATES="$(i=6; while [ "$i" -ge 0 ]; do
+    date -d "$i days ago" +%F
+    i=$((i - 1))
+  done)"
+
+  out="$(
+    last "$USER" 2>/dev/null | gawk -v TARGET_MIN="$TARGET_MIN" -v YEAR="$YEAR" -v LAST7_DATES="$LAST7_DATES" '
+    BEGIN {
+      now = systime()
+
+      n = split(LAST7_DATES, D, "\n")
+      for (i = 1; i <= n; i++) {
+        gsub(/^[ \t\r]+|[ \t\r]+$/, "", D[i])
+        if (D[i] != "")
+          daymin[D[i]] = 0
+      }
+
+      monnum["Jan"]=1; monnum["Feb"]=2; monnum["Mar"]=3; monnum["Apr"]=4
+      monnum["May"]=5; monnum["Jun"]=6; monnum["Jul"]=7; monnum["Aug"]=8
+      monnum["Sep"]=9; monnum["Oct"]=10; monnum["Nov"]=11; monnum["Dec"]=12
+    }
+
+    function epoch_from_parts(mon, dd, hhmm,    y, mm, s, cmd, e) {
+      mm = monnum[mon]
+      if (mm == 0)
+        return 0
+
+      y = YEAR + 0
+      s = sprintf("%04d-%02d-%02d %s", y, mm, dd + 0, hhmm)
+      cmd = "date -d \"" s "\" +%s"
+      cmd | getline e
+      close(cmd)
+      e += 0
+
+      if (e > now) {
+        y = y - 1
+        s = sprintf("%04d-%02d-%02d %s", y, mm, dd + 0, hhmm)
+        cmd = "date -d \"" s "\" +%s"
+        cmd | getline e
+        close(cmd)
+        e += 0
+      }
+      return e
+    }
+
+    function key_from_epoch(e,    cmd, k) {
+      cmd = "date -d @" e " +%F"
+      cmd | getline k
+      close(cmd)
+      return k
+    }
+
+    # We only trust lines where $7 is a login time like H:MM or HH:MM
+    $7 ~ /^[0-9]?[0-9]:[0-9][0-9]$/ {
+      # last fields (from your sample):
+      # $4=DOW, $5=Mon, $6=DD, $7=HH:MM
+      start = epoch_from_parts($5, $6, $7)
+      if (start <= 0)
+        next
+
+      key = key_from_epoch(start)
+      if (!(key in daymin))
+        next
+
+      # explicit duration: (HH:MM)
+      if (match($0, /\(([0-9]+):([0-9][0-9])\)$/, t)) {
+        mins = (t[1] + 0) * 60 + (t[2] + 0)
+        daymin[key] += mins
+        next
+      }
+
+      # open-ended session
+      mins = int((now - start) / 60)
+      if (mins < 0)
+        mins = 0
+      daymin[key] += mins
+    }
+
+    END {
+      n = split(LAST7_DATES, D, "\n")
+
+      print "Per-day login totals (last 7 days):"
+      for (i = 1; i <= n; i++) {
+        gsub(/^[ \t\r]+|[ \t\r]+$/, "", D[i])
+        if (D[i] == "")
+          continue
+
+        cmd = "date -d \"" D[i] "\" +%a"
+        cmd | getline wd
+        close(cmd)
+
+        h = int(daymin[D[i]] / 60)
+        m = daymin[D[i]] % 60
+        printf "%s (%s): %dh %02dm\n", D[i], wd, h, m
+      }
+
+      roll = 0
+      for (i = 1; i <= n; i++) {
+        gsub(/^[ \t\r]+|[ \t\r]+$/, "", D[i])
+        if (D[i] != "")
+          roll += daymin[D[i]]
+      }
+
+      roll_h = int(roll / 60)
+      roll_m = roll % 60
+
+      avg = int(roll / 7)
+      avg_h = int(avg / 60)
+      avg_m = avg % 60
+
+      print ""
+      printf "Rolling 7-day total: %dh %02dm\n", roll_h, roll_m
+      printf "Rolling 7-day average per day: %dh %02dm\n", avg_h, avg_m
+
+      remaining = TARGET_MIN - roll
+      if (remaining < 0)
+        remaining = 0
+
+      rh = int(remaining / 60)
+      rm = remaining % 60
+
+      print ""
+      printf "Target (rolling 7 days): %dh 00m\n", int(TARGET_MIN / 60)
+      printf "Remaining to reach target: %dh %02dm\n", rh, rm
+
+      if (remaining == 0)
+        print "You already hit the 50h rolling-7-days award ✅"
+      else
+        printf "If you stay logged in from now, you need ~%dh %02dm more.\n", rh, rm
+
+      printf "REM_MIN=%d\n", remaining
+    }'
+  )"
+
+  # If awk/date blew up, out might be empty. Fail loudly.
+  if [ -z "$out" ]; then
+    echo "Error: produced no output. Check: gawk installed? GNU date? last output?" >&2
+    exit 1
+  fi
+
+  # Print human output (everything except REM_MIN line)
+  printf "%s\n" "$out" | awk '!/^REM_MIN=/'
+
+  # Extract remaining minutes
+  rem_min="$(printf "%s\n" "$out" | awk -F= '/^REM_MIN=/{print $2; exit}')"
+  [ -z "$rem_min" ] && rem_min=0
+
+  echo ""
+  if [ "$rem_min" -eq 0 ]; then
+    echo "Stay logged in until: now (already achieved)"
+  else
+    finish_time="$(date -d "now + $rem_min minutes" +"%I:%M%p")"
+    finish_day="$(date -d "now + $rem_min minutes" +"%F")"
+    today="$(date +%F)"
+
+    finish_time="$(printf "%s" "$finish_time" | tr 'APM' 'apm' | sed 's/^0//')"
+
+    if [ "$finish_day" = "$today" ]; then
+      echo "Stay logged in until: $finish_time"
+    else
+      finish_label="$(date -d "now + $rem_min minutes" +"%a %Y-%m-%d")"
+      echo "Stay logged in until: $finish_time ($finish_label)"
+    fi
+  fi
+}
+
+divider() {
+    printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
+}
+
+dailylogin() {
+  divider
+  echo "Days that I logged in before 12nn"
+  divider
+  loginbefore12
+
+  divider
+  echo "Hours logged for (50 hrs Intra_Award)"
+  divider
+  hourslogged
+
+  divider
+  echo "cd to current project"
+  divider
+  curproj
+  
+  divider
+  echo "Launching Google Chrome"
+  google-chrome >/dev/null 2>&1 &
+  divider
+  
+  divider
+  echo "sync proj. with github"
+  divider
+  syncproj
+}
+
+alias cc=clang
+
+autoload -Uz promptinit
+promptinit
+prompt adam1
+
+setopt histignorealldups sharehistory
+
+# Use emacs keybindings even if our EDITOR is set to vi
+bindkey -e
+
+# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
+HISTSIZE=1000
+SAVEHIST=1000
+HISTFILE=~/.zsh_history
+
+# Use modern completion system
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' auto-description 'specify: %d'
+zstyle ':completion:*' completer _expand _complete _correct _approximate
+zstyle ':completion:*' format 'Completing %d'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' menu select=2
+eval "$(dircolors -b)"
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' list-colors ''
+zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
+zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
+zstyle ':completion:*' menu select=long
+zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+zstyle ':completion:*' use-compctl false
+zstyle ':completion:*' verbose true
+
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/hnah/miniforge3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/hnah/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/hnah/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/hnah/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'mamba shell init' !!
+export MAMBA_EXE='/home/hnah/miniforge3/bin/mamba';
+export MAMBA_ROOT_PREFIX='/home/hnah/miniforge3';
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__mamba_setup"
+else
+    alias mamba="$MAMBA_EXE"  # Fallback on help from mamba activate
+fi
+unset __mamba_setup
+# <<< mamba initialize <<<
+

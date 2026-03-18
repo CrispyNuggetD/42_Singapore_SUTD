@@ -24,19 +24,20 @@ int main(int c, char **v)
 		return (1);
 	int fd = open(v[1], O_RDONLY); //change to '0' for stdin
 	if (fd < 0)
-		return ((write(1, "u no the allow open\n", 8)), 1);
+		return ((write(1, "u no the allow open\n", 20)), 1);
 	int line = gnl_atoi(v[2]);
 	char *the_line = NULL;
 	while (line)
 	{
+	    i = 0;
 		the_line = get_next_line(fd);
 		if (the_line == NULL)
-			return ((write(1, "finish le\n", 4)), (close(fd)), 1);
+			return ((write(1, "finish le\n", 10)), (close(fd)), 1);
 		while (the_line[i])
 			i++;
 		write(1, the_line, i);
 		line--;
-	}	
-	free(the_line);
+		free(the_line);
+	}
 	close(fd);
 }
