@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/01/09 18:20:32 by hnah             ###   ########.fr       */
+/*   Updated: 2026/04/13 19:29:14 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 # include <stdarg.h>
 # include "libft/libft.h"
-# include <limits.h>
 
 # define FLAG_MINUS 1
 # define FLAG_ZERO  2

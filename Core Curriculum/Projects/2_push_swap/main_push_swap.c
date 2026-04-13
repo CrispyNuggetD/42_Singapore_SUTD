@@ -1,9 +1,4 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <limits.h>
-#include <math.h>
-//#include "mylibrary.h"
+#include "push_swap.h"
 
 int	main(int argc, char **argv)
 {
