@@ -1,0 +1,35 @@
+//leetcode practice #1
+// algo for which all but 1 element appears twice, which is the 1 number?
+
+//needed o(n) and constant space (my one fails)
+9 elements: 
+Original array: [42,32,32,5.....4....5,42]
+
+4*2 +1 = 5 unique int
+
+malloc a (5) "logging array" corresponding to order of appearance
+
+int_array{0};
+
+[01234] //5 elements
+
+[1(42),x,x,x,x] //log 42 is seen first, by setting first element using (1)
+
+[1(42),1(32),x,x,x] //log 32 is seen second, by setting second element using (1)
+
+[1(42),0(32),x,x,x] //32 has been seen again!! Set second element corresponding to 32 to sentinel value "0" (invalid answer)
+[1(42),0(32),1(5),x,x] //continue
+
+.....
+
+[0(42),0(32),0(5),1(4),0(x)] //one element will only appear 1 time (valid answer = the nth int that appear in the original array, for which the nth element in this new logging array is set to 1)
+
+= 4
+
+0 .. 1234
+
+//Actual answer:
+Use XOR over whole array in loop, anything appear once will truth table TRUE.
+i.e. 
+for i in range(array)
+	var ^= array[i]

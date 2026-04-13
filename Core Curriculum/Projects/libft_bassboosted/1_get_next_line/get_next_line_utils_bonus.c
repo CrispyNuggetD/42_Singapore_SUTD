@@ -20,10 +20,8 @@ ssize_t	find_len(const char *s, int look_for)
 	if (!s)
 		return (0);
 	while (*s && *s != look_for)
-	{
-		len++;
-		s++;
-	}
+	    s += ((len++), 1);
+		//len++,s++;
 	if (*s && *s == look_for)
 		len++;
 	return (len);
@@ -45,11 +43,13 @@ char	*newline_ret(char **buf)
 	while (suffix--)
 		temp_buf[suffix] = (*buf)[prefix + suffix];
 	gnl_buf = malloc(sizeof(char) * (prefix + 1));
-	if (!gnl_buf)
+	/*if (!gnl_buf)
 	{
 		free(temp_buf);
 		return (NULL);
-	}
+	}*/
+	if (!gnl_buf)
+		return ((free(temp_buf)), NULL);
 	gnl_buf[prefix] = '\0';
 	while (prefix--)
 		gnl_buf[prefix] = (*buf)[prefix];
@@ -75,12 +75,14 @@ char	*gnl_strjoin(char *buf, char *new_buf)
 	new_buf_len = find_len(new_buf, '\0');
 	buf_len = find_len(buf, '\0');
 	temp_buf = malloc(sizeof(char) * (new_buf_len + buf_len + 1));
-	if (!temp_buf)
+    /*if (!temp_buf)
 	{
 		free(buf);
 		free(new_buf);
 		return (NULL);
-	}
+	}*/
+	if (!temp_buf)
+		return ((free(buf)),(free(new_buf)),NULL);
 	temp_buf[new_buf_len + buf_len] = '\0';
 	while (new_buf_len--)
 		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
