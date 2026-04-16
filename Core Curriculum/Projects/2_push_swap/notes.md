@@ -14,6 +14,5 @@
 14. Code a general "inefficient" MVP sorting first (Radix?) with the proper org/ data structures, inc. thinking libft printf gnl usage. (do it yourself!! Is radix the best? chunking the best? turk weight technique -- cost and entropy from memory, but only AFTER mvp is done, LIS? what other techniques can i think off other than hardcoding and brute force?) Essentially, this step is MVP, and aim for correctness than no. of steps.
 15. know how to check answers and then verify algo with binary checker, ensure correctness
 16. Incrementally improve script.
-17. Mathematical analysis with ChatGPT, potential to collaborate with others too. Read more blog articles and think of novel ways inc. that (is it hallucinated) PID and other technique
-18. Makefile and "packaging" project.
-19. 
+17. Mathematical analysis with ChatGPT, potential to collaborate with others too. Read more blog articles and think of novel ways inc. that (is it hallucated) PID and other techniques.
+18. Makefile and "packaging" project, (refer to darren github or ask for help on how to makefile the darned libft lmaooo).
