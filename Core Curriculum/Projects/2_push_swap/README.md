@@ -10,6 +10,9 @@
 - Function 2
 - function 3
 
+- This sentence uses $\` and \`$ delimiters to show math inline: $`\sqrt{3x-1}+(1+x)^2`$
+
+
 This repository contains:
 - Mandatory implementation: `get_next_line.c`, `get_next_line_utils.c`, `get_next_line.h` 
 - Bonus implementation (multi-fd): `get_next_line_bonus.c`, `get_next_line_utils_bonus.c`, `get_next_line_bonus.h` 
@@ -516,6 +519,8 @@ int main(int c, char **v)
 ## Resources used:
 
 - Optimisation by caching overlapping paths (Dynamic Programming) instead of Brute Force (e.g. BFS): https://www.youtube.com/shorts/h7EmrFyTCmw
+- How to write LaTex in GitHub Markdown, e.g. This sentence uses \$\` and \`\$ delimiters to show math inline: $`\sqrt{3x-1}+(1+x)^2`$: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions
+
 - Harvard CS50 Youtube Series (up till Linked Lists), by David J. Malan.
 - Various Stackover Flow forum Q&As, mostly for debugging error codes or finding out best practices.
 - Several posts and videos about how NOT to code (inefficiencies, silent bugs).
