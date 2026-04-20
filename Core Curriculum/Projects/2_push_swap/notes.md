@@ -90,4 +90,30 @@ structs:
 	- int max;
 	- int min;
 	- int highest_difference; // max-min
-	- int least difference;
+	- int least_difference;
+
+
+
+-------------------------------------------------
+Links to put in readme for education resources used:
+1. Worst Case Analysis: Selection Sort vs Insertion Sort - https://www.youtube.com/shorts/wJayBp4r4_4
+	- A direct performance comparison of Selection and Insertion Sort on a descending array (worst-case scenario). This visualization highlights the mechanical differences: Selection Sort’s constant scanning for the minimum versus Insertion Sort’s heavy element shifting within the sorted prefix. An essential look at algorithm behavior under stress.
+2. 90 Sorts on Large Inputs - Scatter Plot - https://www.youtube.com/watch?v=0HFPiwmnNgo
+3. The Bubble Sort Curve
+	- A derivation of the curve that is approximated by a common visualization of the bubble sort diagram.
+	- Read the full proof on my site: https://linesthatconnect.github.io/blog/a-rigorous-derivation-of-the-bubble-sort-curve/
+	- After uploading, I learned that this result appeared in the paper "Nonparametric testing via partial sorting" by Krzysztof Bisewski, H. M. Jansen, and Yoni Nazarathy. Read it here: https://arxiv.org/abs/2210.14546
+	- The viral sorting algorithm video which first sparked my interest:    • 15 Sorting Algorithms in 6 Minutes  
+		4. https://www.youtube.com/watch?v=kPRA0W1kECg
+	- The animations in this video were created using Manim: https://www.manim.community/
+5. Stackmaxxing for a recursion world record - https://www.youtube.com/watch?v=WQKSyPYF0-Y
+	- I believe I’ve set a world record for the deepest recursive function call: over 17 trillion nested invocations.  It’s literally the most profound thing I've ever done with a computer.
+	- 05:06 The stack grows up, not down!
+	- 10:52 FUSE
+	- 15:41 NULL pointer? No problem!
+	- 20:54 Kernel patching
+	- 21:22 Far call to 32-bit mode
+	- 26:28 Ideas for how to recurse 1000x more than I did.
+	- Links:
+		- Recursion: A Novel https://amzn.to/4r9ajld
+		- The Linux Programming Interface https://amzn.to/4adwXmO
