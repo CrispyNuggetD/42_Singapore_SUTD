@@ -117,3 +117,29 @@ Links to put in readme for education resources used:
 	- Links:
 		- Recursion: A Novel https://amzn.to/4r9ajld
 		- The Linux Programming Interface https://amzn.to/4adwXmO
+
+=====================
+
+So the valid elements live in the circular interval:
+
+[read_idx, write_idx)
+
+=================
+
+```c
+int	cbuf_rev_rotate(cbuf *stack)
+{
+	if (cbuf_len(stack) < 2)
+		return (1);
+	...
+}
+```
+
+Why do we check cbuf_len(stack) < 2?
+
+Because:
+
+empty stack → nothing to rotate
+one element → rotating changes nothing
+
+So for correctness and safety, rotate only matters when there are at least 2 elements.
