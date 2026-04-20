@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/13 19:30:18 by hnah             ###   ########.fr       */
+/*   Updated: 2026/04/20 17:03:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,22 @@
 #include <stdint.h>
 #include <limits.h>
 #include <math.h>
+
+typedef struct s_cbuf
+{
+	int	*buffer;
+	int	capacity;
+	int	read_idx;
+	int	write_idx;
+}	cbuf;
+
+
+
+
+
+
+
+
 
 # define FLAG_MINUS 1
 # define FLAG_ZERO  2
