@@ -1,8 +1,9 @@
 #include "push_swap.h"
 
-int cbuf_init(cbuf *stack, int size)
+int parse_input(input *input, char **argv)
 {
-	stack->buffer = malloc(sizeof(int) * (size + 1));
+	input->input_len = 
+	input->sorted_input = malloc(sizeof(int) * (size + 1));
 	if (!stack->buffer)
 		return (ERROR);
 	stack->capacity = size;
