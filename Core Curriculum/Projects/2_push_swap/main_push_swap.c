@@ -2,11 +2,14 @@
 
 int	main(int argc, char **argv)
 {
-	int temp_error_placeholder = 67;
-	char** temp_argv_error_cases = argv;
 	if (argc != 2 || argv == NULL)
-		return (temp_error_placeholder);
+		return (ERR_INVALID_INPUT);
 	else
+	{
+		if (parse_input(argv) == ERROR)
+			return (ERR_PARSE_INPUT)
+	}
+	}
 		printf("Hello World! It's: %s", *(temp_argv_error_cases + 1));
 	return (0);
 }

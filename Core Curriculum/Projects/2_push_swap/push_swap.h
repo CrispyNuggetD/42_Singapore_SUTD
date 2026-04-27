@@ -10,12 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_PRINTF_H
-# define FT_PRINTF_H
+#ifndef PUSH_SWAP_H
+# define PUSH_SWAP_H
 
-# include <stdarg.h>
-# include "libft/libft.h"
-# include <limits.h>
+#include <stdarg.h>
+#include "libft/libft.h"
+#include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -30,12 +30,11 @@ typedef struct s_cbuf
 	int	write_idx;
 }	cbuf;
 
-
-
-
-
-
-
+typedef struct s_input
+{
+	int	**sorted_input;
+	int input_len;
+}	input;
 
 
 # define FLAG_MINUS 1
@@ -45,62 +44,48 @@ typedef struct s_cbuf
 # define FLAG_SPACE 16
 # define FLAG_PLUS  32
 
-typedef enum e_length
+/* typedef enum e_length
 {
 	LEN_NONE,
 	LEN_HH,
 	LEN_H,
 	LEN_L,
 	LEN_LL
-}	t_length;
+}	t_length; */
 
-typedef struct s_spec
-{
-	unsigned char	flags;
-	int				width;
-	int				precision;
-	char			conversion;
-	int				asterisk;
-	t_length		length;
-}					t_spec;
+// typedef int	(*t_handler)(t_context *context);
 
-typedef struct s_context
-{
-	va_list	*input;
-	t_spec	*spec;
-	size_t	printed;
-}			t_context;
+/* cbuf core */
+int	cbuf_init(cbuf *stack, int size);
+int	cbuf_is_empty(cbuf *stack);
+int	cbuf_is_full(cbuf *stack);
+int	cbuf_len(cbuf *stack);
+void	cbuf_free(cbuf *stack);
 
-typedef struct s_print
-{
-	char		sign;
-	const char	*core;
-	size_t		core_len;
-	const char	*prefix;
-	size_t		prefix_len;
-	size_t		prec_zeros;
-	size_t		pad_len;
-	char		pad_char;
-}				t_print;
+/* cbuf operations */
+int	cbuf_push_top(cbuf *stack, int number);
+int	cbuf_push_bottom(cbuf *stack, int number);
+int	cbuf_pop_top(cbuf *stack, int *read_number);
+int	cbuf_swap_top(cbuf *stack);
+int	cbuf_rotate(cbuf *stack);
+int	cbuf_rev_rotate(cbuf *stack);
 
-typedef int	(*t_handler)(t_context *context);
-
-int		ft_printf(const char *key, ...);
-int		ft_printf_parse_specs(t_spec *spec, const char **ptr);
-int		ft_printf_percent(t_context *context);
-int		ft_printf_d_i(t_context *context);
-int		ft_printf_unsigned_int(t_context *context);
-int		ft_printf_hex_small(t_context *context);
-int		ft_printf_hex_big(t_context *context);
-int		ft_printf_pointer(t_context *context);
-int		ft_printf_string(t_context *context);
-int		ft_printf_character(t_context *context);
-int		ft_printf_print_config(t_context *context, t_print *paper);
-int		write_guaranteed(t_context *context, const char *buf, size_t len);
-int		write_repeat(t_context *context, char c, size_t count);
-int		is_numeric_conv(int conversion);
-int		send_for_printing(t_context *context, t_print *paper);
-void	ft_printf_init_t_print(t_print *paper);
-void	ft_printf_init_t_context(t_context *context);
+/* push_swap operations */
+int	sa(cbuf *a);
+int	sb(cbuf *b);
+int	ss(cbuf *a, cbuf *b);
+int	pa(cbuf *a, cbuf *b);
+int	pb(cbuf *a, cbuf *b);
+int	ra(cbuf *a);
+int	rb(cbuf *b);
+int	rr(cbuf *a, cbuf *b);
+int	rra(cbuf *a);
+int	rrb(cbuf *b);
+int	rrr(cbuf *a, cbuf *b);
 
 #endif
+#define SUCCESS				0
+#define ERROR				1
+#define ERR_INVALID_INPUT	2
+#define ERR_PARSE_INPUT		3
+#define ERR_SORT_INPUT		4
