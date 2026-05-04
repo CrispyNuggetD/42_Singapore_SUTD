@@ -16,11 +16,11 @@ int cbuf_init(cbuf *stack, int size)
 {
 	stack->buffer = malloc(sizeof(int) * (size + 1));
 	if (!stack->buffer)
-		return (1);
+		return (ERROR);
 	stack->capacity = size;
 	stack->read_idx = 0;
 	stack->write_idx = 0;
-	return (0);
+	return (SUCCESS);
 }
 
 int	cbuf_len(cbuf *stack)
@@ -37,4 +37,10 @@ int	cbuf_is_empty(cbuf *stack)
 int	cbuf_is_full(cbuf *stack)
 {
 	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
+}
+
+void	cbuf_free(cbuf *stack)
+{
+	free(stack->buffer);
+	stack->buffer = NULL;
 }

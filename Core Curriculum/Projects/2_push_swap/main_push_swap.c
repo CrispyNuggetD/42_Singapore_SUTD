@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/23 16:34:31 by hnah             ###   ########.fr       */
+/*   Updated: 2026/05/04 19:05:42 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,12 @@ int	main(int argc, char **argv)
 	int	*yoink_number = NULL;
 	int	temp_error_clean_up_placeholder = 0;
 	if (argc != 2 || argv == NULL)
-		return (temp_error_clean_up_placeholder);
+		return (ERR_INVALID_INPUT);
 	else
-		printf("hello World! It's: %i", (temp_error_clean_up_placeholder + 1));
-	return (0);
+	{
+		if (parse_input(argv) == ERROR)
+			return (ERR_PARSE_INPUT);
+		
+	}
+	return (SUCCESS);
 }
