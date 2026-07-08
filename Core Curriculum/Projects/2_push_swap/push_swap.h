@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/23 13:46:35 by hnah             ###   ########.fr       */
+/*   Updated: 2026/07/08 18:17:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define PUSH_SWAP_H
 
 #include <stdarg.h>
-#include "libft/libft.h"
+#include "libft/0_libft/libft.h"
 #include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
