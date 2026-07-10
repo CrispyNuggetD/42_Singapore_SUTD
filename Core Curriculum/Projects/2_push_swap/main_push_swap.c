@@ -22,6 +22,7 @@ int count_int_in_str(char *str)
 		if (ft_isdigit(str[i]))
 		{
 			count++;
+			ft_atoi
 			while (ft_isdigit(str[i]))
 				i++;
 		}
