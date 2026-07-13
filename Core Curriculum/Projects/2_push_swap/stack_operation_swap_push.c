@@ -20,7 +20,7 @@ int	pa(cbuf *a, cbuf *b)
 	int read_number;
 	
 	if (cbuf_pop_top(b, &read_number))
-		return (ERR);
+		return (ERROR);
 	return (cbuf_push_top(a, read_number));
 }
 
@@ -29,6 +29,6 @@ int	pb(cbuf *a, cbuf *b)
 	int read_number;
 	
 	if (cbuf_pop_top(a, &read_number))
-		return (ERR);
+		return (ERROR);
 	return (cbuf_push_top(b, read_number));
 }
