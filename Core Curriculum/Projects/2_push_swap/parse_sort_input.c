@@ -8,7 +8,7 @@
 } */
 
 static int	check_duplicate(const int *count, const int *values);
-static int	check_if_proper_int(char *str_moving, int *count, int pos)
+static int	check_if_proper_int(char *str_moving, int *count, int pos);
 
 int count_int_in_str(const char *str, int *count, int *values)
 {
