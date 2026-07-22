@@ -42,7 +42,7 @@ int	main(int argc, char **argv)
 	count = 0;
 	if (argc < 2)
 		return (ERR_INVALID_INPUT);
-	while(count < argc)
+	while(count + 1 < argc)
 	{
 		if(count_int_in_str(argv[count + 1], &count, &values[count]) == ERROR)
 			return (ERROR);
