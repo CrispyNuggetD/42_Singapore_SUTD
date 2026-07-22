@@ -26,8 +26,8 @@ int count_int_in_str(const char *str)
 		if (ft_isdigit(*str_moving))
 		{
 			count++;
-			values[count-1] = ft_atoi(*str_moving);
-			while (ft_isdigit(*str_moving)
+			values[count-1] = ft_atoi(str_moving);
+			while (ft_isdigit(*str_moving));
 				str_moving++;
 		}
 	}
