@@ -35,11 +35,11 @@ int	main(int argc, char **argv)
 		if (count_int_in_str(argv[++i], &count, values) == ERROR)
 			return (free_and_error());
 	}
-	if (count > 1 && rank_values(count, values, &ranks) == ERROR)
+	if (count > 1 && rank_values(count, values, ranks) == ERROR)
 		return (free_and_error());
-	printf("\n values: \n")
+	printf("\n values: \n");
 	debug_print_int_array(values, count);
-	printf("\n ranks: \n")	
+	printf("\n ranks: \n");
 	debug_print_int_array(ranks, count);
 	return (SUCCESS);
 }
