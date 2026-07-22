@@ -15,23 +15,19 @@
 int count_int_in_str(const char *str, int *count, int *values)
 {
 	char	*str_moving;
-	int		success_status;
 	
-	success_status = SUCCESS;
 	str_moving = (char *)str;
-	while (*str_moving)
+	if (ft_isdigit(*str_moving))
+		*values = ft_atoi(str_moving);
+	while (*str_moving && ft_isdigit(*str_moving))
+		str_moving++	
+	if (!str_moving)
 	{
-		if (ryker_ft_isspace(*str_moving))
-			str_moving++;
-		if (ft_isdigit(*str_moving))
-		{
-			(*count)++;
-			*values = ft_atoi(str_moving);
-			while (ft_isdigit(*str_moving))
-				str_moving++;
-		}
-	}
-	return (success_status);
+		(*count)++;
+		return (SUCCESS);
+	}	
+	ft_putendl_fd("Error", 1);
+	return (ERROR);
 }
 
 int	main(int argc, char **argv)
