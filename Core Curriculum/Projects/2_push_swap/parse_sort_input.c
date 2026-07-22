@@ -26,7 +26,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 		if (check_if_proper_int(str_moving, count, pos) == ERROR)
 			return (printf("oops_1\n"),ERROR);
 		values[*count] = ft_atoi(str);
-		printf("check_1_value: %i, at count: %i\n",values[*count],*count)
+		printf("check_1_value: %i, at count: %i\n",values[*count],*count);
 		if (check_duplicate(count, values) == ERROR)
 			return (printf("oops_2\n"),ERROR);
 		return (SUCCESS);
