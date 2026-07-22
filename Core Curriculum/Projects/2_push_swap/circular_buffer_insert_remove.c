@@ -31,7 +31,7 @@ int cbuf_push_bottom(cbuf *stack, int number)
 	return (SUCCESS);
 }
 
-int cbuf_pop_topp(cbuf *stack, int *yoink_number)
+int cbuf_pop_top(cbuf *stack, int *yoink_number)
 {
 	if (cbuf_is_empty(stack))
 		return (ERROR);
