@@ -45,7 +45,7 @@ static int	check_duplicate(const int *count, const int *values)
 		while (looping_index >= 0)
 		{
 			if (values[looping_index] == values[cur_compare])
-				return (ERROR);
+				return (printf("oops_5_%i_%i\n",values[looping_index],values[cur_compare]),ERROR);
 			looping_index--;
 		}
 		cur_compare--;
