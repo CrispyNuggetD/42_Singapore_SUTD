@@ -12,21 +12,25 @@
 
 #include "push_swap.h"
 
-int count_int_in_str(char *str)
+int count_int_in_str(const char *str)
 {
-	int count = 0;
-	int i = 0;
-
-	while (str[i])
+	int	count = 0;
+	int	values[500];
+	int	i = 0;
+	char	*str_moving;
+	
+	str_moving = str;
+	while (*str_moving)
 	{
-		if (ft_isdigit(str[i]))
+		if (ryker_ft_isspace(*str_moving)
+			str_moving++;
+		if (ft_isdigit(*str_moving)
 		{
 			count++;
-			ft_atoi
-			while (ft_isdigit(str[i]))
-				i++;
+			values[count-1] = ft_atoi(*str_moving);
+			while (ft_isdigit(*str_moving)
+				str_moving++;
 		}
-		i++;
 	}
 	return (count);
 }
