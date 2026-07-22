@@ -71,9 +71,14 @@ static int	has_duplicates(const int *count, const int *values)
 	
 static int is_improper_int(char **str_move, int *count, int sign)
 {
-	int digits;
-	
+	int		digits;
+	char	int_limit[10];
+
 	digits = 0;
+	if (sign > 0)
+		int_limit = "2147483647";
+	else
+		int_limit = "2147483648";
 	while (**str_move && ft_isdigit(**str_move))
 	{
 		digits++;
@@ -85,7 +90,9 @@ static int is_improper_int(char **str_move, int *count, int sign)
 	{
 		while (digits--)
 		{
-			if (*(str_move - digits) > INT_MAX[10 - digits]))
+			if (*(str_move - digits) < int_limit[10 - digits])
+				break;
+			else if (*(str_move - digits) > int_limit[10 - digits])
 				return (ERROR);
 		}
 	}
