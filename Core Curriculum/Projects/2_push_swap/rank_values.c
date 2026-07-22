@@ -20,7 +20,7 @@ int	rank_values(const int count, const int *values, int *ranks)
 		while (i < count - 1)
 		{
 			pos = 0;
-			j = i + 1;
+			j = 0;
 			while (j < count)
 			{
 				if (values[i] > values[j++])
