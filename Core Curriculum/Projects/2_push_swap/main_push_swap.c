@@ -27,7 +27,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 		printf("good\n");
 		return (SUCCESS);
 	}
-	printf("%cwhat\n", str_moving);
+	printf("%cwhat\n", *str_moving);
 	return (ERROR);
 }
 
