@@ -16,7 +16,7 @@ SRCS		= main_push_swap.c \
 			  stack_operation_rotate.c \
 			  stack_operation_reverse_rotate.c \
 			  circular_buffer_utils.c \
-			  circular_buffer_move_element.c \
+			  circular_buffer_insert_element.c \
 			  circular_buffer_insert_remove.c
 
 OBJS		= $(SRCS:.c=.o)

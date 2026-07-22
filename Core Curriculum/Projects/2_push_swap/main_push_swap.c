@@ -31,7 +31,7 @@ int count_int_in_str(const char *str)
 				str_moving++;
 		}
 	}
-	ft_printf("%i", values[0]);
+	printf("%i", values[0]);
 	return (count);
 }
 
