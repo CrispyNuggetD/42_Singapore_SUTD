@@ -22,7 +22,7 @@ Multiple int per argv
 //(printf("oops_1\n"),
 
 static int	has_duplicates(const int *count, const int *values);
-static int	is_improper_int(char *str_moving, int *count, int pos, int *values);
+static int	is_improper_int(char *str_moving, int *count, int pos);
 
 int count_int_in_str(const char *str, int *count, int *values)
 {
@@ -37,7 +37,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 			pos = 0;
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;	
-		if (is_improper_int(str_moving, count, pos, values))
+		if (is_improper_int(str_moving, count, pos))
 			return (ERROR);
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
@@ -69,7 +69,7 @@ static int	has_duplicates(const int *count, const int *values)
 	return (SUCCESS);
 }	
 	
-static int	is_improper_int(char *str_moving, int *count, int pos, int *values)
+static int	is_improper_int(char *str_moving, int *count, int pos)
 {
 	int	num_digits;
 	
