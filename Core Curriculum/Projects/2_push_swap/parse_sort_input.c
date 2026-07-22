@@ -42,6 +42,8 @@ int count_int_in_str(const char *str, int *count, int *values)
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
+		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
+			return (ERROR);	
 		return (SUCCESS);
 	}
 	return (ERROR);
@@ -88,8 +90,6 @@ static int	is_improper_int(char *str_moving, int *count, int pos, int *values)
 	if (!*str_moving || *str_moving == ' ')
 	{
 		(*count)++;
-		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
-			return (ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
