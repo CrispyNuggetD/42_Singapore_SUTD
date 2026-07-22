@@ -31,7 +31,7 @@ int	main(int argc, char **argv)
 		return (ERR_INVALID_INPUT);
 	while(count + 1 < argc)
 	{
-		if(count_int_in_str(argv[count + 1], &count, values) == ERROR)
+		if (count_int_in_str(argv[count + 1], &count, values) == ERROR)
 			return (free_and_error());
 	}
 	return (SUCCESS);
