@@ -27,7 +27,7 @@ int count_int_in_str(const char *str)
 		{
 			count++;
 			values[count-1] = ft_atoi(str_moving);
-			while (ft_isdigit(*str_moving));
+			while (ft_isdigit(*str_moving))
 				str_moving++;
 		}
 	}
