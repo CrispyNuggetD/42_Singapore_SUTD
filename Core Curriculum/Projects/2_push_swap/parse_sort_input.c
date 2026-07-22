@@ -92,7 +92,7 @@ static int	is_improper_int(char **str_move, int *count, int sign)
 }
 
 static int	exceed_int_range(char **str_move, const char *int_limit)
-｛
+{
 	int	digits;
 
 	digits = 0;
@@ -105,12 +105,13 @@ static int	exceed_int_range(char **str_move, const char *int_limit)
 	}
 	if (digits == 10)
 	{
-		while (digits--)
+		while (digits)
 		{
-			if (**(str_move - digits) < int_limit[10 - digits])
+			if (*(*str_move - digits) < int_limit[10 - digits])
 				break;
-			else if (**(str_move - digits) > int_limit[10 - digits])
+			else if (*(*str_move - digits) > int_limit[10 - digits])
 				return (ERROR);
+			digits--;
 		}
 	}
 	return (SUCCESS);
