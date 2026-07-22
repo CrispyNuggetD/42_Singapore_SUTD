@@ -35,17 +35,21 @@ int	check_duplicate(const int *count, const int *values)
 	int cur_compare;
 	int looping_index;
 	
-	cur_compare = looping_index = *count;
-	looping_index = cur_compare - 1;
+	cur_compare = *count;
+	ft_putnbr_fd(1, 1);
 	while (cur_compare > 0)
 	{
+		ft_putnbr_fd(2, 1);
 		looping_index = cur_compare - 1;
 		while (looping_index >= 0)
 		{
+			ft_putnbr_fd(3, 1);
 			if (values[looping_index] == values[cur_compare])
 				return (ERROR);
+			looping_index--;
 		}
 		cur_compare--;
+		ft_putnbr_fd(4, 1);
 	}
 	return (SUCCESS);
 }
