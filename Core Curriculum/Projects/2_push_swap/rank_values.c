@@ -17,7 +17,7 @@ int	rank_values(const int count, const int *values, int *ranks)
 
 	i = 0;
 	{
-		while (i < count - 1)
+		while (i < count)
 		{
 			pos = 0;
 			j = 0;
