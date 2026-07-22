@@ -16,13 +16,12 @@ int count_int_in_str(const char *str)
 {
 	int	count = 0;
 	int	values[500];
-	int	i = 0;
 	char	*str_moving;
 	
-	str_moving = str;
+	str_moving = (char *)str;
 	while (*str_moving)
 	{
-		if (ryker_ft_isspace(*str_moving)
+		if (ryker_ft_isspace(*str_moving))
 			str_moving++;
 		if (ft_isdigit(*str_moving)
 		{
