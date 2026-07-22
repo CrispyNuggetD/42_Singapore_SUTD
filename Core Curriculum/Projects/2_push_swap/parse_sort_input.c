@@ -44,7 +44,7 @@ int	check_duplicate(const int *count, const int *values)
 		while (looping_index >= 0)
 		{
 			ft_putnbr_fd(3, 1);
-			if ((int *)values[looping_index] == (int *)values[cur_compare])
+			if ((int)values[looping_index] == (int)values[cur_compare])
 				return (ERROR);
 			looping_index--;
 		}
