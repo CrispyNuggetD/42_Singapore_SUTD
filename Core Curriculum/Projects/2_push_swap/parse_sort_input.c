@@ -1,5 +1,17 @@
 #include "push_swap.h"
 
+
+
+/*
+
+
+TODO:
+Multiple int per argv
+
+
+
+*/
+
 /* int parse_input(input *input, char **argv)
 {
 	input->input_len = 
@@ -10,7 +22,7 @@
 //(printf("oops_1\n"),
 
 static int	check_duplicate(const int *count, const int *values);
-static int	check_if_proper_int(char *str_moving, int *count, int pos);
+static int	check_if_proper_int(char *str_moving, int *count, int pos, int *values);
 
 int count_int_in_str(const char *str, int *count, int *values)
 {
@@ -25,7 +37,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 			pos = 0;
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;	
-		if (check_if_proper_int(str_moving, count, pos) == ERROR)
+		if (check_if_proper_int(str_moving, count, pos, values) == ERROR)
 			return (ERROR);
 		values[*count-1] = ft_atoi(str);
 		if (check_duplicate(count, values) == ERROR)
@@ -55,7 +67,7 @@ static int	check_duplicate(const int *count, const int *values)
 	return (SUCCESS);
 }	
 	
-static int	check_if_proper_int(char *str_moving, int *count, int pos)
+static int	check_if_proper_int(char *str_moving, int *count, int pos, int *values)
 {
 	int	num_digits;
 	
@@ -73,10 +85,12 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		}
 		str_moving++;
 	}
-	if (!*str_moving)
+	if (!*str_moving || *str_moving == ' ')
 	{
 		(*count)++;
 		return (SUCCESS);
+		if (*str_moving == ' ')
+			count_int_in_str(*str_moving++, count, values);
 	}
 	return (ERROR);
 }
