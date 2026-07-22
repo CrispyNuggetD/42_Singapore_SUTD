@@ -16,9 +16,6 @@ int	rank_values(const int count, const int *values, int *ranks)
 	int	pos;
 
 	i = 0;
-
-	ranks = malloc(sizeof(int) * count);
-	if (ranks)
 	{
 		while (i < count - 1)
 		{
