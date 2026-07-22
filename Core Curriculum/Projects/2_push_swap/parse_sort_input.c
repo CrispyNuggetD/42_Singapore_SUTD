@@ -46,7 +46,7 @@ int	count_int_in_str(char *str, int *count, int *values)
 		values[*count-1] = sign * ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
-		if (*str_move == ' ' && count_int_in_str(str_move, count, values))
+		if (*str_move && count_int_in_str(str_move, count, values))
 			return (ERROR);
 		return (SUCCESS);
 	}
@@ -81,7 +81,7 @@ static int is_improper_int(char **str_move, int *count, int sign)
 			break;
 		else if (num_digits == 10)
 		{
-			if (*(*str_move-1) > '4' || (sign && **str_move > '7') || (sign < 0 && **str_move > '8'))
+			if (*(*str_move-1) > '4' || (sign > 0 && **str_move > '7') || (sign < 0 && **str_move > '8'))
 				return (ERROR);
 		}
 		(*str_move)++;
@@ -89,6 +89,8 @@ static int is_improper_int(char **str_move, int *count, int sign)
 	if (!**str_move || **str_move == ' ')
 	{
 		(*count)++;
+		while (**str_move == ' ')
+			(*str_move)++;
 		if (*count <= 500)
 			return (SUCCESS);
 	}
