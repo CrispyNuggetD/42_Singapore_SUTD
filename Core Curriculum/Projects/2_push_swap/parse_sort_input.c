@@ -62,6 +62,7 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 	while (*str_moving && ft_isdigit(*str_moving))
 	{
 		num_digits++;
+		printf("check_2_*str_moving is: %c\n",*str_moving)
 		if (num_digits > 10)
 			break;
 		else if (num_digits == 9 && *str_moving > '4')
