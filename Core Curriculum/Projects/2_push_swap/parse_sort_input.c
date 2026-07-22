@@ -24,10 +24,10 @@ int count_int_in_str(const char *str, int *count, int *values)
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;	
 		if (check_if_proper_int(str_moving, count, pos) == ERROR)
-			return (ERROR);
+			return (printf("oops_1\n"),ERROR);
 		values[*count] = ft_atoi(str);
 		if (check_duplicate(count, values) == ERROR)
-			return (ERROR);
+			return (printf("oops_2\n"),ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
@@ -64,9 +64,9 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		if (num_digits > 10)
 			break;
 		else if (num_digits == 9 && *str_moving > 4)
-			return (ERROR);
+			return (printf("oops_3\n"),ERROR);
 		else if (num_digits == 10 && ((!pos && *str_moving > 7) || *str_moving > 8))
-			return (ERROR);
+			return (printf("oops_4\n"),ERROR);
 		str_moving++;
 	}
 	if (!*str_moving)
@@ -74,5 +74,5 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		(*count)++;
 		return (SUCCESS);
 	}
-	return (ERROR);
+	return (printf("oops_5\n"),ERROR);
 }
