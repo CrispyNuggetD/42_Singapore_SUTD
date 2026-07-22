@@ -33,7 +33,7 @@ int	main(int argc, char **argv)
 	{
 		if(count_int_in_str(argv[count + 1], &count, &values[count]) == ERROR)
 			return (free_and_error());
-		printf("Cur num: %i\n", values[count-1]);
+		printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 	}
 	printf("%i\n", count);
 	return (SUCCESS);
