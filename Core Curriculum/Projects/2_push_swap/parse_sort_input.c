@@ -36,9 +36,10 @@ int count_int_in_str(const char *str, int *count, int *values)
 		if (*str_moving == '-')
 			pos = 0;
 		while (*str_moving == '+' || *str_moving == '-')
-			str_moving++;	
+			str_moving++;
 		if (is_improper_int(str_moving, count, pos))
 			return (ERROR);
+		printf("check_4: '%c'\n", *str_moving);	
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
