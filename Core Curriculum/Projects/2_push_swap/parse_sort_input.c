@@ -42,7 +42,8 @@ int count_int_in_str(const char *str, int *count, int *values)
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
-		printf("check_1: %i\n", values[*count-1]);	
+		printf("check_1: %i\n", values[*count-1]);
+		printf("check_2: '%c'\n", *str_moving);
 		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
 			return (ERROR);
 		return (SUCCESS);
