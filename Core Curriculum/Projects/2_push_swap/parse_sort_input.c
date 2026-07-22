@@ -22,7 +22,7 @@ Multiple int per argv
 //		printf("check_4: '%c'\n", *str_moving);	
 
 static int	has_duplicates(const int *count, const int *values);
-static int	is_improper_int(char **str_moving, int *count, int pos);
+static int	is_improper_int(char **str_move, int *count, int pos);
 
 int	count_int_in_str(char *str, int *count, int *values)
 {
@@ -73,24 +73,24 @@ static int	has_duplicates(const int *count, const int *values)
 	return (SUCCESS);
 }	
 	
-static int is_improper_int(char **str_moving, int *count, int pos)
+static int is_improper_int(char **str_move, int *count, int pos)
 {
 	int	num_digits;
 	
 	num_digits = 0;
-	while (**str_moving && ft_isdigit(**str_moving))
+	while (**str_move && ft_isdigit(**str_move))
 	{
 		num_digits++;
 		if (num_digits > 10)
 			break;
 		else if (num_digits == 10)
 		{
-			if (*(*str_moving-1) > '4' || (pos && **str_moving > '7') || (!pos && **str_moving > '8'))
+			if (*(*str_move-1) > '4' || (pos && **str_move > '7') || (!pos && **str_move > '8'))
 				return (ERROR);
 		}
-		(*str_moving)++;
+		(*str_move)++;
 	}
-	if (!**str_moving || **str_moving == ' ')
+	if (!**str_move || **str_move == ' ')
 	{
 		(*count)++;
 		if (*count <= 500)
