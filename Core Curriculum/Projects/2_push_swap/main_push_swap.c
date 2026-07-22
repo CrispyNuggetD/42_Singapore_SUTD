@@ -24,7 +24,7 @@ int	main(int argc, char **argv)
 	int	i;
 	int	count;
 	int	values[500];
-	int	*ranks;
+	int	ranks[500];
 
 	i = 1;
 	count = 0;
@@ -34,7 +34,7 @@ int	main(int argc, char **argv)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{
-		if (count_int_in_str(argv[++i], &count, values) == ERROR)
+		if (count_int_in_str(argv[i++], &count, values) == ERROR)
 			return (free_and_error());
 	}
 	if (count > 1 && rank_values(count, values, ranks) == ERROR)
