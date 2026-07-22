@@ -19,7 +19,7 @@ Multiple int per argv
 	return(SUCCESS);
 } */
 
-//(printf("oops_1\n"),
+//		printf("check_4: '%c'\n", *str_moving);	
 
 static int	has_duplicates(const int *count, const int *values);
 static int	is_improper_int(char **str_moving, int *count, int pos);
@@ -39,12 +39,9 @@ int count_int_in_str(const char *str, int *count, int *values)
 			str_moving++;
 		if (is_improper_int(&str_moving, count, pos))
 			return (ERROR);
-		printf("check_4: '%c'\n", *str_moving);	
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
-		printf("check_1: %i\n", values[*count-1]);
-		printf("check_2: '%c'\n", *str_moving);
 		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
 			return (ERROR);
 		return (SUCCESS);
@@ -92,7 +89,8 @@ static int is_improper_int(char **str_moving, int *count, int pos)
 	if (!**str_moving || **str_moving == ' ')
 	{
 		(*count)++;
-		return (SUCCESS);
+		if (*count <= 500)
+			return (SUCCESS);
 	}
 	return (ERROR);
 }

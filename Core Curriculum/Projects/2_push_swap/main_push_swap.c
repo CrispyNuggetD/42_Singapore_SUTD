@@ -34,5 +34,6 @@ int	main(int argc, char **argv)
 		if (count_int_in_str(argv[count + 1], &count, values) == ERROR)
 			return (free_and_error());
 	}
+	printf("main_check_1, Total Number: '%i'\n", count);	
 	return (SUCCESS);
 }
