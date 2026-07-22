@@ -88,8 +88,8 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos, int *value
 	if (!*str_moving || *str_moving == ' ')
 	{
 		(*count)++;
-		if (*str_moving == ' ' && !count_int_in_str(str_moving + 1, count, values))
-				return (ERROR);
+		//if (*str_moving == ' ' && !count_int_in_str(str_moving + 1, count, values))
+		//		return (ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
