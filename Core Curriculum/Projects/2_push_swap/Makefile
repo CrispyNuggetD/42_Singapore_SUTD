@@ -11,7 +11,6 @@ INCLUDES	= -I. -I$(LIBFT_DIR)
 
 SRCS		= main_push_swap.c \
 			  parse_sort_input.c \
-			  stack_operations.c \
 			  stack_operation_swap_push.c \
 			  stack_operation_rotate.c \
 			  stack_operation_reverse_rotate.c \
