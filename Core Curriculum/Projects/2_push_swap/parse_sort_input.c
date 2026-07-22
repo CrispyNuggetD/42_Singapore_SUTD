@@ -89,6 +89,7 @@ static int	is_improper_int(char *str_moving, int *count, int pos)
 		}
 		str_moving++;
 	}
+	printf("check_3: '%c'\n", *str_moving);	
 	if (!*str_moving || *str_moving == ' ')
 	{
 		(*count)++;
