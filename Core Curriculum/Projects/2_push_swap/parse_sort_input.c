@@ -40,7 +40,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 		if (!check_if_proper_int(str_moving, count, pos, values))
 			return (ERROR);
 		values[*count-1] = ft_atoi(str);
-		if (!check_duplicate(count, values)
+		if (!check_duplicate(count, values))
 			return (ERROR);
 		return (SUCCESS);
 	}
