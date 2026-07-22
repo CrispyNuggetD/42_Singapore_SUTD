@@ -59,16 +59,12 @@ static int	has_duplicates(const int *count, const int *values)
 	int	looping_index;
 	
 	cur_compare = *count - 1;
-	while (cur_compare > 0)
+	looping_index = cur_compare - 1;
+	while (looping_index >= 0)
 	{
-		looping_index = cur_compare - 1;
-		while (looping_index >= 0)
-		{
-			if (values[looping_index] == values[cur_compare])
-				return (ERROR);
-			looping_index--;
-		}
-		cur_compare--;
+		if (values[looping_index] == values[cur_compare])
+			return (ERROR);
+		looping_index--;
 	}
 	return (SUCCESS);
 }	
