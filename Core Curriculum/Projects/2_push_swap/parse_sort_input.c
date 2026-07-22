@@ -32,10 +32,10 @@ int count_int_in_str(const char *str, int *count, int *values)
 
 int	check_duplicate(const int *count, const int *values)
 {
-	int cur_compare;
-	int looping_index;
+	int	cur_compare;
+	int	looping_index;
 	
-	curr_compare = *count;
+	cur_compare = *count;
 	while (cur_compare > 0)
 	{
 		looping_index = cur_compare - 1;
