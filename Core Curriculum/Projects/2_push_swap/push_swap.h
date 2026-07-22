@@ -55,8 +55,12 @@ typedef struct s_input
 
 // typedef int	(*t_handler)(t_context *context);
 
+/* debugger */
+void	debug_print_int_array(const int *array, int size);
+
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
+int	rank_values(const int count, const int *values, int *ranks);
 
 /* cbuf core */
 int	cbuf_init(cbuf *stack, int size);
