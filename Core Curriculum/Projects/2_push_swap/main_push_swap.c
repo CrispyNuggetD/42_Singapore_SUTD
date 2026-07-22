@@ -26,8 +26,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 		if (ft_isdigit(*str_moving))
 		{
 			count++;
-			values[count-1] = ft_atoi(str_moving);
-			printf("Cur num: %i\n", values[count-1]);
+			*values = ft_atoi(str_moving);
 			while (ft_isdigit(*str_moving))
 				str_moving++;
 		}
@@ -44,8 +43,10 @@ int	main(int argc, char **argv)
 	if (argc < 2)
 		return (ERR_INVALID_INPUT);
 	while(count < argc)
+	{
 		if(count_int_in_str(argv[count + 1], &count, &values[count]) == ERROR)
-		return (ERROR);
+			return (ERROR);
+		printf("Cur num: %i\n", values[count-1]);
 	printf("%i\n", count);
 	return (SUCCESS);
 }
