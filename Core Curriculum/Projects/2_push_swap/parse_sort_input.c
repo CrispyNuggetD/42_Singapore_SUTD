@@ -26,7 +26,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 			pos = 0;	
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;
-		return (check_if_proper_int(str_moving, pos));
+		return (check_if_proper_int(str_moving, count, pos));
 	}
 	return (ERROR);
 }
@@ -50,7 +50,7 @@ static int	check_duplicate(const int *count, const int *values)
 	}
 	return (SUCCESS);
 	
-static int	check_if_proper_int(char *str_moving, int pos)
+static int	check_if_proper_int(char *str_moving, int *count, int pos)
 {
 	int	num_digits;
 	
