@@ -7,6 +7,8 @@
 	return(SUCCESS);
 } */
 
+//(printf("oops_1\n"),
+
 static int	check_duplicate(const int *count, const int *values);
 static int	check_if_proper_int(char *str_moving, int *count, int pos);
 
@@ -24,11 +26,10 @@ int count_int_in_str(const char *str, int *count, int *values)
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;	
 		if (check_if_proper_int(str_moving, count, pos) == ERROR)
-			return (printf("oops_1\n"),ERROR);
+			return (ERROR);
 		values[*count-1] = ft_atoi(str);
-		printf("check_1_value: %i, at count: %i\n",values[*count-1],*count-1);
 		if (check_duplicate(count, values) == ERROR)
-			return (printf("oops_2\n"),ERROR);
+			return (ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
@@ -46,7 +47,7 @@ static int	check_duplicate(const int *count, const int *values)
 		while (looping_index >= 0)
 		{
 			if (values[looping_index] == values[cur_compare])
-				return (printf("oops_5_%i_%i\n",values[looping_index],values[cur_compare]),ERROR);
+				return (ERROR);
 			looping_index--;
 		}
 		cur_compare--;
@@ -68,7 +69,7 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		else if (num_digits == 10)
 		{
 			if (*(str_moving-1) > '4' || (pos && *str_moving > '7') || (!pos && *str_moving > '8'))
-				return (printf("oops_4\n"),ERROR);
+				return (ERROR);
 		}
 		str_moving++;
 	}
@@ -77,5 +78,5 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		(*count)++;
 		return (SUCCESS);
 	}
-	return (printf("oops_5\n"),ERROR);
+	return (ERROR);
 }
