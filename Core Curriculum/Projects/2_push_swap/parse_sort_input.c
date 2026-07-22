@@ -30,12 +30,12 @@ int count_int_in_str(const char *str, int *count, int *values)
 	return (ERROR);
 }
 
-int	check_duplicate(int const *count, int const *values)
+int	check_duplicate(const int *count, const int *values)
 {
 	int cur_compare;
 	int looping_index;
 	
-	cur_compare = *count;
+	cur_compare = (int)*count;
 	ft_putnbr_fd(1, 1);
 	while (cur_compare > 0)
 	{
@@ -44,7 +44,7 @@ int	check_duplicate(int const *count, int const *values)
 		while (looping_index >= 0)
 		{
 			ft_putnbr_fd(3, 1);
-			if (values[looping_index] == values[cur_compare])
+			if ((int *)values[looping_index] == (int *)values[cur_compare])
 				return (ERROR);
 			looping_index--;
 		}
