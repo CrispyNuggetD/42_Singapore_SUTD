@@ -23,7 +23,7 @@ int count_int_in_str(const char *str)
 	{
 		if (ryker_ft_isspace(*str_moving))
 			str_moving++;
-		if (ft_isdigit(*str_moving)
+		if (ft_isdigit(*str_moving))
 		{
 			count++;
 			values[count-1] = ft_atoi(*str_moving);
