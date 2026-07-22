@@ -21,8 +21,8 @@ Multiple int per argv
 
 //(printf("oops_1\n"),
 
-static int	check_duplicate(const int *count, const int *values);
-static int	check_if_proper_int(char *str_moving, int *count, int pos, int *values);
+static int	has_duplicates(const int *count, const int *values);
+static int	is_improper_int(char *str_moving, int *count, int pos, int *values);
 
 int count_int_in_str(const char *str, int *count, int *values)
 {
@@ -37,17 +37,17 @@ int count_int_in_str(const char *str, int *count, int *values)
 			pos = 0;
 		while (*str_moving == '+' || *str_moving == '-')
 			str_moving++;	
-		if (!check_if_proper_int(str_moving, count, pos, values))
+		if (is_improper_int(str_moving, count, pos, values))
 			return (ERROR);
 		values[*count-1] = ft_atoi(str);
-		if (!check_duplicate(count, values))
+		if (has_duplicates(count, values))
 			return (ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
 }
 
-static int	check_duplicate(const int *count, const int *values)
+static int	has_duplicates(const int *count, const int *values)
 {
 	int	cur_compare;
 	int	looping_index;
@@ -67,7 +67,7 @@ static int	check_duplicate(const int *count, const int *values)
 	return (SUCCESS);
 }	
 	
-static int	check_if_proper_int(char *str_moving, int *count, int pos, int *values)
+static int	is_improper_int(char *str_moving, int *count, int pos, int *values)
 {
 	int	num_digits;
 	
@@ -88,8 +88,8 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos, int *value
 	if (!*str_moving || *str_moving == ' ')
 	{
 		(*count)++;
-		//if (*str_moving == ' ' && !count_int_in_str(str_moving + 1, count, values))
-		//		return (ERROR);
+		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
+			return (ERROR);
 		return (SUCCESS);
 	}
 	return (ERROR);
