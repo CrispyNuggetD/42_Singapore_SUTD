@@ -18,13 +18,20 @@ int count_int_in_str(const char *str, int *count, int *values)
 	
 	str_moving = (char *)str;
 	if (ft_isdigit(*str_moving))
+	{
 		*values = ft_atoi(str_moving);
+		printf("good1\n");
+	}
 	while (*str_moving && ft_isdigit(*str_moving))
-		str_moving++;	
+	{
+		printf("%cwha2t\n", *str_moving);
+		str_moving++;
+	}
+	printf("%cwha2tend\n", *str_moving);
 	if (!str_moving)
 	{
 		(*count)++;
-		printf("good\n");
+		printf("good3\n");
 		return (SUCCESS);
 	}
 	printf("%cwhat\n", *str_moving);
