@@ -48,7 +48,7 @@ static int	check_duplicate(const int *count, const int *values)
 		}
 		cur_compare--;
 	}
-	return (SUCCESS):
+	return (SUCCESS);
 }	
 	
 static int	check_if_proper_int(char *str_moving, int *count, int pos)
