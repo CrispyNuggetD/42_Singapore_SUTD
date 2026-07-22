@@ -13,20 +13,18 @@
 #include "push_swap.h"
 //printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 
-
-int free_and_error()
+int	free_and_error(void)
 {
 	ft_putendl_fd("Error", 2);
 	return (ERROR);
 }
-
 
 int	main(int argc, char **argv)
 {
 	int	i;
 	int	count;
 	int	values[500];
-	
+
 	count = 0;
 	i = 1;
 	if (argc == 1 || argc + 1 > 500)
