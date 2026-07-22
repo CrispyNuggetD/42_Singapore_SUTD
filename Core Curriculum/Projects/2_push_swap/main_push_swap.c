@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "push_swap.h"
-
+//printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 
 
 int free_and_error()
@@ -27,14 +27,12 @@ int	main(int argc, char **argv)
 	int	values[500];
 	
 	count = 0;
-	if (argc < 2)
+	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
 	while(count + 1 < argc)
 	{
 		if(count_int_in_str(argv[count + 1], &count, values) == ERROR)
 			return (free_and_error());
-		printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 	}
-	printf("%i\n", count);
 	return (SUCCESS);
 }
