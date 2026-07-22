@@ -25,9 +25,11 @@ int	main(int argc, char **argv)
 	int	count;
 	int	values[500];
 	int	*ranks;
-	
-	count = 0;
+
 	i = 1;
+	count = 0;
+	ranks = NULL;
+
 	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
