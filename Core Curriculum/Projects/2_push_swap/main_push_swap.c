@@ -33,7 +33,7 @@ int	main(int argc, char **argv)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{
-		if (count_int_in_str(argv[++1], &count, values) == ERROR)
+		if (count_int_in_str(argv[++i], &count, values) == ERROR)
 			return (free_and_error());
 	}
 	return (SUCCESS);
