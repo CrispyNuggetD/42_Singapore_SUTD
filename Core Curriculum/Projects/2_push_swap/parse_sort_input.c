@@ -22,28 +22,28 @@ Multiple int per argv
 //		printf("check_4: '%c'\n", *str_moving);	
 
 static int	has_duplicates(const int *count, const int *values);
-static int	is_improper_int(char **str_move, int *count, int pos);
+static int	is_improper_int(char **str_move, int *count, int sign);
 
 int	count_int_in_str(char *str, int *count, int *values)
 {
 	char	*str_move;
-	int		pos;
+	int		sign;
 	
-	pos = 1;
+	sign = 1;
 	while (*str == ' ')
 		str++;
 	if (*str == '+' || *str == '-')
 	{
 		if (*str == '-')
-			pos = 0;
+			sign = -1;
 		str++;
 	}
 	if (ft_isdigit(*str))
 	{
 		str_move = str;
-		if (is_improper_int(&str_move, count, pos))
+		if (is_improper_int(&str_move, count, sign))
 			return (ERROR);
-		values[*count-1] = ft_atoi(str);
+		values[*count-1] = sign * ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
 		if (*str_move == ' ' && count_int_in_str(str_move, count, values))
@@ -73,7 +73,7 @@ static int	has_duplicates(const int *count, const int *values)
 	return (SUCCESS);
 }	
 	
-static int is_improper_int(char **str_move, int *count, int pos)
+static int is_improper_int(char **str_move, int *count, int sign)
 {
 	int	num_digits;
 	
@@ -85,7 +85,7 @@ static int is_improper_int(char **str_move, int *count, int pos)
 			break;
 		else if (num_digits == 10)
 		{
-			if (*(*str_move-1) > '4' || (pos && **str_move > '7') || (!pos && **str_move > '8'))
+			if (*(*str_move-1) > '4' || (sign && **str_move > '7') || (sign < 0 && **str_move > '8'))
 				return (ERROR);
 		}
 		(*str_move)++;
