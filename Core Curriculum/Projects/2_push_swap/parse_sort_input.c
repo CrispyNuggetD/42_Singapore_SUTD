@@ -24,25 +24,29 @@ Multiple int per argv
 static int	has_duplicates(const int *count, const int *values);
 static int	is_improper_int(char **str_moving, int *count, int pos);
 
-int count_int_in_str(const char *str, int *count, int *values)
+int	count_int_in_str(char *str, int *count, int *values)
 {
-	char	*str_moving;
+	char	*str_move;
 	int		pos;
 	
 	pos = 1;
-	str_moving = (char *)str;
-	if ((*str_moving && ft_isdigit(*str_moving)) || *str_moving == '+' || *str_moving == '-')
+	while (*str == ' ')
+		str++;
+	if (*str == '+' || *str == '-')
 	{
-		if (*str_moving == '-')
+		if (*str == '-')
 			pos = 0;
-		while (*str_moving == '+' || *str_moving == '-')
-			str_moving++;
-		if (is_improper_int(&str_moving, count, pos))
+		str++;
+	}
+	if (ft_isdigit(*str))
+	{
+		str_move = str;
+		if (is_improper_int(&str_move, count, pos))
 			return (ERROR);
 		values[*count-1] = ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
-		if (*str_moving == ' ' && count_int_in_str(str_moving + 1, count, values))
+		if (*str_move == ' ' && count_int_in_str(str_move, count, values))
 			return (ERROR);
 		return (SUCCESS);
 	}
@@ -54,7 +58,7 @@ static int	has_duplicates(const int *count, const int *values)
 	int	cur_compare;
 	int	looping_index;
 	
-	cur_compare = *count;
+	cur_compare = *count - 1;
 	while (cur_compare > 0)
 	{
 		looping_index = cur_compare - 1;
@@ -81,7 +85,7 @@ static int is_improper_int(char **str_moving, int *count, int pos)
 			break;
 		else if (num_digits == 10)
 		{
-			if (**(str_moving-1) > '4' || (pos && **str_moving > '7') || (!pos && **str_moving > '8'))
+			if (*(*str_moving-1) > '4' || (pos && **str_moving > '7') || (!pos && **str_moving > '8'))
 				return (ERROR);
 		}
 		(*str_moving)++;
