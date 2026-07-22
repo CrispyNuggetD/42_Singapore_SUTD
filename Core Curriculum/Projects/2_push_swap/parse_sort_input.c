@@ -67,7 +67,7 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 			break;
 		else if (num_digits == 10)
 		{
-			if (*(str_moving-1) > '4' || (pos && str_moving > '7') || (!pos && *str_moving > '8'))
+			if (*(str_moving-1) > '4' || (pos && *str_moving > '7') || (!pos && *str_moving > '8'))
 				return (printf("oops_4\n"),ERROR);
 		}
 		str_moving++;
