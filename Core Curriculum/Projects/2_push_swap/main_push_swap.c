@@ -24,10 +24,8 @@ int count_int_in_str(const char *str, int *count, int *values)
 	if (!str_moving)
 	{
 		(*count)++;
-		printf("good\n");
 		return (SUCCESS);
 	}
-	printf("%cwhat\n", str_moving);
 	return (ERROR);
 }
 
