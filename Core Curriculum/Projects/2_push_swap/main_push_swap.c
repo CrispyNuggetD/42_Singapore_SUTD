@@ -12,12 +12,12 @@
 
 #include "push_swap.h"
 
-int count_int_in_str(const char *str)
+int count_int_in_str(const char *str, int *count, int *values)
 {
-	int	count = 0;
-	int	values[500];
 	char	*str_moving;
+	int		success_status;
 	
+	success_status = SUCCESS;
 	str_moving = (char *)str;
 	while (*str_moving)
 	{
@@ -32,17 +32,20 @@ int count_int_in_str(const char *str)
 				str_moving++;
 		}
 	}
-	return (count);
+	return (success_status);
 }
 
 int	main(int argc, char **argv)
 {
-	int count = 0;
+	int count;
+	int	values[500];
 	
+	count = 0;
 	if (argc < 2)
 		return (ERR_INVALID_INPUT);
-	while(argc-- > 1)
-		count += count_int_in_str(argv[argc]);
+	while(count < argc)
+		if(count_int_in_str(argv[count + 1], &count, &values[count]) == ERROR)
+		return (ERROR);
 	printf("%i\n", count);
 	return (SUCCESS);
 }
