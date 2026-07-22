@@ -88,8 +88,8 @@ static int is_improper_int(char **str_move, int *count, int sign)
 		if (*count > 500)
 			return (ERROR);
 	}
-				return (SUCCESS);
-			}
+	return (SUCCESS);
+}
 
 static int exceed_int_range(char **str_move, const char *int_limit)
 ｛
