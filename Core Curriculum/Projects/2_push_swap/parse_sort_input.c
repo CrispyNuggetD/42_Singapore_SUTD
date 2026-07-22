@@ -90,9 +90,9 @@ static int is_improper_int(char **str_move, int *count, int sign)
 	{
 		while (digits--)
 		{
-			if (*(str_move - digits) < int_limit[10 - digits])
+			if (**(str_move - digits) < int_limit[10 - digits])
 				break;
-			else if (*(str_move - digits) > int_limit[10 - digits])
+			else if (**(str_move - digits) > int_limit[10 - digits])
 				return (ERROR);
 		}
 	}
