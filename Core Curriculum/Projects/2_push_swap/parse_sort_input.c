@@ -23,6 +23,7 @@ Multiple int per argv
 
 static int	has_duplicates(const int *count, const int *values);
 static int	is_improper_int(char **str_move, int *count, int sign);
+static int exceed_int_range(char **str_move, const char *int_limit);
 
 int	count_int_in_str(char *str, int *count, int *values)
 {
@@ -92,7 +93,7 @@ static int is_improper_int(char **str_move, int *count, int sign)
 				return (SUCCESS);
 			}
 
-static int exceed_int_range(char **str_move, int int_limit)
+static int exceed_int_range(char **str_move, const char *int_limit)
 	int	digits;
 
 	digits = 0;
