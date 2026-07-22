@@ -19,14 +19,16 @@ int count_int_in_str(const char *str, int *count, int *values)
 	str_moving = (char *)str;
 	if ((*str_moving && ft_isdigit(*str_moving)) || *str_moving == '+' || *str_moving == '-')
 	{
-		values[*count] = ft_atoi(str_moving);
+		if (*str_moving == '-')
+			pos = 0;
+		while (*str_moving == '+' || *str_moving == '-')
+			str_moving++;	
+		if (check_if_proper_int(str_moving, count, pos) == ERROR)
+			return (ERROR);
+		values[*count] = ft_atoi(str);
 		if (check_duplicate(count, values) == ERROR)
 			return (ERROR);
-		if (*str_moving == '-')
-			pos = 0;	
-		while (*str_moving == '+' || *str_moving == '-')
-			str_moving++;
-		return (check_if_proper_int(str_moving, count, pos));
+		return (SUCCESS);
 	}
 	return (ERROR);
 }
@@ -55,9 +57,10 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 {
 	int	num_digits;
 	
-	num_digits = 1;
+	num_digits = 0;
 	while (*str_moving && ft_isdigit(*str_moving))
 	{
+		num_digits++;
 		if (num_digits > 10)
 			break;
 		else if (num_digits == 9 && *str_moving > 4)
@@ -65,7 +68,6 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		else if (num_digits == 10 && ((!pos && *str_moving > 7) || *str_moving > 8))
 			return (ERROR);
 		str_moving++;
-		num_digits++;
 	}
 	if (!*str_moving)
 	{
