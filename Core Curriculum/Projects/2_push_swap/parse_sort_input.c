@@ -72,10 +72,8 @@ static int	has_duplicates(const int *count, const int *values)
 	
 static int is_improper_int(char **str_move, int *count, int sign)
 {
-
 	const char	*int_limit;
 
-	digits = 0;
 	if (sign > 0)
 		int_limit = "2147483647";
 	else
@@ -94,6 +92,7 @@ static int is_improper_int(char **str_move, int *count, int sign)
 			}
 
 static int exceed_int_range(char **str_move, const char *int_limit)
+｛
 	int	digits;
 
 	digits = 0;
