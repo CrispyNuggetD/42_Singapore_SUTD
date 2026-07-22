@@ -7,6 +7,9 @@
 	return(SUCCESS);
 } */
 
+static int	check_duplicate(const int *count, const int *values);
+static int	check_if_proper_int(char *str_moving, int pos);
+
 int count_int_in_str(const char *str, int *count, int *values)
 {
 	char	*str_moving;
@@ -28,7 +31,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 	return (ERROR);
 }
 
-int	check_duplicate(const int *count, const int *values)
+static int	check_duplicate(const int *count, const int *values)
 {
 	int	cur_compare;
 	int	looping_index;
@@ -47,7 +50,7 @@ int	check_duplicate(const int *count, const int *values)
 	}
 	return (SUCCESS);
 	
-int	check_if_proper_int(char *str_moving, int pos)
+static int	check_if_proper_int(char *str_moving, int pos)
 {
 	int	num_digits;
 	
@@ -58,7 +61,7 @@ int	check_if_proper_int(char *str_moving, int pos)
 			break;
 		else if (num_digits == 9 && *str_moving > 4)
 			return (ERROR);
-		else if (!pos && *str_moving > 7) || *str_moving > 8)
+		else if ((!pos && *str_moving > 7) || *str_moving > 8)
 			return (ERROR);
 		str_moving++;
 		num_digits++;
