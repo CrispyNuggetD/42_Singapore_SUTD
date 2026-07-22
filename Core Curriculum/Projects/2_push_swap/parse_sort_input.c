@@ -71,5 +71,5 @@ static int	check_if_proper_int(char *str_moving, int *count, int pos)
 		(*count)++;
 		return (SUCCESS);
 	}
-	return (ERROR);	
-}	
+	return (ERROR);
+}
