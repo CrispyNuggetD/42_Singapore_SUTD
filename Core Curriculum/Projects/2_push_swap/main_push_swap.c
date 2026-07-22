@@ -17,30 +17,25 @@ int count_int_in_str(const char *str, int *count, int *values)
 	char	*str_moving;
 	
 	str_moving = (char *)str;
-	if (ft_isdigit(*str_moving))
+	if (*str_moving && ft_isdigit(*str_moving))
 	{
 		*values = ft_atoi(str_moving);
-		printf("good1\n");
+		while (*str_moving == '+' || *str_moving == '-')
+			str_moving++;
+		while (*str_moving && ft_isdigit(*str_moving))
+			str_moving++;	
+		if (!*str_moving)
+		{
+			(*count)++;
+			return (SUCCESS);
+		}
 	}
-	while (*str_moving && ft_isdigit(*str_moving))
-	{
-		printf("%cwha2t\n", *str_moving);
-		str_moving++;
-	}
-	printf("%cwha2tend\n", *str_moving);
-	if (!str_moving)
-	{
-		(*count)++;
-		printf("good3\n");
-		return (SUCCESS);
-	}
-	printf("%cwhat\n", *str_moving);
 	return (ERROR);
 }
 
 int free_and_error()
 {
-	ft_putendl_fd("Error", 1);
+	ft_putendl_fd("Error", 2);
 	return (ERROR);
 }
 
