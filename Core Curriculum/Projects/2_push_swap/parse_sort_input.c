@@ -30,7 +30,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 	return (ERROR);
 }
 
-int	check_duplicate(const int *count, const int *values)
+int	check_duplicate(int const *count, int const *values)
 {
 	int cur_compare;
 	int looping_index;
