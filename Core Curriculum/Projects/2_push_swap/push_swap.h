@@ -55,6 +55,10 @@ typedef struct s_input
 
 // typedef int	(*t_handler)(t_context *context);
 
+/* parser */
+int	check_duplicate(const int *count, const int *values);
+int	count_int_in_str(const char *str, int *count, int *values);
+
 /* cbuf core */
 int	cbuf_init(cbuf *stack, int size);
 int	cbuf_is_empty(cbuf *stack);
