@@ -28,8 +28,6 @@ int	main(int argc, char **argv)
 
 	i = 1;
 	count = 0;
-	ranks = NULL;
-
 	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
