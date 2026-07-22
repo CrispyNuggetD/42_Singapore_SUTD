@@ -17,7 +17,7 @@ int count_int_in_str(const char *str, int *count, int *values)
 	char	*str_moving;
 	
 	str_moving = (char *)str;
-	if (*str_moving && ft_isdigit(*str_moving))
+	if ((*str_moving && ft_isdigit(*str_moving)) || *str_moving == '+' || *str_moving == '-')
 	{
 		*values = ft_atoi(str_moving);
 		while (*str_moving == '+' || *str_moving == '-')
