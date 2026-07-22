@@ -71,8 +71,8 @@ static int	has_duplicates(const int *count, const int *values)
 	
 static int is_improper_int(char **str_move, int *count, int sign)
 {
-	int		digits;
-	char	int_limit[10];
+	int			digits;
+	const char	*int_limit;
 
 	digits = 0;
 	if (sign > 0)
