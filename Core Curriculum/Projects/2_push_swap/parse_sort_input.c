@@ -1,17 +1,5 @@
 #include "push_swap.h"
 
-
-
-/*
-
-
-TODO:
-Multiple int per argv
-
-
-
-*/
-
 /* int parse_input(input *input, char **argv)
 {
 	input->input_len = 
@@ -44,7 +32,7 @@ int	count_int_in_str(char *str, int *count, int *values)
 		str_move = str;
 		if (is_improper_int(&str_move, count, sign))
 			return (ERROR);
-		values[*count-1] = sign * ft_atoi(str);
+		values[*count - 1] = sign * ft_atoi(str);
 		if (has_duplicates(count, values))
 			return (ERROR);
 		if (*str_move && count_int_in_str(str_move, count, values))
@@ -58,7 +46,7 @@ static int	has_duplicates(const int *count, const int *values)
 {
 	int	cur_compare;
 	int	looping_index;
-	
+
 	cur_compare = *count - 1;
 	looping_index = cur_compare - 1;
 	while (looping_index >= 0)
@@ -68,8 +56,8 @@ static int	has_duplicates(const int *count, const int *values)
 		looping_index--;
 	}
 	return (SUCCESS);
-}	
-	
+}
+
 static int	is_improper_int(char **str_move, int *count, int sign)
 {
 	const char	*int_limit;
@@ -108,7 +96,7 @@ static int	exceed_int_range(char **str_move, const char *int_limit)
 		while (digits)
 		{
 			if (*(*str_move - digits) < int_limit[10 - digits])
-				break;
+				break ;
 			else if (*(*str_move - digits) > int_limit[10 - digits])
 				return (ERROR);
 			digits--;
