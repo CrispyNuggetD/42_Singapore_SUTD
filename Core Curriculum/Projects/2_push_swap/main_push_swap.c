@@ -40,7 +40,7 @@ int	check_duplicate(const int *count, const int *values)
 	int cur_compare;
 	int looping_index;
 	
-	cur_compare = looping_count = *count;
+	cur_compare = looping_index = *count;
 	looping_index = cur_compare - 1;
 	while (cur_compare > 0)
 	{
