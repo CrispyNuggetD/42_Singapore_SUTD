@@ -23,15 +23,17 @@ int free_and_error()
 
 int	main(int argc, char **argv)
 {
-	int count;
+	int	i;
+	int	count;
 	int	values[500];
 	
 	count = 0;
+	i = 1;
 	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
-	while(count + 1 < argc)
+	while (i < argc)
 	{
-		if (count_int_in_str(argv[count + 1], &count, values) == ERROR)
+		if (count_int_in_str(argv[++1], &count, values) == ERROR)
 			return (free_and_error());
 	}
 	return (SUCCESS);
