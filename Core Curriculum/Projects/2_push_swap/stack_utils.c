@@ -46,6 +46,7 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 	return (SUCCESS);
 }
 
+/*
 int	larger_top(soln *x, cbuf *a)
 {
 	int	top_idx;
@@ -53,6 +54,7 @@ int	larger_top(soln *x, cbuf *a)
 	top_idx = a->read_idx;
 	return (a->buf[top_idx] > a->buf[top_idx + 1]);
 }
+*/
 
 int get_order_top_three(soln *x, cbuf *a)
 {
