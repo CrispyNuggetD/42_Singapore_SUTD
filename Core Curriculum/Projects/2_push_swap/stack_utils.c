@@ -56,7 +56,7 @@ int	larger_top(soln *x, cbuf *a)
 }
 */
 
-int get_order_top_three(soln *x, cbuf *a)
+int	get_order_top_three(cbuf *a)
 {
 	int	first_idx;
 	int	second_idx;
