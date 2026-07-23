@@ -18,7 +18,9 @@ void	append(soln *x, char move)
 {
 	x->ans[x->cur][x->step] = move;
 	x->step++;
-	// x->ans_len[x->cur] = x->step;
+	x->ans_len[x->cur] = x->step;
+	// update next time only record when final
+	moves found
 }
 
 int	soln_init(soln *x, const int soln_num, const int steps_limit)
