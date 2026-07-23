@@ -79,7 +79,7 @@ typedef struct s_soln
 void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(cbuf *stack, char name);
 void	cbuf_print_stacks(cbuf *a, cbuf *b);
-void	debug_print_soln(const sol  *x);
+void	debug_print_soln(const soln *x);
 int	print_first_soln(const soln *x);
 
 /* parser */
