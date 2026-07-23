@@ -23,7 +23,8 @@ static int	hardcode_check(soln *x, cbuf *a, cbuf *b)
 
 int	solve(soln *x, cbuf *a, cbuf *b)
 {
-	hardcode_check(x, a, b);
+	if (hardcode_check(x, a, b) == ERROR)
+		return (ERROR);
 	return (SUCCESS);
 }
 

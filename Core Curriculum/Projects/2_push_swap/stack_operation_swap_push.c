@@ -8,16 +8,19 @@ int	sa(soln *x, cbuf *a)
 
 int	sb(soln *x, cbuf *b)
 {
+	append(x, SB);
 	return (cbuf_swap_top(b));
 }
 
 int	ss(soln *x, cbuf *a, cbuf *b)
 {
-	return (sa(a) | sb(b));
+	append(x, SS);
+	return (cbuf_swap(a) | cbuf_swap(b));
 }
 
 int	pa(soln *x, cbuf *a, cbuf *b)
 {
+	append(x, PA);
 	int read_number;
 	
 	if (cbuf_pop_top(b, &read_number))
@@ -27,6 +30,7 @@ int	pa(soln *x, cbuf *a, cbuf *b)
 
 int	pb(soln *x, cbuf *a, cbuf *b)
 {
+	append(x, PB);
 	int read_number;
 	
 	if (cbuf_pop_top(a, &read_number))

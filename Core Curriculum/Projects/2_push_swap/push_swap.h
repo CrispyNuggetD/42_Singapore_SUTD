@@ -52,8 +52,17 @@ typedef struct s_soln
 # define ERR_PARSE_INPUT		3
 # define ERR_SORT_INPUT		4
 
-# define SA '1'
-# define SB '2'
+# define SA		'1'
+# define SB		'2'
+# define SS		'3'
+# define PA		'4'
+# define PB		'5'
+# define RA		'6'
+# define RB		'7'
+# define RR		'8'
+# define RRA	'9'
+# define RRB	'A'
+# define RRR	'B'
 
 /* typedef enum e_length
 {
@@ -70,6 +79,7 @@ typedef struct s_soln
 void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(cbuf *stack, char name);
 void	cbuf_print_stacks(cbuf *a, cbuf *b);
+void	debug_print_soln(const soln *x)
 
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);

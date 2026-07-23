@@ -55,3 +55,80 @@ void	cbuf_print_stacks(cbuf *a, cbuf *b)
 	cbuf_print(a, 'A');
 	cbuf_print(b, 'B');
 }
+
+static const char	*move_name(char move)
+{
+	if (move == SA)
+		return ("sa");
+	if (move == SB)
+		return ("sb");
+	if (move == SS)
+		return ("ss");
+	if (move == PA)
+		return ("pa");
+	if (move == PB)
+		return ("pb");
+	if (move == RA)
+		return ("ra");
+	if (move == RB)
+		return ("rb");
+	if (move == RR)
+		return ("rr");
+	if (move == RRA)
+		return ("rra");
+	if (move == RRB)
+		return ("rrb");
+	if (move == RRR)
+		return ("rrr");
+	return ("UNKNOWN");
+}
+
+void	debug_print_soln(const soln *x)
+{
+	int	solution_index;
+	int	move_index;
+	int	length;
+
+	if (x == NULL)
+	{
+		printf("[SOLN DEBUG] x is NULL\n");
+		return ;
+	}
+	printf("\n========== SOLUTION DEBUG ==========\n");
+	printf("ans address     : %p\n", (void *)x->ans);
+	printf("ans_len address : %p\n", (void *)x->ans_len);
+	printf("current solution: %d\n", x->cur);
+	printf("current step    : %d\n", x->step);
+	if (x->ans == NULL || x->ans_len == NULL)
+	{
+		printf("Cannot inspect solutions: NULL pointer\n");
+		printf("====================================\n");
+		return ;
+	}
+	solution_index = 0;
+	while (solution_index <= x->cur)
+	{
+		length = x->ans_len[solution_index];
+		printf("\nSolution [%d]\n", solution_index);
+		printf("Stored length: %d\n", length);
+		printf("Encoded      : ");
+		move_index = 0;
+		while (move_index < length)
+		{
+			printf("%c", x->ans[solution_index][move_index]);
+			move_index++;
+		}
+		printf("\nDecoded moves:\n");
+		move_index = 0;
+		while (move_index < length)
+		{
+			printf("  Step %d: %s [%c]\n",
+				move_index + 1,
+				move_name(x->ans[solution_index][move_index]),
+				x->ans[solution_index][move_index]);
+			move_index++;
+		}
+		solution_index++;
+	}
+	printf("\n====================================\n\n");
+}
