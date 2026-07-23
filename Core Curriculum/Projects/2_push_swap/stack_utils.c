@@ -65,7 +65,7 @@ int	get_order_top_three(cbuf *a)
 	first_idx = a->read_idx;
 	second_idx = (a->read_idx + 1) % a->capacity;
 	third_idx = (a->read_idx + 2) % a->capacity;
-	if (a->buf[top_idx] > a->buf[second_idx])
+	if (a->buf[first_idx] > a->buf[second_idx])
 	{
 		if (a->buf[second_idx] > a->buf[third_idx])
 			return (321);
