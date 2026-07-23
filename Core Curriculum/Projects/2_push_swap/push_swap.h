@@ -88,7 +88,8 @@ int	rank_values(const int count, const int *values, int *ranks);
 /* solutions */
 void	append(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
-int	larger_top(soln *x, cbuf *a);
+// int	larger_top(soln *x, cbuf *a);
+int	get_order_top_three(cbuf *a);
 int	solve(soln *x, cbuf *a, cbuf *b);
 
 /* cbuf core */
