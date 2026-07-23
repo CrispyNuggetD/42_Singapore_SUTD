@@ -33,15 +33,15 @@ int	main(int argc, char **argv)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{
-		if (!count_int_in_str(argv[i++], &count, b.buf))
+		if (count_int_in_str(argv[i++], &count, b.buf) == ERROR)
 			return (ERROR);
 	}
 	if (count > 1)
 	{
-		if (!rank_values(count, b.buf, a.buf))
+		if (rank_values(count, b.buf, a.buf) == ERROR)
 			return (ERROR);
 		cbuf_info(&a, &b, count);
-		if (!soln_init(&x, 10, 10000))
+		if (soln_init(&x, 10, 10000) == ERROR)
 			return (ERROR);
 	}
 	printf("\n values: \n");
