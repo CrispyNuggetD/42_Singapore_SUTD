@@ -24,7 +24,7 @@
 
 typedef struct s_cbuf
 {
-	int	buf[500];
+	int	buf[501];
 	int	capacity;
 	int	read_idx;
 	int	write_idx;

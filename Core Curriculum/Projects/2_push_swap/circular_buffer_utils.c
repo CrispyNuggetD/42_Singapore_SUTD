@@ -16,7 +16,7 @@ void	cbuf_info(cbuf *a, cbuf *b, int count)
 {
 	a->capacity = count + 1;
 	a->read_idx = 0;
-	a->write_idx = 0;
+	a->write_idx = count;
 	b->capacity = count + 1;
 	b->read_idx = 0;
 	b->write_idx = 0;	
