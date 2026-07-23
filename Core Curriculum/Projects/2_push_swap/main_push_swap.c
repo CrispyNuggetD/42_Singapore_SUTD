@@ -13,11 +13,13 @@
 #include "push_swap.h"
 //printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 
+/*
 int	free_and_error(void)
 {
 	ft_putendl_fd("Error", 2);
 	return (ERROR);
 }
+*/
 
 int	main(int argc, char **argv)
 {
