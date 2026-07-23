@@ -42,8 +42,9 @@ int	main(int argc, char **argv)
 		cbuf_info(&a, &b, count);
 	}
 	printf("\n values: \n");
-	debug_print_int_array(values, count);
+	debug_print_int_array(b.buf, count);
 	printf("\n ranks: \n");
-	debug_print_int_array(ranks, count);
+	debug_print_int_array(a.buf, count);
+	cbuf_print_stacks(&a, &b);
 	return (SUCCESS);
 }
