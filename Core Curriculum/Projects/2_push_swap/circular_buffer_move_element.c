@@ -32,17 +32,15 @@ int	cbuf_rotate(cbuf *stack)
 int	cbuf_rev_rotate(cbuf *stack)
 {
 	int	top_idx;
-	int	insert_idx;
 	int	cbuf_cap;
 
 	if (cbuf_len(stack) < 2)
 		return (SUCCESS);
 	top_idx = stack->read_idx;
-	insert_idx = stack->write_idx;
 	cbuf_cap = stack->capacity;
-	stack->buf[top_idx] = stack->buf[insert_idx];
-	stack->read_idx = (stack->read_idx - 1 + cbuf_cap) % cbuf_cap;
 	stack->write_idx = (stack->write_idx - 1 + cbuf_cap) % cbuf_cap;
+	stack->buf[top_idx] = stack->buf[write_idx];
+	stack->read_idx = (stack->read_idx - 1 + cbuf_cap) % cbuf_cap;
 	return (SUCCESS);
 }
 

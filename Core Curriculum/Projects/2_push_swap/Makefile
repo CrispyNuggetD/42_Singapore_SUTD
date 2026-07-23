@@ -18,7 +18,8 @@ SRCS		= main_push_swap.c \
 			  circular_buffer_move_element.c \
 			  circular_buffer_insert_remove.c \
 			  debug_tools.c \
-			  rank_values.c
+			  rank_values.c \
+			  solutions_struct_utils.c
 
 OBJS		= $(SRCS:.c=.o)
 
