@@ -42,7 +42,7 @@ int	cbuf_rev_rotate(cbuf *stack)
 	bottom_idx = (stack->write_idx - 1 + cbuf_cap) % cbuf_cap;
 	stack->buf[top_idx] = stack->buf[bottom_idx];
 	stack->read_idx = (stack->read_idx - 1 + cbuf_cap) % cbuf_cap;
-	stack->write_idx = bottom_idx
+	stack->write_idx = bottom_idx;
 	return (SUCCESS);
 }
 
