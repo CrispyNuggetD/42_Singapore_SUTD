@@ -47,11 +47,15 @@ int	main(int argc, char **argv)
 		return (ERROR);
 	if (solve(&x, &a, &b) == ERROR)
 		return (ERROR);
+	if (print_first_soln(&x) == ERROR)
+		return (ERROR);
+	/*
 	printf("\n values: \n");
 	debug_print_int_array(b.buf, count);
 	printf("\n ranks: \n");
 	debug_print_int_array(a.buf, count);
 	cbuf_print_stacks(&a, &b);
 	debug_print_soln(&x);
+	*/
 	return (SUCCESS);
 }
