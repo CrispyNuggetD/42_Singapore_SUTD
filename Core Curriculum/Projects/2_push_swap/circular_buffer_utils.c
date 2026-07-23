@@ -12,15 +12,15 @@
 
 #include "push_swap.h"
 
-int cbuf_init(cbuf *stack, int size)
+void	cbuf_info(cbuf *a, cbuf *b, int count)
 {
-	stack->buffer = malloc(sizeof(int) * (size + 1));
-	if (!stack->buffer)
-		return (ERROR);
-	stack->capacity = size;
-	stack->read_idx = 0;
-	stack->write_idx = 0;
-	return (SUCCESS);
+	a->capacity = count + 1;
+	a->read_idx = 0;
+	a->write_idx = 0;
+	b->capacity = count + 1;
+	b->read_idx = 0;
+	b->write_idx = 0;	
+	return ;
 }
 
 int	cbuf_len(cbuf *stack)
@@ -39,8 +39,12 @@ int	cbuf_is_full(cbuf *stack)
 	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
 }
 
-void	cbuf_free(cbuf *stack)
+int	cbuf_free(cbuf *a)
 {
-	free(stack->buffer);
-	stack->buffer = NULL;
+	if (a->buffer)
+	{
+		free(a->buffer);
+		a->buffer = NULL;
+	}
+	return (ERROR);
 }

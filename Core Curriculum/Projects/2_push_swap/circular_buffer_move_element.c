@@ -14,32 +14,46 @@
 
 int	cbuf_rotate(cbuf *stack)
 {
+	int	top_idx;
+	int	insert_idx;
+	int	cbuf_cap;
+	
 	if (cbuf_len(stack) < 2)
-		return (ERROR);
-	stack->read_idx = (stack->read_idx + 1) % stack->capacity;
-	stack->write_idx = (stack->write_idx + 1) % stack->capacity;
+		return (SUCCESS);
+	top_idx = stack->read_idx;
+	insert_idx = stack->write_idx;
+	cbuf_cap = stack->capacity;
+	stack->buffer[insert_idx] = stack->buffer[top_idx];
+	stack->read_idx = (stack->read_idx + 1) % cbuf_cap;
+	stack->write_idx = (stack->write_idx + 1) % cbuf_cap;
 	return (SUCCESS);
 }
 
 int	cbuf_rev_rotate(cbuf *stack)
 {
+	int	top_idx;
+	int	insert_idx;
+	int	cbuf_cap;
+
 	if (cbuf_len(stack) < 2)
-		return (ERROR);
-	stack->read_idx = (stack->read_idx - 1 + stack->capacity) \
-% stack->capacity;
-	stack->write_idx = (stack->write_idx - 1 + stack->capacity) \
-% stack->capacity;
+		return (SUCCESS);
+	top_idx = stack->read_idx;
+	insert_idx = stack->write_idx;
+	cbuf_cap = stack->capacity;
+	stack->buffer[top_idx] = stack->buffer[insert_idx];
+	stack->read_idx = (stack->read_idx - 1 + cbuf_cap) % cbuf_cap;
+	stack->write_idx = (stack->write_idx - 1 + cbuf_cap) % cbuf_cap;
 	return (SUCCESS);
 }
 
-int cbuf_swap_top(cbuf *stack)
+int	cbuf_swap_top(cbuf *stack)
 {
 	int	first_idx;
 	int	second_idx;
 	int	temp_storage;
 
 	if (cbuf_len(stack) < 2)
-		return (ERROR);
+		return (SKIP);
 	first_idx = stack->read_idx;
 	second_idx = (stack->read_idx + 1) % stack->capacity;
 	temp_storage = stack->buffer[first_idx];

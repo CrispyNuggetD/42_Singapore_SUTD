@@ -23,20 +23,24 @@ int	main(int argc, char **argv)
 {
 	int	i;
 	int	count;
-	int	values[500];
-	int	ranks[500];
-
+	cbuf	a;
+	cbuf	b;
+	
 	i = 1;
 	count = 0;
 	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{
-		if (count_int_in_str(argv[i++], &count, values) == ERROR)
+		if (count_int_in_str(argv[i++], &count, b.buf) == ERROR)
 			return (free_and_error());
 	}
-	if (count > 1 && rank_values(count, values, ranks) == ERROR)
-		return (free_and_error());
+	if (count > 1)
+	{
+		if (rank_values(count, b.buf, a.buf) == ERROR)
+			return (free_and_error());
+		cbuf_info(&a, &b, count);
+	}
 	printf("\n values: \n");
 	debug_print_int_array(values, count);
 	printf("\n ranks: \n");
