@@ -24,7 +24,7 @@
 
 typedef struct s_cbuf
 {
-	int	*buffer;
+	int	buf[500];
 	int	capacity;
 	int	read_idx;
 	int	write_idx;
@@ -63,7 +63,7 @@ int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
 
 /* cbuf core */
-int	cbuf_init(cbuf *stack, int size);
+void	cbuf_info(cbuf *a, cbuf *b, int count);
 int	cbuf_is_empty(cbuf *stack);
 int	cbuf_is_full(cbuf *stack);
 int	cbuf_len(cbuf *stack);
@@ -72,7 +72,8 @@ void	cbuf_free(cbuf *stack);
 /* cbuf operations */
 int	cbuf_push_top(cbuf *stack, int number);
 int	cbuf_push_bottom(cbuf *stack, int number);
-int	cbuf_pop_top(cbuf *stack, int *read_number);
+int	cbuf_pop_bottom(cbuf *stack, int *pop_number);
+int	cbuf_pop_top(cbuf *stack, int *pop_number);
 int	cbuf_swap_top(cbuf *stack);
 int	cbuf_rotate(cbuf *stack);
 int	cbuf_rev_rotate(cbuf *stack);
@@ -92,6 +93,7 @@ int	rrr(cbuf *a, cbuf *b);
 
 #endif
 #define SUCCESS				0
+#define SKIP				0
 #define ERROR				1
 #define ERR_INVALID_INPUT	2
 #define ERR_PARSE_INPUT		3
