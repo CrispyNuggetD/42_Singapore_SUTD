@@ -42,7 +42,7 @@ void	cbuf_print(cbuf *stack, char name)
 	while (offset < length)
 	{
 		index = (stack->read_idx + offset) % stack->capacity;
-		ft_putnbr_fd(stack->buffer[index], 2);
+		ft_putnbr_fd(stack->buf[index], 2);
 		if (offset + 1 < length)
 			ft_putchar_fd(' ', 2);
 		offset++;
