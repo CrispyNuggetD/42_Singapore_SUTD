@@ -32,7 +32,7 @@ typedef struct s_cbuf
 
 typedef struct s_soln
 {
-	int	**ans;
+	char	**ans;
 	int *ans_len;
 }	soln;
 
