@@ -14,20 +14,21 @@
 
 // 20260723(Thu)13:34:11+08:00
 
-void	append(soln *x, char the_move)
+void	append(soln *x, char move)
 {
-	current_solution = x->cur;
-	x->ans[current_solution][x->step++] = the_move;
-	return ;
+	x->ans[x->cur][x->step] = move;
+	x->step++;
+	// x->ans_len[x->cur] = x->step;
 }
 
 int	soln_init(soln *x, const int soln_num, const int steps_limit)
 {
 	int	cur_soln;
 
-	x->i = 0;
 	x->cur = 0;
-	x->ans = malloc(sizeof(char *) * (soln_num));
+	x->step = 0;
+	x->ans_len = malloc(sizeof(int) * soln_num);
+	x->ans = malloc(sizeof(char *)	 * soln_num);
 	if (!x->ans)
 		return (ERROR);
 	cur_soln = (int)soln_num;
@@ -55,13 +56,13 @@ int	larger_top(soln *x, cbuf *a)
 
 int get_order_top_three(soln *x, cbuf *a)
 {
-	int	top_idx;
+	int	first_idx;
 	int	second_idx;
 	int	third_idx;
 
-	top_idx = a->read_idx;
-	second_idx = (stack->read_idx + 1) % a->capacity;
-	third_idx = (stack->read_idx + 2) % a->capacity;
+	first_idx = a->read_idx;
+	second_idx = (a->read_idx + 1) % a->capacity;
+	third_idx = (a->read_idx + 2) % a->capacity;
 	if (a->buf[top_idx] > a->buf[second_idx])
 	{
 		if (a->buf[second_idx] > a->buf[third_idx])

@@ -1,15 +1,21 @@
 #include "push_swap.h"
 
-
 static int	hardcode_check(soln *x, cbuf *a, cbuf *b)
 {
+	int	a_size;
+	int	pattern;
+
 	(void)b;
 	a_size = cbuf_len(a);
 	if (a_size == 3)
 	{
 		pattern = get_order_top_three(x, a);
 		if (pattern == 321)
-			return (sa(x, a) | rra(x, a));
+		{
+			if (sa(x, a) == ERROR)
+				return (ERROR);
+			return (rra(x, a));
+		}
 		else if (pattern == 312)
 			return (ra(x, a));
 		else if (pattern == 231)
@@ -17,7 +23,12 @@ static int	hardcode_check(soln *x, cbuf *a, cbuf *b)
 		else if (pattern == 213)
 			return (sa(x, a));
 		else if (pattern == 132)
-			return (sa(x, a) | ra(x, a));
+		{
+			if (sa(x, a) == ERROR)
+				return (ERROR);
+			return (ra(x, a));
+		}
+	}
 	return (SUCCESS);
 }
 

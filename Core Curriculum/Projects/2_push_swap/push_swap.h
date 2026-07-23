@@ -86,7 +86,7 @@ int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
 
 /* solutions */
-void	append(soln *x, const int soln_num, char move);
+void	append(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
 int	larger_top(soln *x, cbuf *a);
 int	solve(soln *x, cbuf *a, cbuf *b);
@@ -108,16 +108,16 @@ int	cbuf_rotate(cbuf *stack);
 int	cbuf_rev_rotate(cbuf *stack);
 
 /* push_swap operations */
-int	sa(cbuf *a);
-int	sb(cbuf *b);
-int	ss(cbuf *a, cbuf *b);
-int	pa(cbuf *a, cbuf *b);
-int	pb(cbuf *a, cbuf *b);
-int	ra(cbuf *a);
-int	rb(cbuf *b);
-int	rr(cbuf *a, cbuf *b);
-int	rra(cbuf *a);
-int	rrb(cbuf *b);
-int	rrr(cbuf *a, cbuf *b);
+int	sa(soln *x, cbuf *a);
+int	sb(soln *x, cbuf *b);
+int	ss(soln *x, cbuf *a, cbuf *b);
+int	pa(soln *x, cbuf *a, cbuf *b);
+int	pb(soln *x, cbuf *a, cbuf *b);
+int	ra(soln *x, cbuf *a);
+int	rb(soln *x, cbuf *b);
+int	rr(soln *x, cbuf *a, cbuf *b);
+int	rra(soln *x, cbuf *a);
+int	rrb(soln *x, cbuf *b);
+int	rrr(soln *x, cbuf *a, cbuf *b);
 
 #endif
