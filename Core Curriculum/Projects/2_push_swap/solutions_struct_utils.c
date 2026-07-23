@@ -12,29 +12,26 @@
 
 #include "push_swap.h"
 
-void	cbuf_info(cbuf *a, cbuf *b, int count)
-{
-	a->capacity = count + 1;
-	a->read_idx = 0;
-	a->write_idx = count;
-	b->capacity = count + 1;
-	b->read_idx = 0;
-	b->write_idx = 0;	
-	return ;
-}
+// 20260723(Thu)13:34:11+08:00
 
-int	cbuf_len(cbuf *stack)
+int	soln_init(soln *x, const int soln_num, const int steps_limit)
 {
-	return ((stack->write_idx - stack->read_idx + stack->capacity) \
-% stack->capacity);
-}
+	int	cur_soln;
 
-int	cbuf_is_empty(cbuf *stack)
-{
-	return (stack->read_idx == stack->write_idx);
-}
-
-int	cbuf_is_full(cbuf *stack)
-{
-	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
+	x->ans = malloc(sizeof(char *) * (soln_num));
+	if (!x->ans)
+		return (ERROR);
+	cur_soln = (int)soln_num;
+	while (cur_soln-- > 0)
+	{
+		x->ans[cur_soln] = malloc(sizeof(char) * steps_limit);
+		if (!x->ans[cur_soln])
+		{
+			while (++cur_soln < soln_num)
+				free(x->ans[cur_soln]);
+			free(x->ans);
+			return (ERROR);
+		}
+	}
+	return (SUCCESS);
 }

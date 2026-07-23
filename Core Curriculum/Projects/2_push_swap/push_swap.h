@@ -30,12 +30,11 @@ typedef struct s_cbuf
 	int	write_idx;
 }	cbuf;
 
-typedef struct s_input
+typedef struct s_soln
 {
-	int	**sorted_input;
-	int input_len;
-}	input;
-
+	int	**ans;
+	int *ans_len;
+}	soln;
 
 # define FLAG_MINUS 1
 # define FLAG_ZERO  2
@@ -63,6 +62,10 @@ void	cbuf_print_stacks(cbuf *a, cbuf *b);
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
+
+/* solutions */
+int	soln_init(soln *x, const int soln_num, const int steps_limit);
+
 
 /* cbuf core */
 void	cbuf_info(cbuf *a, cbuf *b, int count);

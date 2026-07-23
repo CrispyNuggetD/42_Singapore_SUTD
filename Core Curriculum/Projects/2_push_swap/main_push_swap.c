@@ -25,21 +25,24 @@ int	main(int argc, char **argv)
 	int	count;
 	cbuf	a;
 	cbuf	b;
-	
+	soln	x;
+
 	i = 1;
 	count = 0;
 	if (argc == 1 || argc + 1 > 500)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{
-		if (count_int_in_str(argv[i++], &count, b.buf) == ERROR)
-			return (free_and_error());
+		if (!count_int_in_str(argv[i++], &count, b.buf))
+			return (ERROR);
 	}
 	if (count > 1)
 	{
-		if (rank_values(count, b.buf, a.buf) == ERROR)
-			return (free_and_error());
+		if (!rank_values(count, b.buf, a.buf))
+			return (ERROR);
 		cbuf_info(&a, &b, count);
+		if (!soln_init(&x, 10, 10000))
+			return (ERROR);
 	}
 	printf("\n values: \n");
 	debug_print_int_array(b.buf, count);
