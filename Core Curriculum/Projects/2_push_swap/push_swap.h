@@ -34,6 +34,8 @@ typedef struct s_soln
 {
 	char	**ans;
 	int *ans_len;
+	int cur;
+	int step;
 }	soln;
 
 # define FLAG_MINUS 1
@@ -42,6 +44,16 @@ typedef struct s_soln
 # define FLAG_HASH  8
 # define FLAG_SPACE 16
 # define FLAG_PLUS  32
+
+# define SUCCESS				0
+# define SKIP				0
+# define ERROR				1
+# define ERR_INVALID_INPUT	2
+# define ERR_PARSE_INPUT		3
+# define ERR_SORT_INPUT		4
+
+# define SA '1'
+# define SB '2'
 
 /* typedef enum e_length
 {
@@ -64,8 +76,10 @@ int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
 
 /* solutions */
+void	append(soln *x, const int soln_num, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
-
+int	larger_top(soln *x, cbuf *a);
+int	solve(soln *x, cbuf *a, cbuf *b);
 
 /* cbuf core */
 void	cbuf_info(cbuf *a, cbuf *b, int count);
@@ -97,9 +111,3 @@ int	rrb(cbuf *b);
 int	rrr(cbuf *a, cbuf *b);
 
 #endif
-#define SUCCESS				0
-#define SKIP				0
-#define ERROR				1
-#define ERR_INVALID_INPUT	2
-#define ERR_PARSE_INPUT		3
-#define ERR_SORT_INPUT		4
