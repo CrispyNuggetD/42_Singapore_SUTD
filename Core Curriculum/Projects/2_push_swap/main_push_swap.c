@@ -36,18 +36,20 @@ int	main(int argc, char **argv)
 		if (count_int_in_str(argv[i++], &count, b.buf) == ERROR)
 			return (ERROR);
 	}
-	if (count > 1)
-	{
-		if (rank_values(count, b.buf, a.buf) == ERROR)
-			return (ERROR);
-		cbuf_info(&a, &b, count);
-		if (soln_init(&x, 10, 10000) == ERROR)
-			return (ERROR);
-	}
+	if (count < 2)
+		return (ERROR);
+	if (rank_values(count, b.buf, a.buf) == ERROR)
+		return (ERROR);
+	cbuf_info(&a, &b, count);
+	if (soln_init(&x, 10, 10000) == ERROR)
+		return (ERROR);
+	if (solve(&x, &a, &b) == ERROR)
+		return (ERROR);
 	printf("\n values: \n");
 	debug_print_int_array(b.buf, count);
 	printf("\n ranks: \n");
 	debug_print_int_array(a.buf, count);
 	cbuf_print_stacks(&a, &b);
+	debug_print_soln(&x);
 	return (SUCCESS);
 }
