@@ -9,7 +9,7 @@ static int	hardcode_check(soln *x, cbuf *a, cbuf *b)
 	a_size = cbuf_len(a);
 	if (a_size == 3)
 	{
-		pattern = get_order_top_three(x, a);
+		pattern = get_order_top_three(a);
 		if (pattern == 321)
 		{
 			if (sa(x, a) == ERROR)
