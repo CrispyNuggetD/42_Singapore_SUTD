@@ -39,12 +39,14 @@ int	cbuf_is_full(cbuf *stack)
 	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
 }
 
+/*
 int	cbuf_free(cbuf *a)
 {
-	if (a->buffer)
+	if (a->buf)
 	{
-		free(a->buffer);
-		a->buffer = NULL;
+		free(a->buf);
+		a->buf = NULL;
 	}
 	return (ERROR);
 }
+*/

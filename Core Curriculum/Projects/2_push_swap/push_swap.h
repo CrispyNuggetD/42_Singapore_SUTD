@@ -69,7 +69,7 @@ void	cbuf_info(cbuf *a, cbuf *b, int count);
 int	cbuf_is_empty(cbuf *stack);
 int	cbuf_is_full(cbuf *stack);
 int	cbuf_len(cbuf *stack);
-void	cbuf_free(cbuf *stack);
+// int	cbuf_free(cbuf *stack);
 
 /* cbuf operations */
 int	cbuf_push_top(cbuf *stack, int number);
