@@ -1,16 +1,16 @@
 #include "push_swap.h"
 
-int	ra(cbuf *a)
+int	ra(soln *x, cbuf *a)
 {
 	return (cbuf_rotate(a));
 }
 
-int	rb(cbuf *b)
+int	rb(soln *x, cbuf *b)
 {
 	return (cbuf_rotate(b));
 }
 
-int	rr(cbuf *a, cbuf *b)
+int	rr(soln *x, cbuf *a, cbuf *b)
 {
 	return (ra(a) | rb(b));
 }

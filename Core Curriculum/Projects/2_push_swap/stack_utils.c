@@ -14,10 +14,19 @@
 
 // 20260723(Thu)13:34:11+08:00
 
+void	append(soln *x, char the_move)
+{
+	current_solution = x->cur;
+	x->ans[current_solution][x->step++] = the_move;
+	return ;
+}
+
 int	soln_init(soln *x, const int soln_num, const int steps_limit)
 {
 	int	cur_soln;
 
+	x->i = 0;
+	x->cur = 0;
 	x->ans = malloc(sizeof(char *) * (soln_num));
 	if (!x->ans)
 		return (ERROR);
@@ -34,4 +43,40 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 		}
 	}
 	return (SUCCESS);
+}
+
+int	larger_top(soln *x, cbuf *a)
+{
+	int	top_idx;
+
+	top_idx = a->read_idx;
+	return (a->buf[top_idx] > a->buf[top_idx + 1]);
+}
+
+int get_order_top_three(soln *x, cbuf *a)
+{
+	int	top_idx;
+	int	second_idx;
+	int	third_idx;
+
+	top_idx = a->read_idx;
+	second_idx = (stack->read_idx + 1) % a->capacity;
+	third_idx = (stack->read_idx + 2) % a->capacity;
+	if (a->buf[top_idx] > a->buf[second_idx])
+	{
+		if (a->buf[second_idx] > a->buf[third_idx])
+			return (321);
+		else if (a->buf[third_idx] > a->buf[first_idx])
+			return (213);
+		else
+			return (312);
+	}
+	else
+	{
+		if (a->buf[third_idx] > a->buf[second_idx])
+			return (123);
+		else if (a->buf[first_idx] > a->buf[third_idx])
+			return (231);
+	}
+	return (132);
 }

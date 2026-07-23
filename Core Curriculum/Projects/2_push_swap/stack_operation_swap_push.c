@@ -1,21 +1,22 @@
 #include "push_swap.h"
 
-int	sa(cbuf *a)
+int	sa(soln *x, cbuf *a)
 {
+	append(x, SA);
 	return (cbuf_swap_top(a));
 }
 
-int	sb(cbuf *b)
+int	sb(soln *x, cbuf *b)
 {
 	return (cbuf_swap_top(b));
 }
 
-int	ss(cbuf *a, cbuf *b)
+int	ss(soln *x, cbuf *a, cbuf *b)
 {
 	return (sa(a) | sb(b));
 }
 
-int	pa(cbuf *a, cbuf *b)
+int	pa(soln *x, cbuf *a, cbuf *b)
 {
 	int read_number;
 	
@@ -24,7 +25,7 @@ int	pa(cbuf *a, cbuf *b)
 	return (cbuf_push_top(a, read_number));
 }
 
-int	pb(cbuf *a, cbuf *b)
+int	pb(soln *x, cbuf *a, cbuf *b)
 {
 	int read_number;
 	
