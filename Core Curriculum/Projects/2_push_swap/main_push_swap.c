@@ -41,7 +41,7 @@ int	main(int argc, char **argv)
 	if (rank_values(count, b.buf, a.buf) == ERROR)
 		return (free_and_error());
 	cbuf_info(&a, &b, count);
-	if (soln_init(&x, 10, 10000) == ERROR)
+	if (soln_init(&x, 10, BUBBLE_SORT_MAX_500) == ERROR)
 		return (free_and_error());
 	if (solve(&x, &a, &b) == ERROR)
 		return (free_and_error());
