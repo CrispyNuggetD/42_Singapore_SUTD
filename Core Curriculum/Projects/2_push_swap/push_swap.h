@@ -52,6 +52,8 @@ typedef struct s_soln
 # define ERR_PARSE_INPUT		3
 # define ERR_SORT_INPUT		4
 
+# define BUBBLE_SORT_MAX_500	249500
+
 # define SA		'1'
 # define SB		'2'
 # define SS		'3'
