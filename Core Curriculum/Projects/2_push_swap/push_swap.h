@@ -6,21 +6,16 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 18:12:44 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/12 23:31:25 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PUSH_SWAP_H
 # define PUSH_SWAP_H
 
-#include <stdarg.h>
-#include "libft/0_libft/libft.h"
-#include <limits.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <limits.h>
-#include <math.h>
+# include "libft/0_libft/libft.h"
+# include <stdio.h>
+# include <unistd.h>
 
 typedef struct s_cbuf
 {
@@ -33,9 +28,9 @@ typedef struct s_cbuf
 typedef struct s_soln
 {
 	char	**ans;
-	int *ans_len;
-	int cur;
-	int step;
+	int		*ans_len;
+	int		cur;
+	int		step;
 }	soln;
 
 typedef struct s_brutestate
@@ -104,9 +99,33 @@ int	rank_values(const int count, const int *values, int *ranks);
 /* solutions */
 void	append(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
-// int	larger_top(soln *x, cbuf *a);
 int	get_order_top_three(cbuf *a);
-int	solve(soln *x, cbuf *a, cbuf *b);
+int	solve(soln *x, cbuf *a, cbuf *b, int count);
+
+/* bfs solver */
+int	brute_solve(soln *x, cbuf *a, cbuf *b);
+int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
+		int total, int n);
+int	is_brute_goal(t_brutestate *state, int n);
+void	brute_apply_move(t_brutestate *state, char move, int n);
+
+/* bfs operations */
+void	brute_sa(t_brutestate *state);
+void	brute_sb(t_brutestate *state, int n);
+void	brute_ss(t_brutestate *state, int n);
+void	brute_pa(t_brutestate *state, int n);
+void	brute_pb(t_brutestate *state);
+void	brute_ra(t_brutestate *state);
+void	brute_rb(t_brutestate *state, int n);
+void	brute_rr(t_brutestate *state, int n);
+void	brute_rra(t_brutestate *state);
+void	brute_rrb(t_brutestate *state, int n);
+void	brute_rrr(t_brutestate *state, int n);
+
+/* bfs helpers */
+void	brute_swap_at(t_brutestate *state, int a, int b);
+void	brute_rotate_left(t_brutestate *state, int start, int end);
+void	brute_rotate_right(t_brutestate *state, int start, int end);
 
 /* cbuf core */
 void	cbuf_info(cbuf *a, cbuf *b, int count);

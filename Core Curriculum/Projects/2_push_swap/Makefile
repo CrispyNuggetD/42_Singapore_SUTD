@@ -20,7 +20,13 @@ SRCS		= main_push_swap.c \
 			  debug_tools.c \
 			  rank_values.c \
 			  stack_utils.c \
-			  solve.c
+			  solve.c \
+			  bfs.c \
+			  bfs_utils.c \
+			  bfs_verify_node.c \
+			  bfs_operations_swap_push.c \
+			  bfs_operations_rotate.c \
+			  bfs_operations_reverse_rotate.c
 
 OBJS		= $(SRCS:.c=.o)
 
