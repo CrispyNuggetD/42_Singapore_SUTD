@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/07/08 18:17:05 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/12 18:12:44 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,19 @@ typedef struct s_soln
 	int cur;
 	int step;
 }	soln;
+
+typedef struct s_brutestate
+{
+	int	value[7];
+	int	split;
+}	t_brutestate;
+
+typedef struct s_brutenode
+{
+	t_brutestate	state;
+	int				parent;
+	int				move;
+}	t_brutenode;
 
 # define FLAG_MINUS 1
 # define FLAG_ZERO  2
