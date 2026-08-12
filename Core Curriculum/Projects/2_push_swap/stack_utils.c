@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   circular_buffer_utils.c                            :+:      :+:    :+:   */
+/*   stack_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/23 13:46:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/12 23:46:11 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 	x->cur = 0;
 	x->step = 0;
 	x->ans_len = malloc(sizeof(int) * soln_num);
-	x->ans = malloc(sizeof(char *)	 * soln_num);
+	x->ans = malloc(sizeof(char *) * soln_num);
 	if (!x->ans)
 		return (ERROR);
 	cur_soln = (int)soln_num;

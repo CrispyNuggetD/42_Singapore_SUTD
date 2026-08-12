@@ -13,7 +13,7 @@
 #include "push_swap.h"
 //printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 
-int	free_and_error(void)
+static int	free_and_error(void)
 {
 	ft_putendl_fd("Error", STDERR_FILENO);
 	return (ERROR);
@@ -43,7 +43,7 @@ int	main(int argc, char **argv)
 	cbuf_info(&a, &b, count);
 	if (soln_init(&x, 10, BUBBLE_SORT_MAX_500) == ERROR)
 		return (free_and_error());
-	if (solve(&x, &a, &b) == ERROR)
+	if (solve(&x, &a, &b, count) == ERROR)
 		return (free_and_error());
 	if (print_first_soln(&x) == ERROR)
 		return (free_and_error());
