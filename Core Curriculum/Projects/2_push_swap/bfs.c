@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 20:17:56 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 20:39:56 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,11 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			total;
 	int			move_to_try;
 	int			state_id;
-	int			visited[40320] = {0};
+	int			visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
 	char		moves[11] = {SA, SB, SS, PA, PB, RA, RB, RR, RRA, RRB, RRR};
 
 	n = cbuf_len(a) + cbuf_len(b);
-	if (n > 7)
+	if (n > BRUTE_MAX_N)
 		return (ERROR);
 	gen_brute_state(&nodes[0].state, a, b);
 	visited[calculate_state_id(&nodes[0].state, n)] = 1;
@@ -119,7 +119,7 @@ static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 
 int	brute_solve(soln *x, cbuf *a, cbuf *b)
 {
-	t_brutenode	nodes[40320];
+	t_brutenode	nodes[BRUTE_TOTAL_N_PLUS_1_FACTORIAL];
 	int			goal;
 
 	goal = bfs_find_goal(nodes, a, b);
