@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 19:14:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 19:47:31 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 20:12:03 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,27 +43,7 @@ static int	calculate_lehmer_rank(t_brutestate *state, int n)
 	}
 	return (rank);
 }
-
-static int	same_state_id(t_brutestate *a, t_brutestate *b, int n)
+int	calculate_state_id(t_brutestate *a, int n)
 {
-	int	state_id_a;
-	int	state_id_b;
-
-	state_id_a = a->split * factorial(n) + calculate_lehmer_rank(a, n);
-	state_id_b = b->split * factorial(n) + calculate_lehmer_rank(b, n);
-	return (state_id_a == state_id_b);
-}
-
-int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
-{
-	int	j;
-
-	j = 0;
-	while (j < total)
-	{
-		if (same_state_id(temp, &nodes[j].state, n))
-			return (1);
-		j++;
-	}
-	return (0);
+	return (a->split * factorial(n) + calculate_lehmer_rank(a, n));
 }
