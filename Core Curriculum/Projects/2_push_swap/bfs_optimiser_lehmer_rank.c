@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 19:14:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 19:43:42 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 19:47:31 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static int	factorial(int n)
 	return (n * factorial(n - 1));
 }
 
-int	calculate_lehmer_rank(t_brutestate *state, int n)
+static int	calculate_lehmer_rank(t_brutestate *state, int n)
 {
 	int	rank;
 	int	i;
