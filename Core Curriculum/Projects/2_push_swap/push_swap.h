@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 20:11:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 20:37:11 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ typedef struct s_brutenode
 # define ERR_SORT_INPUT		4
 
 # define BUBBLE_SORT_MAX_500	249500
+# define BRUTE_MAX_N			8
+# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	362880
 
 # define SA		'1'
 # define SB		'2'
@@ -90,7 +92,7 @@ void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(cbuf *stack, char name);
 void	cbuf_print_stacks(cbuf *a, cbuf *b);
 void	debug_print_soln(const soln *x);
-int	print_first_soln(const soln *x);
+int		print_first_soln(const soln *x);
 
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
