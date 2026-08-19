@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 23:48:16 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 20:11:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,8 @@ void	brute_rrr(t_brutestate *state, int n);
 void	brute_swap_at(t_brutestate *state, int a, int b);
 void	brute_rotate_left(t_brutestate *state, int start, int end);
 void	brute_rotate_right(t_brutestate *state, int start, int end);
+int		calculate_state_id(t_brutestate *a, int n);
+
 
 /* cbuf core */
 void	cbuf_info(cbuf *a, cbuf *b, int count);

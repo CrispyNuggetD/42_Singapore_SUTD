@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 19:22:53 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 20:17:56 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,15 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			i;
 	int			total;
 	int			move_to_try;
+	int			state_id;
+	int			visited[40320] = {0};
 	char		moves[11] = {SA, SB, SS, PA, PB, RA, RB, RR, RRA, RRB, RRR};
 
 	n = cbuf_len(a) + cbuf_len(b);
 	if (n > 7)
 		return (ERROR);
 	gen_brute_state(&nodes[0].state, a, b);
+	visited[calculate_state_id(&nodes[0].state, n)] = 1;
 	nodes[0].parent = -1;
 	nodes[0].move = 0;
 	if (is_brute_goal(&nodes[0].state, n))
@@ -71,8 +74,10 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 		{
 			temp = nodes[i].state;
 			brute_apply_move(&temp, moves[move_to_try], n);
-			if (!brute_state_exists(&temp, nodes, total, n))
+			state_id = calculate_state_id(&temp, n);
+			if (!visited[state_id])
 			{
+				visited[state_id] = 1;
 				nodes[total].state = temp;
 				nodes[total].parent = i;
 				nodes[total].move = moves[move_to_try];
