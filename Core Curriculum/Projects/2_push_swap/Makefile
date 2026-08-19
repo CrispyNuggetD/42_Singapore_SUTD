@@ -26,7 +26,8 @@ SRCS		= main_push_swap.c \
 			  bfs_verify_node.c \
 			  bfs_operations_swap_push.c \
 			  bfs_operations_rotate.c \
-			  bfs_operations_reverse_rotate.c
+			  bfs_operations_reverse_rotate.c \
+			  bfs_optimiser_lehmer_rank.c \
 
 OBJS		= $(SRCS:.c=.o)
 

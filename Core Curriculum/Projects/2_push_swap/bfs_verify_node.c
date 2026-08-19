@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 23:15:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 19:22:46 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ static void	brute_apply_rotate(t_brutestate *state, char move, int n)
 		brute_rrr(state, n);
 }
 
+// old: same_brute_state() is now replaced by Lehmer rank optimised versions in bfs_optimiser_lehmer_rank.c
 static int	same_brute_state(t_brutestate *a, t_brutestate *b, int n)
 {
 	int	i;
@@ -62,7 +63,7 @@ static int	same_brute_state(t_brutestate *a, t_brutestate *b, int n)
 	return (1);
 }
 
-int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
+/* int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
 {
 	int	j;
 
@@ -74,7 +75,7 @@ int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
 		j++;
 	}
 	return (0);
-}
+} */
 
 int	is_brute_goal(t_brutestate *state, int n)
 {
