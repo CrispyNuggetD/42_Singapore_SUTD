@@ -1,0 +1,20 @@
+PUSH_SWAP BFS ANALYSIS
+======================
+
+n: 4
+permutations: 1
+
+SORT: BFS DISTANCE ASCENDING
+---------------------------------------------
+
+PERMUTATION | MOVES | SOLUTION
+------------+-------+-------------------------
+3 2 1 0 |     4 | 1661
+
+
+SORT: BFS DISTANCE DESCENDING
+---------------------------------------------
+
+PERMUTATION | MOVES | SOLUTION
+------------+-------+-------------------------
+3 2 1 0 |     4 | 1661
