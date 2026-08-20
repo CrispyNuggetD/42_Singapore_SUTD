@@ -1,0 +1,664 @@
+PUSH_SWAP REVERSE BFS - ALL SHORTEST PATHS
+==========================================
+
+n: 4
+initial permutations: 24
+complete graph states: 120
+states discovered: 120
+maximum optimal distance: 7
+generated: 2026-08-20 15:26:36
+
+PERMUTATION     | MOVES | # SOLUTIONS
+----------------+-------+------------
+0 1 2 3         |     0 |          1
+    1. 
+
+0 1 3 2         |     4 |          8
+    1. pb sa ra pa
+    2. pb sa rr pa
+    3. pb ss ra pa
+    4. pb ss rr pa
+    5. pb rra sa pa
+    6. pb rra ss pa
+    7. pb rrr sa pa
+    8. pb rrr ss pa
+
+0 2 1 3         |     3 |         10
+    1. pb sa pa
+    2. pb ss pa
+    3. ra sa rra
+    4. ra sa rrr
+    5. ra ss rra
+    6. ra ss rrr
+    7. rr sa rra
+    8. rr sa rrr
+    9. rr ss rra
+    10. rr ss rrr
+
+0 2 3 1         |     2 |          4
+    1. rra sa
+    2. rra ss
+    3. rrr sa
+    4. rrr ss
+
+0 3 1 2         |     2 |          4
+    1. sa ra
+    2. sa rr
+    3. ss ra
+    4. ss rr
+
+0 3 2 1         |     4 |          8
+    1. pb sa rra pa
+    2. pb sa rrr pa
+    3. pb ss rra pa
+    4. pb ss rrr pa
+    5. pb ra sa pa
+    6. pb ra ss pa
+    7. pb rr sa pa
+    8. pb rr ss pa
+
+1 0 2 3         |     1 |          2
+    1. sa
+    2. ss
+
+1 0 3 2         |     5 |         67
+    1. sa pb sa ra pa
+    2. sa pb sa rr pa
+    3. sa pb ss ra pa
+    4. sa pb ss rr pa
+    5. sa pb rra sa pa
+    6. sa pb rra ss pa
+    7. sa pb rrr sa pa
+    8. sa pb rrr ss pa
+    9. ss pb sa ra pa
+    10. ss pb sa rr pa
+    11. ss pb ss ra pa
+    12. ss pb ss rr pa
+    13. ss pb rra sa pa
+    14. ss pb rra ss pa
+    15. ss pb rrr sa pa
+    16. ss pb rrr ss pa
+    17. pb sa ra pa sa
+    18. pb sa ra pa ss
+    19. pb sa rr pa sa
+    20. pb sa rr pa ss
+    21. pb sa rra pa rra
+    22. pb sa rra pa rrr
+    23. pb sa rrr pa rra
+    24. pb sa rrr pa rrr
+    25. pb ss ra pa sa
+    26. pb ss ra pa ss
+    27. pb ss rr pa sa
+    28. pb ss rr pa ss
+    29. pb ss rra pa rra
+    30. pb ss rra pa rrr
+    31. pb ss rrr pa rra
+    32. pb ss rrr pa rrr
+    33. pb pb ss pa pa
+    34. pb pb rr pa pa
+    35. pb pb rrr pa pa
+    36. pb ra sa pa rra
+    37. pb ra sa pa rrr
+    38. pb ra ss pa rra
+    39. pb ra ss pa rrr
+    40. pb rr sa pa rra
+    41. pb rr sa pa rrr
+    42. pb rr ss pa rra
+    43. pb rr ss pa rrr
+    44. pb rra sa pa sa
+    45. pb rra sa pa ss
+    46. pb rra ss pa sa
+    47. pb rra ss pa ss
+    48. pb rrr sa pa sa
+    49. pb rrr sa pa ss
+    50. pb rrr ss pa sa
+    51. pb rrr ss pa ss
+    52. ra pb sa rra pa
+    53. ra pb sa rrr pa
+    54. ra pb ss rra pa
+    55. ra pb ss rrr pa
+    56. ra pb ra sa pa
+    57. ra pb ra ss pa
+    58. ra pb rr sa pa
+    59. ra pb rr ss pa
+    60. rr pb sa rra pa
+    61. rr pb sa rrr pa
+    62. rr pb ss rra pa
+    63. rr pb ss rrr pa
+    64. rr pb ra sa pa
+    65. rr pb ra ss pa
+    66. rr pb rr sa pa
+    67. rr pb rr ss pa
+
+1 2 0 3         |     4 |         52
+    1. pb sa pa sa
+    2. pb sa pa ss
+    3. pb ss pa sa
+    4. pb ss pa ss
+    5. ra sa rra sa
+    6. ra sa rra ss
+    7. ra sa rrr sa
+    8. ra sa rrr ss
+    9. ra ss rra sa
+    10. ra ss rra ss
+    11. ra ss rrr sa
+    12. ra ss rrr ss
+    13. ra ra sa ra
+    14. ra ra sa rr
+    15. ra ra ss ra
+    16. ra ra ss rr
+    17. ra rr sa ra
+    18. ra rr sa rr
+    19. ra rr ss ra
+    20. ra rr ss rr
+    21. rr sa rra sa
+    22. rr sa rra ss
+    23. rr sa rrr sa
+    24. rr sa rrr ss
+    25. rr ss rra sa
+    26. rr ss rra ss
+    27. rr ss rrr sa
+    28. rr ss rrr ss
+    29. rr ra sa ra
+    30. rr ra sa rr
+    31. rr ra ss ra
+    32. rr ra ss rr
+    33. rr rr sa ra
+    34. rr rr sa rr
+    35. rr rr ss ra
+    36. rr rr ss rr
+    37. rra rra sa ra
+    38. rra rra sa rr
+    39. rra rra ss ra
+    40. rra rra ss rr
+    41. rra rrr sa ra
+    42. rra rrr sa rr
+    43. rra rrr ss ra
+    44. rra rrr ss rr
+    45. rrr rra sa ra
+    46. rrr rra sa rr
+    47. rrr rra ss ra
+    48. rrr rra ss rr
+    49. rrr rrr sa ra
+    50. rrr rrr sa rr
+    51. rrr rrr ss ra
+    52. rrr rrr ss rr
+
+1 2 3 0         |     1 |          2
+    1. rra
+    2. rrr
+
+1 3 0 2         |     3 |         16
+    1. sa ra sa
+    2. sa ra ss
+    3. sa rr sa
+    4. sa rr ss
+    5. ss ra sa
+    6. ss ra ss
+    7. ss rr sa
+    8. ss rr ss
+    9. rra sa rra
+    10. rra sa rrr
+    11. rra ss rra
+    12. rra ss rrr
+    13. rrr sa rra
+    14. rrr sa rrr
+    15. rrr ss rra
+    16. rrr ss rrr
+
+1 3 2 0         |     4 |         52
+    1. sa rra sa ra
+    2. sa rra sa rr
+    3. sa rra ss ra
+    4. sa rra ss rr
+    5. sa rrr sa ra
+    6. sa rrr sa rr
+    7. sa rrr ss ra
+    8. sa rrr ss rr
+    9. ss rra sa ra
+    10. ss rra sa rr
+    11. ss rra ss ra
+    12. ss rra ss rr
+    13. ss rrr sa ra
+    14. ss rrr sa rr
+    15. ss rrr ss ra
+    16. ss rrr ss rr
+    17. pb sa pa rra
+    18. pb sa pa rrr
+    19. pb ss pa rra
+    20. pb ss pa rrr
+    21. ra sa ra ra
+    22. ra sa ra rr
+    23. ra sa rr ra
+    24. ra sa rr rr
+    25. ra sa rra rra
+    26. ra sa rra rrr
+    27. ra sa rrr rra
+    28. ra sa rrr rrr
+    29. ra ss ra ra
+    30. ra ss ra rr
+    31. ra ss rr ra
+    32. ra ss rr rr
+    33. ra ss rra rra
+    34. ra ss rra rrr
+    35. ra ss rrr rra
+    36. ra ss rrr rrr
+    37. rr sa ra ra
+    38. rr sa ra rr
+    39. rr sa rr ra
+    40. rr sa rr rr
+    41. rr sa rra rra
+    42. rr sa rra rrr
+    43. rr sa rrr rra
+    44. rr sa rrr rrr
+    45. rr ss ra ra
+    46. rr ss ra rr
+    47. rr ss rr ra
+    48. rr ss rr rr
+    49. rr ss rra rra
+    50. rr ss rra rrr
+    51. rr ss rrr rra
+    52. rr ss rrr rrr
+
+2 0 1 3         |     4 |         52
+    1. sa pb sa pa
+    2. sa pb ss pa
+    3. sa ra sa rra
+    4. sa ra sa rrr
+    5. sa ra ss rra
+    6. sa ra ss rrr
+    7. sa rr sa rra
+    8. sa rr sa rrr
+    9. sa rr ss rra
+    10. sa rr ss rrr
+    11. ss pb sa pa
+    12. ss pb ss pa
+    13. ss ra sa rra
+    14. ss ra sa rrr
+    15. ss ra ss rra
+    16. ss ra ss rrr
+    17. ss rr sa rra
+    18. ss rr sa rrr
+    19. ss rr ss rra
+    20. ss rr ss rrr
+    21. rra sa ra ra
+    22. rra sa ra rr
+    23. rra sa rr ra
+    24. rra sa rr rr
+    25. rra sa rra rra
+    26. rra sa rra rrr
+    27. rra sa rrr rra
+    28. rra sa rrr rrr
+    29. rra ss ra ra
+    30. rra ss ra rr
+    31. rra ss rr ra
+    32. rra ss rr rr
+    33. rra ss rra rra
+    34. rra ss rra rrr
+    35. rra ss rrr rra
+    36. rra ss rrr rrr
+    37. rrr sa ra ra
+    38. rrr sa ra rr
+    39. rrr sa rr ra
+    40. rrr sa rr rr
+    41. rrr sa rra rra
+    42. rrr sa rra rrr
+    43. rrr sa rrr rra
+    44. rrr sa rrr rrr
+    45. rrr ss ra ra
+    46. rrr ss ra rr
+    47. rrr ss rr ra
+    48. rrr ss rr rr
+    49. rrr ss rra rra
+    50. rrr ss rra rrr
+    51. rrr ss rrr rra
+    52. rrr ss rrr rrr
+
+2 0 3 1         |     3 |         16
+    1. sa rra sa
+    2. sa rra ss
+    3. sa rrr sa
+    4. sa rrr ss
+    5. ss rra sa
+    6. ss rra ss
+    7. ss rrr sa
+    8. ss rrr ss
+    9. ra sa ra
+    10. ra sa rr
+    11. ra ss ra
+    12. ra ss rr
+    13. rr sa ra
+    14. rr sa rr
+    15. rr ss ra
+    16. rr ss rr
+
+2 1 0 3         |     5 |        168
+    1. sa pb sa pa sa
+    2. sa pb sa pa ss
+    3. sa pb ss pa sa
+    4. sa pb ss pa ss
+    5. sa ra sa rra sa
+    6. sa ra sa rra ss
+    7. sa ra sa rrr sa
+    8. sa ra sa rrr ss
+    9. sa ra ss rra sa
+    10. sa ra ss rra ss
+    11. sa ra ss rrr sa
+    12. sa ra ss rrr ss
+    13. sa ra ra sa ra
+    14. sa ra ra sa rr
+    15. sa ra ra ss ra
+    16. sa ra ra ss rr
+    17. sa ra rr sa ra
+    18. sa ra rr sa rr
+    19. sa ra rr ss ra
+    20. sa ra rr ss rr
+    21. sa rr sa rra sa
+    22. sa rr sa rra ss
+    23. sa rr sa rrr sa
+    24. sa rr sa rrr ss
+    25. sa rr ss rra sa
+    26. sa rr ss rra ss
+    27. sa rr ss rrr sa
+    28. sa rr ss rrr ss
+    29. sa rr ra sa ra
+    30. sa rr ra sa rr
+    31. sa rr ra ss ra
+    32. sa rr ra ss rr
+    33. sa rr rr sa ra
+    34. sa rr rr sa rr
+    35. sa rr rr ss ra
+    36. sa rr rr ss rr
+    37. sa rra rra sa ra
+    38. sa rra rra sa rr
+    39. sa rra rra ss ra
+    40. sa rra rra ss rr
+    41. sa rra rrr sa ra
+    42. sa rra rrr sa rr
+    43. sa rra rrr ss ra
+    44. sa rra rrr ss rr
+    45. sa rrr rra sa ra
+    46. sa rrr rra sa rr
+    47. sa rrr rra ss ra
+    48. sa rrr rra ss rr
+    49. sa rrr rrr sa ra
+    50. sa rrr rrr sa rr
+    51. sa rrr rrr ss ra
+    52. sa rrr rrr ss rr
+    53. ss pb sa pa sa
+    54. ss pb sa pa ss
+    55. ss pb ss pa sa
+    56. ss pb ss pa ss
+    57. ss ra sa rra sa
+    58. ss ra sa rra ss
+    59. ss ra sa rrr sa
+    60. ss ra sa rrr ss
+    61. ss ra ss rra sa
+    62. ss ra ss rra ss
+    63. ss ra ss rrr sa
+    64. ss ra ss rrr ss
+    65. ss ra ra sa ra
+    66. ss ra ra sa rr
+    67. ss ra ra ss ra
+    68. ss ra ra ss rr
+    69. ss ra rr sa ra
+    70. ss ra rr sa rr
+    71. ss ra rr ss ra
+    72. ss ra rr ss rr
+    73. ss rr sa rra sa
+    74. ss rr sa rra ss
+    75. ss rr sa rrr sa
+    76. ss rr sa rrr ss
+    77. ss rr ss rra sa
+    78. ss rr ss rra ss
+    79. ss rr ss rrr sa
+    80. ss rr ss rrr ss
+    81. ss rr ra sa ra
+    82. ss rr ra sa rr
+    83. ss rr ra ss ra
+    84. ss rr ra ss rr
+    85. ss rr rr sa ra
+    86. ss rr rr sa rr
+    87. ss rr rr ss ra
+    88. ss rr rr ss rr
+    89. ss rra rra sa ra
+    90. ss rra rra sa rr
+    91. ss rra rra ss ra
+    92. ss rra rra ss rr
+    93. ss rra rrr sa ra
+    94. ss rra rrr sa rr
+    95. ss rra rrr ss ra
+    96. ss rra rrr ss rr
+    97. ss rrr rra sa ra
+    98. ss rrr rra sa rr
+    99. ss rrr rra ss ra
+    100. ss rrr rra ss rr
+    101. ss rrr rrr sa ra
+    102. ss rrr rrr sa rr
+    103. ss rrr rrr ss ra
+    104. ss rrr rrr ss rr
+    105. rra sa ra ra sa
+    106. rra sa ra ra ss
+    107. rra sa ra rr sa
+    108. rra sa ra rr ss
+    109. rra sa rr ra sa
+    110. rra sa rr ra ss
+    111. rra sa rr rr sa
+    112. rra sa rr rr ss
+    113. rra sa rra rra sa
+    114. rra sa rra rra ss
+    115. rra sa rra rrr sa
+    116. rra sa rra rrr ss
+    117. rra sa rrr rra sa
+    118. rra sa rrr rra ss
+    119. rra sa rrr rrr sa
+    120. rra sa rrr rrr ss
+    121. rra ss ra ra sa
+    122. rra ss ra ra ss
+    123. rra ss ra rr sa
+    124. rra ss ra rr ss
+    125. rra ss rr ra sa
+    126. rra ss rr ra ss
+    127. rra ss rr rr sa
+    128. rra ss rr rr ss
+    129. rra ss rra rra sa
+    130. rra ss rra rra ss
+    131. rra ss rra rrr sa
+    132. rra ss rra rrr ss
+    133. rra ss rrr rra sa
+    134. rra ss rrr rra ss
+    135. rra ss rrr rrr sa
+    136. rra ss rrr rrr ss
+    137. rrr sa ra ra sa
+    138. rrr sa ra ra ss
+    139. rrr sa ra rr sa
+    140. rrr sa ra rr ss
+    141. rrr sa rr ra sa
+    142. rrr sa rr ra ss
+    143. rrr sa rr rr sa
+    144. rrr sa rr rr ss
+    145. rrr sa rra rra sa
+    146. rrr sa rra rra ss
+    147. rrr sa rra rrr sa
+    148. rrr sa rra rrr ss
+    149. rrr sa rrr rra sa
+    150. rrr sa rrr rra ss
+    151. rrr sa rrr rrr sa
+    152. rrr sa rrr rrr ss
+    153. rrr ss ra ra sa
+    154. rrr ss ra ra ss
+    155. rrr ss ra rr sa
+    156. rrr ss ra rr ss
+    157. rrr ss rr ra sa
+    158. rrr ss rr ra ss
+    159. rrr ss rr rr sa
+    160. rrr ss rr rr ss
+    161. rrr ss rra rra sa
+    162. rrr ss rra rra ss
+    163. rrr ss rra rrr sa
+    164. rrr ss rra rrr ss
+    165. rrr ss rrr rra sa
+    166. rrr ss rrr rra ss
+    167. rrr ss rrr rrr sa
+    168. rrr ss rrr rrr ss
+
+2 1 3 0         |     2 |          4
+    1. sa rra
+    2. sa rrr
+    3. ss rra
+    4. ss rrr
+
+2 3 0 1         |     2 |          8
+    1. ra ra
+    2. ra rr
+    3. rr ra
+    4. rr rr
+    5. rra rra
+    6. rra rrr
+    7. rrr rra
+    8. rrr rrr
+
+2 3 1 0         |     3 |         16
+    1. ra ra sa
+    2. ra ra ss
+    3. ra rr sa
+    4. ra rr ss
+    5. rr ra sa
+    6. rr ra ss
+    7. rr rr sa
+    8. rr rr ss
+    9. rra rra sa
+    10. rra rra ss
+    11. rra rrr sa
+    12. rra rrr ss
+    13. rrr rra sa
+    14. rrr rra ss
+    15. rrr rrr sa
+    16. rrr rrr ss
+
+3 0 1 2         |     1 |          2
+    1. ra
+    2. rr
+
+3 0 2 1         |     4 |         52
+    1. ra pb sa pa
+    2. ra pb ss pa
+    3. ra ra sa rra
+    4. ra ra sa rrr
+    5. ra ra ss rra
+    6. ra ra ss rrr
+    7. ra rr sa rra
+    8. ra rr sa rrr
+    9. ra rr ss rra
+    10. ra rr ss rrr
+    11. rr pb sa pa
+    12. rr pb ss pa
+    13. rr ra sa rra
+    14. rr ra sa rrr
+    15. rr ra ss rra
+    16. rr ra ss rrr
+    17. rr rr sa rra
+    18. rr rr sa rrr
+    19. rr rr ss rra
+    20. rr rr ss rrr
+    21. rra sa ra sa
+    22. rra sa ra ss
+    23. rra sa rr sa
+    24. rra sa rr ss
+    25. rra ss ra sa
+    26. rra ss ra ss
+    27. rra ss rr sa
+    28. rra ss rr ss
+    29. rra rra sa rra
+    30. rra rra sa rrr
+    31. rra rra ss rra
+    32. rra rra ss rrr
+    33. rra rrr sa rra
+    34. rra rrr sa rrr
+    35. rra rrr ss rra
+    36. rra rrr ss rrr
+    37. rrr sa ra sa
+    38. rrr sa ra ss
+    39. rrr sa rr sa
+    40. rrr sa rr ss
+    41. rrr ss ra sa
+    42. rrr ss ra ss
+    43. rrr ss rr sa
+    44. rrr ss rr ss
+    45. rrr rra sa rra
+    46. rrr rra sa rrr
+    47. rrr rra ss rra
+    48. rrr rra ss rrr
+    49. rrr rrr sa rra
+    50. rrr rrr sa rrr
+    51. rrr rrr ss rra
+    52. rrr rrr ss rrr
+
+3 1 0 2         |     2 |          4
+    1. ra sa
+    2. ra ss
+    3. rr sa
+    4. rr ss
+
+3 1 2 0         |     3 |          8
+    1. rra sa ra
+    2. rra sa rr
+    3. rra ss ra
+    4. rra ss rr
+    5. rrr sa ra
+    6. rrr sa rr
+    7. rrr ss ra
+    8. rrr ss rr
+
+3 2 0 1         |     3 |         16
+    1. sa ra ra
+    2. sa ra rr
+    3. sa rr ra
+    4. sa rr rr
+    5. sa rra rra
+    6. sa rra rrr
+    7. sa rrr rra
+    8. sa rrr rrr
+    9. ss ra ra
+    10. ss ra rr
+    11. ss rr ra
+    12. ss rr rr
+    13. ss rra rra
+    14. ss rra rrr
+    15. ss rrr rra
+    16. ss rrr rrr
+
+3 2 1 0         |     4 |         32
+    1. sa ra ra sa
+    2. sa ra ra ss
+    3. sa ra rr sa
+    4. sa ra rr ss
+    5. sa rr ra sa
+    6. sa rr ra ss
+    7. sa rr rr sa
+    8. sa rr rr ss
+    9. sa rra rra sa
+    10. sa rra rra ss
+    11. sa rra rrr sa
+    12. sa rra rrr ss
+    13. sa rrr rra sa
+    14. sa rrr rra ss
+    15. sa rrr rrr sa
+    16. sa rrr rrr ss
+    17. ss ra ra sa
+    18. ss ra ra ss
+    19. ss ra rr sa
+    20. ss ra rr ss
+    21. ss rr ra sa
+    22. ss rr ra ss
+    23. ss rr rr sa
+    24. ss rr rr ss
+    25. ss rra rra sa
+    26. ss rra rra ss
+    27. ss rra rrr sa
+    28. ss rra rrr ss
+    29. ss rrr rra sa
+    30. ss rrr rra ss
+    31. ss rrr rrr sa
+    32. ss rrr rrr ss
+

@@ -12,6 +12,10 @@
 
 #include "push_swap.h"
 
+#ifdef BFS_DEBUG
+# include "debug/DO_NOT_SUBMIT_DEBUG_bfs_results.h"
+#endif
+
 static void	gen_brute_state(t_brutestate *state, cbuf *a, cbuf *b)
 {
 	int	offset;
@@ -126,5 +130,9 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 	if (goal < 0)
 		return (ERROR);
 	reconstruct_brute_path(x, nodes, goal);
+#ifdef BFS_DEBUG
+	debug_log_bfs_run(nodes[0].state.value,
+		cbuf_len(a) + cbuf_len(b), x->ans[x->cur], x->ans_len[x->cur]);
+#endif
 	return (SUCCESS);
 }
