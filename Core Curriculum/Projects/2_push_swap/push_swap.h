@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 22:11:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/20 21:26:37 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,19 @@ typedef struct s_soln
 	int		step;
 }	soln;
 
+// FYI: Don't (int) type apparently - (unsigned char) is 0..255; values are normalized ranks and split only needs 0..n. 
+// So is safe for any brute-force size CPU can go bzzzzzz!~ \(^o^)/ 
 typedef struct s_brutestate
 {
-	int	value[BRUTE_MAX_N];
-	int	split;
+	unsigned char	value[BRUTE_MAX_N];
+	unsigned char	split;
 }	t_brutestate;
 
+// FYI: Apparently reordering t_brutenode members can minimize alignment padding:
 typedef struct s_brutenode
 {
-	t_brutestate	state;
 	int				parent;
+	t_brutestate	state;
 	char			move;
 }	t_brutenode;
 
