@@ -47,7 +47,7 @@ typedef struct s_brutenode
 {
 	t_brutestate	state;
 	int				parent;
-	int				move;
+	char			move;
 }	t_brutenode;
 
 # define FLAG_MINUS 1

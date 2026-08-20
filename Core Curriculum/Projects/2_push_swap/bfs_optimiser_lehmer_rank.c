@@ -12,12 +12,9 @@
 
 #include "push_swap.h"
 
-static int	factorial(int n)
-{
-	if (n <= 1)
-		return (1);
-	return (n * factorial(n - 1));
-}
+static const int	g_factorial[11] = {
+	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800
+};
 
 static int	calculate_lehmer_rank(t_brutestate *state, int n)
 {
@@ -38,12 +35,12 @@ static int	calculate_lehmer_rank(t_brutestate *state, int n)
 				smaller_right_count++;
 			temp_right++;
 		}
-		rank += smaller_right_count * factorial(n - 1 - i);
+		rank += smaller_right_count * g_factorial[n - 1 - i];
 		i++;
 	}
 	return (rank);
 }
 int	calculate_state_id(t_brutestate *a, int n)
 {
-	return (a->split * factorial(n) + calculate_lehmer_rank(a, n));
+	return (a->split * g_factorial[n] + calculate_lehmer_rank(a, n));
 }
