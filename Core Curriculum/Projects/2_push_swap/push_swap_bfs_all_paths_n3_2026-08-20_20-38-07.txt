@@ -1,0 +1,47 @@
+PUSH_SWAP REVERSE BFS - ALL SHORTEST PATHS
+==========================================
+
+n: 3
+initial permutations: 6
+complete graph states: 24
+states discovered: 24
+maximum optimal distance: 5
+generated: 2026-08-20 20:38:07
+
+PERMUTATION     | MOVES | # SOLUTIONS
+----------------+-------+------------
+0 1 2           |     0 |          1
+    1. 
+
+0 2 1           |     2 |          8
+    1. sa ra
+    2. sa rr
+    3. ss ra
+    4. ss rr
+    5. rra sa
+    6. rra ss
+    7. rrr sa
+    8. rrr ss
+
+1 0 2           |     1 |          2
+    1. sa
+    2. ss
+
+1 2 0           |     1 |          2
+    1. rra
+    2. rrr
+
+2 0 1           |     1 |          2
+    1. ra
+    2. rr
+
+2 1 0           |     2 |          8
+    1. sa rra
+    2. sa rrr
+    3. ss rra
+    4. ss rrr
+    5. ra sa
+    6. ra ss
+    7. rr sa
+    8. rr ss
+
