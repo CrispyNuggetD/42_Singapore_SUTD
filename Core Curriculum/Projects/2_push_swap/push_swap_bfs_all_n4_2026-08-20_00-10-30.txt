@@ -1,0 +1,122 @@
+PUSH_SWAP BFS ANALYSIS
+======================
+
+n: 4
+permutations: 24
+generated: 2026-08-20 00:10:30
+
+SORT: PERMUTATION ASCENDING
+---------------------------------
+
+[0]
+1.	If One is not beside zero, need to push B to borrow space to sort.
+2.	Else, if One is cyclicly already beside zero, then simply someway swapping instead of pushing, is faster.
+
+[?]
+1. If the last pair is inverted and descending, it is probably one of the worst cases.
+2. Pairs of inverted and descending number next to each other consecutively are much worse.
+
+PERMUTATION     | MOVES | SOLUTION
+----------------+-------+--------------------
+0 1 2 3         |     0 | 
+0 1 3 2         |     4 | pb sa ra pa
+0 2 1 3         |     3 | pb sa pa
+0 2 3 1         |     2 | rra sa
+0 3 1 2         |     2 | sa ra
+0 3 2 1         |     4 | pb sa rra pa
+1 0 2 3         |     1 | sa
+1 0 3 2         |     5 | sa pb sa ra pa
+1 2 0 3         |     4 | pb sa pa sa
+1 2 3 0         |     1 | rra
+1 3 0 2         |     3 | sa ra sa
+1 3 2 0         |     4 | sa rra sa ra
+2 0 1 3         |     4 | sa pb sa pa
+2 0 3 1         |     3 | sa rra sa
+2 1 0 3         |     5 | sa pb sa pa sa
+2 1 3 0         |     2 | sa rra
+2 3 0 1         |     2 | ra ra
+2 3 1 0         |     3 | ra ra sa
+3 0 1 2         |     1 | ra
+3 0 2 1         |     4 | ra pb sa pa
+3 1 0 2         |     2 | ra sa
+3 1 2 0         |     3 | rra sa ra
+3 2 0 1         |     3 | sa ra ra
+3 2 1 0         |     4 | sa ra ra sa
+
+
+[Pattern?] SA,RR,RR is the same as PB,SA,PA??? (No??) (Even for LDS).
+
+
+x021x --> 012
+SORT: OPTIMAL DISTANCE DESCENDING
+---------------------------------
+
+PERMUTATION     | MOVES | SOLUTION
+----------------+-------+--------------------
+1 0 3 2         |     5 | sa pb sa ra pa
+
+
+2 1 0 3         |     5 | sa pb sa pa sa
+
+
+
+
+0 1 3 2         |     4 | pb sa ra pa
+0 3 2 1         |     4 | pb sa rra pa
+1 2 0 3         |     4 | pb sa pa sa
+1 3 2 0         |     4 | sa rra sa ra
+2 0 1 3         |     4 | sa pb sa pa
+3 0 2 1         |     4 | ra pb sa pa
+
+
+3 2 1 0         |     4 | sa ra ra sa
+
+
+
+0 2 1 3         |     3 | pb sa pa
+1 3 0 2         |     3 | sa ra sa
+2 0 3 1         |     3 | sa rra sa
+2 3 1 0         |     3 | ra ra sa
+3 1 2 0         |     3 | rra sa ra
+3 2 0 1         |     3 | sa ra ra
+0 2 3 1         |     2 | rra sa
+0 3 1 2         |     2 | sa ra
+2 1 3 0         |     2 | sa rra
+2 3 0 1         |     2 | ra ra
+3 1 0 2         |     2 | ra sa
+1 0 2 3         |     1 | sa
+1 2 3 0         |     1 | rra
+3 0 1 2         |     1 | ra
+0 1 2 3         |     0 | 
+
+
+
+
+SORT: OPTIMAL DISTANCE DESCENDING
+---------------------------------
+
+PERMUTATION     | MOVES | SOLUTION
+----------------+-------+--------------------
+1 0 3 2         |     5 | sa pb sa ra pa
+2 1 0 3         |     5 | sa pb sa pa sa
+0 1 3 2         |     4 | pb sa ra pa
+0 3 2 1         |     4 | pb sa rra pa
+1 2 0 3         |     4 | pb sa pa sa
+1 3 2 0         |     4 | sa rra sa ra
+2 0 1 3         |     4 | sa pb sa pa
+3 0 2 1         |     4 | ra pb sa pa
+3 2 1 0         |     4 | sa ra ra sa
+0 2 1 3         |     3 | pb sa pa
+1 3 0 2         |     3 | sa ra sa
+2 0 3 1         |     3 | sa rra sa
+2 3 1 0         |     3 | ra ra sa
+3 1 2 0         |     3 | rra sa ra
+3 2 0 1         |     3 | sa ra ra
+0 2 3 1         |     2 | rra sa
+0 3 1 2         |     2 | sa ra
+2 1 3 0         |     2 | sa rra
+3 1 0 2         |     2 | ra sa
+1 0 2 3         |     1 | sa
+1 2 3 0         |     1 | rra
+3 0 1 2         |     1 | ra
+0 1 2 3         |     0 | 

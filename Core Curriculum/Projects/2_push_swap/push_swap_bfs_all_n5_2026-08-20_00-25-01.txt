@@ -1,0 +1,259 @@
+PUSH_SWAP BFS ANALYSIS
+======================
+
+n: 5
+permutations: 120
+generated: 2026-08-20 00:25:01
+
+SORT: PERMUTATION ASCENDING
+---------------------------------
+
+PERMUTATION     | MOVES | SOLUTION
+----------------+-------+--------------------
+0 1 2 3 4       |     0 | 
+0 1 2 4 3       |     5 | rra rra sa ra ra
+0 1 3 2 4       |     5 | pb pb sa pa pa
+0 1 3 4 2       |     4 | pb rra sa pa
+0 1 4 2 3       |     4 | pb sa ra pa
+0 1 4 3 2       |     6 | pb pb sa rra pa pa
+0 2 1 3 4       |     3 | pb sa pa
+0 2 1 4 3       |     7 | pb sa pb sa ra pa pa
+0 2 3 1 4       |     5 | rra rra sa ra sa
+0 2 3 4 1       |     2 | rra sa
+0 2 4 1 3       |     5 | pb sa ra sa pa
+0 2 4 3 1       |     6 | pb sa rra sa ra pa
+0 3 1 2 4       |     5 | sa rra sa ra ra
+0 3 1 4 2       |     5 | pb sa rra sa pa
+0 3 2 1 4       |     7 | sa rra sa rra rra sa rra
+0 3 2 4 1       |     4 | pb sa rra pa
+0 3 4 1 2       |     4 | sa ra sa ra
+0 3 4 2 1       |     5 | pb ra ra sa pa
+0 4 1 2 3       |     2 | sa ra
+0 4 1 3 2       |     6 | sa rra rra sa rra rra
+0 4 2 1 3       |     4 | pb ra sa pa
+0 4 2 3 1       |     5 | sa rra sa ra sa
+0 4 3 1 2       |     5 | pb sa ra ra pa
+0 4 3 2 1       |     6 | pb sa ra ra sa pa
+1 0 2 3 4       |     1 | sa
+1 0 2 4 3       |     6 | sa rra rra sa ra ra
+1 0 3 2 4       |     5 | pb pb ss pa pa
+1 0 3 4 2       |     5 | sa pb rra sa pa
+1 0 4 2 3       |     5 | sa pb sa ra pa
+1 0 4 3 2       |     6 | pb pb sa rrr pa pa
+1 2 0 3 4       |     4 | pb sa pa sa
+1 2 0 4 3       |     7 | pb sa pb sa rr pa pa
+1 2 3 0 4       |     4 | rra rra sa ra
+1 2 3 4 0       |     1 | rra
+1 2 4 0 3       |     5 | pb rra sa pa rra
+1 2 4 3 0       |     5 | ra ra sa ra ra
+1 3 0 2 4       |     6 | sa rra sa ra ra sa
+1 3 0 4 2       |     6 | pb sa pb rrr pa pa
+1 3 2 0 4       |     6 | ra sa ra ra sa ra
+1 3 2 4 0       |     4 | pb sa pa rra
+1 3 4 0 2       |     3 | rra sa rra
+1 3 4 2 0       |     5 | rra pb rra sa pa
+1 4 0 2 3       |     3 | sa ra sa
+1 4 0 3 2       |     6 | pb ra pb ss pa pa
+1 4 2 0 3       |     5 | pb ra sa pa sa
+1 4 2 3 0       |     4 | sa rra sa ra
+1 4 3 0 2       |     5 | pb sa rra pa rra
+1 4 3 2 0       |     7 | pb sa ra ra sa pa sa
+2 0 1 3 4       |     4 | sa pb sa pa
+2 0 1 4 3       |     7 | pb pb sa rr pa sa pa
+2 0 3 1 4       |     6 | sa rra rra sa ra sa
+2 0 3 4 1       |     3 | sa rra sa
+2 0 4 1 3       |     6 | sa pb sa ra sa pa
+2 0 4 3 1       |     6 | pb pb ss pa rra pa
+2 1 0 3 4       |     5 | sa pb sa pa sa
+2 1 0 4 3       |     7 | pb pb sa rrr pa pa rra
+2 1 3 0 4       |     5 | sa rra rra sa ra
+2 1 3 4 0       |     2 | sa rra
+2 1 4 0 3       |     6 | sa pb rra sa pa rra
+2 1 4 3 0       |     6 | sa ra ra sa ra ra
+2 3 0 1 4       |     6 | pb rra sa pa rra rra
+2 3 0 4 1       |     4 | ra ra sa ra
+2 3 1 0 4       |     7 | pb rra sa pa rra rra sa
+2 3 1 4 0       |     5 | pb sa pa sa rra
+2 3 4 0 1       |     2 | rra rra
+2 3 4 1 0       |     3 | rra rra sa
+2 4 0 1 3       |     4 | rra sa rra rra
+2 4 0 3 1       |     6 | ra pb sa ra pa ra
+2 4 1 0 3       |     5 | rra sa rra rra sa
+2 4 1 3 0       |     6 | sa pb sa rra pa ra
+2 4 3 0 1       |     4 | ra sa ra ra
+2 4 3 1 0       |     5 | ra sa ra ra sa
+3 0 1 2 4       |     4 | rra sa ra ra
+3 0 1 4 2       |     5 | ra pb sa ra pa
+3 0 2 1 4       |     6 | rra sa rra rra sa rra
+3 0 2 4 1       |     5 | sa pb sa rra pa
+3 0 4 1 2       |     3 | ra sa ra
+3 0 4 2 1       |     5 | ra pb ra sa pa
+3 1 0 2 4       |     5 | rra sa ra ra sa
+3 1 0 4 2       |     6 | ra sa pb sa ra pa
+3 1 2 0 4       |     7 | sa ra sa ra ra sa ra
+3 1 2 4 0       |     5 | sa pb sa pa rra
+3 1 4 0 2       |     4 | sa rra sa rra
+3 1 4 2 0       |     6 | sa rra pb rra sa pa
+3 2 0 1 4       |     7 | sa pb rra sa pa rra rra
+3 2 0 4 1       |     5 | sa ra ra sa ra
+3 2 1 0 4       |     8 | sa pb rra sa pa rra rra sa
+3 2 1 4 0       |     6 | sa pb sa pa sa rra
+3 2 4 0 1       |     3 | sa rra rra
+3 2 4 1 0       |     4 | sa rra rra sa
+3 4 0 1 2       |     2 | ra ra
+3 4 0 2 1       |     4 | rra rra sa rra
+3 4 1 0 2       |     3 | ra ra sa
+3 4 1 2 0       |     5 | rra sa ra sa ra
+3 4 2 0 1       |     6 | pb sa pa sa rra rra
+3 4 2 1 0       |     6 | rra pb ra ra sa pa
+4 0 1 2 3       |     1 | ra
+4 0 1 3 2       |     5 | rra rra sa rra rra
+4 0 2 1 3       |     4 | ra pb sa pa
+4 0 2 3 1       |     4 | rra sa ra sa
+4 0 3 1 2       |     5 | pb sa ra pa ra
+4 0 3 2 1       |     7 | sa pb sa ra ra sa pa
+4 1 0 2 3       |     2 | ra sa
+4 1 0 3 2       |     6 | ra pb pb ss pa pa
+4 1 2 0 3       |     5 | ra pb sa pa sa
+4 1 2 3 0       |     3 | rra sa ra
+4 1 3 0 2       |     6 | sa pb sa rra pa rra
+4 1 3 2 0       |     7 | pb sa rra sa ra pa ra
+4 2 0 1 3       |     5 | sa rra sa rra rra
+4 2 0 3 1       |     6 | pb sa rra sa pa ra
+4 2 1 0 3       |     6 | sa rra sa rra rra sa
+4 2 1 3 0       |     5 | pb sa rra pa ra
+4 2 3 0 1       |     5 | sa ra sa ra ra
+4 2 3 1 0       |     6 | sa ra sa ra ra sa
+4 3 0 1 2       |     3 | sa ra ra
+4 3 0 2 1       |     5 | sa rra rra sa rra
+4 3 1 0 2       |     4 | sa ra ra sa
+4 3 1 2 0       |     6 | sa rra sa ra sa ra
+4 3 2 0 1       |     6 | pb sa ra ra pa ra
+4 3 2 1 0       |     7 | sa rra pb ra ra sa pa
+
+
+SORT: OPTIMAL DISTANCE DESCENDING
+---------------------------------
+
+PERMUTATION     | MOVES | SOLUTION
+----------------+-------+--------------------
+3 2 1 0 4       |     8 | sa pb rra sa pa rra rra sa
+0 2 1 4 3       |     7 | pb sa pb sa ra pa pa
+0 3 2 1 4       |     7 | sa rra sa rra rra sa rra
+1 2 0 4 3       |     7 | pb sa pb sa rr pa pa
+1 4 3 2 0       |     7 | pb sa ra ra sa pa sa
+2 0 1 4 3       |     7 | pb pb sa rr pa sa pa
+2 1 0 4 3       |     7 | pb pb sa rrr pa pa rra
+2 3 1 0 4       |     7 | pb rra sa pa rra rra sa
+3 1 2 0 4       |     7 | sa ra sa ra ra sa ra
+3 2 0 1 4       |     7 | sa pb rra sa pa rra rra
+4 0 3 2 1       |     7 | sa pb sa ra ra sa pa
+4 1 3 2 0       |     7 | pb sa rra sa ra pa ra
+4 3 2 1 0       |     7 | sa rra pb ra ra sa pa
+0 1 4 3 2       |     6 | pb pb sa rra pa pa
+0 2 4 3 1       |     6 | pb sa rra sa ra pa
+0 4 1 3 2       |     6 | sa rra rra sa rra rra
+0 4 3 2 1       |     6 | pb sa ra ra sa pa
+1 0 2 4 3       |     6 | sa rra rra sa ra ra
+1 0 4 3 2       |     6 | pb pb sa rrr pa pa
+1 3 0 2 4       |     6 | sa rra sa ra ra sa
+1 3 0 4 2       |     6 | pb sa pb rrr pa pa
+1 3 2 0 4       |     6 | ra sa ra ra sa ra
+1 4 0 3 2       |     6 | pb ra pb ss pa pa
+2 0 3 1 4       |     6 | sa rra rra sa ra sa
+2 0 4 1 3       |     6 | sa pb sa ra sa pa
+2 0 4 3 1       |     6 | pb pb ss pa rra pa
+2 1 4 0 3       |     6 | sa pb rra sa pa rra
+2 1 4 3 0       |     6 | sa ra ra sa ra ra
+2 3 0 1 4       |     6 | pb rra sa pa rra rra
+2 4 0 3 1       |     6 | ra pb sa ra pa ra
+2 4 1 3 0       |     6 | sa pb sa rra pa ra
+3 0 2 1 4       |     6 | rra sa rra rra sa rra
+3 1 0 4 2       |     6 | ra sa pb sa ra pa
+3 1 4 2 0       |     6 | sa rra pb rra sa pa
+3 2 1 4 0       |     6 | sa pb sa pa sa rra
+3 4 2 0 1       |     6 | pb sa pa sa rra rra
+3 4 2 1 0       |     6 | rra pb ra ra sa pa
+4 1 0 3 2       |     6 | ra pb pb ss pa pa
+4 1 3 0 2       |     6 | sa pb sa rra pa rra
+4 2 0 3 1       |     6 | pb sa rra sa pa ra
+4 2 1 0 3       |     6 | sa rra sa rra rra sa
+4 2 3 1 0       |     6 | sa ra sa ra ra sa
+4 3 1 2 0       |     6 | sa rra sa ra sa ra
+4 3 2 0 1       |     6 | pb sa ra ra pa ra
+0 1 2 4 3       |     5 | rra rra sa ra ra
+0 1 3 2 4       |     5 | pb pb sa pa pa
+0 2 3 1 4       |     5 | rra rra sa ra sa
+0 2 4 1 3       |     5 | pb sa ra sa pa
+0 3 1 2 4       |     5 | sa rra sa ra ra
+0 3 1 4 2       |     5 | pb sa rra sa pa
+0 3 4 2 1       |     5 | pb ra ra sa pa
+0 4 2 3 1       |     5 | sa rra sa ra sa
+0 4 3 1 2       |     5 | pb sa ra ra pa
+1 0 3 2 4       |     5 | pb pb ss pa pa
+1 0 3 4 2       |     5 | sa pb rra sa pa
+1 0 4 2 3       |     5 | sa pb sa ra pa
+1 2 4 0 3       |     5 | pb rra sa pa rra
+1 2 4 3 0       |     5 | ra ra sa ra ra
+1 3 4 2 0       |     5 | rra pb rra sa pa
+1 4 2 0 3       |     5 | pb ra sa pa sa
+1 4 3 0 2       |     5 | pb sa rra pa rra
+2 1 0 3 4       |     5 | sa pb sa pa sa
+2 1 3 0 4       |     5 | sa rra rra sa ra
+2 3 1 4 0       |     5 | pb sa pa sa rra
+2 4 1 0 3       |     5 | rra sa rra rra sa
+2 4 3 1 0       |     5 | ra sa ra ra sa
+3 0 1 4 2       |     5 | ra pb sa ra pa
+3 0 2 4 1       |     5 | sa pb sa rra pa
+3 0 4 2 1       |     5 | ra pb ra sa pa
+3 1 0 2 4       |     5 | rra sa ra ra sa
+3 1 2 4 0       |     5 | sa pb sa pa rra
+3 2 0 4 1       |     5 | sa ra ra sa ra
+3 4 1 2 0       |     5 | rra sa ra sa ra
+4 0 1 3 2       |     5 | rra rra sa rra rra
+4 0 3 1 2       |     5 | pb sa ra pa ra
+4 1 2 0 3       |     5 | ra pb sa pa sa
+4 2 0 1 3       |     5 | sa rra sa rra rra
+4 2 1 3 0       |     5 | pb sa rra pa ra
+4 2 3 0 1       |     5 | sa ra sa ra ra
+4 3 0 2 1       |     5 | sa rra rra sa rra
+0 1 3 4 2       |     4 | pb rra sa pa
+0 1 4 2 3       |     4 | pb sa ra pa
+0 3 2 4 1       |     4 | pb sa rra pa
+0 3 4 1 2       |     4 | sa ra sa ra
+0 4 2 1 3       |     4 | pb ra sa pa
+1 2 0 3 4       |     4 | pb sa pa sa
+1 2 3 0 4       |     4 | rra rra sa ra
+1 3 2 4 0       |     4 | pb sa pa rra
+1 4 2 3 0       |     4 | sa rra sa ra
+2 0 1 3 4       |     4 | sa pb sa pa
+2 3 0 4 1       |     4 | ra ra sa ra
+2 4 0 1 3       |     4 | rra sa rra rra
+2 4 3 0 1       |     4 | ra sa ra ra
+3 0 1 2 4       |     4 | rra sa ra ra
+3 1 4 0 2       |     4 | sa rra sa rra
+3 2 4 1 0       |     4 | sa rra rra sa
+3 4 0 2 1       |     4 | rra rra sa rra
+4 0 2 1 3       |     4 | ra pb sa pa
+4 0 2 3 1       |     4 | rra sa ra sa
+4 3 1 0 2       |     4 | sa ra ra sa
+0 2 1 3 4       |     3 | pb sa pa
+1 3 4 0 2       |     3 | rra sa rra
+1 4 0 2 3       |     3 | sa ra sa
+2 0 3 4 1       |     3 | sa rra sa
+2 3 4 1 0       |     3 | rra rra sa
+3 0 4 1 2       |     3 | ra sa ra
+3 2 4 0 1       |     3 | sa rra rra
+3 4 1 0 2       |     3 | ra ra sa
+4 1 2 3 0       |     3 | rra sa ra
+4 3 0 1 2       |     3 | sa ra ra
+0 2 3 4 1       |     2 | rra sa
+0 4 1 2 3       |     2 | sa ra
+2 1 3 4 0       |     2 | sa rra
+2 3 4 0 1       |     2 | rra rra
+3 4 0 1 2       |     2 | ra ra
+4 1 0 2 3       |     2 | ra sa
+1 0 2 3 4       |     1 | sa
+1 2 3 4 0       |     1 | rra
+4 0 1 2 3       |     1 | ra
+0 1 2 3 4       |     0 | 
