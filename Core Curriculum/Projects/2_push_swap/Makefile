@@ -1,4 +1,7 @@
 NAME		= push_swap
+DEBUG_NAME	= push_swap_debug
+ANALYSIS_NAME	= bfs_analyser
+ALL_PATHS_NAME	= bfs_all_paths
 
 CC			= cc
 CFLAGS		= -Wall -Wextra -Werror
@@ -33,6 +36,25 @@ OBJS		= $(SRCS:.c=.o)
 
 all: $(NAME)
 
+debug: $(LIBFT)
+	$(CC) $(CFLAGS) -DBFS_DEBUG $(INCLUDES) $(SRCS) \
+		debug/DO_NOT_SUBMIT_DEBUG_bfs_results.c $(LIBFT) -o $(DEBUG_NAME)
+
+analyse_bfs:
+	$(CC) $(CFLAGS) $(INCLUDES) \
+		debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
+		bfs.c bfs_utils.c bfs_verify_node.c \
+		bfs_operations_swap_push.c bfs_operations_rotate.c \
+		bfs_operations_reverse_rotate.c bfs_optimiser_lehmer_rank.c \
+		circular_buffer_utils.c -o $(ANALYSIS_NAME)
+
+analyse_bfs_all_paths:
+	$(CC) $(CFLAGS) $(INCLUDES) \
+		debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \
+		bfs_utils.c bfs_verify_node.c bfs_operations_swap_push.c \
+		bfs_operations_rotate.c bfs_operations_reverse_rotate.c \
+		bfs_optimiser_lehmer_rank.c -o $(ALL_PATHS_NAME)
+
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
@@ -47,9 +69,9 @@ clean:
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) $(NAME) $(DEBUG_NAME) $(ANALYSIS_NAME) $(ALL_PATHS_NAME)
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all debug analyse_bfs analyse_bfs_all_paths clean fclean re
