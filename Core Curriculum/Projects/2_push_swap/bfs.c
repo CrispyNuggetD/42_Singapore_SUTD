@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 20:39:56 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 22:01:30 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			total;
 	int			move_to_try;
 	int			state_id;
-	int			visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
+	char		visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
 	char		moves[11] = {SA, SB, SS, PA, PB, RA, RB, RR, RRA, RRB, RRR};
 
 	n = cbuf_len(a) + cbuf_len(b);
@@ -119,6 +119,22 @@ static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 
 int	brute_solve(soln *x, cbuf *a, cbuf *b)
 {
+	t_brutenode	*nodes;
+	int			goal;
+
+	nodes = malloc(sizeof(t_brutenode) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+	if (!nodes)
+		return (ERROR);
+	goal = bfs_find_goal(nodes, a, b);
+	if (goal < 0)
+		return (ERROR);
+	reconstruct_brute_path(x, nodes, goal);
+	free(nodes);
+	return (SUCCESS);
+}
+
+/* int	brute_solve(soln *x, cbuf *a, cbuf *b)
+{
 	t_brutenode	nodes[BRUTE_TOTAL_N_PLUS_1_FACTORIAL];
 	int			goal;
 
@@ -127,4 +143,4 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 		return (ERROR);
 	reconstruct_brute_path(x, nodes, goal);
 	return (SUCCESS);
-}
+} */

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 20:37:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/19 22:11:11 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 # include "libft/0_libft/libft.h"
 # include <stdio.h>
 # include <unistd.h>
+
+# define BUBBLE_SORT_MAX_500	249500
+# define BRUTE_MAX_N			9
+# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	3628800
 
 typedef struct s_cbuf
 {
@@ -35,7 +39,7 @@ typedef struct s_soln
 
 typedef struct s_brutestate
 {
-	int	value[7];
+	int	value[BRUTE_MAX_N];
 	int	split;
 }	t_brutestate;
 
@@ -59,10 +63,6 @@ typedef struct s_brutenode
 # define ERR_INVALID_INPUT	2
 # define ERR_PARSE_INPUT		3
 # define ERR_SORT_INPUT		4
-
-# define BUBBLE_SORT_MAX_500	249500
-# define BRUTE_MAX_N			8
-# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	362880
 
 # define SA		'1'
 # define SB		'2'
