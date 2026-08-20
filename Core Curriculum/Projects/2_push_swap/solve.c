@@ -33,8 +33,13 @@ static int	hardcode_check_one(soln *x, cbuf *a)
 
 int	solve(soln *x, cbuf *a, cbuf *b, int count)
 {
-	if (count <= 7)
+	if (count <= BRUTE_MAX_N)
 	{
+		printf("sizeof(t_brutestate) = %zu\n", sizeof(t_brutestate));
+		printf("sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+		printf("KB sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL / 1000);
+		printf("MB sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL / 1000000);
+		
 		if (brute_solve(x, a, b) == ERROR)
 			return (ERROR);
 	}
