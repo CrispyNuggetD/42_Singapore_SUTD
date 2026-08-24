@@ -101,6 +101,7 @@ int		print_first_soln(const soln *x);
 
 /* do not submit*/
 int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b);
+int	extract_chunk_optimal(soln *x, cbuf *a, cbuf *b, int min, int max);
 
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
