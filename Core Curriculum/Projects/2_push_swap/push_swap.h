@@ -18,9 +18,8 @@
 # include <unistd.h>
 
 # define BUBBLE_SORT_MAX_500	249500
-# define BRUTE_MAX_N			9
-# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	3628800
-// # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
+# define BRUTE_MAX_N			10
+# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
 
 
 typedef struct s_cbuf
