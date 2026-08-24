@@ -31,6 +31,7 @@ SRCS		= main_push_swap.c \
 			  bfs_operations_rotate.c \
 			  bfs_operations_reverse_rotate.c \
 			  bfs_optimiser_lehmer_rank.c \
+			  chunk_extract_optimal.c \
 			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c \
 
 OBJS		= $(SRCS:.c=.o)
