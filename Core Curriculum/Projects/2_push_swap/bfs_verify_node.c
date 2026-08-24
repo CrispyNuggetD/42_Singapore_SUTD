@@ -81,12 +81,12 @@ int	is_brute_goal(t_brutestate *state, int n)
 {
 	int	i;
 
-	if (state->split != n)
+	if (state->split != 0)
 		return (0);
 	i = 0;
 	while (i < n)
 	{
-		if (state->value[i] != i)
+		if (state->value[i] != n - 1 - i)
 			return (0);
 		i++;
 	}
