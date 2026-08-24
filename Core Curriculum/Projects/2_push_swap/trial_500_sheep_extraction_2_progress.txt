@@ -1,0 +1,22 @@
+CHUNK 0..9 ROUTE cost=452 start=RRA turn_after=3
+BFS RUN: 1/50, remaining after this=49, chunk=0..9
+BFS ALLOCATING: 638668800 bytes
+BFS ALLOCATION READY
+BFS PROGRESS: expanded=1000000 discovered=1340991
+BFS PROGRESS: expanded=2000000 discovered=2584549
+BFS PROGRESS: expanded=3000000 discovered=3783317
+BFS PROGRESS: expanded=4000000 discovered=4952441
+BFS PROGRESS: expanded=5000000 discovered=6095513
+BFS PROGRESS: expanded=6000000 discovered=7220249
+BFS PROGRESS: expanded=7000000 discovered=8327353
+BFS PROGRESS: expanded=8000000 discovered=9426488
+BFS PROGRESS: expanded=9000000 discovered=10510801
+BFS PROGRESS: expanded=10000000 discovered=11591868
+BFS PROGRESS: expanded=11000000 discovered=12664300
+BFS PROGRESS: expanded=12000000 discovered=13726945
+BFS PROGRESS: expanded=13000000 discovered=14779909
+BFS PROGRESS: expanded=14000000 discovered=15826195
+BFS PROGRESS: expanded=15000000 discovered=16868225
+BFS PROGRESS: expanded=16000000 discovered=17896127
+BFS PROGRESS: expanded=17000000 discovered=18920707
+BFS PROGRESS: expanded=18000000 discovered=19934309
