@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 23:48:18 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/24 18:02:07 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	main(int argc, char **argv)
 
 	i = 1;
 	count = 0;
-	if (argc == 1 || argc + 1 > 500)
+	if (argc == 1 || argc > 501)
 		return (ERR_INVALID_INPUT);
 	while (i < argc)
 	{

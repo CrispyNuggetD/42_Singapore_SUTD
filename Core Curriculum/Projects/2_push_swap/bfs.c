@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 22:01:30 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/24 17:10:40 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			move_to_try;
 	int			state_id;
 	char		visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
-	char	moves[8] = {SA, SB, PA, PB, RA, RB, RRA, RRB};
+	char	moves[6] = {SA, SB, PA, PB, RA, RRA};
 
 	n = cbuf_len(a) + cbuf_len(b);
 	if (n > BRUTE_MAX_N)
@@ -95,7 +95,7 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	while (i < total)
 	{
 		move_to_try = 0;
-		while (move_to_try < 8)
+		while (move_to_try < 6)
 		{
 			temp = nodes[i].state;
 			if (!brute_apply_wall_move(&temp, moves[move_to_try], n))
