@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/20 21:26:37 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/24 18:52:50 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 # define BUBBLE_SORT_MAX_500	249500
 # define BRUTE_MAX_N			9
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	3628800
+// # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
+
 
 typedef struct s_cbuf
 {

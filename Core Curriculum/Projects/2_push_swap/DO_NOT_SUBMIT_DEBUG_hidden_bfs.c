@@ -126,7 +126,7 @@ static int	solve_active_chunk(soln *real, cbuf *a, cbuf *b, int count)
 	if (copy_active_b(&fake_b, b, count) == ERROR)
 		return (ERROR);
 	printf("\n=== BFS ACTIVE CHUNK ===\n");
-	cbuf_print_stacks(&fake_a, &fake_b);
+	//cbuf_print_stacks(&fake_a, &fake_b);
 	if (soln_init(&fake, 1, BUBBLE_SORT_MAX_500) == ERROR)
 		return (ERROR);
 	if (brute_solve(&fake, &fake_a, &fake_b) == ERROR)
@@ -161,7 +161,7 @@ int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
 			return (ERROR);
 		extract_moves = real->ans_len[real->cur] - before;
 		printf("\n=== AFTER EXTRACTION ===\n");
-		cbuf_print_stacks(a, b);
+		//cbuf_print_stacks(a, b);
 		before = real->ans_len[real->cur];
 		if (solve_active_chunk(real, a, b, chunk) == ERROR)
 			return (ERROR);

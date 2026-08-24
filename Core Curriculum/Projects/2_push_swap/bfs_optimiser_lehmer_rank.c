@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 19:14:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 20:12:03 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/24 18:51:42 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-static const int	g_factorial[11] = {
-	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800
+static const int	g_factorial[12] = {
+	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
 };
 
 static int	calculate_lehmer_rank(t_brutestate *state, int n)
