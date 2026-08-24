@@ -44,7 +44,7 @@ debug: $(LIBFT)
 analyse_bfs:
 	$(CC) $(CFLAGS) $(INCLUDES) \
 		debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
-		bfs.c bfs_utils.c bfs_verify_node.c \
+		bfs.c bfs_r utils.c bfs_verify_node.c \
 		bfs_operations_swap_push.c bfs_operations_rotate.c \
 		bfs_operations_reverse_rotate.c bfs_optimiser_lehmer_rank.c \
 		circular_buffer_utils.c -o $(ANALYSIS_NAME)

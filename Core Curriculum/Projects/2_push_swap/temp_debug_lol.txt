@@ -1,0 +1,8 @@
+cc DO_NOT_SUBMIT_DEBUG_generator.c -o generator
+./generator 100
+./push_swap $(./generator 100)
+
+ARG="$(./generator 100)"
+./push_swap $ARG | ./checker_linux $ARG
+
+./push_swap $ARG | wc -l
