@@ -141,6 +141,9 @@ int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
 {
 	int	total;
 	int	chunk;
+	int	before;
+	int	extract_moves;
+	int	bfs_moves;
 
 	total = cbuf_len(a);
 	g_start = 0;
@@ -153,12 +156,19 @@ int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
 			chunk = BRUTE_MAX_N;
 		g_end = g_start + chunk - 1;
 		printf("\n=== SELECTING %d..%d ===\n", g_start, g_end);
+		before = real->ans_len[real->cur];
 		if (push_chunk(real, a, b, chunk) == ERROR)
 			return (ERROR);
+		extract_moves = real->ans_len[real->cur] - before;
 		printf("\n=== AFTER EXTRACTION ===\n");
 		cbuf_print_stacks(a, b);
+		before = real->ans_len[real->cur];
 		if (solve_active_chunk(real, a, b, chunk) == ERROR)
 			return (ERROR);
+		bfs_moves = real->ans_len[real->cur] - before;
+		printf("EXTRACTION MOVES: %d\n", extract_moves);
+		printf("BFS MOVES: %d\n", bfs_moves);
+		printf("CHUNK TOTAL: %d\n", extract_moves + bfs_moves);
 		printf("\n=== AFTER BFS REPLAY ===\n");
 		cbuf_print_stacks(a, b);
 		g_start += chunk;
