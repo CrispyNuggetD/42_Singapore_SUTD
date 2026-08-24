@@ -69,8 +69,9 @@ static int	copy_active_b(cbuf *fake_b, cbuf *real_b, int count)
 	while (i > 0)
 	{
 		index = (real_b->read_idx + i - 1) % real_b->capacity;
-		if (cbuf_push_top(fake_b, real_b->buf[index]) == ERROR)
-			return (ERROR);
+		if (cbuf_push_top(fake_b,
+		real_b->buf[index] - g_start) == ERROR)
+	return (ERROR);
 		i--;
 	}
 	return (SUCCESS);
