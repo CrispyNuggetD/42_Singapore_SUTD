@@ -33,6 +33,8 @@ static int	hardcode_check_one(soln *x, cbuf *a)
 
 int	solve(soln *x, cbuf *a, cbuf *b, int count)
 {
+	if (count == 25)
+		return (debug_hidden_bfs(x, a, b));
 	if (count <= BRUTE_MAX_N)
 	{
 		printf("sizeof(t_brutestate) = %zu\n", sizeof(t_brutestate));

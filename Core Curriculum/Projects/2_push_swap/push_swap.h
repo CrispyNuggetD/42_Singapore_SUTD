@@ -97,6 +97,9 @@ void	cbuf_print_stacks(cbuf *a, cbuf *b);
 void	debug_print_soln(const soln *x);
 int		print_first_soln(const soln *x);
 
+/* do not submit*/
+int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b);
+
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);

@@ -46,6 +46,27 @@ static void	gen_brute_state(t_brutestate *state, cbuf *a, cbuf *b)
 	}
 }
 
+//
+
+static int	move_hits_hidden_a(t_brutestate *state, char move)
+{
+	if (state->split < 2 && move == SA)
+		return (1);
+	if (state->split > 0 && (move == RA || move == RRA))
+		return (1);
+	return (0);
+}
+
+static int	brute_apply_wall_move(t_brutestate *state, char move, int n)
+{
+	if (move_hits_hidden_a(state, move))
+		return (0);
+	brute_apply_move(state, move, n);
+	return (1);
+}
+
+//
+
 /* later: check duplicate upgrade to Lehmer */
 /* A no-op such as sb when B is empty is handled automatically: 
 temp remains identical to nodes[i].state, so brute_state_exists() finds it and it isn't appended. */
@@ -58,7 +79,7 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			move_to_try;
 	int			state_id;
 	char		visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
-	char		moves[11] = {SA, SB, SS, PA, PB, RA, RB, RR, RRA, RRB, RRR};
+	char	moves[8] = {SA, SB, PA, PB, RA, RB, RRA, RRB};
 
 	n = cbuf_len(a) + cbuf_len(b);
 	if (n > BRUTE_MAX_N)
@@ -74,10 +95,14 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	while (i < total)
 	{
 		move_to_try = 0;
-		while (move_to_try < 11)
+		while (move_to_try < 8)
 		{
 			temp = nodes[i].state;
-			brute_apply_move(&temp, moves[move_to_try], n);
+			if (!brute_apply_wall_move(&temp, moves[move_to_try], n))
+			{
+				move_to_try++;
+				continue ;
+			}
 			state_id = calculate_state_id(&temp, n);
 			if (!visited[state_id])
 			{
@@ -129,6 +154,7 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 	nodes = malloc(sizeof(t_brutenode) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
 	if (!nodes)
 		return (ERROR);
+	
 	goal = bfs_find_goal(nodes, a, b);
 	if (goal < 0)
 		return (ERROR);
