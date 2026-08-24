@@ -111,6 +111,11 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	total = 1;
 	while (i < total)
 	{
+		if (i > 0 && i % 1000000 == 0)
+		{
+			printf("BFS PROGRESS: expanded=%d discovered=%d\n", i, total);
+			fflush(stdout);
+		}
 		move_to_try = 0;
 		while (move_to_try < 6)
 		{
@@ -172,9 +177,18 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 	t_brutenode	*nodes;
 	int			goal;
 
+	printf("BFS ALLOCATING: %zu bytes\n",
+		sizeof(t_brutenode) * (size_t)BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+	fflush(stdout);
 	nodes = malloc(sizeof(t_brutenode) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
 	if (!nodes)
+	{
+		printf("BFS ALLOCATION FAILED\n");
+		fflush(stdout);
 		return (ERROR);
+	}
+	printf("BFS ALLOCATION READY\n");
+	fflush(stdout);
 	
 	goal = bfs_find_goal(nodes, a, b);
 	if (goal < 0)

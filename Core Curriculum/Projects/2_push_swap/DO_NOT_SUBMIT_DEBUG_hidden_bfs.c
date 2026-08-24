@@ -98,9 +98,13 @@ int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
 	int	before;
 	int	extract_moves;
 	int	bfs_moves;
+	int	bfs_run;
+	int	total_bfs_runs;
 
 	total = cbuf_len(a);
 	g_start = 0;
+	bfs_run = 0;
+	total_bfs_runs = (total + BRUTE_MAX_N - 1) / BRUTE_MAX_N;
 	while (g_start < total)
 	{
 		chunk = total - g_start;
@@ -111,6 +115,11 @@ int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
 		if (extract_chunk_optimal(real, a, b, g_start, g_end) == ERROR)
 			return (ERROR);
 		extract_moves = real->ans_len[real->cur] - before;
+		bfs_run++;
+		printf("BFS RUN: %d/%d, remaining after this=%d, chunk=%d..%d\n",
+			bfs_run, total_bfs_runs, total_bfs_runs - bfs_run,
+			g_start, g_end);
+		fflush(stdout);
 		before = real->ans_len[real->cur];
 		if (solve_active_chunk(real, a, b, chunk) == ERROR)
 			return (ERROR);
