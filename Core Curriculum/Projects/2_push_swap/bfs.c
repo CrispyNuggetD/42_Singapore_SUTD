@@ -65,6 +65,16 @@ static int	brute_apply_wall_move(t_brutestate *state, char move, int n)
 	return (1);
 }
 
+static int	state_was_visited(unsigned char *visited, int state_id)
+{
+	return (visited[state_id / 8] & (1 << (state_id % 8)));
+}
+
+static void	mark_state_visited(unsigned char *visited, int state_id)
+{
+	visited[state_id / 8] |= (1 << (state_id % 8));
+}
+
 //
 
 /* later: check duplicate upgrade to Lehmer */
@@ -78,18 +88,25 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 	int			total;
 	int			move_to_try;
 	int			state_id;
-	char		visited[BRUTE_TOTAL_N_PLUS_1_FACTORIAL] = {0};
+	unsigned char	*visited;
 	char	moves[6] = {SA, SB, PA, PB, RA, RRA};
 
 	n = cbuf_len(a) + cbuf_len(b);
 	if (n > BRUTE_MAX_N)
 		return (ERROR);
+	visited = ft_calloc((BRUTE_TOTAL_N_PLUS_1_FACTORIAL + 7) / 8,
+			sizeof(unsigned char));
+	if (!visited)
+		return (ERROR);
 	gen_brute_state(&nodes[0].state, a, b);
-	visited[calculate_state_id(&nodes[0].state, n)] = 1;
+	mark_state_visited(visited, calculate_state_id(&nodes[0].state, n));
 	nodes[0].parent = -1;
 	nodes[0].move = 0;
 	if (is_brute_goal(&nodes[0].state, n))
+	{
+		free(visited);
 		return (0);
+	}
 	i = 0;
 	total = 1;
 	while (i < total)
@@ -104,20 +121,24 @@ static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
 				continue ;
 			}
 			state_id = calculate_state_id(&temp, n);
-			if (!visited[state_id])
+			if (!state_was_visited(visited, state_id))
 			{
-				visited[state_id] = 1;
+				mark_state_visited(visited, state_id);
 				nodes[total].state = temp;
 				nodes[total].parent = i;
 				nodes[total].move = moves[move_to_try];
 				if (is_brute_goal(&nodes[total].state, n))
+				{
+					free(visited);
 					return (total);
+				}
 				total++;
 			}
 			move_to_try++;
 		}
 		i++;
 	}
+	free(visited);
 	return (-1);
 }
 
@@ -157,7 +178,10 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 	
 	goal = bfs_find_goal(nodes, a, b);
 	if (goal < 0)
+	{
+		free(nodes);
 		return (ERROR);
+	}
 	reconstruct_brute_path(x, nodes, goal);
 	free(nodes);
 	return (SUCCESS);
