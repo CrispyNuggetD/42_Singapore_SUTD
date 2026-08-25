@@ -4,11 +4,9 @@
 
 ## Description
 
-FdF renders a height map as an isometric wireframe using MiniLibX.
-The mandatory program will read a `.fdf` file, project its 3D points onto a
-2D image, connect neighbouring points, and display the result in a window.
-
-Current milestone: create and close a blank MiniLibX image window cleanly.
+FdF reads a `.fdf` height map and renders it as an isometric wireframe using
+MiniLibX. Map coordinates are projected into a fitted 2D view, then neighbouring
+points are connected with a dominant-axis DDA line rasterizer.
 
 ## Instructions
 
@@ -16,7 +14,7 @@ This checkout targets the Linux/X11 version of MiniLibX used at school.
 
 ```sh
 make
-./fdf maps/42.fdf
+./fdf test_maps/42.fdf
 ```
 
 Press `ESC`, or click the window's close button, to exit.
