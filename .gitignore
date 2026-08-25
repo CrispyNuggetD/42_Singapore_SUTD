@@ -1,3 +1,4 @@
 gitignored/*
 *.DS_Store
 *.o
+*.a
