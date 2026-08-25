@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/26 01:06:34 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 01:37:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 05:50:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ static int	fill_row(t_map *map, char **words, int y)
 		index = y * map->width + x;
 		map->points[index].x = x;
 		map->points[index].y = y;
-		/* Point colours after the comma will be parsed separately later. */
 		map->points[index].z = ft_atoi(words[x]);
 		x++;
 	}

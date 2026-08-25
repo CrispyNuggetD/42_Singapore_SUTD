@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 05:23:49 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 05:50:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,8 @@
 # define KEY_ESC 65307
 # define EVENT_KEY_PRESS 2
 # define EVENT_DESTROY 17
-# define MASK_KEY_PRESS (1L << 0)
+# define MASK_KEY_PRESS 1
 # define PI 3.14159265358979323846
-# define ISO_ANGLE (PI / 6.0)
 # define WINDOW_MARGIN 80
 
 typedef struct s_image
