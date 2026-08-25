@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 01:06:41 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 02:51:22 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int	main(int argc, char **argv)
 		write(2, "Error: invalid map\n", 19);
 		return (1);
 	}
-	fdf_put_pixel(&info.image, WIN_WIDTH / 2, WIN_HEIGHT / 2, 0x00FFFFFF);
+	render_map(&info);
 	mlx_put_image_to_window(info.mlx, info.win, info.image.ptr, 0, 0);
 	mlx_hook(info.win, EVENT_KEY_PRESS, 0, fdf_key_press, &info);
 	mlx_hook(info.win, EVENT_DESTROY, 0, fdf_close, &info);
