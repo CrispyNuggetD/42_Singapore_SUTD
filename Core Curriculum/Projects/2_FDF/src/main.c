@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 23:33:59 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 01:06:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,12 @@ int	main(int argc, char **argv)
 	{
 		fdf_destroy(&info);
 		write(2, "Error: MiniLibX initialization failed\n", 38);
+		return (1);
+	}
+	if (read_map(argv[1], &info.map) != 0)
+	{
+		fdf_destroy(&info);
+		write(2, "Error: invalid map\n", 19);
 		return (1);
 	}
 	fdf_put_pixel(&info.image, WIN_WIDTH / 2, WIN_HEIGHT / 2, 0x00FFFFFF);

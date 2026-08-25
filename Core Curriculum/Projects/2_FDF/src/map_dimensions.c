@@ -30,12 +30,24 @@ void	free_words(char **words)
 	free(words);
 }
 
+char	**split_map_line(char *line)
+{
+	int	index;
+
+	index = 0;
+	while (line[index] != '\0' && line[index] != '\n')
+		index++;
+	if (line[index] == '\n')
+		line[index] = '\0';
+	return (ft_split(line, ' '));
+}
+
 static int	set_map_width(char *line, t_map *map)
 {
 	char	**words;
 	int		index;
 
-	words = ft_split(line, ' ');
+	words = split_map_line(line);
 	if (words == NULL)
 		return (1);
 	index = 0;
