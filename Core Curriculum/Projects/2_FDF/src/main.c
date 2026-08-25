@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 03:27:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/25 23:23:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,21 @@ static int	print_usage(void)
 
 int	main(int argc, char **argv)
 {
-	t_fdf	fdf;
+	t_info	info;
+
+	init_info(&info);
 
 	if (argc != 2)
 		return (print_usage());
-	if (fdf_init(&fdf, argv[1]) != 0)
+	if (fdf_init(&info, argv[1]) != 0)
 	{
-		fdf_destroy(&fdf);
+		fdf_destroy(&info);
 		write(2, "Error: MiniLibX initialization failed\n", 38);
 		return (1);
 	}
-	mlx_put_image_to_window(fdf.mlx, fdf.win, fdf.image.ptr, 0, 0);
-	mlx_hook(fdf.win, EVENT_KEY_PRESS, 0, fdf_key_press, &fdf);
-	mlx_hook(fdf.win, EVENT_DESTROY, 0, fdf_close, &fdf);
-	mlx_loop(fdf.mlx);
+	mlx_put_image_to_window(info.mlx, info.win, info.image.ptr, 0, 0);
+	mlx_hook(info.win, EVENT_KEY_PRESS, 0, fdf_key_press, &info);
+	mlx_hook(info.win, EVENT_DESTROY, 0, fdf_close, &info);
+	mlx_loop(info.mlx);
 	return (0);
 }
