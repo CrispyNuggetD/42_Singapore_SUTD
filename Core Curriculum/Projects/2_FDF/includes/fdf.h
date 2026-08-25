@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 00:43:39 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 01:06:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,9 @@ int		fdf_key_press(int keycode, t_info *info);
 void	fdf_destroy(t_info *info);
 void	fdf_put_pixel(t_image *image, int x, int y, unsigned int colour);
 void	free_words(char **words);
+char	**split_map_line(char *line);
 int		map_dimensions(const char *filename, t_map *map);
+int		allocate_map(t_map *map);
+int		read_map(const char *filename, t_map *map);
 
 #endif
