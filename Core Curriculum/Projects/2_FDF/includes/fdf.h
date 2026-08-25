@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 23:33:59 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 00:08:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,31 @@ typedef struct s_image
 	void	*ptr;
 	char	*addr;
 	int		bits_per_pixel;
+	int		bytes_per_pixel;
 	int		line_length;
 	int		endian;
 }		t_image;
+
+typedef struct s_point
+{
+	int	x;
+	int	y;
+	int	z;
+}		t_point;
+
+typedef struct s_map
+{
+	int			width;
+	int			height;
+	t_point		*points;
+}				t_map;
 
 typedef struct s_info
 {
 	void		*mlx;
 	void		*win;
 	t_image		image;
+	t_map		map;
 }		t_info;
 
 int		fdf_init(t_info *info, char *title);

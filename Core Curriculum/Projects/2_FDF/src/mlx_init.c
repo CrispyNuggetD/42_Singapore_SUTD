@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 23:23:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 00:08:17 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@ static void	init_info(t_info *info)
 	info->win = NULL;
 	info->image.ptr = NULL;
 	info->image.addr = NULL;
+	info->image.bytes_per_pixel = 0;
+	info->map.width = 0;
+	info->map.height = 0;
+	info->map.points = NULL;
 }
 
 int	fdf_init(t_info *info, char *title)
@@ -37,11 +41,13 @@ int	fdf_init(t_info *info, char *title)
 			&info->image.endian);
 	if (info->image.addr == NULL)
 		return (1);
+	info->image.bytes_per_pixel = info->image.bits_per_pixel / 8;
 	return (0);
 }
 
 void	fdf_destroy(t_info *info)
 {
+	free(info->map.points);
 	if (info->image.ptr != NULL)
 		mlx_destroy_image(info->mlx, info->image.ptr);
 	if (info->win != NULL)
