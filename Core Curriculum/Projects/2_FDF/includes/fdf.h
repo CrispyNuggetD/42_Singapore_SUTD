@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 05:09:28 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 05:23:49 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,9 @@
 # define EVENT_KEY_PRESS 2
 # define EVENT_DESTROY 17
 # define MASK_KEY_PRESS (1L << 0)
-# define ISO_ANGLE 0.5235987756
+# define PI 3.14159265358979323846
+# define ISO_ANGLE (PI / 6.0)
+# define WINDOW_MARGIN 80
 
 typedef struct s_image
 {
@@ -54,8 +56,24 @@ typedef struct s_projection
 {
 	double	cos_angle;
 	double	sin_angle;
-	int		scale;
+	double	scale;
+	double	offset_x;
+	double	offset_y;
 }			t_projection;
+
+typedef struct s_projected
+{
+	double	x;
+	double	y;
+}			t_projected;
+
+typedef struct s_bounds
+{
+	double	min_x;
+	double	max_x;
+	double	min_y;
+	double	max_y;
+}			t_bounds;
 
 typedef struct s_info
 {
