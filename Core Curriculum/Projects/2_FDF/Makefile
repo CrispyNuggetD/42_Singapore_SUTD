@@ -5,22 +5,29 @@ CFLAGS := -Wall -Wextra -Werror
 SRC_DIR := src
 OBJ_DIR := obj
 INC_DIR := includes
-LIBFT_DIR := libft
+LIBFT_DIR := libft/0_libft
+GNL_DIR := libft/1_get_next_line
 MLX_DIR := minilibx-linux
 
-SRCS := main.c mlx_init.c events.c pixel.c
+SRCS := main.c mlx_init.c events.c pixel.c map_dimensions.c
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
+GNL_SRCS := get_next_line.c get_next_line_utils.c
+GNL_OBJS := $(GNL_SRCS:%.c=$(OBJ_DIR)/gnl_%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX := $(MLX_DIR)/libmlx.a
-INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -I$(MLX_DIR)
+INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -I$(GNL_DIR) -I$(MLX_DIR)
 MLX_FLAGS := -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(LIBFT) $(MLX)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
+$(NAME): $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h
+	mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/gnl_%.o: $(GNL_DIR)/%.c $(GNL_DIR)/get_next_line.h
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
