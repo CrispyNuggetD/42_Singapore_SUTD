@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 05:50:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 05:56:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # define MASK_KEY_PRESS 1
 # define PI 3.14159265358979323846
 # define WINDOW_MARGIN 80
+# define WHITE 0x00FFFFFF
 
 typedef struct s_image
 {
@@ -42,6 +43,7 @@ typedef struct s_point
 	int	x;
 	int	y;
 	int	z;
+	int	colour;
 }		t_point;
 
 typedef struct s_map
@@ -88,6 +90,8 @@ int		fdf_key_press(int keycode, t_info *info);
 void	fdf_destroy(t_info *info);
 void	fdf_put_pixel(t_image *image, int x, int y, unsigned int colour);
 void	draw_line(t_image *image, t_point start, t_point end);
+int		parse_colour(char *word);
+int		blend_colour(t_point start, t_point end, int step, int steps);
 void	free_words(char **words);
 char	**split_map_line(char *line);
 int		map_dimensions(const char *filename, t_map *map);
