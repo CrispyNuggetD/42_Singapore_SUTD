@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 23:23:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/25 23:33:59 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ int	main(int argc, char **argv)
 {
 	t_info	info;
 
-	init_info(&info);
-
 	if (argc != 2)
 		return (print_usage());
 	if (fdf_init(&info, argv[1]) != 0)
@@ -32,6 +30,7 @@ int	main(int argc, char **argv)
 		write(2, "Error: MiniLibX initialization failed\n", 38);
 		return (1);
 	}
+	fdf_put_pixel(&info.image, WIN_WIDTH / 2, WIN_HEIGHT / 2, 0x00FFFFFF);
 	mlx_put_image_to_window(info.mlx, info.win, info.image.ptr, 0, 0);
 	mlx_hook(info.win, EVENT_KEY_PRESS, 0, fdf_key_press, &info);
 	mlx_hook(info.win, EVENT_DESTROY, 0, fdf_close, &info);
