@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 22:59:49 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/25 23:33:59 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,5 +43,6 @@ int		fdf_init(t_info *info, char *title);
 int		fdf_close(t_info *info);
 int		fdf_key_press(int keycode, t_info *info);
 void	fdf_destroy(t_info *info);
+void	fdf_put_pixel(t_image *image, int x, int y, unsigned int colour);
 
 #endif

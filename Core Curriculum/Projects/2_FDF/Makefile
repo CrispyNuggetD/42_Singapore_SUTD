@@ -8,7 +8,7 @@ INC_DIR := includes
 LIBFT_DIR := libft
 MLX_DIR := minilibx-linux
 
-SRCS := main.c mlx_init.c events.c
+SRCS := main.c mlx_init.c events.c pixel.c
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX := $(MLX_DIR)/libmlx.a

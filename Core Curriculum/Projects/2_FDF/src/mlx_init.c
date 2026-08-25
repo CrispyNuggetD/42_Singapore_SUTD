@@ -12,7 +12,7 @@
 
 #include "fdf.h"
 
-static void init_info(t_info *info)
+static void	init_info(t_info *info)
 {
 	info->mlx = NULL;
 	info->win = NULL;
