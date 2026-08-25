@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/25 03:27:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/25 22:59:49 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,16 @@ typedef struct s_image
 	int		endian;
 }		t_image;
 
-typedef struct s_fdf
+typedef struct s_info
 {
 	void		*mlx;
 	void		*win;
 	t_image		image;
-}		t_fdf;
+}		t_info;
 
-int		fdf_init(t_fdf *fdf, char *title);
-int		fdf_close(t_fdf *fdf);
-int		fdf_key_press(int keycode, t_fdf *fdf);
-void	fdf_destroy(t_fdf *fdf);
+int		fdf_init(t_info *info, char *title);
+int		fdf_close(t_info *info);
+int		fdf_key_press(int keycode, t_info *info);
+void	fdf_destroy(t_info *info);
 
 #endif
