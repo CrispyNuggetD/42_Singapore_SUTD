@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/26 02:51:15 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 02:51:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/08/26 04:15:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,19 +48,37 @@ static t_point	project_point(t_point point, t_map *map,
 	return (point);
 }
 
+static void	draw_neighbours(t_info *info, int index,
+		t_projection *projection)
+{
+	t_point	current;
+	t_point	neighbour;
+
+	current = project_point(info->map.points[index], &info->map, projection);
+	if (info->map.points[index].x + 1 < info->map.width)
+	{
+		neighbour = project_point(info->map.points[index + 1], &info->map,
+				projection);
+		draw_line(&info->image, current, neighbour);
+	}
+	if (info->map.points[index].y + 1 < info->map.height)
+	{
+		neighbour = project_point(info->map.points[index + info->map.width],
+				&info->map, projection);
+		draw_line(&info->image, current, neighbour);
+	}
+}
+
 void	render_map(t_info *info)
 {
 	t_projection	projection;
-	t_point			point;
 	int				index;
 
 	projection = init_projection(&info->map);
 	index = 0;
 	while (index < info->map.width * info->map.height)
 	{
-		point = project_point(info->map.points[index], &info->map,
-				&projection);
-		fdf_put_pixel(&info->image, point.x, point.y, 0x00FFFFFF);
+		draw_neighbours(info, index, &projection);
 		index++;
 	}
 }
