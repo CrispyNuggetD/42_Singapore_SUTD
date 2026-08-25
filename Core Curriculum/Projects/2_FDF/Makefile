@@ -10,7 +10,7 @@ GNL_DIR := libft/1_get_next_line
 MLX_DIR := minilibx-linux
 
 SRCS := main.c mlx_init.c events.c pixel.c map_dimensions.c map_load.c \
-	projection.c projection_bounds.c line.c
+	projection.c projection_bounds.c line.c colour.c
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 GNL_SRCS := get_next_line.c get_next_line_utils.c
 GNL_OBJS := $(GNL_SRCS:%.c=$(OBJ_DIR)/gnl_%.o)
