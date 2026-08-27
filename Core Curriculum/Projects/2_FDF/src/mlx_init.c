@@ -54,7 +54,9 @@ void	fdf_destroy(t_info *info)
 		mlx_destroy_window(info->mlx, info->win);
 	if (info->mlx != NULL)
 	{
+#ifndef __APPLE__
 		mlx_destroy_display(info->mlx);
 		free(info->mlx);
+#endif
 	}
 }
