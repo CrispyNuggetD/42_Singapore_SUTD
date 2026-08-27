@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   fds.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,31 +10,42 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "pipex.h"
 
-# include "libft.h"
-# include <fcntl.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <unistd.h>
-
-typedef struct s_fds
+void	fds_init(t_fds *fds)
 {
-	int	infile;
-	int	outfile;
-	int	pipefd[2];
-}	t_fds;
+	fds->infile = -1;
+	fds->outfile = -1;
+	fds->pipefd[0] = -1;
+	fds->pipefd[1] = -1;
+}
 
-void	fds_init(t_fds *fds);
-int		fds_open(t_fds *fds, char **argv);
-void	fds_close(t_fds *fds);
-int		spawn_children(t_fds *fds, char **argv, char **envp);
-void	execute_command(char *command, char **envp);
-char	*resolve_path(char *command, char **envp);
-void	free_matrix(char **matrix);
-void	exit_perror(char *message, int status);
+int	fds_open(t_fds *fds, char **argv)
+{
+	fds->infile = open(argv[1], O_RDONLY);
+	if (fds->infile < 0)
+		perror(argv[1]);
+	fds->outfile = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fds->outfile < 0)
+		return (perror(argv[4]), 1);
+	if (pipe(fds->pipefd) < 0)
+		return (perror("pipe"), 1);
+	return (0);
+}
 
-#endif
+static void	close_one(int *fd)
+{
+	if (*fd >= 0)
+	{
+		close(*fd);
+		*fd = -1;
+	}
+}
+
+void	fds_close(t_fds *fds)
+{
+	close_one(&fds->infile);
+	close_one(&fds->outfile);
+	close_one(&fds->pipefd[0]);
+	close_one(&fds->pipefd[1]);
+}
