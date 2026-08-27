@@ -7,7 +7,15 @@ OBJ_DIR := obj
 INC_DIR := includes
 LIBFT_DIR := libft/0_libft
 GNL_DIR := libft/1_get_next_line
-MLX_DIR := minilibx-linux
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME), Darwin)
+	MLX_DIR := minilibx-macos
+	MLX_FLAGS := -L$(MLX_DIR) -lmlx -framework OpenGL -framework AppKit
+else
+	MLX_DIR := minilibx-linux
+	MLX_FLAGS := -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
+endif
 
 SRCS := main.c mlx_init.c events.c pixel.c map_dimensions.c map_load.c \
 	projection.c projection_bounds.c line.c colour.c
@@ -17,7 +25,6 @@ GNL_OBJS := $(GNL_SRCS:%.c=$(OBJ_DIR)/gnl_%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX := $(MLX_DIR)/libmlx.a
 INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -I$(GNL_DIR) -I$(MLX_DIR)
-MLX_FLAGS := -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
 
 all: $(NAME)
 

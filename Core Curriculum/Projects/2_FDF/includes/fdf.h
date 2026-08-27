@@ -20,7 +20,11 @@
 
 # define WIN_WIDTH 1000
 # define WIN_HEIGHT 700
-# define KEY_ESC 65307
+# ifdef __APPLE__
+#  define KEY_ESC 53
+# else
+#  define KEY_ESC 65307
+# endif
 # define EVENT_KEY_PRESS 2
 # define EVENT_DESTROY 17
 # define MASK_KEY_PRESS 1
