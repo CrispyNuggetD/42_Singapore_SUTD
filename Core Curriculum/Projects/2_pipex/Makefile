@@ -7,7 +7,7 @@ OBJ_DIR := obj
 INC_DIR := includes
 LIBFT_DIR := libft/0_libft
 
-SRCS := main.c
+SRCS := main.c fds.c process.c execute.c path.c memory.c
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
 INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR)

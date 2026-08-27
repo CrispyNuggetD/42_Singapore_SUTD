@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   memory.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,31 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "pipex.h"
 
-# include "libft.h"
-# include <fcntl.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <unistd.h>
-
-typedef struct s_fds
+void	free_matrix(char **matrix)
 {
-	int	infile;
-	int	outfile;
-	int	pipefd[2];
-}	t_fds;
+	int	i;
 
-void	fds_init(t_fds *fds);
-int		fds_open(t_fds *fds, char **argv);
-void	fds_close(t_fds *fds);
-int		spawn_children(t_fds *fds, char **argv, char **envp);
-void	execute_command(char *command, char **envp);
-char	*resolve_path(char *command, char **envp);
-void	free_matrix(char **matrix);
-void	exit_perror(char *message, int status);
-
-#endif
+	if (!matrix)
+		return ;
+	i = 0;
+	while (matrix[i])
+	{
+		free(matrix[i]);
+		i++;
+	}
+	free(matrix);
+}

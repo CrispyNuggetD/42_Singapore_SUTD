@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   execute.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,31 +10,43 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "pipex.h"
 
-# include "libft.h"
-# include <fcntl.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <unistd.h>
-
-typedef struct s_fds
+void	exit_perror(char *message, int status)
 {
-	int	infile;
-	int	outfile;
-	int	pipefd[2];
-}	t_fds;
+	perror(message);
+	exit(status);
+}
 
-void	fds_init(t_fds *fds);
-int		fds_open(t_fds *fds, char **argv);
-void	fds_close(t_fds *fds);
-int		spawn_children(t_fds *fds, char **argv, char **envp);
-void	execute_command(char *command, char **envp);
-char	*resolve_path(char *command, char **envp);
-void	free_matrix(char **matrix);
-void	exit_perror(char *message, int status);
+static void	command_not_found(char *command, char **args)
+{
+	write(2, "pipex: ", 7);
+	write(2, command, ft_strlen(command));
+	write(2, ": command not found\n", 20);
+	free_matrix(args);
+	exit(127);
+}
 
-#endif
+void	execute_command(char *command, char **envp)
+{
+	char	**args;
+	char	*path;
+
+	args = ft_split(command, ' ');
+	if (!args)
+		exit_perror("malloc", 1);
+	if (!args[0])
+	{
+		free_matrix(args);
+		write(2, "pipex: command not found\n", 25);
+		exit(127);
+	}
+	path = resolve_path(args[0], envp);
+	if (!path)
+		command_not_found(args[0], args);
+	execve(path, args, envp);
+	perror(args[0]);
+	free(path);
+	free_matrix(args);
+	exit(126);
+}
