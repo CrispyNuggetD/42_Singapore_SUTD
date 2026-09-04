@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 03:27:00 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 05:56:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/01 19:20:34 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,14 @@ typedef struct s_map
 	t_point		*points;
 }				t_map;
 
+typedef struct s_info
+{
+	void		*mlx;
+	void		*win;
+	t_image		image;
+	t_map		map;
+}		t_info;
+
 typedef struct s_projection
 {
 	double	cos_angle;
@@ -80,13 +88,6 @@ typedef struct s_bounds
 	double	max_y;
 }			t_bounds;
 
-typedef struct s_info
-{
-	void		*mlx;
-	void		*win;
-	t_image		image;
-	t_map		map;
-}		t_info;
 
 int		fdf_init(t_info *info, char *title);
 int		fdf_close(t_info *info);
