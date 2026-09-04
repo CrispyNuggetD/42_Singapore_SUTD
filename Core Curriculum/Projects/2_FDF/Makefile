@@ -1,4 +1,5 @@
 NAME := fdf
+BONUS_MARKER := .bonus
 CC := cc
 CFLAGS := -Wall -Wextra -Werror
 
@@ -17,9 +18,13 @@ else
 	MLX_FLAGS := -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
 endif
 
-SRCS := main.c mlx_init.c events.c pixel.c map_dimensions.c map_load.c \
+COMMON_SRCS := mlx_init.c events.c pixel.c map_dimensions.c map_load.c \
 	projection.c projection_bounds.c line.c colour.c
+SRCS := main.c $(COMMON_SRCS)
+BONUS_SRCS := main_bonus.c game_bonus.c rotation_events_bonus.c \
+	rotation_render_bonus.c rotation_draw_bonus.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
+BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
 GNL_SRCS := get_next_line.c get_next_line_utils.c
 GNL_OBJS := $(GNL_SRCS:%.c=$(OBJ_DIR)/gnl_%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
@@ -28,8 +33,16 @@ INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -I$(GNL_DIR) -I$(MLX_DIR)
 
 all: $(NAME)
 
+bonus: $(BONUS_MARKER)
+
+$(BONUS_MARKER): $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) \
+		$(MLX_FLAGS) -o $(NAME)
+	touch $(BONUS_MARKER)
+
 $(NAME): $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
 	$(CC) $(CFLAGS) $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
+	rm -f $(BONUS_MARKER)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h
 	mkdir -p $(OBJ_DIR)
@@ -37,6 +50,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h
 
 $(OBJ_DIR)/projection.o $(OBJ_DIR)/projection_bounds.o: \
 	$(INC_DIR)/projection.h
+
+$(OBJ_DIR)/game_bonus.o: $(INC_DIR)/game_bonus.h
+
+$(OBJ_DIR)/main_bonus.o $(OBJ_DIR)/rotation_events_bonus.o \
+$(OBJ_DIR)/rotation_render_bonus.o $(OBJ_DIR)/rotation_draw_bonus.o: \
+	$(INC_DIR)/rotation_bonus.h
 
 $(OBJ_DIR)/gnl_%.o: $(GNL_DIR)/%.c $(GNL_DIR)/get_next_line.h
 	mkdir -p $(OBJ_DIR)
@@ -50,6 +69,7 @@ $(MLX):
 
 clean:
 	rm -rf $(OBJ_DIR)
+	rm -f $(BONUS_MARKER)
 	$(MAKE) -C $(LIBFT_DIR) clean
 	$(MAKE) -C $(MLX_DIR) clean
 
@@ -59,4 +79,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all bonus clean fclean re
