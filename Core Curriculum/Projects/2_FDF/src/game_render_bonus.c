@@ -13,6 +13,13 @@
 #include "rotation_bonus.h"
 #include "projection.h"
 
+int	game_close(void *parameter)
+{
+	game_destroy(parameter);
+	exit(0);
+	return (0);
+}
+
 void	game_update_camera(t_rotation *rotation, int player)
 {
 	t_point	point;

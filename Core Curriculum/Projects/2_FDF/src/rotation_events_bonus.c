@@ -33,7 +33,7 @@ int	rotation_key_press(int keycode, void *parameter)
 	if (keycode == KEY_ESC)
 		game_close(rotation);
 	else if (keycode == KEY_V)
-		game_enable_first_person(rotation);
+		game_toggle_view(rotation);
 	else if (keycode == KEY_LEFT)
 		rotation->direction = -1;
 	else if (keycode == KEY_RIGHT)

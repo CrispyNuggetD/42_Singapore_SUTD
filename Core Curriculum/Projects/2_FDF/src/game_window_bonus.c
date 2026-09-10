@@ -43,7 +43,7 @@ static int	open_remote_view(t_rotation *rotation)
 	return (0);
 }
 
-void	game_destroy(t_rotation *rotation)
+static void	close_remote_view(t_rotation *rotation)
 {
 	if (rotation->remote_view.image.ptr != NULL)
 		mlx_destroy_image(rotation->info.mlx,
@@ -52,20 +52,24 @@ void	game_destroy(t_rotation *rotation)
 		mlx_destroy_window(rotation->info.mlx, rotation->remote_view.win);
 	rotation->remote_view.image.ptr = NULL;
 	rotation->remote_view.win = NULL;
+}
+
+void	game_destroy(t_rotation *rotation)
+{
+	close_remote_view(rotation);
 	fdf_destroy(&rotation->info);
 }
 
-int	game_close(void *parameter)
-{
-	game_destroy(parameter);
-	exit(0);
-	return (0);
-}
-
-void	game_enable_first_person(t_rotation *rotation)
+void	game_toggle_view(t_rotation *rotation)
 {
 	if (rotation->view_mode == VIEW_FIRST_PERSON)
+	{
+		close_remote_view(rotation);
+		rotation->view_mode = VIEW_ISOMETRIC;
+		rotation->direction = 0;
+		game_render(rotation);
 		return ;
+	}
 	if (open_remote_view(rotation) != 0)
 	{
 		write(2, "Error: second window initialization failed\n", 43);

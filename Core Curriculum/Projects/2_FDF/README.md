@@ -120,7 +120,8 @@ and a Player 2 version of each function.
 The program initially opens one isometric window. Player 1 starts at the
 top-left map point and Player 2 at the opposite, bottom-right point. Pressing
 `V` once changes the original window to Player 1's first-person view and creates
-a second local window for Player 2. It does not currently toggle back.
+a second local window for Player 2. Pressing `V` again destroys the second
+viewport and returns the original window to the isometric view.
 
 The first-person renderer translates points relative to a camera, rotates them
 by camera yaw, rejects edges behind the near plane, and applies perspective:
@@ -212,7 +213,7 @@ version which rejects the host command above, try `nc -l -p 3333`.
 |---|---|---|
 | Host `W A S D` | Move Player 1 | Move Player 1 |
 | Host `Left / Right` | Rotate the map | Turn Player 1 camera |
-| Host `V` | Open the two first-person views | No further change |
+| Host `V` | Open the two first-person views | Return to one isometric view |
 | Host `ESC` / window close | Exit and clean both views | Exit and clean both views |
 | Remote `W A S D` | Move Player 2 | Move Player 2 |
 | Remote `Q / E` | Turn Player 2 camera | Turn Player 2 camera |

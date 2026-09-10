@@ -105,7 +105,7 @@ typedef struct s_rotation
 long			rotation_time_us(void);
 void			game_render(t_rotation *rotation);
 void			game_update_camera(t_rotation *rotation, int player);
-void			game_enable_first_person(t_rotation *rotation);
+void			game_toggle_view(t_rotation *rotation);
 void			game_destroy(t_rotation *rotation);
 int				game_close(void *parameter);
 void			perspective_render(t_rotation *rotation, int player,
