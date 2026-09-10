@@ -22,7 +22,7 @@ COMMON_SRCS := mlx_init.c events.c pixel.c map_dimensions.c map_load.c \
 	projection.c projection_bounds.c line.c colour.c
 SRCS := main.c $(COMMON_SRCS)
 BONUS_SRCS := main_bonus.c rotation_events_bonus.c game_bonus.c \
-	game_render_bonus.c perspective_bonus.c $(COMMON_SRCS)
+	game_render_bonus.c game_window_bonus.c perspective_bonus.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
 GNL_SRCS := get_next_line.c get_next_line_utils.c
@@ -59,7 +59,7 @@ $(OBJ_DIR)/projection.o $(OBJ_DIR)/projection_bounds.o: \
 
 $(OBJ_DIR)/main_bonus.o $(OBJ_DIR)/rotation_events_bonus.o \
 $(OBJ_DIR)/game_bonus.o $(OBJ_DIR)/game_render_bonus.o \
-$(OBJ_DIR)/perspective_bonus.o: \
+$(OBJ_DIR)/game_window_bonus.o $(OBJ_DIR)/perspective_bonus.o: \
 	$(INC_DIR)/rotation_bonus.h
 
 $(OBJ_DIR)/gnl_%.o: $(GNL_DIR)/%.c $(GNL_DIR)/get_next_line.h

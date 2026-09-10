@@ -27,6 +27,7 @@
 # define CAMERA_EYE_HEIGHT 2.0
 # define CAMERA_FOV 1.0471975511965976
 # define CAMERA_NEAR 0.1
+# define REMOTE_TURN_STEP 0.15
 # ifdef __APPLE__
 #  define KEY_A 0
 #  define KEY_D 2
@@ -75,11 +76,25 @@ typedef struct s_camera_point
 	int		colour;
 }			t_camera_point;
 
+typedef struct s_viewport
+{
+	void	*win;
+	t_image	image;
+}			t_viewport;
+
+typedef struct s_render_view
+{
+	t_camera	*camera;
+	t_image		*image;
+	int			player;
+}			t_render_view;
+
 typedef struct s_rotation
 {
 	t_info		info;
 	t_player	players[2];
-	t_camera	camera;
+	t_camera	cameras[2];
+	t_viewport	remote_view;
 	t_view_mode	view_mode;
 	double		angle;
 	int			direction;
@@ -89,7 +104,12 @@ typedef struct s_rotation
 
 long			rotation_time_us(void);
 void			game_render(t_rotation *rotation);
-void			perspective_render(t_rotation *rotation);
+void			game_update_camera(t_rotation *rotation, int player);
+void			game_enable_first_person(t_rotation *rotation);
+void			game_destroy(t_rotation *rotation);
+int				game_close(void *parameter);
+void			perspective_render(t_rotation *rotation, int player,
+					t_image *image, void *win);
 int				game_input_update(t_rotation *rotation);
 int				game_move_player(t_rotation *rotation, int player, char key);
 int				rotation_key_press(int keycode, void *parameter);

@@ -27,7 +27,7 @@ static t_camera_point	camera_point(t_point point, t_camera *camera)
 	return (result);
 }
 
-static void	draw_perspective_edge(t_rotation *rotation,
+static void	draw_perspective_edge(t_render_view *view,
 		t_point first, t_point second)
 {
 	t_camera_point	camera_first;
@@ -35,25 +35,26 @@ static void	draw_perspective_edge(t_rotation *rotation,
 	t_point			screen_first;
 	t_point			screen_second;
 
-	camera_first = camera_point(first, &rotation->camera);
-	camera_second = camera_point(second, &rotation->camera);
-	if (camera_first.depth <= rotation->camera.near_plane
-		|| camera_second.depth <= rotation->camera.near_plane)
+	camera_first = camera_point(first, view->camera);
+	camera_second = camera_point(second, view->camera);
+	if (camera_first.depth <= view->camera->near_plane
+		|| camera_second.depth <= view->camera->near_plane)
 		return ;
-	screen_first.x = WIN_WIDTH / 2 + rotation->camera.focal
+	screen_first.x = WIN_WIDTH / 2 + view->camera->focal
 		* camera_first.right / camera_first.depth;
-	screen_first.y = WIN_HEIGHT / 2 - rotation->camera.focal
+	screen_first.y = WIN_HEIGHT / 2 - view->camera->focal
 		* camera_first.vertical / camera_first.depth;
 	screen_first.colour = camera_first.colour;
-	screen_second.x = WIN_WIDTH / 2 + rotation->camera.focal
+	screen_second.x = WIN_WIDTH / 2 + view->camera->focal
 		* camera_second.right / camera_second.depth;
-	screen_second.y = WIN_HEIGHT / 2 - rotation->camera.focal
+	screen_second.y = WIN_HEIGHT / 2 - view->camera->focal
 		* camera_second.vertical / camera_second.depth;
 	screen_second.colour = camera_second.colour;
-	draw_line(&rotation->info.image, screen_first, screen_second);
+	draw_line(view->image, screen_first, screen_second);
 }
 
-static void	draw_neighbours(t_rotation *rotation, int index)
+static void	draw_neighbours(t_rotation *rotation, t_render_view *view,
+		int index)
 {
 	t_point	*points;
 	int		width;
@@ -61,44 +62,47 @@ static void	draw_neighbours(t_rotation *rotation, int index)
 	points = rotation->info.map.points;
 	width = rotation->info.map.width;
 	if (points[index].x + 1 < width)
-		draw_perspective_edge(rotation, points[index], points[index + 1]);
+		draw_perspective_edge(view, points[index], points[index + 1]);
 	if (points[index].y + 1 < rotation->info.map.height)
-		draw_perspective_edge(rotation, points[index], points[index + width]);
+		draw_perspective_edge(view, points[index], points[index + width]);
 }
 
-static void	update_camera_position(t_rotation *rotation)
-{
-	t_point	point;
-	int		index;
-
-	index = rotation->players[HOST_PLAYER].y * rotation->info.map.width
-		+ rotation->players[HOST_PLAYER].x;
-	point = rotation->info.map.points[index];
-	rotation->camera.x = point.x;
-	rotation->camera.y = point.y;
-	rotation->camera.z = point.z + CAMERA_EYE_HEIGHT;
-}
-
-void	perspective_render(t_rotation *rotation)
+static void	draw_other_player(t_rotation *rotation, t_render_view *view)
 {
 	t_point	player_base;
 	t_point	player_top;
+	int		player;
 	int		index;
 
-	update_camera_position(rotation);
-	index = 0;
-	while (index < rotation->info.image.line_length * WIN_HEIGHT)
-		rotation->info.image.addr[index++] = 0;
-	index = 0;
-	while (index < rotation->info.map.width * rotation->info.map.height)
-		draw_neighbours(rotation, index++);
-	index = rotation->players[REMOTE_PLAYER].y * rotation->info.map.width
-		+ rotation->players[REMOTE_PLAYER].x;
+	player = 1 - view->player;
+	index = rotation->players[player].y * rotation->info.map.width
+		+ rotation->players[player].x;
 	player_base = rotation->info.map.points[index];
-	player_base.colour = REMOTE_COLOUR;
+	if (player == HOST_PLAYER)
+		player_base.colour = HOST_COLOUR;
+	else
+		player_base.colour = REMOTE_COLOUR;
 	player_top = player_base;
 	player_top.z += PLAYER_SIZE;
-	draw_perspective_edge(rotation, player_base, player_top);
-	mlx_put_image_to_window(rotation->info.mlx, rotation->info.win,
-		rotation->info.image.ptr, 0, 0);
+	draw_perspective_edge(view, player_base, player_top);
+}
+
+void	perspective_render(t_rotation *rotation, int player,
+		t_image *image, void *win)
+{
+	t_render_view	view;
+	int				index;
+
+	game_update_camera(rotation, player);
+	view.camera = &rotation->cameras[player];
+	view.image = image;
+	view.player = player;
+	index = 0;
+	while (index < image->line_length * WIN_HEIGHT)
+		image->addr[index++] = 0;
+	index = 0;
+	while (index < rotation->info.map.width * rotation->info.map.height)
+		draw_neighbours(rotation, &view, index++);
+	draw_other_player(rotation, &view);
+	mlx_put_image_to_window(rotation->info.mlx, win, image->ptr, 0, 0);
 }

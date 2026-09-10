@@ -13,6 +13,19 @@
 #include "rotation_bonus.h"
 #include "projection.h"
 
+void	game_update_camera(t_rotation *rotation, int player)
+{
+	t_point	point;
+	int		index;
+
+	index = rotation->players[player].y * rotation->info.map.width
+		+ rotation->players[player].x;
+	point = rotation->info.map.points[index];
+	rotation->cameras[player].x = point.x;
+	rotation->cameras[player].y = point.y;
+	rotation->cameras[player].z = point.z + CAMERA_EYE_HEIGHT;
+}
+
 static void	draw_player(t_rotation *rotation, t_projection *projection,
 		int player, int colour)
 {
@@ -44,7 +57,10 @@ void	game_render(t_rotation *rotation)
 
 	if (rotation->view_mode == VIEW_FIRST_PERSON)
 	{
-		perspective_render(rotation);
+		perspective_render(rotation, HOST_PLAYER, &rotation->info.image,
+			rotation->info.win);
+		perspective_render(rotation, REMOTE_PLAYER,
+			&rotation->remote_view.image, rotation->remote_view.win);
 		return ;
 	}
 	projection = render_map(&rotation->info, rotation->angle);

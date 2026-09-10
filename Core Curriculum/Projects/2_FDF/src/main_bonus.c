@@ -35,6 +35,25 @@ static int	load_bonus(t_rotation *rotation, char *filename)
 	return (0);
 }
 
+static void	init_cameras(t_rotation *rotation)
+{
+	double	centre_x;
+	double	centre_y;
+
+	centre_x = (rotation->info.map.width - 1) / 2.0;
+	centre_y = (rotation->info.map.height - 1) / 2.0;
+	rotation->cameras[HOST_PLAYER].yaw = atan2(centre_y, centre_x);
+	rotation->cameras[REMOTE_PLAYER].yaw = atan2(centre_y
+			- rotation->players[REMOTE_PLAYER].y, centre_x
+			- rotation->players[REMOTE_PLAYER].x);
+	rotation->cameras[HOST_PLAYER].focal = WIN_WIDTH
+		/ (2.0 * tan(CAMERA_FOV / 2.0));
+	rotation->cameras[REMOTE_PLAYER].focal
+		= rotation->cameras[HOST_PLAYER].focal;
+	rotation->cameras[HOST_PLAYER].near_plane = CAMERA_NEAR;
+	rotation->cameras[REMOTE_PLAYER].near_plane = CAMERA_NEAR;
+}
+
 static void	init_bonus_state(t_rotation *rotation)
 {
 	rotation->angle = 0.0;
@@ -45,10 +64,9 @@ static void	init_bonus_state(t_rotation *rotation)
 	rotation->players[HOST_PLAYER].y = 0;
 	rotation->players[REMOTE_PLAYER].x = rotation->info.map.width - 1;
 	rotation->players[REMOTE_PLAYER].y = rotation->info.map.height - 1;
-	rotation->camera.yaw = atan2((rotation->info.map.height - 1) / 2.0,
-			(rotation->info.map.width - 1) / 2.0);
-	rotation->camera.focal = WIN_WIDTH / (2.0 * tan(CAMERA_FOV / 2.0));
-	rotation->camera.near_plane = CAMERA_NEAR;
+	rotation->remote_view.win = NULL;
+	rotation->remote_view.image.ptr = NULL;
+	init_cameras(rotation);
 	rotation->last_frame = rotation_time_us();
 }
 
@@ -66,7 +84,7 @@ int	main(int argc, char **argv)
 		rotation_key_press, &rotation);
 	mlx_hook(rotation.info.win, EVENT_KEY_RELEASE, MASK_KEY_RELEASE,
 		rotation_key_release, &rotation);
-	mlx_hook(rotation.info.win, EVENT_DESTROY, 0, fdf_close, &rotation.info);
+	mlx_hook(rotation.info.win, EVENT_DESTROY, 0, game_close, &rotation);
 	mlx_loop_hook(rotation.info.mlx, rotation_loop, &rotation);
 	mlx_loop(rotation.info.mlx);
 	return (0);

@@ -31,13 +31,9 @@ int	rotation_key_press(int keycode, void *parameter)
 
 	rotation = parameter;
 	if (keycode == KEY_ESC)
-		fdf_close(&rotation->info);
+		game_close(rotation);
 	else if (keycode == KEY_V)
-	{
-		rotation->view_mode = 1 - rotation->view_mode;
-		rotation->direction = 0;
-		game_render(rotation);
-	}
+		game_enable_first_person(rotation);
 	else if (keycode == KEY_LEFT)
 		rotation->direction = -1;
 	else if (keycode == KEY_RIGHT)
@@ -72,7 +68,8 @@ static int	rotation_update(t_rotation *rotation, long now)
 	if (rotation->view_mode == VIEW_ISOMETRIC)
 		rotation->angle += rotation->direction * ROTATION_SPEED * seconds;
 	else
-		rotation->camera.yaw += rotation->direction * ROTATION_SPEED * seconds;
+		rotation->cameras[HOST_PLAYER].yaw += rotation->direction
+			* ROTATION_SPEED * seconds;
 	return (1);
 }
 

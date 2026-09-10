@@ -40,12 +40,6 @@ static int	read_remote_key(char *key)
 	return (-1);
 }
 
-static int	valid_position(t_rotation *rotation, int x, int y)
-{
-	return (x >= 0 && x < rotation->info.map.width
-		&& y >= 0 && y < rotation->info.map.height);
-}
-
 int	game_move_player(t_rotation *rotation, int player_index, char key)
 {
 	t_player	*player;
@@ -63,12 +57,28 @@ int	game_move_player(t_rotation *rotation, int player_index, char key)
 		new_x--;
 	else if (key == 'd' || key == 'D')
 		new_x++;
-	if (!valid_position(rotation, new_x, new_y)
+	if (new_x < 0 || new_x >= rotation->info.map.width
+		|| new_y < 0 || new_y >= rotation->info.map.height
 		|| (new_x == player->x && new_y == player->y))
 		return (0);
 	player->x = new_x;
 	player->y = new_y;
 	return (1);
+}
+
+static int	remote_action(t_rotation *rotation, char key)
+{
+	if (key == 'q' || key == 'Q')
+	{
+		rotation->cameras[REMOTE_PLAYER].yaw -= REMOTE_TURN_STEP;
+		return (1);
+	}
+	if (key == 'e' || key == 'E')
+	{
+		rotation->cameras[REMOTE_PLAYER].yaw += REMOTE_TURN_STEP;
+		return (1);
+	}
+	return (game_move_player(rotation, REMOTE_PLAYER, key));
 }
 
 int	game_input_update(t_rotation *rotation)
@@ -83,7 +93,7 @@ int	game_input_update(t_rotation *rotation)
 	status = read_remote_key(&key);
 	while (status > 0)
 	{
-		moved |= game_move_player(rotation, REMOTE_PLAYER, key);
+		moved |= remote_action(rotation, key);
 		status = read_remote_key(&key);
 	}
 	if (status < 0)
