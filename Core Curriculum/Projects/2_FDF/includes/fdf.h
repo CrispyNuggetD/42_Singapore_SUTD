@@ -103,6 +103,5 @@ char	**split_map_line(char *line);
 int		map_dimensions(const char *filename, t_map *map);
 int		allocate_map(t_map *map);
 int		read_map(const char *filename, t_map *map);
-void	render_map(t_info *info, double rotation_angle);
 
 #endif

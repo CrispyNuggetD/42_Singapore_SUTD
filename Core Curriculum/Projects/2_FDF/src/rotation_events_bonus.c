@@ -11,14 +11,18 @@
 /* ************************************************************************** */
 
 #include "rotation_bonus.h"
-#include <sys/time.h>
 
-long	rotation_time_us(void)
+static int	move_host_player(t_rotation *rotation, int keycode)
 {
-	struct timeval	time;
-
-	gettimeofday(&time, NULL);
-	return (time.tv_sec * 1000000L + time.tv_usec);
+	if (keycode == KEY_W)
+		return (game_move_player(rotation, HOST_PLAYER, 'w'));
+	if (keycode == KEY_S)
+		return (game_move_player(rotation, HOST_PLAYER, 's'));
+	if (keycode == KEY_A)
+		return (game_move_player(rotation, HOST_PLAYER, 'a'));
+	if (keycode == KEY_D)
+		return (game_move_player(rotation, HOST_PLAYER, 'd'));
+	return (0);
 }
 
 int	rotation_key_press(int keycode, void *parameter)
@@ -28,10 +32,18 @@ int	rotation_key_press(int keycode, void *parameter)
 	rotation = parameter;
 	if (keycode == KEY_ESC)
 		fdf_close(&rotation->info);
-	else if (keycode == KEY_LEFT || keycode == KEY_A)
+	else if (keycode == KEY_V)
+	{
+		rotation->view_mode = 1 - rotation->view_mode;
+		rotation->direction = 0;
+		game_render(rotation);
+	}
+	else if (keycode == KEY_LEFT)
 		rotation->direction = -1;
-	else if (keycode == KEY_RIGHT || keycode == KEY_D)
+	else if (keycode == KEY_RIGHT)
 		rotation->direction = 1;
+	else if (move_host_player(rotation, keycode))
+		game_render(rotation);
 	return (0);
 }
 
@@ -40,30 +52,39 @@ int	rotation_key_release(int keycode, void *parameter)
 	t_rotation	*rotation;
 
 	rotation = parameter;
-	if (keycode == KEY_LEFT || keycode == KEY_RIGHT
-		|| keycode == KEY_A || keycode == KEY_D)
+	if (keycode == KEY_LEFT || keycode == KEY_RIGHT)
 		rotation->direction = 0;
 	return (0);
 }
 
-int	rotation_loop(void *parameter)
+static int	rotation_update(t_rotation *rotation, long now)
 {
-	t_rotation	*rotation;
-	long		now;
 	double		seconds;
 
-	rotation = parameter;
-	now = rotation_time_us();
 	if (now - rotation->last_frame < FRAME_US)
 		return (0);
 	seconds = (now - rotation->last_frame) / 1000000.0;
 	if (seconds > 0.05)
 		seconds = 0.05;
 	rotation->last_frame = now;
-	if (rotation->direction != 0)
-	{
+	if (rotation->direction == 0)
+		return (0);
+	if (rotation->view_mode == VIEW_ISOMETRIC)
 		rotation->angle += rotation->direction * ROTATION_SPEED * seconds;
-		render_map(&rotation->info, rotation->angle);
-	}
+	else
+		rotation->camera.yaw += rotation->direction * ROTATION_SPEED * seconds;
+	return (1);
+}
+
+int	rotation_loop(void *parameter)
+{
+	t_rotation	*rotation;
+	int			redraw;
+
+	rotation = parameter;
+	redraw = game_input_update(rotation);
+	redraw |= rotation_update(rotation, rotation_time_us());
+	if (redraw != 0)
+		game_render(rotation);
 	return (0);
 }

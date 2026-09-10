@@ -32,7 +32,7 @@ t_projected	project_model(t_point point, t_map *map,
 	return (projected);
 }
 
-static t_point	project_point(t_point point, t_map *map,
+t_point	project_point(t_point point, t_map *map,
 		t_projection *projection)
 {
 	t_projected	projected;
@@ -64,7 +64,7 @@ static void	draw_neighbours(t_info *info, int index,
 	}
 }
 
-void	render_map(t_info *info, double rotation_angle)
+t_projection	render_map(t_info *info, double rotation_angle)
 {
 	t_projection	projection;
 	int				index;
@@ -79,5 +79,5 @@ void	render_map(t_info *info, double rotation_angle)
 		draw_neighbours(info, index, &projection);
 		index++;
 	}
-	mlx_put_image_to_window(info->mlx, info->win, info->image.ptr, 0, 0);
+	return (projection);
 }
