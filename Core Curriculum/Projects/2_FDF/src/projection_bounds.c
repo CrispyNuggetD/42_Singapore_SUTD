@@ -68,13 +68,15 @@ static void	fit_projection(t_projection *projection, t_bounds *bounds)
 		- (bounds->min_y + bounds->max_y) * projection->scale / 2.0;
 }
 
-t_projection	init_projection(t_map *map)
+t_projection	init_projection(t_map *map, double rotation_angle)
 {
 	t_projection	projection;
 	t_bounds		bounds;
 
 	projection.cos_angle = cos(PI / 6.0);
 	projection.sin_angle = sin(PI / 6.0);
+	projection.rotation_cos = cos(rotation_angle);
+	projection.rotation_sin = sin(rotation_angle);
 	bounds = find_bounds(map, &projection);
 	fit_projection(&projection, &bounds);
 	return (projection);

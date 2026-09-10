@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "rotation_bonus.h"
-#include <stdlib.h>
 #include <sys/time.h>
 
 long	rotation_time_us(void)
@@ -22,23 +21,13 @@ long	rotation_time_us(void)
 	return (time.tv_sec * 1000000L + time.tv_usec);
 }
 
-int	rotation_close(void *parameter)
-{
-	t_rotation	*rotation;
-
-	rotation = parameter;
-	fdf_destroy(&rotation->info);
-	exit(0);
-	return (0);
-}
-
 int	rotation_key_press(int keycode, void *parameter)
 {
 	t_rotation	*rotation;
 
 	rotation = parameter;
 	if (keycode == KEY_ESC)
-		rotation_close(rotation);
+		fdf_close(&rotation->info);
 	else if (keycode == KEY_LEFT || keycode == KEY_A)
 		rotation->direction = -1;
 	else if (keycode == KEY_RIGHT || keycode == KEY_D)
@@ -74,7 +63,7 @@ int	rotation_loop(void *parameter)
 	if (rotation->direction != 0)
 	{
 		rotation->angle += rotation->direction * ROTATION_SPEED * seconds;
-		rotation_render(rotation);
+		render_map(&rotation->info, rotation->angle);
 	}
 	return (0);
 }

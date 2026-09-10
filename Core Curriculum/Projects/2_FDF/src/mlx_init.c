@@ -12,6 +12,23 @@
 
 #include "fdf.h"
 
+#ifndef __APPLE__
+
+static void	destroy_display(t_info *info)
+{
+	mlx_destroy_display(info->mlx);
+	free(info->mlx);
+}
+
+#else
+
+static void	destroy_display(t_info *info)
+{
+	(void)info;
+}
+
+#endif
+
 static void	init_info(t_info *info)
 {
 	info->mlx = NULL;
@@ -53,10 +70,5 @@ void	fdf_destroy(t_info *info)
 	if (info->win != NULL)
 		mlx_destroy_window(info->mlx, info->win);
 	if (info->mlx != NULL)
-	{
-#ifndef __APPLE__
-		mlx_destroy_display(info->mlx);
-		free(info->mlx);
-#endif
-	}
+		destroy_display(info);
 }

@@ -40,13 +40,8 @@ typedef struct s_rotation
 }			t_rotation;
 
 long			rotation_time_us(void);
-t_projection	rotation_projection(t_rotation *rotation);
-t_point			rotation_point(t_point point, t_rotation *rotation,
-					t_projection *projection);
-void			rotation_render(t_rotation *rotation);
 int				rotation_key_press(int keycode, void *parameter);
 int				rotation_key_release(int keycode, void *parameter);
 int				rotation_loop(void *parameter);
-int				rotation_close(void *parameter);
 
 #endif

@@ -18,11 +18,17 @@ t_projected	project_model(t_point point, t_map *map,
 	t_projected	projected;
 	double		model_x;
 	double		model_y;
+	double		rotated_x;
+	double		rotated_y;
 
 	model_x = point.x - (map->width - 1) / 2.0;
 	model_y = point.y - (map->height - 1) / 2.0;
-	projected.x = (model_x - model_y) * projection->cos_angle;
-	projected.y = (model_x + model_y) * projection->sin_angle - point.z;
+	rotated_x = model_x * projection->rotation_cos
+		- model_y * projection->rotation_sin;
+	rotated_y = model_x * projection->rotation_sin
+		+ model_y * projection->rotation_cos;
+	projected.x = (rotated_x - rotated_y) * projection->cos_angle;
+	projected.y = (rotated_x + rotated_y) * projection->sin_angle - point.z;
 	return (projected);
 }
 
@@ -58,16 +64,20 @@ static void	draw_neighbours(t_info *info, int index,
 	}
 }
 
-void	render_map(t_info *info)
+void	render_map(t_info *info, double rotation_angle)
 {
 	t_projection	projection;
 	int				index;
 
-	projection = init_projection(&info->map);
+	index = 0;
+	while (index < info->image.line_length * WIN_HEIGHT)
+		info->image.addr[index++] = 0;
+	projection = init_projection(&info->map, rotation_angle);
 	index = 0;
 	while (index < info->map.width * info->map.height)
 	{
 		draw_neighbours(info, index, &projection);
 		index++;
 	}
+	mlx_put_image_to_window(info->mlx, info->win, info->image.ptr, 0, 0);
 }

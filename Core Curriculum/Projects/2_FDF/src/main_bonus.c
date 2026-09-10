@@ -46,12 +46,12 @@ int	main(int argc, char **argv)
 	rotation.angle = 0.0;
 	rotation.direction = 0;
 	rotation.last_frame = rotation_time_us();
-	rotation_render(&rotation);
+	render_map(&rotation.info, rotation.angle);
 	mlx_hook(rotation.info.win, EVENT_KEY_PRESS, MASK_KEY_PRESS,
 		rotation_key_press, &rotation);
 	mlx_hook(rotation.info.win, EVENT_KEY_RELEASE, MASK_KEY_RELEASE,
 		rotation_key_release, &rotation);
-	mlx_hook(rotation.info.win, EVENT_DESTROY, 0, rotation_close, &rotation);
+	mlx_hook(rotation.info.win, EVENT_DESTROY, 0, fdf_close, &rotation.info);
 	mlx_loop_hook(rotation.info.mlx, rotation_loop, &rotation);
 	mlx_loop(rotation.info.mlx);
 	return (0);

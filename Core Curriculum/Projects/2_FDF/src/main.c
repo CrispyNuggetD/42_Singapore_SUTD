@@ -36,8 +36,7 @@ int	main(int argc, char **argv)
 		write(2, "Error: invalid map\n", 19);
 		return (1);
 	}
-	render_map(&info);
-	mlx_put_image_to_window(info.mlx, info.win, info.image.ptr, 0, 0);
+	render_map(&info, 0.0);
 	mlx_hook(info.win, EVENT_KEY_PRESS, MASK_KEY_PRESS, fdf_key_press, &info);
 	mlx_hook(info.win, EVENT_DESTROY, 0, fdf_close, &info);
 	mlx_loop(info.mlx);

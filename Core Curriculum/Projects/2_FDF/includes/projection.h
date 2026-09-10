@@ -17,6 +17,6 @@
 
 t_projected		project_model(t_point point, t_map *map,
 					t_projection *projection);
-t_projection	init_projection(t_map *map);
+t_projection	init_projection(t_map *map, double rotation_angle);
 
 #endif

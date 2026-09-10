@@ -69,6 +69,8 @@ typedef struct s_projection
 {
 	double	cos_angle;
 	double	sin_angle;
+	double	rotation_cos;
+	double	rotation_sin;
 	double	scale;
 	double	offset_x;
 	double	offset_y;
@@ -88,7 +90,6 @@ typedef struct s_bounds
 	double	max_y;
 }			t_bounds;
 
-
 int		fdf_init(t_info *info, char *title);
 int		fdf_close(t_info *info);
 int		fdf_key_press(int keycode, t_info *info);
@@ -102,6 +103,6 @@ char	**split_map_line(char *line);
 int		map_dimensions(const char *filename, t_map *map);
 int		allocate_map(t_map *map);
 int		read_map(const char *filename, t_map *map);
-void	render_map(t_info *info);
+void	render_map(t_info *info, double rotation_angle);
 
 #endif
