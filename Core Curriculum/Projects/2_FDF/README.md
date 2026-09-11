@@ -88,9 +88,9 @@ input.
 This is also why Player 1 can turn continuously. X11 tells me both "key pressed"
 and "key released", so I can set a direction while Left/Right or `Q/E` is held
 and reset it on release. Both pairs mean the same thing: rotate the map in
-isometric mode, or turn Player 1's camera in FPS. FD 0 only gives Player 2
-received bytes; it does not reliably say when a remote key was released. Player
-2 therefore turns its own camera in fixed `Q/E` steps.
+isometric mode, or turn Player 1's camera in FPS.
+
+Since FD 0 only gives Player 2 received bytes, we can't reliably say when a remote key was released. Player 2 therefore turns its own camera in fixed `Q/E` steps.
 
 ### Player 2: bytes arriving on file descriptor 0
 
