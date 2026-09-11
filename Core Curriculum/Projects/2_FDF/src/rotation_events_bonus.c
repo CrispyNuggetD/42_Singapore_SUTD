@@ -40,6 +40,8 @@ int	rotation_key_press(int keycode, void *parameter)
 		rotation->direction = 1;
 	else if (move_host_player(rotation, keycode))
 		game_render(rotation);
+	else if (game_adjust_view(rotation, keycode))
+		game_render(rotation);
 	return (0);
 }
 

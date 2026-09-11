@@ -57,6 +57,9 @@ static void	init_cameras(t_rotation *rotation)
 static void	init_bonus_state(t_rotation *rotation)
 {
 	rotation->angle = 0.0;
+	rotation->zoom = 1.0;
+	rotation->shift.x = 0.0;
+	rotation->shift.y = 0.0;
 	rotation->direction = 0;
 	rotation->remote_active = 1;
 	rotation->view_mode = VIEW_ISOMETRIC;

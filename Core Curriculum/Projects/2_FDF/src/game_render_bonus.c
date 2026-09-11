@@ -33,6 +33,27 @@ void	game_update_camera(t_rotation *rotation, int player)
 	rotation->cameras[player].z = point.z + CAMERA_EYE_HEIGHT;
 }
 
+int	game_adjust_view(t_rotation *rotation, int keycode)
+{
+	if (rotation->view_mode != VIEW_ISOMETRIC)
+		return (0);
+	if (keycode == KEY_EQUAL && rotation->zoom < ZOOM_MAX)
+		rotation->zoom *= ZOOM_STEP;
+	else if (keycode == KEY_MINUS && rotation->zoom > ZOOM_MIN)
+		rotation->zoom /= ZOOM_STEP;
+	else if (keycode == KEY_Z || keycode == KEY_KP_4)
+		rotation->shift.x -= TRANSLATE_STEP;
+	else if (keycode == KEY_C || keycode == KEY_KP_6)
+		rotation->shift.x += TRANSLATE_STEP;
+	else if (keycode == KEY_R || keycode == KEY_KP_8)
+		rotation->shift.y -= TRANSLATE_STEP;
+	else if (keycode == KEY_F || keycode == KEY_KP_5)
+		rotation->shift.y += TRANSLATE_STEP;
+	else
+		return (0);
+	return (1);
+}
+
 static void	draw_player(t_rotation *rotation, t_projection *projection,
 		int player, int colour)
 {
@@ -70,7 +91,8 @@ void	game_render(t_rotation *rotation)
 			&rotation->remote_view.image, rotation->remote_view.win);
 		return ;
 	}
-	projection = render_map(&rotation->info, rotation->angle);
+	projection = render_map_view(&rotation->info, rotation->angle,
+			rotation->zoom, rotation->shift);
 	draw_player(rotation, &projection, HOST_PLAYER, HOST_COLOUR);
 	draw_player(rotation, &projection, REMOTE_PLAYER, REMOTE_COLOUR);
 	mlx_put_image_to_window(rotation->info.mlx, rotation->info.win,

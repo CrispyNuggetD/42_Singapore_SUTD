@@ -13,8 +13,9 @@ The mandatory program is deliberately small: load, project, fit, draw, display,
 and clean up.
 
 The bonus grew into an experiment rather than a real game. It adds rotating
-isometric projection, two movable points, two first-person cameras, and a way
-for a second terminal (including one on another computer) to provide controls.
+and movable isometric projection, zoom, two movable points, two first-person
+cameras, and a way for a second terminal (including one on another computer)
+to provide controls.
 There is no server inside FdF, no game protocol, no synchronised world on two
 machines, and no attempt at production networking. `nc` merely transports raw
 keyboard bytes into the FdF process's standard input. I therefore call it a
@@ -122,6 +123,44 @@ top-left map point and Player 2 at the opposite, bottom-right point. Pressing
 `V` once changes the original window to Player 1's first-person view and creates
 a second local window for Player 2. Pressing `V` again destroys the second
 viewport and returns the original window to the isometric view.
+
+### Zooming without making the map run away
+
+The isometric bonus keeps a `zoom` multiplier and a screen-space `shift`. The
+mandatory projection still calculates the best initial scale/offset to fit and
+centre the whole map. The bonus modifies that result rather than writing a
+second projection system.
+
+At first, zoom sounds almost too trivial: just multiply `projection.scale`,
+right? Almost. A projected point reaches the screen through:
+
+```text
+screen = projected_coordinate * scale + offset
+```
+
+If I multiply only `scale`, every point expands away from coordinate zero, not
+away from the middle of my window. The result is technically zoomed, but it can
+also slide toward one side—as if the map is running away from me. :D
+
+To keep the same visual centre fixed, I also move the fitted offset around the
+window centre:
+
+```text
+new_offset = window_centre
+	+ (old_offset - window_centre) * zoom
+	+ shift
+new_scale = old_scale * zoom
+```
+
+`old_offset - window_centre` is the offset measured **from the centre**, not
+from screen coordinate zero. Scaling that distance and adding the centre back
+means the map grows/shrinks around the middle of the window. Only after that do
+I add `shift.x` or `shift.y` for translation.
+
+Translation itself really is the easy part: it adds/subtracts pixels from the
+final offsets, moving the entire projection left/right/up/down without changing
+the map coordinates. Zoom uses multiplication/division by `1.1` instead of a
+fixed addition, so each step feels proportional at both small and large scales.
 
 ### How the first-person view actually works
 
@@ -444,12 +483,19 @@ version which rejects the host command above, try `nc -l -p 3333`.
 | Host `W A S D` | Move Player 1 | Move Player 1 |
 | Host `Left / Right` | Rotate the map | Turn Player 1 camera |
 | Host `V` | Open the two first-person views | Return to one isometric view |
+| Host `-` / `=` | Zoom out/in | No action |
+| Host `Z` / `C` | Translate view left/right | No action |
+| Host `R` / `F` | Translate view up/down | No action |
+| Numpad `4` / `6` | Translate view left/right | No action |
+| Numpad `8` / `5` | Translate view up/down | No action |
 | Host `ESC` / window close | Exit and clean both views | Exit and clean both views |
 | Remote `W A S D` | Move Player 2 | Move Player 2 |
 | Remote `Q / E` | Turn Player 2 camera | Turn Player 2 camera |
 
 Movement is grid-based and cannot leave the map. This testbed has no collision,
 authentication, reconnect protocol, interpolation, physics, or win condition.
+The `=` key is also the physical `+` key on the usual keyboard layout, so either
+plain `=` or shifted `+` selects the zoom-in key.
 
 ## Resources
 

@@ -21,5 +21,7 @@ t_point			project_point(t_point point, t_map *map,
 					t_projection *projection);
 t_projection	init_projection(t_map *map, double rotation_angle);
 t_projection	render_map(t_info *info, double rotation_angle);
+t_projection	render_map_view(t_info *info, double rotation_angle,
+					double zoom, t_projected shift);
 
 #endif

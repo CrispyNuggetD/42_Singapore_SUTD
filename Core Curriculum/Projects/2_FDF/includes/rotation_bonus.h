@@ -28,20 +28,44 @@
 # define CAMERA_FOV 1.0471975511965976
 # define CAMERA_NEAR 0.1
 # define REMOTE_TURN_STEP 0.15
+# define ZOOM_STEP 1.1
+# define ZOOM_MIN 0.1
+# define ZOOM_MAX 10.0
+# define TRANSLATE_STEP 20.0
 # ifdef __APPLE__
 #  define KEY_A 0
+#  define KEY_C 8
 #  define KEY_D 2
+#  define KEY_EQUAL 24
+#  define KEY_F 3
+#  define KEY_KP_4 86
+#  define KEY_KP_5 87
+#  define KEY_KP_6 88
+#  define KEY_KP_8 91
+#  define KEY_MINUS 27
+#  define KEY_R 15
 #  define KEY_S 1
 #  define KEY_V 9
 #  define KEY_W 13
+#  define KEY_Z 6
 #  define KEY_LEFT 123
 #  define KEY_RIGHT 124
 # else
 #  define KEY_A 97
+#  define KEY_C 99
 #  define KEY_D 100
+#  define KEY_EQUAL 61
+#  define KEY_F 102
+#  define KEY_KP_4 65460
+#  define KEY_KP_5 65461
+#  define KEY_KP_6 65462
+#  define KEY_KP_8 65464
+#  define KEY_MINUS 45
+#  define KEY_R 114
 #  define KEY_S 115
 #  define KEY_V 118
 #  define KEY_W 119
+#  define KEY_Z 122
 #  define KEY_LEFT 65361
 #  define KEY_RIGHT 65363
 # endif
@@ -97,6 +121,8 @@ typedef struct s_rotation
 	t_viewport	remote_view;
 	t_view_mode	view_mode;
 	double		angle;
+	double		zoom;
+	t_projected	shift;
 	int			direction;
 	int			remote_active;
 	long		last_frame;
@@ -104,6 +130,7 @@ typedef struct s_rotation
 
 long			rotation_time_us(void);
 void			game_render(t_rotation *rotation);
+int				game_adjust_view(t_rotation *rotation, int keycode);
 void			game_update_camera(t_rotation *rotation, int player);
 void			game_toggle_view(t_rotation *rotation);
 void			game_destroy(t_rotation *rotation);

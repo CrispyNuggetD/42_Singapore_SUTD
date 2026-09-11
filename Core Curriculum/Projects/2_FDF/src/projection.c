@@ -64,7 +64,8 @@ static void	draw_neighbours(t_info *info, int index,
 	}
 }
 
-t_projection	render_map(t_info *info, double rotation_angle)
+t_projection	render_map_view(t_info *info, double rotation_angle,
+		double zoom, t_projected shift)
 {
 	t_projection	projection;
 	int				index;
@@ -73,6 +74,11 @@ t_projection	render_map(t_info *info, double rotation_angle)
 	while (index < info->image.line_length * WIN_HEIGHT)
 		info->image.addr[index++] = 0;
 	projection = init_projection(&info->map, rotation_angle);
+	projection.offset_x = WIN_WIDTH / 2.0 + (projection.offset_x
+			- WIN_WIDTH / 2.0) * zoom + shift.x;
+	projection.offset_y = WIN_HEIGHT / 2.0 + (projection.offset_y
+			- WIN_HEIGHT / 2.0) * zoom + shift.y;
+	projection.scale *= zoom;
 	index = 0;
 	while (index < info->map.width * info->map.height)
 	{
@@ -80,4 +86,13 @@ t_projection	render_map(t_info *info, double rotation_angle)
 		index++;
 	}
 	return (projection);
+}
+
+t_projection	render_map(t_info *info, double rotation_angle)
+{
+	t_projected	shift;
+
+	shift.x = 0.0;
+	shift.y = 0.0;
+	return (render_map_view(info, rotation_angle, 1.0, shift));
 }
