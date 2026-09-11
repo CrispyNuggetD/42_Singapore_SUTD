@@ -22,13 +22,7 @@ static int	host_action(t_rotation *rotation, int keycode)
 		return (game_move_player(rotation, HOST_PLAYER, 'a'));
 	if (keycode == KEY_D)
 		return (game_move_player(rotation, HOST_PLAYER, 'd'));
-	if (keycode == KEY_Q)
-		rotation->cameras[HOST_PLAYER].yaw -= REMOTE_TURN_STEP;
-	else if (keycode == KEY_E)
-		rotation->cameras[HOST_PLAYER].yaw += REMOTE_TURN_STEP;
-	else
-		return (0);
-	return (1);
+	return (0);
 }
 
 int	rotation_key_press(int keycode, void *parameter)
@@ -40,9 +34,9 @@ int	rotation_key_press(int keycode, void *parameter)
 		game_close(rotation);
 	else if (keycode == KEY_V)
 		game_toggle_view(rotation);
-	else if (keycode == KEY_LEFT)
+	else if (keycode == KEY_LEFT || keycode == KEY_Q)
 		rotation->direction = -1;
-	else if (keycode == KEY_RIGHT)
+	else if (keycode == KEY_RIGHT || keycode == KEY_E)
 		rotation->direction = 1;
 	else if (host_action(rotation, keycode))
 		game_render(rotation);
@@ -56,7 +50,8 @@ int	rotation_key_release(int keycode, void *parameter)
 	t_rotation	*rotation;
 
 	rotation = parameter;
-	if (keycode == KEY_LEFT || keycode == KEY_RIGHT)
+	if (keycode == KEY_LEFT || keycode == KEY_RIGHT
+		|| keycode == KEY_Q || keycode == KEY_E)
 		rotation->direction = 0;
 	return (0);
 }

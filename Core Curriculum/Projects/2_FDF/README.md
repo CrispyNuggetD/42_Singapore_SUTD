@@ -85,12 +85,12 @@ MiniLibX subscribes the window to X11 key-press and key-release events through
 belong to a focused graphical window; they are not bytes read from standard
 input.
 
-This is also why Player 1 gets an extra continuous Left/Right control. X11 tells
-me both "key pressed" and "key released", so I can set a direction while the
-arrow is held and reset it on release. FD 0 only gives Player 2 received bytes;
-it does not reliably say when a remote key was released. Player 2 therefore
-turns in fixed `Q/E` steps. Player 1 also accepts `Q/E` for matching step-based
-controls, while Left/Right remains a host convenience.
+This is also why Player 1 can turn continuously. X11 tells me both "key pressed"
+and "key released", so I can set a direction while Left/Right or `Q/E` is held
+and reset it on release. Both pairs mean the same thing: rotate the map in
+isometric mode, or turn Player 1's camera in FPS. FD 0 only gives Player 2
+received bytes; it does not reliably say when a remote key was released. Player
+2 therefore turns its own camera in fixed `Q/E` steps.
 
 ### Player 2: bytes arriving on file descriptor 0
 
@@ -489,7 +489,7 @@ version which rejects the host command above, try `nc -l -p 3333`.
 |---|---|---|
 | Host `W A S D` | Move Player 1 | Move Player 1 |
 | Host `Left / Right` | Rotate the map | Turn Player 1 camera |
-| Host `Q / E` | Prepare Player 1 camera yaw | Turn Player 1 camera in steps |
+| Host `Q / E` | Rotate the map | Turn Player 1 camera |
 | Host `V` | Open the two first-person views | Return to one isometric view |
 | Host `-` / `=` | Zoom out/in | No action |
 | Host `Z` / `C` | Translate view left/right | No action |
