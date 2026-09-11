@@ -125,12 +125,23 @@ viewport and returns the original window to the isometric view.
 
 ### How the first-person view actually works
 
-My first thought was: do I need quaternions or some big 3D library for this?
-Nope. This is a wireframe height map and the camera only turns left/right
-(`yaw`). For this minimum version, ordinary trigonometry is enough.
+My first thought was:
+
+Is FPS much different from isometric projection, considering I already have my
+graphics structs and functions? Or do I need some big 3D library for this?
+
+Then Darren also mentioned quaternions. Apparently those are important for
+avoiding gimbal lock in unrestricted 3D rotation.
+
+However, nope, I won't need them here. This is a wireframe height map and the
+camera only turns left/right (`yaw`). For this minimum version, ordinary
+trigonometry is enough.
+
+Instead of the global world view, I look from where the camera is by subtracting
+the camera's coordinates. Then, more maths.
 
 A normal `t_point` answers, "Where is this point in the map's world?" A
-`t_camera_point` instead answers three questions from the player's eyes:
+`t_camera_point` instead answers three questions from the **player's eyes**:
 
 ```c
 typedef struct s_camera_point
@@ -146,8 +157,8 @@ typedef struct s_camera_point
 - `vertical`: how far it is above my eye (negative means below); and
 - `depth`: how far it is in front of me (negative means behind).
 
-That is the basic trick. FPS rendering becomes much less mystical when I stop
-asking for a point's absolute `(x, y, z)` and instead ask, "from where I am
+That is the basic trick. FPS rendering does not ask only for a point's absolute
+`(x, y, z)`. Instead I ask, "from where I am
 standing and facing, is it right/left, up/down, and how far forward?"
 
 #### 1. Put the camera at `(0, 0)`
@@ -199,7 +210,7 @@ screen_x = centre_x + focal * right / depth
 screen_y = centre_y - focal * vertical / depth
 ```
 
-This division is what makes it look first-person. Consider two points equally
+**This division is what makes it look first-person**. Consider two points equally
 far to the right:
 
 ```text
@@ -233,7 +244,9 @@ its visible part is also discarded. That can make very close edges pop out.
 
 Once an edge's two 3D endpoints become two screen `(x, y)` points,
 `draw_perspective_edge()` hands them to my existing dominant-axis
-`draw_line()`. `draw_neighbours()` again connects only the right and bottom
+`draw_line()`.
+
+`draw_neighbours()` again connects only the right and bottom
 neighbours, so every grid edge is drawn once. I did not need a second line
 algorithm just because the projection changed. Nice :D
 
@@ -258,6 +271,100 @@ own image buffer. There is no Z-buffer or hidden-line removal, so later pixels
 simply overwrite earlier ones. Closing either window goes through one cleanup
 path which destroys the second image/window first, then the shared map, main
 image, main window, and MiniLibX display.
+
+## The `.bonus` marker Makefile trick
+
+Mandatory and bonus must both create an executable named `fdf`. That causes a
+small Make problem: after I build one version, the file `fdf` already exists.
+Make normally compares timestamps and may decide there is nothing to do, even
+when I ask for the other version.
+
+I could solve that with `make re` every time, but recompiling every `.c` file
+and both libraries just to switch the final executable is rather wasteful. The
+Makefile instead uses an empty `.bonus` file as a note to itself:
+
+```make
+BONUS_MARKER := .bonus
+
+bonus: $(BONUS_MARKER)
+```
+
+The filename starts with `.`, so it is hidden in a normal `ls`. It contains no
+configuration or program data. Its existence simply means:
+
+```text
+`.bonus` exists     -> the current `fdf` was linked from bonus objects
+`.bonus` is absent  -> the current `fdf` is mandatory (or not built yet)
+```
+
+### Going from mandatory to bonus
+
+```make
+$(BONUS_MARKER): $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) \
+		$(MLX_FLAGS) -o $(NAME)
+	touch $(BONUS_MARKER)
+```
+
+When I run `make bonus` and `.bonus` does not exist, its target is missing, so
+Make links `fdf` using `BONUS_OBJS`. After linking succeeds, `touch .bonus`
+creates an empty marker (or only updates its timestamp). `touch` does **not**
+change the executable.
+
+Because the marker depends on all bonus objects and libraries, changing bonus
+source also makes the marker older than a prerequisite. Make then relinks the
+bonus and touches the marker again.
+
+### Going from bonus back to mandatory
+
+This conditional is evaluated when Make reads the Makefile:
+
+```make
+ifneq ($(wildcard $(BONUS_MARKER)),)
+$(NAME): FORCE
+endif
+
+FORCE:
+```
+
+Here is what each unfamiliar part means:
+
+- `$(wildcard .bonus)` asks Make to expand an existing matching pathname. It
+  becomes `.bonus` when the file exists, or an empty string when it does not.
+- `ifneq (value,)` means "if `value` is not empty". Therefore, this block is
+  enabled only when the last build was bonus.
+- `$(NAME): FORCE` adds `FORCE` as another prerequisite of `fdf`. Make permits
+  a target's prerequisites to be declared across multiple rules.
+- `FORCE` has no commands and is listed under `.PHONY`. A phony target does not
+  represent a real file, so Make treats it as needing an update every time.
+
+Therefore, if `.bonus` exists and I run plain `make`, `FORCE` makes the `fdf`
+link recipe run even if `fdf` is newer than every mandatory object:
+
+```make
+$(NAME): $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
+	rm -f $(BONUS_MARKER)
+```
+
+That recipe replaces `fdf` using only the mandatory `OBJS`, then removes the
+marker. On the next separate `make` invocation, `wildcard` finds no `.bonus`,
+so `fdf` no longer receives the `FORCE` prerequisite and normal timestamp
+checking resumes.
+
+`FORCE` does not delete object files, add bonus code to mandatory, or bloat the
+binary. The linker command's explicit object list decides what goes inside
+`fdf`; `FORCE` only says, "run that recipe this time." `clean` also removes the
+marker because a marker describing a cleaned/generated executable would be
+stale and misleading.
+
+In short:
+
+```text
+make bonus : link BONUS_OBJS -> fdf -> touch .bonus
+make       : if .bonus exists, force-link OBJS -> fdf -> remove .bonus
+make again : ordinary timestamps; nothing relinks unnecessarily
+```
 
 ## Instructions
 
@@ -296,7 +403,8 @@ not be blocked. On the **host computer**, first find its LAN address:
 hostname -I
 ```
 
-Then build and start the listener/FdF pipeline. FdF can start before the friend
+Then build and start the listener/FdF pipeline. FdF can start before the other
+computer
 connects because its FD 0 polling is non-blocking:
 
 ```sh
@@ -304,15 +412,15 @@ make bonus
 nc -l 3333 | ./fdf test_maps/42.fdf
 ```
 
-On the **friend's computer**, replace `HOST_IP` with the host address:
+On **the other computer**, replace `HOST_IP` with the host address:
 
 ```sh
 nc HOST_IP 3333
 ```
 
-In an ordinary terminal, the friend types controls and presses Enter. For
-single-key input without Enter, the friend can temporarily disable canonical
-input and restore the terminal afterward:
+In an ordinary terminal, you normally need to press Enter before the commands are parsed. For
+single-key input *without* Enter, you can **temporarily disable canonical
+input** and restore the terminal afterward:
 
 ```sh
 old_tty=$(stty -g)
@@ -326,7 +434,7 @@ trap - EXIT INT TERM
 If the connection succeeds, `nc` may print nothing. The visible confirmation
 is Player 2 moving in the host's FdF window.
 
-Different `nc` implementations have slightly different listen syntax. On a
+Also different `nc` implementations have slightly different listen syntax. On a
 version which rejects the host command above, try `nc -l -p 3333`.
 
 ### Controls
@@ -354,24 +462,36 @@ authentication, reconnect protocol, interpolation, physics, or win condition.
   buffer usage; no source code was copied
 - Peer discussion, including the suggestion that a first-person projection
   could be derived from the existing projection work
+- My personalised YouTube/Instagram recommendations are mostly nerdy programming
+  content, so some inspiration also came from seeing other CS concepts/videos
 
 ### Use of AI
 
-AI was used substantially and is disclosed here rather than presented as fully
-independent work. It was used to generate the initial scaffold/documentation,
-clarify subject and Norm constraints, explain MiniLibX and projection concepts,
-review code, refactor shared mandatory/bonus rendering, and help implement the
-rotation, FD 0 input, first-person projection, and two-window bonus.
+Although AI was used substantially, it is disclosed here rather than presented
+as fully independent work.
+
+It was mainly used to:
+
+- **generate the initial scaffold/documentation,
+clarify subject and Norm constraints, explain MiniLibX and projection concepts**,
+- review code and refactor shared mandatory/bonus rendering,
+- help implement rotation by adapting the existing projection path,
+- help me learn `select()` and implement FD 0 input alongside MLX hooks,
+- explain and help implement the first-person projection maths/algorithm, and
+- help add a second window and image while retaining one shared MLX connection,
+  including cleanup and `NULL` handling.
 
 I directed the design and tested the results. My manual work also included
 mechanical changes I considered straightforward—for example converting a
 single player into indexed player storage, extending capacity/state, adapting
-call sites, and copying or moving small pieces while refactoring. AI was also
-used as an interactive tutor while I questioned choices such as callbacks,
-cleanup ownership, `select`, duplicated functions, camera yaw, and Makefile
-bonus switching.
+call sites, and copying or moving small pieces while refactoring.
 
-Accordingly, the bonus should not be judged from the code alone as proof that I
-understood every generated line immediately. Before evaluation I am responsible
-for being able to derive the projection equations, trace ownership and cleanup,
+AI was also used as an interactive tutor while I questioned choices, modified
+or rolled back changes instead of blindly retaining them, and examined
+callbacks, cleanup ownership, `select`, duplicated functions, camera yaw, and
+Makefile bonus switching.
+
+Which means the bonus should not be judged from the code alone as proof that I
+understood every generated line immediately. If needed, I should be able to
+derive the projection equations, trace ownership and cleanup,
 explain X11 events versus FD input, and modify the implementation without AI.
