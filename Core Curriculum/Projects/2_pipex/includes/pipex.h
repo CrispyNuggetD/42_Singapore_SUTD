@@ -36,5 +36,6 @@ void	execute_command(char *command, char **envp);
 char	*resolve_path(char *command, char **envp);
 void	free_matrix(char **matrix);
 void	exit_perror(char *message, int status);
+int		return_perror(char *message);
 
 #endif

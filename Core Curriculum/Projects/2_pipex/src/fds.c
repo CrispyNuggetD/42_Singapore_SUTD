@@ -27,9 +27,9 @@ int	fds_open(t_fds *fds, char **argv)
 		perror(argv[1]);
 	fds->outfile = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fds->outfile < 0)
-		return (perror(argv[4]), 1);
+		return (return_perror(argv[4]));
 	if (pipe(fds->pipefd) < 0)
-		return (perror("pipe"), 1);
+		return (return_perror("pipe"));
 	return (0);
 }
 

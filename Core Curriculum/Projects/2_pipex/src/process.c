@@ -37,13 +37,21 @@ static void	child_two(t_fds *fds, char **argv, char **envp)
 	execute_command(argv[3], envp);
 }
 
+static int	second_fork_error(t_fds *fds, pid_t first)
+{
+	fds_close(fds);
+	waitpid(first, NULL, 0);
+	perror("fork");
+	return (1);
+}
+
 static int	wait_children(pid_t first, pid_t second)
 {
 	int	status;
 
 	waitpid(first, NULL, 0);
 	if (waitpid(second, &status, 0) < 0)
-		return (perror("waitpid"), 1);
+		return (return_perror("waitpid"));
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	if (WIFSIGNALED(status))
@@ -58,12 +66,12 @@ int	spawn_children(t_fds *fds, char **argv, char **envp)
 
 	first = fork();
 	if (first < 0)
-		return (perror("fork"), 1);
+		return (return_perror("fork"));
 	if (first == 0)
 		child_one(fds, argv, envp);
 	second = fork();
 	if (second < 0)
-		return (fds_close(fds), waitpid(first, NULL, 0), perror("fork"), 1);
+		return (second_fork_error(fds, first));
 	if (second == 0)
 		child_two(fds, argv, envp);
 	fds_close(fds);

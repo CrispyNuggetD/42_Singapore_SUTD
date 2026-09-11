@@ -18,6 +18,12 @@ void	exit_perror(char *message, int status)
 	exit(status);
 }
 
+int	return_perror(char *message)
+{
+	perror(message);
+	return (1);
+}
+
 static void	command_not_found(char *command, char **args)
 {
 	write(2, "pipex: ", 7);
