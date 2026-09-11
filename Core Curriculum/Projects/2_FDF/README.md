@@ -123,19 +123,141 @@ top-left map point and Player 2 at the opposite, bottom-right point. Pressing
 a second local window for Player 2. Pressing `V` again destroys the second
 viewport and returns the original window to the isometric view.
 
-The first-person renderer translates points relative to a camera, rotates them
-by camera yaw, rejects edges behind the near plane, and applies perspective:
+### How the first-person view actually works
+
+My first thought was: do I need quaternions or some big 3D library for this?
+Nope. This is a wireframe height map and the camera only turns left/right
+(`yaw`). For this minimum version, ordinary trigonometry is enough.
+
+A normal `t_point` answers, "Where is this point in the map's world?" A
+`t_camera_point` instead answers three questions from the player's eyes:
+
+```c
+typedef struct s_camera_point
+{
+	double	right;
+	double	vertical;
+	double	depth;
+	int		colour;
+}			t_camera_point;
+```
+
+- `right`: how far the point is to my right (negative means left);
+- `vertical`: how far it is above my eye (negative means below); and
+- `depth`: how far it is in front of me (negative means behind).
+
+That is the basic trick. FPS rendering becomes much less mystical when I stop
+asking for a point's absolute `(x, y, z)` and instead ask, "from where I am
+standing and facing, is it right/left, up/down, and how far forward?"
+
+#### 1. Put the camera at `(0, 0)`
+
+`camera_point()` first subtracts the camera position:
+
+```c
+dx = point.x - camera->x;
+dy = point.y - camera->y;
+```
+
+For example, if the camera is at `(3, 2)` and the map point is `(8, 6)`, the
+point is `(5, 4)` relative to the camera. The world was not moved in memory; I
+only changed the coordinate system used for this calculation.
+
+#### 2. Measure against the directions I face
+
+For a yaw angle, the camera has two imaginary direction rulers:
+
+```text
+forward = ( cos(yaw), sin(yaw))
+right   = (-sin(yaw), cos(yaw))
+```
+
+The right ruler is the forward ruler turned 90 degrees. Dot products measure
+how much of `(dx, dy)` lies along each ruler:
+
+```c
+result.right = -sin(camera->yaw) * dx + cos(camera->yaw) * dy;
+result.depth = cos(camera->yaw) * dx + sin(camera->yaw) * dy;
+result.vertical = point.z - camera->z;
+```
+
+This is "just maths", but specifically it is a change from world coordinates
+to camera coordinates. If `yaw == 0`, sine is 0 and cosine is 1, so the camera
+looks along world +X: `depth = dx` and `right = dy`. When yaw changes, the map
+points stay still but the two camera rulers rotate. That is why turning works.
+
+Vertical is simpler because this camera has no pitch: world Z is still camera
+up. Each camera follows its player's `(x, y)` map point and sits at
+`terrain_z + CAMERA_EYE_HEIGHT`.
+
+#### 3. Perspective comes from dividing by depth
+
+`draw_perspective_edge()` converts camera coordinates to screen coordinates:
 
 ```text
 screen_x = centre_x + focal * right / depth
 screen_y = centre_y - focal * vertical / depth
 ```
 
-Only yaw is required for this minimum version, so quaternions would add
-complexity without solving a present problem. Each camera sits at its player's
-map height plus an eye-height offset. Closing either window goes through one
-cleanup path which destroys the second image/window first, then the shared map,
-main image, main window, and MiniLibX display.
+This division is what makes it look first-person. Consider two points equally
+far to the right:
+
+```text
+right = 2, depth = 2   -> right / depth = 1.0 -> far from screen centre
+right = 2, depth = 20  -> right / depth = 0.1 -> close to screen centre
+```
+
+The distant point looks smaller/closer to the middle. The same happens to
+height through `vertical / depth`. Screen Y uses subtraction because world Z
+increases upward, while image Y increases downward.
+
+`focal` converts that ratio to pixels. It is calculated from the window width
+and a 60-degree field of view:
+
+```text
+focal = window_width / (2 * tan(field_of_view / 2))
+```
+
+A smaller field of view produces a larger focal length (zoomed in); a larger
+field of view produces a wider view.
+
+#### 4. Do not project what is behind my head
+
+Perspective divides by `depth`, so zero would divide by zero and a negative
+depth would mirror points behind the camera. The renderer rejects an edge if
+either endpoint is at or behind `CAMERA_NEAR` (`0.1`). This is intentionally
+simple near-plane rejection, not full clipping: if an edge crosses the plane,
+its visible part is also discarded. That can make very close edges pop out.
+
+#### 5. Reuse the mandatory renderer
+
+Once an edge's two 3D endpoints become two screen `(x, y)` points,
+`draw_perspective_edge()` hands them to my existing dominant-axis
+`draw_line()`. `draw_neighbours()` again connects only the right and bottom
+neighbours, so every grid edge is drawn once. I did not need a second line
+algorithm just because the projection changed. Nice :D
+
+`draw_other_player()` uses the same pipeline. It finds the other player's map
+point, copies it as `player_top`, adds `PLAYER_SIZE` to the top's Z, and projects
+the vertical edge between them. It looks taller when close because
+`vertical / depth` becomes larger. `1 - view->player` is a tidy shortcut for
+choosing the other player, but only while there are exactly two players.
+
+Finally, `perspective_render()` performs one complete view:
+
+1. move that camera to that player's terrain position;
+2. select that player's camera, image and window;
+3. clear the whole image buffer, including its row padding;
+4. project/draw all right and bottom map edges;
+5. draw the other player's vertical marker; and
+6. put the completed image into the selected MiniLibX window.
+
+`game_render()` calls this same function once for Player 1 and once for Player
+2. Both views share the loaded map and MLX connection, but each window needs its
+own image buffer. There is no Z-buffer or hidden-line removal, so later pixels
+simply overwrite earlier ones. Closing either window goes through one cleanup
+path which destroys the second image/window first, then the shared map, main
+image, main window, and MiniLibX display.
 
 ## Instructions
 
