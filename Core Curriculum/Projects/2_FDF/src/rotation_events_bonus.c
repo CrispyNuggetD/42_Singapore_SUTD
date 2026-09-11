@@ -12,7 +12,7 @@
 
 #include "rotation_bonus.h"
 
-static int	move_host_player(t_rotation *rotation, int keycode)
+static int	host_action(t_rotation *rotation, int keycode)
 {
 	if (keycode == KEY_W)
 		return (game_move_player(rotation, HOST_PLAYER, 'w'));
@@ -22,7 +22,13 @@ static int	move_host_player(t_rotation *rotation, int keycode)
 		return (game_move_player(rotation, HOST_PLAYER, 'a'));
 	if (keycode == KEY_D)
 		return (game_move_player(rotation, HOST_PLAYER, 'd'));
-	return (0);
+	if (keycode == KEY_Q)
+		rotation->cameras[HOST_PLAYER].yaw -= REMOTE_TURN_STEP;
+	else if (keycode == KEY_E)
+		rotation->cameras[HOST_PLAYER].yaw += REMOTE_TURN_STEP;
+	else
+		return (0);
+	return (1);
 }
 
 int	rotation_key_press(int keycode, void *parameter)
@@ -38,7 +44,7 @@ int	rotation_key_press(int keycode, void *parameter)
 		rotation->direction = -1;
 	else if (keycode == KEY_RIGHT)
 		rotation->direction = 1;
-	else if (move_host_player(rotation, keycode))
+	else if (host_action(rotation, keycode))
 		game_render(rotation);
 	else if (game_adjust_view(rotation, keycode))
 		game_render(rotation);
