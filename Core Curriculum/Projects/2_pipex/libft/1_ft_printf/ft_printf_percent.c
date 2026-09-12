@@ -1,34 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_printf_percent.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/27 19:22:31 by hnah             ###   ########.fr       */
+/*   Created: 2025/12/26 09:34:40 by hnah              #+#    #+#             */
+/*   Updated: 2026/01/07 22:01:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "ft_printf.h"
 
-int	main(int argc, char **argv, char **envp)
+int	ft_printf_percent(t_context *context)
 {
-	t_fds	fds;
-	int		status;
+	t_print	paper;
 
-	if (argc != 5)
-	{
-		ft_printf_fd(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n");
-		return (1);
-	}
-	fds_init(&fds);
-	if (fds_open(&fds, argv) != 0)
-	{
-		fds_close(&fds);
-		return (1);
-	}
-	status = spawn_children(&fds, argv, envp);
-	fds_close(&fds);
-	return (status);
+	(void)context;
+	ft_printf_init_t_print(&paper);
+	paper.core_len = 1;
+	paper.core = "%";
+	return (ft_printf_print_config(context, &paper));
 }

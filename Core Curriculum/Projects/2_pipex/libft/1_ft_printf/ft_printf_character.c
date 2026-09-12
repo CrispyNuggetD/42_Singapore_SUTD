@@ -1,34 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_printf_character.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/27 19:22:31 by hnah             ###   ########.fr       */
+/*   Created: 2026/01/07 13:55:30 by hnah              #+#    #+#             */
+/*   Updated: 2026/01/07 22:00:58 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "ft_printf.h"
 
-int	main(int argc, char **argv, char **envp)
+int	ft_printf_character(t_context *context)
 {
-	t_fds	fds;
-	int		status;
+	char	c;
+	int		arg;
+	t_print	paper;
 
-	if (argc != 5)
-	{
-		ft_printf_fd(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n");
-		return (1);
-	}
-	fds_init(&fds);
-	if (fds_open(&fds, argv) != 0)
-	{
-		fds_close(&fds);
-		return (1);
-	}
-	status = spawn_children(&fds, argv, envp);
-	fds_close(&fds);
-	return (status);
+	ft_printf_init_t_print(&paper);
+	arg = va_arg(*(context->input), int);
+	c = (char)arg;
+	paper.core = &c;
+	paper.core_len = 1;
+	return (ft_printf_print_config(context, &paper));
 }

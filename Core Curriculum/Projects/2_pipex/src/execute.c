@@ -26,9 +26,7 @@ int	return_perror(char *message)
 
 static void	command_not_found(char *command, char **args)
 {
-	write(2, "pipex: ", 7);
-	write(2, command, ft_strlen(command));
-	write(2, ": command not found\n", 20);
+	ft_printf_fd(2, "pipex: %s: command not found\n", command);
 	free_matrix(args);
 	exit(127);
 }
@@ -44,7 +42,7 @@ void	execute_command(char *command, char **envp)
 	if (!args[0])
 	{
 		free_matrix(args);
-		write(2, "pipex: command not found\n", 25);
+		ft_printf_fd(2, "pipex: command not found\n");
 		exit(127);
 	}
 	path = resolve_path(args[0], envp);

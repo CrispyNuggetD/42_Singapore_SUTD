@@ -1,34 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_printf_printer.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/27 19:22:31 by hnah             ###   ########.fr       */
+/*   Created: 2026/01/03 02:14:55 by hnah              #+#    #+#             */
+/*   Updated: 2026/01/09 02:08:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "ft_printf.h"
 
-int	main(int argc, char **argv, char **envp)
+int	send_for_printing(t_context *context, t_print *paper)
 {
-	t_fds	fds;
-	int		status;
-
-	if (argc != 5)
-	{
-		ft_printf_fd(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n");
-		return (1);
-	}
-	fds_init(&fds);
-	if (fds_open(&fds, argv) != 0)
-	{
-		fds_close(&fds);
-		return (1);
-	}
-	status = spawn_children(&fds, argv, envp);
-	fds_close(&fds);
-	return (status);
+	if (paper->sign && write_guaranteed(context, &paper->sign, 1) < 0)
+		return (-1);
+	if (paper->prefix_len && write_guaranteed(context,
+			paper->prefix, paper->prefix_len) < 0)
+		return (-1);
+	if (paper->core_len && write_guaranteed(context, paper->core,
+			paper->core_len) < 0)
+		return (-1);
+	return (0);
 }

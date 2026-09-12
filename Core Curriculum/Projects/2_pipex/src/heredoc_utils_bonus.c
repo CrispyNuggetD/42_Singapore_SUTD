@@ -28,18 +28,7 @@ int	is_limiter_bonus(char *line, char *limiter)
 
 int	write_line_bonus(int fd, char *line)
 {
-	size_t	written;
-	ssize_t	bytes;
-	size_t	length;
-
-	written = 0;
-	length = ft_strlen(line);
-	while (written < length)
-	{
-		bytes = write(fd, line + written, length - written);
-		if (bytes <= 0)
-			return (-1);
-		written += bytes;
-	}
+	if (ft_printf_fd(fd, "%s", line) < 0)
+		return (-1);
 	return (0);
 }
