@@ -26,7 +26,8 @@ $(MANDATORY_MARKER): $(OBJS) $(LIBFT)
 	rm -f $(BONUS_MARKER)
 	touch $(MANDATORY_MARKER)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_DIR)/ryker_ft/ryker_ft.h
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_DIR)/ryker_ft/ryker_ft.h \
+\t$(LIBFT_DIR)/ryker_ft/printf/ryker_ft_printf.h
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 

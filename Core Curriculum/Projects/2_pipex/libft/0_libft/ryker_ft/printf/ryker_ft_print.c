@@ -1,4 +1,4 @@
-#include "ryker_ft.h"
+#include "ryker_ft_printf.h"
 
 static int	ryker_ft_repeat(t_ryker_output *out, char c, size_t count)
 {
