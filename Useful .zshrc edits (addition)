@@ -81,11 +81,15 @@
 export MAIL='hnah@student.42singapore.sg'
 
 # current project name (change as needed, then `source ~/.zshrc`)
-export current_proj="1_ft_printf"
+export current_proj="2_pipex"
 
 # --- 42 paths ---
 export PROJECTS_ROOT="Core Curriculum/Projects"
 export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+
+# --- Daily login brightness ---
+export adjustbrightness=1
+export setbrightness=100
 
 # --- Zsh backwards cycling ---
 bindkey "^[[Z" reverse-menu-complete
@@ -115,8 +119,8 @@ curproj() {
   echo "Location: $proj_dir"
   
   #Uncomment to clean library files before committing pipeline
-  #echo "Pre-cleaning"
-  #make fclean || return 1
+  echo "Pre-cleaning"
+  make fclean || return 1
   
   echo "Launching Visual Studio Code"
   code . || return 1
@@ -457,11 +461,49 @@ hourslogged() {
   fi
 }
 
+adjust_brightness() {
+  if [ "$adjustbrightness" != "1" ]; then
+    echo "Brightness adjustment disabled (adjustbrightness=$adjustbrightness)"
+    return 0
+  fi
+
+  if ! [[ "$setbrightness" =~ '^[0-9]+$' ]] ||
+     [ "$setbrightness" -lt 0 ] || [ "$setbrightness" -gt 100 ]; then
+    echo "Invalid brightness: $setbrightness (expected 0-100)"
+    return 1
+  fi
+
+  if command -v gdbus >/dev/null 2>&1 &&
+     gdbus call --session \
+       --dest org.gnome.SettingsDaemon.Power \
+       --object-path /org/gnome/SettingsDaemon/Power \
+       --method org.freedesktop.DBus.Properties.Set \
+       org.gnome.SettingsDaemon.Power.Screen Brightness \
+       "<int32 $setbrightness>" >/dev/null 2>&1; then
+    echo "Brightness set to $setbrightness%"
+    return 0
+  fi
+
+  if command -v xbacklight >/dev/null 2>&1 &&
+     xbacklight -set "$setbrightness" >/dev/null 2>&1; then
+    echo "Brightness set to $setbrightness%"
+    return 0
+  fi
+
+  echo "Failed to set brightness to $setbrightness%"
+  return 1
+}
+
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
 
 dailylogin() {
+  divider
+  echo "Adjusting screen brightness"
+  divider
+  adjust_brightness
+
   divider
   echo "Days that I logged in before 12nn"
   divider
