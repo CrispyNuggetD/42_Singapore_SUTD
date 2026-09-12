@@ -4,19 +4,20 @@
 # EOD [End of day] syncing. 
 
 # This function runs the 2 fun functions (mentioned below) 
-# as well as the 2 essential functions that does 4 main things:
+# as well as the essential helpers that do these main things:
 
 # 1. cd to [custom-defined variable] for current project
 # 2. Opens Visual Studio Code
 # 3. makes fclean to clean up library objects for, then, 
 # 4. Proper syncing with github, amongst other auxillary checks and error handling.
+# 5. Starts the enrolled Mac remote client in a separate terminal window.
 
 ##### (A) Fun functions:
 # 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
 # and 'hourslogged' to find out if you will hit intra's 50 hours clocked 
 # per week's bonus score.
 
-##### (B) 6 Useful functions:
+##### (B) Useful functions:
 ### (1-2) Includes two aliases 'compile' and 'run' so you don't have 
 # to always type in full for 42-compliant compiling/ running
 # You can also stack with valgrind flags.
@@ -71,6 +72,17 @@
 # Technically Shift + Tab was supposed to work out of the box but
 # it didn't for me so I just included it here.
 
+### (7) Mac remote mailbox startup
+# First clone mac-remote, run its setup.sh once, get this device approved on the Mac,
+# and sign in to Codex inside VS Code. No re-enrollment is needed at daily login.
+# Set MAC_REMOTE_ROOT below to the actual clone location on your campus computer.
+# dailylogin opens a separate terminal running `bash device.sh start` (no sudo).
+# Leave that window open; closing it or logging out stops the worker.
+# Repeated dailylogin calls skip an already-running worker, including EOD syncing.
+# Set startmailbox=0 to disable, or run start_mailbox by itself to restart it.
+# GNOME Terminal is preferred; xterm is the fallback. Both launch a new window.
+# Copy these additions into ~/.zshrc and run `source ~/.zshrc` before dailylogin.
+
 ###################################################################
 ### (APPEND THESE) Variables after changing and Functions       ###
 ### Do NOT replace original .zshrc file                         ###
@@ -86,6 +98,10 @@ export current_proj="2_pipex"
 # --- 42 paths ---
 export PROJECTS_ROOT="Core Curriculum/Projects"
 export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+
+# --- Daily login Mac remote mailbox ---
+export startmailbox=1
+export MAC_REMOTE_ROOT="$HOME/mac-remote"  # Change if you cloned it elsewhere.
 
 # --- Daily login brightness ---
 export adjustbrightness=1
@@ -494,11 +510,96 @@ adjust_brightness() {
   return 1
 }
 
+# Start the enrolled 42 worker in its own window, leaving dailylogin free to finish.
+start_mailbox() {
+  if [ "${startmailbox:-1}" != "1" ]; then
+    echo "Mac remote mailbox disabled (startmailbox=${startmailbox:-0})"
+    return 0
+  fi
+
+  if [ "$(uname -s)" != "Linux" ]; then
+    echo "Mac remote client startup is for the Linux campus computer."
+    return 0
+  fi
+
+  local mailbox_root="${MAC_REMOTE_ROOT:-$HOME/mac-remote}"
+  if [ ! -f "$mailbox_root/device.sh" ]; then
+    echo "Mailbox clone not found: $mailbox_root"
+    echo "Set MAC_REMOTE_ROOT to your mac-remote clone in ~/.zshrc."
+    return 1
+  fi
+  if [ ! -f "$mailbox_root/.mailbox/identity/device.json" ]; then
+    echo "Enroll this computer first: run bash setup.sh from $mailbox_root"
+    echo "Then have the Mac approve its device fingerprint and sign in to Codex in VS Code."
+    return 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required by the mailbox worker."
+    return 1
+  fi
+
+  # Probe the worker's actual lock; a leftover lock file alone is harmless.
+  # The worker itself also locks before execution, preventing duplicate workers.
+  if python3 - "$mailbox_root/.mailbox/42/worker.lock" <<'PYLOCK'
+import fcntl
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+if path.exists():
+    with path.open('r') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            sys.exit(2)
+PYLOCK
+  then
+    :
+  else
+    local lock_result=$?
+    if [ "$lock_result" -eq 2 ]; then
+      echo "Mac remote mailbox is already running."
+      return 0
+    fi
+    echo "Could not check the mailbox worker lock; leaving it alone."
+    return 1
+  fi
+
+  local worker_command='cd -- "$1" || exit 1
+printf "42 mailbox: leave this window open while logged in. Ctrl-C stops the worker.\n"
+bash device.sh start
+worker_result=$?
+printf "\nMailbox stopped (exit %s). Check messages above; press Enter to close.\n" "$worker_result"
+read -r _'
+  local -a terminal_command
+  if command -v gnome-terminal >/dev/null 2>&1; then
+    terminal_command=(gnome-terminal --window --title="42 mailbox" -- bash -c "$worker_command" mailbox "$mailbox_root")
+  elif command -v xterm >/dev/null 2>&1; then
+    terminal_command=(xterm -T "42 mailbox" -e bash -c "$worker_command" mailbox "$mailbox_root")
+  else
+    echo "No supported terminal found (gnome-terminal or xterm)."
+    echo "Open a separate terminal in $mailbox_root and run: bash device.sh start"
+    return 1
+  fi
+
+  mkdir -p "$mailbox_root/.mailbox/42" || return 1
+  # nohup/disown keeps the new terminal independent of the dailylogin terminal.
+  # The worker still stops when its own window closes or the desktop logs out.
+  (umask 077; nohup "${terminal_command[@]}" \
+    >>"$mailbox_root/.mailbox/42/terminal-launch.log" 2>&1 </dev/null &!)
+  echo "Requested a separate 42 mailbox window. Leave it open while working."
+  echo "If it does not appear, check $mailbox_root/.mailbox/42/terminal-launch.log"
+}
+
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
 
 dailylogin() {
+  divider
+  echo "Starting Mac remote mailbox"
+  divider
+  start_mailbox
+
   divider
   echo "Adjusting screen brightness"
   divider
