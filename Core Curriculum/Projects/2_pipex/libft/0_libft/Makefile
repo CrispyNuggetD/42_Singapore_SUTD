@@ -14,10 +14,11 @@ PRINTF_SRCS = $(filter-out %_bonus.c $(PRINTF_DIR)/ft_printf_parse_specs.c \
 	$(PRINTF_DIR)/ft_printf_parse_specs_bonus.c \
 	$(PRINTF_DIR)/ft_printf_print_config_bonus.c \
 	$(PRINTF_DIR)/ft_printf_printer_bonus.c
-PRINTF_OBJS = $(patsubst $(PRINTF_DIR)/%.c,ryker_ft/obj/%.o,$(PRINTF_SRCS))
+OBJ_DIR = obj
+PRINTF_OBJS = $(patsubst $(PRINTF_DIR)/%.c,$(OBJ_DIR)/printf/%.o,$(PRINTF_SRCS))
 SRCS += $(wildcard ryker_ft/printf_fd/ryker_ft_*.c)
 
-OBJS	= $(SRCS:.c=.o) $(PRINTF_OBJS)
+OBJS	= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o)) $(PRINTF_OBJS)
 
 all: $(NAME)
 
@@ -27,18 +28,19 @@ $(NAME): $(OBJS) Makefile
 	$(AR) $(AR_FLAGS) $(NAME) $(OBJS)
 	@echo "\nLibft library archived!\n" #My echo
 
-ryker_ft/obj/%.o: $(PRINTF_DIR)/%.c $(PRINTF_DIR)/ft_printf.h
+$(OBJ_DIR)/printf/%.o: $(PRINTF_DIR)/%.c $(PRINTF_DIR)/ft_printf.h
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
 
-%.o: %.c libft.h ryker_ft/ryker_ft.h ryker_ft/printf_fd/ryker_ft_printf.h $(PRINTF_DIR)/ft_printf.h
+$(OBJ_DIR)/%.o: %.c libft.h ryker_ft/ryker_ft.h ryker_ft/printf_fd/ryker_ft_printf.h $(PRINTF_DIR)/ft_printf.h
+	mkdir -p $(@D)
 	@echo "\nCompiling ft_libft Project's .c file..." #My echo
 	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
 	@echo "\nft_libft Project's .c file compiled!" #My echo
 	
 clean:
 	@echo "\nCleaning ft_libft object files...\n" #My echo
-	rm -f $(OBJS)
+	rm -rf $(OBJ_DIR)
 	@echo "\nft_libft Objects cleaned!\n" #My echo
 
 
