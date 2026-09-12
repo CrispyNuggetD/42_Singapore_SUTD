@@ -15,7 +15,7 @@ PRINTF_SRCS = $(filter-out %_bonus.c $(PRINTF_DIR)/ft_printf_parse_specs.c \
 	$(PRINTF_DIR)/ft_printf_print_config_bonus.c \
 	$(PRINTF_DIR)/ft_printf_printer_bonus.c
 PRINTF_OBJS = $(patsubst $(PRINTF_DIR)/%.c,ryker_ft/obj/%.o,$(PRINTF_SRCS))
-SRCS += $(wildcard ryker_ft/printf/ryker_ft_*.c)
+SRCS += $(wildcard ryker_ft/printf_fd/ryker_ft_*.c)
 
 OBJS	= $(SRCS:.c=.o) $(PRINTF_OBJS)
 
@@ -31,7 +31,7 @@ ryker_ft/obj/%.o: $(PRINTF_DIR)/%.c $(PRINTF_DIR)/ft_printf.h
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
 
-%.o: %.c libft.h ryker_ft/ryker_ft.h ryker_ft/printf/ryker_ft_printf.h $(PRINTF_DIR)/ft_printf.h
+%.o: %.c libft.h ryker_ft/ryker_ft.h ryker_ft/printf_fd/ryker_ft_printf.h $(PRINTF_DIR)/ft_printf.h
 	@echo "\nCompiling ft_libft Project's .c file..." #My echo
 	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
 	@echo "\nft_libft Project's .c file compiled!" #My echo
