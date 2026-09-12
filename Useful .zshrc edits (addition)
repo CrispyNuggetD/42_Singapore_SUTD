@@ -11,6 +11,7 @@
 # 3. makes fclean to clean up library objects for, then, 
 # 4. Proper syncing with github, amongst other auxillary checks and error handling.
 # 5. Starts the enrolled Mac remote client in a separate terminal window.
+# 6. Opens the LAN42 lobby in another terminal (set startlan42=0 to skip).
 
 ##### (A) Fun functions:
 # 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
@@ -112,6 +113,12 @@ export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 # --- Daily login Mac remote mailbox ---
 export startmailbox=1
 export MAC_REMOTE_ROOT="$HOME/Documents/mac-remote"  # Change if you cloned it elsewhere.
+
+# --- Daily login LAN42 lobby ---
+# Clone 42sg-campus-lan into Documents and run its setup.sh once.
+# The launcher pulls its latest version when the new terminal opens.
+export LAN42_CLONE="${LAN42_CLONE:-$HOME/Documents/42sg-campus-lan}"
+startlan42=${startlan42:-1}
 
 # --- Daily login brightness ---
 export adjustbrightness=1
@@ -677,6 +684,18 @@ stayon() {
   command python3 "$runner" "${@:-start}"
 }
 
+# Keep the lobby in its own terminal so the rest of dailylogin can finish.
+start_lan42() {
+  [[ "${startlan42:-1}" == 1 ]] || return 0
+  local opener="$LAN42_CLONE/useful-scripts/open_terminal.py"
+  if [[ ! -f "$opener" ]]; then
+    print -u2 -- "LAN42 helper missing: $opener"
+    print -u2 -- 'Clone/update 42sg-campus-lan in Documents and run sh setup.sh.'
+    return 1
+  fi
+  command python3 "$opener"
+}
+
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
@@ -688,6 +707,11 @@ dailylogin() {
     divider
     syncdocs || echo "Some repositories need attention; see the summary above."
   fi
+
+  divider
+  echo "Starting LAN42 lobby"
+  divider
+  start_lan42 || echo "LAN42 did not open; other dailylogin tasks will continue."
 
   divider
   echo "Starting Mac remote mailbox"
