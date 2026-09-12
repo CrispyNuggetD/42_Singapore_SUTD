@@ -652,6 +652,20 @@ read -r _'
   echo "If it does not appear, check $mailbox_root/.mailbox/42/terminal-launch.log"
 }
 
+# Local runner (installed separately in the private campus repo).
+# Copy this block into ~/.zshrc. Override STAYON_ROOT if your clone is elsewhere.
+# Set startstayon=0 to disable the dailylogin window.
+export STAYON_ROOT="${STAYON_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private/Scripts and Testers/stayon}"
+startstayon=${startstayon:-1}
+stayon() {
+  local runner="$STAYON_ROOT/stayon.py"
+  if [[ ! -f "$runner" ]]; then
+    echo "Runner missing; pull the private repo and run its setup.sh." >&2
+    return 1
+  fi
+  command python3 "$runner" "${@:-start}"
+}
+
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
@@ -668,6 +682,9 @@ dailylogin() {
   echo "Starting Mac remote mailbox"
   divider
   start_mailbox
+  if [[ "${startstayon:-1}" == 1 ]]; then
+    stayon
+  fi
 
   divider
   echo "Adjusting screen brightness"
