@@ -14,7 +14,7 @@
 # define PIPEX_H
 
 # include "libft.h"
-# include "ft_printf.h"
+# include "ryker_ft.h"
 # include <fcntl.h>
 # include <stdio.h>
 # include <stdlib.h>

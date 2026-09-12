@@ -7,33 +7,33 @@ NAME	= libft.a #Library name
 
 SRCS	= ft_isalpha.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c ft_strlen.c ft_memset.c ft_bzero.c ft_memcpy.c ft_memmove.c ft_strlcpy.c ft_strlcat.c ft_toupper.c ft_tolower.c ft_strchr.c ft_strrchr.c ft_strncmp.c ft_memchr.c ft_memcmp.c ft_strnstr.c ft_atoi.c ft_calloc.c ft_strdup.c ft_substr.c ft_strjoin.c ft_strtrim.c ft_split.c ft_itoa.c ft_strmapi.c ft_striteri.c ft_putchar_fd.c ft_putstr_fd.c ft_putendl_fd.c ft_putnbr_fd.c ft_lstnew.c ft_lstadd_front.c ft_lstsize.c ft_lstlast.c ft_lstadd_back.c ft_lstdelone.c ft_lstclear.c ft_lstiter.c ft_lstmap.c
 
-SRCS += ../1_ft_printf/ft_printf.c \
-	../1_ft_printf/ft_printf_parse_specs.c \
-	../1_ft_printf/ft_printf_helpers.c \
-	../1_ft_printf/ft_printf_print_config.c \
-	../1_ft_printf/ft_printf_printer.c \
-	../1_ft_printf/ft_printf_d_i.c \
-	../1_ft_printf/ft_printf_percent.c \
-	../1_ft_printf/ft_printf_character.c \
-	../1_ft_printf/ft_printf_string.c \
-	../1_ft_printf/ft_printf_unsigned_int.c \
-	../1_ft_printf/ft_printf_hex_small.c \
-	../1_ft_printf/ft_printf_hex_large.c \
-	../1_ft_printf/ft_printf_pointer.c \
-	../1_ft_printf/ft_printf_entry.c
+PRINTF_DIR = ../1_ft_printf
+PRINTF_SRCS = $(filter-out %_bonus.c $(PRINTF_DIR)/ft_printf_parse_specs.c \
+	$(PRINTF_DIR)/ft_printf_print_config.c $(PRINTF_DIR)/ft_printf_printer.c,\
+	$(wildcard $(PRINTF_DIR)/ft_printf*.c)) \
+	$(PRINTF_DIR)/ft_printf_parse_specs_bonus.c \
+	$(PRINTF_DIR)/ft_printf_print_config_bonus.c \
+	$(PRINTF_DIR)/ft_printf_printer_bonus.c
+PRINTF_OBJS = $(patsubst $(PRINTF_DIR)/%.c,ryker_ft/obj/%.o,$(PRINTF_SRCS))
+SRCS += $(wildcard ryker_ft/ryker_ft_*.c)
 
-OBJS	= $(SRCS:.c=.o)
+OBJS	= $(SRCS:.c=.o) $(PRINTF_OBJS)
 
 all: $(NAME)
 
-$(NAME): $(OBJS) 
+$(NAME): $(OBJS) Makefile 
 	@echo "\nArchiving ft_libft Project...\n" #My echo
+	rm -f $(NAME)
 	$(AR) $(AR_FLAGS) $(NAME) $(OBJS)
 	@echo "\nLibft library archived!\n" #My echo
 
-%.o: %.c libft.h ../1_ft_printf/ft_printf.h
+ryker_ft/obj/%.o: $(PRINTF_DIR)/%.c $(PRINTF_DIR)/ft_printf.h
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
+
+%.o: %.c libft.h ryker_ft/ryker_ft.h $(PRINTF_DIR)/ft_printf.h
 	@echo "\nCompiling ft_libft Project's .c file..." #My echo
-	$(CC) $(CFLAGS) -I. -I../1_ft_printf -c $< -o $@
+	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
 	@echo "\nft_libft Project's .c file compiled!" #My echo
 	
 clean:

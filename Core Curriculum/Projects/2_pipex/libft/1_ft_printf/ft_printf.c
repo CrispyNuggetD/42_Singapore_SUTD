@@ -16,32 +16,102 @@
 // Let main stay on top (readability) with prototypes
 static t_handler	init_get_handlers(unsigned char fn_keys);
 static int			dispatch_key(t_context *context);
+static int			error_and_return(va_list *input);
 static int			main_coordinator(const char **str, t_context *context, \
 va_list *input);
 
-// This function is summoned from the variadic entry points
-int	ft_vprintf_fd(int fd, const char *str, va_list *input)
+// Main function
+/* int	main(void)
+{
+	int	mylen;
+	int	printf_len;
+
+	printf(" ===== MANDATORY BELOW ===== \n");
+	printf("\n ===== STRINGS ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("% aewfa e %s awer", "test");
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("% aewfa e %s awer", "test");
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
+	printf("\n ===== POINTERS MIN MAX ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf(" %p %p ", LONG_MIN, LONG_MAX);
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf(" %p %p ", LONG_MIN, LONG_MAX);
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
+	printf("\n\n\n ===== BONUSES BELOW ===== \n");
+	printf("\n ===== INVALID INPUT ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("%5%");
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("%5%");
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
+	printf("\n ===== STR POINTER WITH PADDING ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("|%05p|", (void*)0x1);
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("|%05p|", (void*)0x1);
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
+	printf("\n ===== DECIMAL PAD AND PRECISION ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("%08.5d", 42);
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("%08.5d", 42);
+	printf("\nActual printf return value:%i\n\n", printf_len);
+
+	printf("\n ===== COMPLEX EXAMPLES ===== \n");
+	ft_printf("My output is:\n");
+	mylen = ft_printf("%#37llXabc42isgreat_42^&NULL %6.3hx", 
+	\
+522337203685470ull, 12642);
+	printf("\nMy ft_printf return value:%i\n\n", mylen);
+
+	ft_printf("Actual printf output is:\n");
+	printf_len = printf("%#37llXabc42isgreat_42^&NULL %6.3hx", 
+	\
+522337203685470ull, 12642);
+	printf("\nActual printf return value:%i\n\n", printf_len);
+} */
+
+// This function is summoned from main to parse the input
+int	ft_printf(const char *str, ...)
 {
 	t_context	context;
+	va_list		input;
 
 	ft_printf_init_t_context(&context);
 	if (!str)
 		return (-1);
-	context.fd = fd;
+	va_start(input, str);
 	while (*str)
 	{
 		if (*str != '%')
 		{
 			if (write_guaranteed(&context, str, 1) < 0)
-				return (-1);
+				return (error_and_return(&input));
 			str++;
 		}
 		else
 		{
-			if (main_coordinator(&str, &context, input) < 0)
-				return (-1);
+			if (main_coordinator(&str, &context, &input) < 0)
+				return (error_and_return(&input));
 		}
 	}
+	va_end(input);
 	return (context.printed);
 }
 
@@ -64,6 +134,12 @@ static int	main_coordinator(const char **str, t_context *context,\
 // check actual error code if (!str); return (0); 
 // The below function initialises (by mapping) the function handlers
 // Variables mean type_handler, global_handler
+
+static int	error_and_return(va_list *input)
+{
+	va_end(*input);
+	return (-1);
+}
 
 static int	dispatch_key(t_context *context)
 {

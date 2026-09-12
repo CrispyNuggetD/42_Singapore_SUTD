@@ -36,7 +36,7 @@ int	write_guaranteed(t_context *context, const char *buf, size_t len)
 
 	while (len > 0)
 	{
-		written = write(context->fd, buf, len);
+		written = write(1, buf, len);
 		if (written <= 0)
 			return (-1);
 		context->printed += (size_t)written;
@@ -51,7 +51,7 @@ int	write_repeat(t_context *context, char c, size_t count)
 {
 	while (count > 0)
 	{
-		if (write(context->fd, &c, 1) < 0)
+		if (write(1, &c, 1) < 0)
 			return (-1);
 		context->printed += 1;
 		count--;

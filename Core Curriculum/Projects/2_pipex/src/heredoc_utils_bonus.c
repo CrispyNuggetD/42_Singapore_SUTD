@@ -28,7 +28,7 @@ int	is_limiter_bonus(char *line, char *limiter)
 
 int	write_line_bonus(int fd, char *line)
 {
-	if (ft_printf_fd(fd, "%s", line) < 0)
+	if (ryker_ft_printf_fd(fd, "%s", line) < 0)
 		return (-1);
 	return (0);
 }

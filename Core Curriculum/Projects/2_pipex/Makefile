@@ -13,7 +13,7 @@ BONUS_SRCS := main_bonus.c pipeline_bonus.c wait_bonus.c heredoc_bonus.c \
 	heredoc_utils_bonus.c get_next_line_bonus.c execute.c path.c memory.c
 BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
-INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -Ilibft/1_ft_printf
+INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -Ilibft/1_ft_printf -I$(LIBFT_DIR)/ryker_ft
 MANDATORY_MARKER := $(OBJ_DIR)/.mandatory
 BONUS_MARKER := $(OBJ_DIR)/.bonus
 
@@ -26,7 +26,7 @@ $(MANDATORY_MARKER): $(OBJS) $(LIBFT)
 	rm -f $(BONUS_MARKER)
 	touch $(MANDATORY_MARKER)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h libft/1_ft_printf/ft_printf.h
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_DIR)/ryker_ft/ryker_ft.h
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 

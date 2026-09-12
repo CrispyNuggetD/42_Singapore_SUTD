@@ -14,8 +14,7 @@
 # define FT_PRINTF_H
 
 # include <stdarg.h>
-# include <stdint.h>
-# include "libft.h"
+# include "libft/libft.h"
 
 # define FLAG_MINUS 1
 # define FLAG_ZERO  2
@@ -48,7 +47,6 @@ typedef struct s_context
 	va_list	*input;
 	t_spec	*spec;
 	size_t	printed;
-	int		fd;
 }			t_context;
 
 typedef struct s_print
@@ -66,8 +64,6 @@ typedef struct s_print
 typedef int	(*t_handler)(t_context *context);
 
 int		ft_printf(const char *key, ...);
-int		ft_printf_fd(int fd, const char *str, ...);
-int		ft_vprintf_fd(int fd, const char *str, va_list *input);
 int		ft_printf_parse_specs(t_spec *spec, const char **ptr);
 int		ft_printf_percent(t_context *context);
 int		ft_printf_d_i(t_context *context);

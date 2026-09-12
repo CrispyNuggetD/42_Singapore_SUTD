@@ -30,9 +30,9 @@ static int	is_heredoc(char *argument)
 static int	usage_bonus(int heredoc)
 {
 	if (heredoc)
-		ft_printf_fd(2, "Usage: ./pipex here_doc LIMITER cmd... outfile\n");
+		ryker_ft_printf_fd(2, "Usage: ./pipex here_doc LIMITER cmd... outfile\n");
 	else
-		ft_printf_fd(2, "Usage: ./pipex infile cmd... outfile\n");
+		ryker_ft_printf_fd(2, "Usage: ./pipex infile cmd... outfile\n");
 	return (1);
 }
 
