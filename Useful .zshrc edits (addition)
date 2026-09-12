@@ -109,7 +109,7 @@ export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
 
 # --- Daily login Mac remote mailbox ---
 export startmailbox=1
-export MAC_REMOTE_ROOT="$HOME/mac-remote"  # Change if you cloned it elsewhere.
+export MAC_REMOTE_ROOT="$HOME/Documents/mac-remote"  # Change if you cloned it elsewhere.
 
 # --- Daily login brightness ---
 export adjustbrightness=1
