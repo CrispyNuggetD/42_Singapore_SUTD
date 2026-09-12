@@ -84,6 +84,8 @@
 # First clone mac-remote, run its setup.sh once, get this device approved on the Mac,
 # and sign in to Codex inside VS Code. No re-enrollment is needed at daily login.
 # Set MAC_REMOTE_ROOT below to the actual clone location on your campus computer.
+# Before opening a new window, start_mailbox pulls its clone with --ff-only.
+# A failed pull prevents startup; an existing worker is not restarted.
 # dailylogin opens a separate terminal running `bash device.sh start` (no sudo).
 # Leave that window open; closing it or logging out stops the worker.
 # Repeated dailylogin calls skip an already-running worker, including EOD syncing.
@@ -623,6 +625,15 @@ PYLOCK
       return 0
     fi
     echo "Could not check the mailbox worker lock; leaving it alone."
+    return 1
+  fi
+
+  # Update before starting a new worker. Preserve local changes and never merge.
+  echo "Updating Mac remote mailbox"
+  if ! GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes -o ConnectTimeout=10" \
+    command git -C "$mailbox_root" -c merge.autostash=false -c rebase.autostash=false \
+      pull --no-rebase --ff-only; then
+    echo "Mailbox update failed; no new worker window opened. Resolve the Git error and run start_mailbox again." >&2
     return 1
   fi
 
