@@ -1,5 +1,7 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-09-14): this directory remains the original base libft project. My expanded library for later projects is maintained separately as `ryker_libft`. See [Expanded Ryker libft](#post-submission-update-expanded-ryker-libft) below.
+
 # Description
 
 - This is the first "baby project" in 42 Core Curriculum, after students pass the Piscine entry bootcamp/ exam. 
@@ -468,3 +470,87 @@ I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 ```
 
 ##### EOF :D
+
+---
+
+## Post-submission update: expanded Ryker libft
+
+Date: 2026-09-14. The earlier sections describe the original libft project.
+
+### Original project and expanded package
+
+`Projects/0_libft` remains the base project archive, with its base-only Makefile.
+The expanded library is maintained separately in [Projects/ryker_libft](../ryker_libft/README.md).
+This makes the distinction between the submitted project and later additions visible.
+For later 42 projects whose subjects permit an expanded libft, I use this package;
+the permitted functions and library use still depend on each project's subject.
+
+```text
+Projects/
+├── 0_libft/                 Original base project
+├── 1_ft_printf/             Printf project, with documented FD update
+└── ryker_libft/             Expanded master package
+    ├── Makefile
+    ├── 0_libft/             Base libft functions
+    ├── 1_ft_printf/         Bonus printf with FD support
+    ├── 1_get_next_line/     GNL
+    └── ryker_ft/            Custom helpers
+```
+
+### Why Pipex prompted the update
+
+Pipex needs formatted output to stderr and selected file descriptors. The custom
+`ryker_ft_printf_fd` wrapper temporarily selects an FD, uses the original printf
+formatter, and restores the previous destination after success or an error return.
+Ordinary `ft_printf(...)` still defaults to stdout without an FD argument.
+The [printf update](../1_ft_printf/README.md#post-submission-update-custom-fd-and-ryker-libft)
+explains the code changes, argument forwarding and cleanup in detail.
+
+Custom helpers live in the package's `ryker_ft/`. This includes the FD wrapper
+and Push_swap's existing `ryker_ft_isspace`, whose space-only behavior is preserved.
+The original libft function bodies are not rewritten by this packaging change.
+
+### Building and copying the package
+
+Copy the whole `ryker_libft/` directory into the consuming project, keeping its
+name. Pipex, FdF and Push_swap now use this layout. Keep project-only code outside
+the package so later replacements do not overwrite it.
+
+The consuming Makefile invokes `$(MAKE) -C ryker_libft` and links
+`ryker_libft/libft.a`.
+
+Include the package header from a project header in `includes/`:
+
+```c
+#include "../ryker_libft/ryker_libft.h"
+```
+
+For a project header at the project root, use `"ryker_libft/ryker_libft.h"`.
+The package header includes its component headers through relative paths, so
+consumers need no include search paths into package subdirectories. Headers
+provide declarations for compilation; `ryker_libft/libft.a` supplies implementations
+for linking. The package Makefile manages its own internal compiler include paths.
+
+The package master Makefile compiles base libft, bonus printf, ordinary GNL and
+custom helpers directly into separate object directories, then combines those
+objects into one archive. It does not put static archives inside another archive.
+The Makefile layers organize compilation and add no runtime overhead.
+
+Use `make`, `make clean`, `make fclean` and `make re` inside the package.
+Distribute source files rather than built `obj/` or `libft.a` files, and rebuild
+consuming projects after updating. Existing ordinary function calls remain usable;
+this is source compatibility, not a promise that old compiled objects can be reused.
+The standalone printf project's internal base libft remains separate so its
+mandatory build does not accidentally include the expanded bonus library.
+
+### Authorship and checks
+
+The original libft and printf implementations remain the basis of the package.
+AI assisted with the FD extension, wrapper, package migration, Makefiles and this
+documentation under my direction. These later additions are distinct from the
+original submissions.
+
+The package passed Norminette and build checks. Pipex and FdF mandatory/bonus,
+Push_swap, and standalone printf mandatory/bonus builds passed locally. Focused
+checks covered default stdout, custom FD output and restoration after errors.
+These checks do not replace regression testing on the campus environment.

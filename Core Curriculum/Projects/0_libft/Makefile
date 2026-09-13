@@ -7,40 +7,23 @@ NAME	= libft.a #Library name
 
 SRCS	= ft_isalpha.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c ft_strlen.c ft_memset.c ft_bzero.c ft_memcpy.c ft_memmove.c ft_strlcpy.c ft_strlcat.c ft_toupper.c ft_tolower.c ft_strchr.c ft_strrchr.c ft_strncmp.c ft_memchr.c ft_memcmp.c ft_strnstr.c ft_atoi.c ft_calloc.c ft_strdup.c ft_substr.c ft_strjoin.c ft_strtrim.c ft_split.c ft_itoa.c ft_strmapi.c ft_striteri.c ft_putchar_fd.c ft_putstr_fd.c ft_putendl_fd.c ft_putnbr_fd.c ft_lstnew.c ft_lstadd_front.c ft_lstsize.c ft_lstlast.c ft_lstadd_back.c ft_lstdelone.c ft_lstclear.c ft_lstiter.c ft_lstmap.c
 
-PRINTF_DIR = ../1_ft_printf
-PRINTF_SRCS = $(filter-out %_bonus.c $(PRINTF_DIR)/ft_printf_parse_specs.c \
-	$(PRINTF_DIR)/ft_printf_print_config.c $(PRINTF_DIR)/ft_printf_printer.c,\
-	$(wildcard $(PRINTF_DIR)/ft_printf*.c)) \
-	$(PRINTF_DIR)/ft_printf_parse_specs_bonus.c \
-	$(PRINTF_DIR)/ft_printf_print_config_bonus.c \
-	$(PRINTF_DIR)/ft_printf_printer_bonus.c
-OBJ_DIR = obj
-PRINTF_OBJS = $(patsubst $(PRINTF_DIR)/%.c,$(OBJ_DIR)/printf/%.o,$(PRINTF_SRCS))
-SRCS += $(wildcard ryker_ft/printf_fd/ryker_ft_*.c)
-
-OBJS	= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o)) $(PRINTF_OBJS)
+OBJS	= $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJS) Makefile 
+$(NAME): $(OBJS) 
 	@echo "\nArchiving ft_libft Project...\n" #My echo
-	rm -f $(NAME)
 	$(AR) $(AR_FLAGS) $(NAME) $(OBJS)
 	@echo "\nLibft library archived!\n" #My echo
 
-$(OBJ_DIR)/printf/%.o: $(PRINTF_DIR)/%.c $(PRINTF_DIR)/ft_printf.h
-	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
-
-$(OBJ_DIR)/%.o: %.c libft.h ryker_ft/ryker_ft.h ryker_ft/printf_fd/ryker_ft_printf.h $(PRINTF_DIR)/ft_printf.h
-	mkdir -p $(@D)
+%.o: %.c libft.h
 	@echo "\nCompiling ft_libft Project's .c file..." #My echo
-	$(CC) $(CFLAGS) -I. -I$(PRINTF_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 	@echo "\nft_libft Project's .c file compiled!" #My echo
 	
 clean:
 	@echo "\nCleaning ft_libft object files...\n" #My echo
-	rm -rf $(OBJ_DIR)
+	rm -f $(OBJS)
 	@echo "\nft_libft Objects cleaned!\n" #My echo
 
 

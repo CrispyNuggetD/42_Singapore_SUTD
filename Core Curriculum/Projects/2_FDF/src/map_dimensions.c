@@ -6,13 +6,11 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/26 00:43:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/26 00:43:39 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/14 03:44:33 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
-#include "libft.h"
-#include "get_next_line.h"
 #include <fcntl.h>
 
 void	free_words(char **words)

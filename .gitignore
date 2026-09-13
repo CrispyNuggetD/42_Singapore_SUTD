@@ -1,4 +1,18 @@
+# Local scratch files and macOS metadata
 gitignored/*
 *.DS_Store
+
+# Build intermediates at any depth (no leading slash)
+obj/
+bin/
+.bonus
+.deps/
 *.o
 *.a
+*.d
+*.dSYM/
+
+# Generated project executables and build-mode markers
+**/2_pipex/pipex
+**/2_FDF/fdf
+**/2_push_swap/push_swap

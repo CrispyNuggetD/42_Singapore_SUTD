@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ft_putchar.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnah <marvin@42.fr>                        +#+  +:+       +#+        */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 16:32:03 by hnah              #+#    #+#             */
 /*   Updated: 2025/07/25 15:10:57 by hnah             ###   ########.fr       */

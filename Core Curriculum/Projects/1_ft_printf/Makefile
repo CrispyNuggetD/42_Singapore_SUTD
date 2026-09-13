@@ -8,7 +8,7 @@ INCS	= -I. -Ilibft #Where to look for header files
 
 NAME	= libftprintf.a #Library name
 
-SRCS	= ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_print_config.c \
+SRCS	= ft_printf_fd_setting.c ft_printf.c ft_printf_parse_specs.c ft_printf_helpers.c ft_printf_print_config.c \
 			ft_printf_printer.c ft_printf_d_i.c ft_printf_percent.c ft_printf_character.c\
 			ft_printf_string.c ft_printf_unsigned_int.c ft_printf_hex_small.c ft_printf_hex_large.c ft_printf_pointer.c\
 

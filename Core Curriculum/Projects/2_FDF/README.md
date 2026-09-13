@@ -1,5 +1,7 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-09-14): MiniLibX is now fetched automatically by the Makefile instead of stored in this repository. See [Post-submission update: MiniLibX dependencies](#post-submission-update-minilibx-dependencies) for details of the changes from the submitted project.
+
 # FdF — from wireframe to multiplayer testbed
 
 ## Description
@@ -549,3 +551,31 @@ Which means the bonus should not be judged from the code alone as proof that I
 understood every generated line immediately. If needed, I should be able to
 derive the projection equations, trace ownership and cleanup,
 explain X11 events versus FD input, and modify the implementation without AI.
+
+## Post-submission update: MiniLibX dependencies
+
+Date: 2026-09-14. This build-system update was made after submission. The earlier
+sections describe the project; the dependency-fetching setup below is a later
+maintenance change and was not part of the original submission. FdF's C source
+code was not changed by this update. AI assisted with the Makefile, ignore rules,
+documentation and local checks under my direction.
+
+`make` and `make bonus` fetch and build MiniLibX automatically for the host OS.
+`make deps` downloads the selected source without building FdF. Git and network
+access are needed on the first build; subsequent builds use the ignored `.deps/`
+cache. The dependency sources are no longer stored in this repository.
+
+- Linux: [42Paris MiniLibX](https://github.com/42Paris/minilibx-linux), pinned to `f07d00f07c5c652223f505b526f84dab73cf2598`.
+- macOS: [native Cocoa/OpenGL MiniLibX mirror](https://github.com/dannywillems/minilibx-mac-osx), pinned to `bae208e5502e200baf4b9e8188b7751e72ce5590`.
+
+Linux requires a C compiler, Make, Git, X11/Xext development headers and BSD
+utility development files. On Debian/Ubuntu these are typically provided by
+`build-essential git libx11-dev libxext-dev libbsd-dev`. A graphical X11 session
+is needed to run FdF. macOS requires Xcode Command Line Tools; the native version
+links AppKit and OpenGL and does not require XQuartz.
+
+Commits are pinned in the Makefile so upstream changes do not silently change
+builds. Changing a pin selects a separate cache directory. `make clean` and
+`make fclean` remove build products but retain downloaded sources for offline
+rebuilds. Header availability is a prerequisite of object compilation, including
+parallel `make -j` builds. A failed fetch is cleaned up and can be retried.

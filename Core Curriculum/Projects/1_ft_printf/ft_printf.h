@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/25 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/13 18:51:48 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/14 03:44:33 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef struct s_context
 {
 	va_list	*input;
 	t_spec	*spec;
+	int		fd;
 	size_t	printed;
 }			t_context;
 
@@ -64,6 +65,8 @@ typedef struct s_print
 typedef int	(*t_handler)(t_context *context);
 
 int		ft_printf(const char *key, ...);
+int		ft_vprintf(const char *str, va_list *input);
+int		ft_printf_fd_setting(int fd);
 int		ft_printf_parse_specs(t_spec *spec, const char **ptr);
 int		ft_printf_percent(t_context *context);
 int		ft_printf_d_i(t_context *context);

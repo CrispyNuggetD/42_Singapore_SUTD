@@ -6,14 +6,14 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/24 18:52:50 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/14 03:44:33 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PUSH_SWAP_H
 # define PUSH_SWAP_H
 
-# include "libft/0_libft/libft.h"
+# include "ryker_libft/ryker_libft.h"
 # include <stdio.h>
 # include <unistd.h>
 

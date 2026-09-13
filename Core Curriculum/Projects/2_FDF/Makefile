@@ -6,15 +6,18 @@ CFLAGS := -Wall -Wextra -Werror
 SRC_DIR := src
 OBJ_DIR := obj
 INC_DIR := includes
-LIBFT_DIR := libft/0_libft
-GNL_DIR := libft/1_get_next_line
+LIBFT_DIR := ryker_libft
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME), Darwin)
-	MLX_DIR := minilibx-macos
+	MLX_REPO := https://github.com/dannywillems/minilibx-mac-osx.git
+	MLX_REV := bae208e5502e200baf4b9e8188b7751e72ce5590
+	MLX_DIR := .deps/minilibx-macos-$(MLX_REV)
 	MLX_FLAGS := -L$(MLX_DIR) -lmlx -framework OpenGL -framework AppKit
 else
-	MLX_DIR := minilibx-linux
+	MLX_REPO := https://github.com/42Paris/minilibx-linux.git
+	MLX_REV := f07d00f07c5c652223f505b526f84dab73cf2598
+	MLX_DIR := .deps/minilibx-linux-$(MLX_REV)
 	MLX_FLAGS := -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
 endif
 
@@ -25,11 +28,9 @@ BONUS_SRCS := main_bonus.c rotation_events_bonus.c game_bonus.c \
 	game_render_bonus.c game_window_bonus.c perspective_bonus.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
-GNL_SRCS := get_next_line.c get_next_line_utils.c
-GNL_OBJS := $(GNL_SRCS:%.c=$(OBJ_DIR)/gnl_%.o)
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX := $(MLX_DIR)/libmlx.a
-INCLUDES := -I$(INC_DIR) -I$(LIBFT_DIR) -I$(GNL_DIR) -I$(MLX_DIR)
+INCLUDES = -I$(INC_DIR) -I$(MLX_DIR)
 
 all: $(NAME)
 
@@ -41,16 +42,16 @@ endif
 
 FORCE:
 
-$(BONUS_MARKER): $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
-	$(CC) $(CFLAGS) $(BONUS_OBJS) $(GNL_OBJS) $(LIBFT) \
+$(BONUS_MARKER): $(BONUS_OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(BONUS_OBJS) $(LIBFT) \
 		$(MLX_FLAGS) -o $(NAME)
 	touch $(BONUS_MARKER)
 
-$(NAME): $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX)
-	$(CC) $(CFLAGS) $(OBJS) $(GNL_OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
+$(NAME): $(OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(MLX_FLAGS) -o $(NAME)
 	rm -f $(BONUS_MARKER)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h $(LIBFT_DIR)/ryker_libft.h Makefile | $(MLX_DIR)/.ready
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
@@ -62,21 +63,33 @@ $(OBJ_DIR)/game_bonus.o $(OBJ_DIR)/game_render_bonus.o \
 $(OBJ_DIR)/game_window_bonus.o $(OBJ_DIR)/perspective_bonus.o: \
 	$(INC_DIR)/rotation_bonus.h
 
-$(OBJ_DIR)/gnl_%.o: $(GNL_DIR)/%.c $(GNL_DIR)/get_next_line.h
-	mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(LIBFT):
+$(LIBFT): FORCE
 	$(MAKE) -C $(LIBFT_DIR)
 
-$(MLX):
+deps: $(MLX_DIR)/.ready
+
+$(MLX_DIR)/.ready:
+	@mkdir -p .deps
+	@set -eu; \
+		tmp=$$(mktemp -d "$(MLX_DIR).tmp.XXXXXX"); \
+		trap 'rm -rf "$$tmp"' EXIT HUP INT TERM; \
+		git -C "$$tmp" init -q; \
+		git -C "$$tmp" fetch -q --depth 1 "$(MLX_REPO)" "$(MLX_REV)"; \
+		git -C "$$tmp" checkout -q --detach FETCH_HEAD; \
+		test -f "$$tmp/mlx.h"; \
+		touch "$$tmp/.ready"; \
+		mv "$$tmp" "$(MLX_DIR)"
+
+$(MLX): $(MLX_DIR)/.ready
 	$(MAKE) -C $(MLX_DIR)
 
 clean:
 	rm -rf $(OBJ_DIR)
 	rm -f $(BONUS_MARKER)
 	$(MAKE) -C $(LIBFT_DIR) clean
-	$(MAKE) -C $(MLX_DIR) clean
+	@if test -f "$(MLX_DIR)/Makefile"; then \
+		$(MAKE) -C $(MLX_DIR) clean; \
+	fi
 
 fclean: clean
 	rm -f $(NAME)

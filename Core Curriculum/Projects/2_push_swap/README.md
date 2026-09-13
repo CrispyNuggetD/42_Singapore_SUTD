@@ -2,6 +2,22 @@
 
 # Description
 
+## Build output layout
+
+The required executable remains `./push_swap`. Object files are built in `obj/`.
+Optional development tools use the repository-wide `bin/` convention:
+
+| Command | Executable |
+| --- | --- |
+| `make debug` | `bin/push_swap_debug` |
+| `make analyse_bfs` | `bin/bfs_analyser` |
+| `make analyse_bfs_all_paths` | `bin/bfs_all_paths` |
+
+The root `.gitignore` ignores `obj/`, `bin/` and `.bonus` at any depth.
+`make clean` removes objects; `make fclean` also removes the executables and `bin/`.
+This convention is for optional development tools; subject-required executables
+keep their expected names and locations.
+
 ## Push_swap
 
 **Push_swap** is a ...
