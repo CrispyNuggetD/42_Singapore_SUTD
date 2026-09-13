@@ -718,7 +718,7 @@ dailylogin() {
   divider
   start_mailbox
   if [[ "${startstayon:-1}" == 1 ]]; then
-    stayon
+    stayon start --automatic
   fi
 
   divider
