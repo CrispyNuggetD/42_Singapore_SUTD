@@ -2,6 +2,28 @@
 
 42 Singapore SUTD.
 
+## Terminal setup after cloning
+
+With Python 3 and zsh installed, open a **zsh** terminal and run these commands
+from inside your cloned repository folder:
+
+```sh
+python3 sync_zshrc.py
+source ~/.zshrc
+setupzshrc
+```
+
+`sync_zshrc.py` installs the shared terminal helpers. `setupzshrc` opens the
+setup wizard: enter your own email, repository paths, and current project, then
+choose which tasks to enable and save. Optional services and automatic updates
+default to off.
+
+Running `python3 setup_zshrc.py` alone only saves settings; it does not install
+the terminal helpers. Run `setupzshrc` again whenever you want to change them.
+
+When ready, run `dailylogin` to start the tasks you enabled. See the
+[full shell setup guide](Study%20Notes/Codex/shell-setup.md) for more details.
+
 PISCINE 7:
 21 JUL - 15 AUG 2025
 
