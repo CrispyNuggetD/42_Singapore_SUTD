@@ -250,6 +250,7 @@ cdmain() {
 
 # Pull other working repositories below Documents, including nested clones and
 # worktrees/submodules (.git files). Never stage, commit or push these repos.
+# Pull the collaborative mailbox itself, but never scan its contents for repos.
 # Symlinked subdirectories are not followed; a symlinked root is supported.
 syncdocs() (
   if ! _dailylogin_enabled "$pullotherrepos"; then
@@ -257,15 +258,25 @@ syncdocs() (
     return 0
   fi
   local root="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
+  local mailbox="${MAC_REMOTE_ROOT:-$HOME/mac-remote}"
   local listing marker repo upstream
   local total=0 updated=0 failed=0 scan_failed=0
   [[ -d "$root" ]] || { print -u2 -- "Missing repository search folder: $root"; return 1; }
   listing=$(mktemp "${TMPDIR:-/tmp}/syncdocs.XXXXXXXX") || return 1
   trap 'rm -f -- "$listing"' EXIT
-  # Prune Git metadata only, so clones nested inside another repo are included.
-  find -H "$root" -name .git \( -type d -o -type f \) -prune -print0 > "$listing" || scan_failed=1
+  # Canonical paths also cover a symlinked search root or mailbox setting.
+  root="${root:A}"
+  mailbox="${mailbox:A}"
+  # Emit the mailbox root once and prune it; other nested clones remain included.
+  find -H "$root" \( -type d -path "${(b)mailbox}" -prune -print0 \) -o \
+    \( -name .git \( -type d -o -type f \) -prune -print0 \) > "$listing" || scan_failed=1
   while IFS= read -r -d '' marker; do
-    repo="${marker%/.git}"
+    if [[ "$marker" == "$mailbox" ]]; then
+      [[ -d "$marker/.git" || -f "$marker/.git" ]] || continue
+      repo="$marker"
+    else
+      repo="${marker%/.git}"
+    fi
     # Compare canonical paths, including when the main repo path uses symlinks.
     [[ -n "$MAIN_REPO_ROOT" && "${repo:A}" == "${MAIN_REPO_ROOT:A}" ]] && continue
     (( total += 1 ))

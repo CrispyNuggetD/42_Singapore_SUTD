@@ -47,11 +47,6 @@ Documentation and portable integration patches:
 - `Study Notes/Codex/tmux-integrations/lan42-tmux.patch`
 - `Study Notes/Codex/tmux-integrations/stayon-tmux.patch`
 
-Tests:
-
-- `tests/test_daily_tmux.py` and `tests/test_daily_tmux_integrations.py` (new).
-- `tests/test_codex_startup.py`, `tests/test_dailylogin_reporting.py`, `tests/test_sync_zshrc.py` (updated).
-
 Also retain the pre-existing `sync_zshrc.py`; the current shell synchronization depends on it.
 Files that were already untracked before this change still need your normal Git backup.
 
@@ -89,13 +84,3 @@ source ~/.zshrc
 Your existing local settings, authentication, mailbox enrollment, and Stayon setup are separate and must already be available.
 By default, `DAILY_TMUX_HELPER` points to `$MAIN_REPO_ROOT/daily_terminal.py`, and `DAILY_TMUX_SESSION` is `daily`.
 Set overrides outside the shared markers if your paths differ.
-
-## Verification
-
-```bash
-python3 -m unittest discover -s tests -v
-```
-
-The tmux tests use private temporary sockets and harmless test commands, then clean them up.
-Desktop launch and application actions are mocked. Integration tests skip when their external clones are absent.
-
