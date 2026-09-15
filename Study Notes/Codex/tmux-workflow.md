@@ -7,8 +7,8 @@ Reload existing shells once with `source ~/.zshrc`. New shells load the update a
 | Command | Result |
 | --- | --- |
 | `dailylogin` | Runs the existing workflow and shows one tmux workspace. |
-| `dailyterm` | Attaches the current terminal to `daily`; creates it if absent. Inside tmux, switches clients without nesting. |
-| `dailywindows` | Lists the windows in that workspace. |
+| `workterm` | Attaches the current terminal to `daily`; creates it if absent. Inside tmux, switches clients without nesting. |
+| `workwindows` | Lists the windows in that workspace. |
 | `start_codex` | Starts or reuses the Codex window. |
 | `start_lan42` | Starts or reuses the LAN42 lobby window. |
 | `start_mailbox` | Starts the mailbox if needed; retains the worker lock check. |

@@ -32,7 +32,7 @@
          subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                           stderr=subprocess.DEVNULL, start_new_session=True)
 -    print('Requested a LAN42 terminal window. Leave it open while playing.')
-+    print('LAN42 is in tmux; use dailyterm to return.' if os.environ.get('DAILY_TMUX_HELPER') else
++    print('LAN42 is in tmux; use workterm to return.' if os.environ.get('DAILY_TMUX_HELPER') else
 +          'Requested a LAN42 terminal window. Leave it open while playing.')
  
  

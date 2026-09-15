@@ -1,15 +1,44 @@
 #!/usr/bin/env python3
-"""Install/update a marked shared zshrc block without changing local settings."""
+"""Install/update the shared zshrc block and local helpers, preserving settings."""
 import argparse
+import ast
 from datetime import datetime
 import os
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import tempfile
 
 BEGIN = '# >>> 42 shared zshrc >>>'
 END = '# <<< 42 shared zshrc <<<'
+RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'Useful .zshrc edits (addition)')
+
+
+def install_runtime(source_dir, runtime, check=False):
+    """Install all helper dependencies locally, including the updater itself."""
+    payloads = {}
+    for name in RUNTIME_FILES:
+        payload = (source_dir / name).read_bytes()
+        if name.endswith('.py'):
+            ast.parse(payload, filename=name)
+        payloads[name] = payload
+    if check:
+        return
+    runtime.mkdir(parents=True, exist_ok=True)
+    for name, payload in payloads.items():
+        destination = runtime / name
+        if destination.exists() and destination.read_bytes() == payload:
+            continue
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(dir=runtime, delete=False) as output:
+                temporary = Path(output.name)
+                output.write(payload)
+            os.replace(temporary, destination)
+        finally:
+            if temporary:
+                temporary.unlink(missing_ok=True)
 
 
 def bounds(text):
@@ -34,8 +63,9 @@ def read(path):
     return path.read_bytes().decode('utf-8')
 
 
-def sync(source, target, check=False):
+def sync(source, target, check=False, runtime=None):
     source = source.expanduser().resolve(strict=True)
+    runtime = (runtime or Path.home() / '.local/share/42-shell').expanduser().resolve()
     target = target.expanduser().resolve()
     if source == target:
         raise ValueError('Source and target must be different files.')
@@ -44,6 +74,16 @@ def sync(source, target, check=False):
     if extent is None:
         raise ValueError('Source has no shared markers; no changes made.')
     block = shared[extent[0]:extent[1]]
+    # Bootstrap setup from wherever this clone was installed. A personal profile
+    # takes precedence, and MAIN_REPO_ROOT may point to a different repository.
+    block = block.replace(
+        'export ZSHRC_SHARED_ROOT="${ZSHRC_SHARED_ROOT:-$HOME/Documents/42_Singapore_SUTD}"',
+        'export ZSHRC_SHARED_ROOT=${ZSHRC_SHARED_ROOT:-' + shlex.quote(str(source.parent)) + '}',
+    )
+    block = block.replace(
+        'export ZSHRC_RUNTIME_ROOT="${ZSHRC_RUNTIME_ROOT:-$HOME/.local/share/42-shell}"',
+        'export ZSHRC_RUNTIME_ROOT=${ZSHRC_RUNTIME_ROOT:-' + shlex.quote(str(runtime)) + '}',
+    )
     if not block.endswith('\n'):
         block += '\n'
     existed = target.exists()
@@ -56,6 +96,7 @@ def sync(source, target, check=False):
     else:
         updated = original[:extent[0]] + block + original[extent[1]:]
     if updated == original:
+        install_runtime(source.parent, runtime, check)
         print('Shared zshrc helpers are already up to date.')
         return
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -65,6 +106,7 @@ def sync(source, target, check=False):
             temporary = Path(candidate.name)
             candidate.write(updated.encode('utf-8'))
         subprocess.run(['zsh', '-n', str(temporary)], check=True)
+        install_runtime(source.parent, runtime, check)
         if check:
             print('Shared zshrc update available; syntax check passed. No changes made.')
             return
@@ -91,9 +133,10 @@ def main():
     parser.add_argument('--source', type=Path, default=Path(__file__).resolve().with_name('Useful .zshrc edits (addition)'))
     parser.add_argument('--target', type=Path, default=Path(os.environ.get('ZDOTDIR') or Path.home()) / '.zshrc')
     parser.add_argument('--check', action='store_true', help='Check for an update and validate syntax without replacing the target')
+    parser.add_argument('--runtime', type=Path, default=Path(os.environ.get('ZSHRC_RUNTIME_ROOT', str(Path.home() / '.local/share/42-shell'))))
     args = parser.parse_args()
     try:
-        sync(args.source, args.target, args.check)
+        sync(args.source, args.target, args.check, args.runtime)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f'zshrc sync failed: {error}\n')
 

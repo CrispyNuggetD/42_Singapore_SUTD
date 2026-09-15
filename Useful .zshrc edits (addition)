@@ -1,115 +1,127 @@
 # >>> 42 shared zshrc >>>
-# Shared shell helpers: edit this repository file, then run synczshrc.
-# dailylogin pulls this repository, updates/reloads .zshrc, then runs its tasks.
-# Keep machine-specific settings OUTSIDE the markers in your local .zshrc.
-# Defaults below respect existing values. Local overrides can go after the block.
+# Shared shell helpers for the Linux 42 campus computer.
+# Edit "Useful .zshrc edits (addition)" in the shared repository, then run:
+#   synczshrc
+#   source ~/.zshrc
+# synczshrc updates this marked block and the installed helpers, backing up .zshrc.
 # First install on another computer (preserves existing content):
-# python3 "/path/to/42_Singapore_SUTD/sync_zshrc.py"
-# Manual synczshrc: reload .zshrc afterward. dailylogin reloads it automatically.
-# Set up the prompt
+#   python3 "/path/to/42_Singapore_SUTD/sync_zshrc.py"
+# Keep machine-specific settings OUTSIDE the markers in your local .zshrc.
+# setupzshrc walks through paths, services, brightness, and automatic updates.
+# ~/.42-shell-settings.zsh stores personal values and marks setup complete.
+# It is loaded before shared defaults; syncing this block never replaces it.
+# Run setupzshrc again to change choices, or edit that file and reload .zshrc.
+# ZSHRC_SETTINGS_FILE optionally selects a different personal settings file.
+# ZSHRC_SHARED_ROOT selects the update clone, separate from MAIN_REPO_ROOT.
+# Helpers are installed in ~/.local/share/42-shell (ZSHRC_RUNTIME_ROOT).
+# Updates refresh this local copy; deleting the update clone leaves helpers usable.
+# Project repositories and optional services remain separate dependencies.
+# ZDOTDIR selects the .zshrc directory (default: HOME).
 
-# There's a 'dailylogin' function that can both be run when logged in/ logout during
-# EOD [End of day] syncing. 
+# --- dailylogin: start-of-day setup and end-of-day syncing ---
+# Run dailylogin explicitly; sourcing this file only loads settings and helpers.
+# First dailylogin runs setup if needed, then returns without launching tasks.
+# Run dailylogin again after reviewing setup to start the chosen workflow.
+# With autoupdatezshrc=TRUE, first pull the shared repository, sync this block,
+# and reload .zshrc. Failure in those steps stops the remaining workflow.
+# Then run these tasks in order, with progress and a final result summary:
+#  1. start_codex: install if missing, configure full access, request a tmux window.
+#  2. syncdocs: pull other repositories under DOCUMENTS_REPOS_ROOT.
+#  3. start_lan42: request the LAN42 lobby window.
+#  4. start_mailbox: check/start the enrolled campus mailbox worker.
+#  5. stayon start --automatic: request the separately installed Stayon runner.
+#  6. adjust_brightness: set screen brightness to setbrightness (0-100).
+#  7. loginbefore12 and hourslogged: report local login history.
+#  8. curproj: enter the project, run make fclean, and open/reuse VS Code.
+#  9. Request Chrome if it is not already running for this user.
+# 10. syncproj: pull the main repository, then commit/push if there are changes.
+# Finally show the tmux workspace. Repeated runs reuse running managed windows,
+# but repeat reports, project cleaning, and Git tasks; this is not a once-only job.
 
-# This function runs the 2 fun functions (mentioned below) 
-# as well as the essential helpers that do these main things:
+# --- Controls ---
+# TRUE/1 enables a task; FALSE/0 disables it. Boolean TRUE is case-insensitive.
+# autoupdatezshrc: pull/sync/reload this configuration before running tasks.
+# startcodex, startlan42, startmailbox, startstayon: enable their dailylogin tasks.
+# pullotherrepos: enable syncdocs. adjustbrightness: enable adjust_brightness.
+# verbosity=FALSE hides workflow reporting; individual commands still print output.
+# verbosity_level=1 shows progress; 2 or higher also shows controls and settings.
+# loginreports, openproject, openchrome, syncmainrepo control reports, project
+# clean/open, Chrome, and main-repository Git sync respectively.
+# New users opt into optional services; setup defaults automatic updates to off.
+# startstayon controls dailylogin only; the stayon command can still run manually.
 
-# 1. cd to [custom-defined variable] for current project
-# 2. Opens Visual Studio Code
-# 3. makes fclean to clean up library objects for, then, 
-# 4. Proper syncing with github, amongst other auxillary checks and error handling.
-# 5. Starts the enrolled Mac remote client in a named tmux window.
-# 6. Opens the LAN42 lobby in a tmux window (set startlan42=0 to skip).
+# --- Terminal workspace ---
+# DAILY_TMUX_SESSION names the workspace (default: daily).
+# DAILY_TMUX_HELPER points to the installed daily_terminal.py in ZSHRC_RUNTIME_ROOT.
+# workterm: enter/return to the workspace in this terminal; create it if absent.
+# workwindows: list workspace windows.
+# quithidden: close ALL detached sessions on the selected tmux server and their
+# jobs, keeping attached sessions. This is broader than the daily workspace.
+# Managed app windows reuse a running job; rerunning a helper restarts a dead one.
+# Detach to leave jobs running. Ctrl-C in a job's window stops that job.
+# The workspace viewer uses GNOME Terminal or xterm when a desktop window is needed.
 
-##### (A) Fun functions:
-# 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
-# and 'hourslogged' to find out if you will hit intra's 50 hours clocked 
-# per week's bonus score.
+# --- Compile and inspect programs ---
+# compile is cc -Wall -Wextra -Werror; run invokes Valgrind with leak reporting.
+# Examples:
+#   compile ft_isalpha.c -o output
+#   compile -g ft_isalpha.c libft.a -o output
+#   run ./output "Hello" 42
+# -g is a compiler debug-symbol flag. Put libraries after source/object files.
+# Shift+Tab is bound to reverse-menu-complete for backwards completion cycling.
 
-##### (B) Useful functions:
-### (1-2) Includes two aliases 'compile' and 'run' so you don't have 
-# to always type in full for 42-compliant compiling/ running
-# You can also stack with valgrind flags.
+# --- Project paths and Git ---
+# Set current_proj to your project folder, e.g. "2_pipex".
+# PROJECTS_ROOT is relative to MAIN_REPO_ROOT, e.g. "Core Curriculum/Projects".
+# curproj enters MAIN_REPO_ROOT/PROJECTS_ROOT/current_proj, runs make fclean,
+# then code --reuse-window .; it returns early if either command fails.
+# It also displays local Git history. The main-repo history lookup currently
+# uses "Projects/$current_proj"; that legacy path may miss a differently nested project.
+# cdmain enters MAIN_REPO_ROOT.
+# syncproj runs git pull and displays status. If changes exist, it stages ALL
+# changes, asks for a commit title/body, commits, and pushes. Its Git steps do
+# not currently stop on every error; inspect the Git output for failures.
+# syncdocs pulls repositories with configured upstreams using --ff-only; it
+# never commits/pushes. It excludes MAIN_REPO_ROOT and scans nested repositories,
+# including Vogsphere clones and worktrees. It pulls the mailbox clone but skips
+# its contents. Failed pulls are reported while other repositories continue.
+# pullzshrc pulls the update clone; synczshrc installs its block and local helpers.
+# If the clone is absent, both keep the installed version. A failed pull from an
+# existing clone still stops dailylogin so update errors can be resolved.
 
-# Usage:
-# e.g. compile ft_isalpha.c
-# e.g. compile ft_isalpha.c -o output (run with ./output)
-# e.g. run ./output
-# e.g. run ./output "Hello" 42 (Passing arguments)
+# --- Reports and optional services ---
+# loginbefore12 prints local login records for days with a before-noon login.
+# hourslogged estimates a rolling seven-day total and time remaining to 50 hours
+# from local last output, using GNU date and gawk; it does not query Intra.
+# adjust_brightness tries GNOME's power service, then xbacklight.
+# MAC_REMOTE_ROOT points to the enrolled mac-remote clone. Run its setup.sh and
+# get this computer approved before using start_mailbox. A held worker lock
+# skips startup; otherwise the helper pulls --ff-only before bash device.sh start.
+# LAN42_CLONE points to 42sg-campus-lan; start_lan42 runs its lan42.sh in tmux.
+# The launcher handles its own update policy when a new lobby process starts.
+# STAYON_ROOT points to the separately installed private Stayon runner.
+# CODEX_INSTALL_DIR and CODEX_START_DIR override the install/start directories.
+# codex_full_access updates global approval/sandbox defaults in CODEX_HOME/config.toml
+# (default directory: ~/.codex); start_codex also passes full-access launch flags.
 
-# So, feel free to check with memory leaks with -g valgrind flag, i.e.:
-# compile -g ft_isalpha.c
+# --- Shared defaults and functions ---
+# Personal settings override shared defaults and earlier legacy assignments.
+export ZSHRC_RUNTIME_ROOT="${ZSHRC_RUNTIME_ROOT:-$HOME/.local/share/42-shell}"
+export ZSHRC_SETTINGS_FILE="${ZSHRC_SETTINGS_FILE:-$HOME/.42-shell-settings.zsh}"
+ZSHRC_SETUP_DONE=0
+if [[ -r "$ZSHRC_SETTINGS_FILE" ]]; then
+  source "$ZSHRC_SETTINGS_FILE"
+fi
+# The installer substitutes the actual clone location in this default line.
+export ZSHRC_SHARED_ROOT="${ZSHRC_SHARED_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
-# You need to compile with library (behind .c file, order matters) if .a exists, i.e.:
-# compile -g ft_isalpha.c libft.a -o output (run with ./output)
+setupzshrc() {
+  command python3 "$ZSHRC_RUNTIME_ROOT/setup_zshrc.py" --settings "$ZSHRC_SETTINGS_FILE" || return $?
+  source "${ZDOTDIR:-$HOME}/.zshrc"
+}
 
-### (3-5) Three helper functions cdmain(), curproj() and syncproj().
-
-# curproj switches into your github repo's project folder 
-# and shows the last edit + last sync status.
-# Pre-cleans library objects from directory with 'make fclean' (Comment out if unnecessary).
-# Rationale: Cleaning useful for EOD [End of day] syncing with GitHub.
-
-# Also Launches Visual Studio Code. 
-# (Expected behavior. When EOD [End of day] syncing with 'dailylogin' too, 
-# just ignore and lock computer for auto-logout anyway after syncing is done for the day.)
-
-# cdmain just goes into your github repo.
-
-# syncgithub checks your working tree is clean, and 
-# pulls from GitHub. It also pushes if you made changes.
-# Run this first before working on another computer to prevent conflicts!
-# With pullotherrepos=1, syncdocs pulls other working repos recursively
-# under DOCUMENTS_REPOS_ROOT (excluding MAIN_REPO_ROOT),
-# including other people's clones and Vogsphere repos with configured upstreams.
-# It never commits or pushes those other repos. Failed pulls are reported and
-# do not stop remaining repos. Conflicts, divergence and missing upstreams need
-# manual attention; no local changes are discarded. Bare repos are not included.
-# Set pullotherrepos=0 for the old dailylogin behavior. Your original
-# syncproj still handles SUTD commits/pushes unchanged. When enabled, dailylogin
-# runs syncdocs first, before any interactive SUTD commit/push prompts.
-# SYNC your campus repo before submitting project!
-
-# Usage: Type curproj, cdmain, syncproj, or syncdocs into terminal.
-
-# Notes:
-# You MUST change a few things:
-
-# 1. Change and point the project you're working
-# on by changing variable, current_proj="<PROJECT NAME>"
-# e.g. current_proj="0_libft"
-
-# 2. Change PROJECTS_ROOTS to Project sub-folder in your repo,
-# e.g. export PROJECTS_ROOTS="Core Curriculum/Projects"
-
-# 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
-# e.g. export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
-
-### (6) Zsh backwards cycling keybinds
-# Technically Shift + Tab was supposed to work out of the box but
-# it didn't for me so I just included it here.
-
-### (7) Mac remote mailbox startup
-# First clone mac-remote, run its setup.sh once, get this device approved on the Mac,
-# and sign in to Codex inside VS Code. No re-enrollment is needed at daily login.
-# Set MAC_REMOTE_ROOT below to the actual clone location on your campus computer.
-# Before opening a new window, start_mailbox pulls its clone with --ff-only.
-# A failed pull prevents startup; an existing worker is not restarted.
-# dailylogin opens a named tmux window running `bash device.sh start` (no sudo).
-# Detach to hide the worker; Ctrl-C stops it. Reboot/logout policy may end it.
-# Repeated dailylogin calls skip an already-running worker, including EOD syncing.
-# Set startmailbox=0 to disable, or run start_mailbox by itself to restart it.
-# GNOME Terminal is preferred; xterm is the fallback. Both launch a new window.
-# Copy these additions into ~/.zshrc and run `source ~/.zshrc` before dailylogin.
-
-###################################################################
-### (APPEND THESE) Variables after changing and Functions       ###
-### Do NOT replace original .zshrc file                         ###
-###################################################################
-
-# Notes:
-# hnah (intra) user defined
-export MAIL="${MAIL:-hnah@student.42singapore.sg}"
+# MAIL identifies the campus account; setup asks for the actual address.
+export MAIL="${MAIL:-${USER}@student.42singapore.sg}"
 
 # current project name (change as needed, then `source ~/.zshrc`)
 export current_proj="${current_proj:-2_pipex}"
@@ -120,9 +132,9 @@ export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
 # Named terminal windows; safe to call helpers inside or outside tmux.
 export DAILY_TMUX_SESSION="${DAILY_TMUX_SESSION:-daily}"
-export DAILY_TMUX_HELPER="${DAILY_TMUX_HELPER:-$MAIN_REPO_ROOT/daily_terminal.py}"
+export DAILY_TMUX_HELPER="${DAILY_TMUX_HELPER:-$ZSHRC_RUNTIME_ROOT/daily_terminal.py}"
 _daily_terminal() { command python3 "$DAILY_TMUX_HELPER" "$@"; }
-dailyterm() {
+workterm() {
   if [[ -n "$TMUX" ]]; then
     command tmux has-session -t "=$DAILY_TMUX_SESSION" 2>/dev/null ||
       command tmux new-session -d -s "$DAILY_TMUX_SESSION" || return 1
@@ -131,7 +143,7 @@ dailyterm() {
     command tmux new-session -A -s "$DAILY_TMUX_SESSION"
   fi
 }
-dailywindows() { _daily_terminal list; }
+workwindows() { _daily_terminal list; }
 
 # Close detached tmux sessions and their terminal jobs; keep attached sessions.
 quithidden() {
@@ -153,20 +165,20 @@ quithidden() {
 }
 
 # --- Daily login Mac remote mailbox ---
-export startmailbox=${startmailbox:-1}
+export startmailbox=${startmailbox:-0}
 export MAC_REMOTE_ROOT="${MAC_REMOTE_ROOT:-$HOME/Documents/mac-remote}"  # Change if you cloned it elsewhere.
 
 # --- Daily login LAN42 lobby ---
 # Clone 42sg-campus-lan into Documents and run its setup.sh once.
-# The launcher pulls its latest version when the new terminal opens.
+# The launcher handles updates when a new lobby process starts.
 export LAN42_CLONE="${LAN42_CLONE:-$HOME/Documents/42sg-campus-lan}"
-startlan42=${startlan42:-1}
+startlan42=${startlan42:-0}
 
 # --- Daily login Codex terminal (1 = enabled, 0 = disabled) ---
-startcodex=${startcodex:-1}
+startcodex=${startcodex:-0}
 
 # --- Daily login brightness ---
-export adjustbrightness=${adjustbrightness:-1}
+export adjustbrightness=${adjustbrightness:-0}
 export setbrightness=${setbrightness:-100}
 
 # --- Daily login reporting ---
@@ -177,12 +189,18 @@ verbosity_level=${verbosity_level:-2}
 
 # --- Daily login: update shared shell helpers before other tasks ---
 # TRUE enables pull/update/reload; FALSE skips it.
-autoupdatezshrc=${autoupdatezshrc:-TRUE}
+autoupdatezshrc=${autoupdatezshrc:-FALSE}
 
 # --- Daily login: pull other Documents repositories ---
-# Edit here: 1 = enabled, 0 = disabled (original dailylogin behavior).
-pullotherrepos=${pullotherrepos:-1}
+# 1 = enabled, 0 = disabled; set your local override outside the shared block.
+pullotherrepos=${pullotherrepos:-0}
 DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
+
+# --- Other dailylogin tasks (standalone commands still work independently) ---
+loginreports=${loginreports:-1}
+openproject=${openproject:-0}
+openchrome=${openchrome:-0}
+syncmainrepo=${syncmainrepo:-0}
 
 # --- Zsh backwards cycling ---
 bindkey "^[[Z" reverse-menu-complete
@@ -191,13 +209,12 @@ bindkey "^[Z" reverse-menu-complete
 # compile helper
 alias compile='cc -Wall -Wextra -Werror'
 
-# Feel free to check with memory leaks with -g valgrind flag, i.e.
-#compile -g
+# Use compile -g source.c to include debug symbols for Valgrind reports.
 
 # code execution helper with valgrind and leak flags
 alias run='valgrind --leak-check=full --show-leak-kinds=all'
 
-# jump to current 42 project (Vogsphere working copy)
+# Enter the configured project folder, clean it, open VS Code, and report history.
 curproj() {
   local proj_dir="$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj"
 
@@ -211,14 +228,14 @@ curproj() {
   echo "Now working on: $current_proj"
   echo "Location: $proj_dir"
   
-  #Uncomment to clean library files before committing pipeline
+  # Clean build outputs before opening the project; stop if cleaning fails.
   echo "Pre-cleaning"
   make fclean || return 1
   
   echo "Launching Visual Studio Code"
   code --reuse-window . || return 1
 
-  # --- Last edit (in the 42/Vogsphere clone) ---
+  # --- Latest commit in the repository containing this project ---
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "Last local git activity (this 42 project):"
     git log -1 --pretty="  %h %s (%cr)"
@@ -226,7 +243,7 @@ curproj() {
     echo "Not a git repo here (no .git found)."
   fi
 
-  # --- Last sync to main GitHub repo ---
+  # --- Local main-repo history for the legacy Projects/<project> path ---
   if [ -d "$MAIN_REPO_ROOT/.git" ]; then
     # Get last commit in main repo that touched this project folder
     local last_sync_line
@@ -437,8 +454,7 @@ loginbefore12() {
 }
 
 hourslogged() {
-  #!/bin/sh
-  # login_award_7day.sh
+  # Estimate login totals from local records over the last seven calendar dates.
 
   set -u
 
@@ -649,7 +665,7 @@ adjust_brightness() {
 
 # Start the enrolled 42 worker in its named tmux window.
 start_mailbox() {
-  if ! _dailylogin_enabled "${startmailbox:-1}"; then
+  if ! _dailylogin_enabled "${startmailbox:-0}"; then
     echo "Mac remote mailbox disabled (startmailbox=${startmailbox:-0})"
     return 0
   fi
@@ -721,7 +737,7 @@ read -r _'
 }
 
 # Local runner (installed separately in the private campus repo).
-# Copy this block into ~/.zshrc. Override STAYON_ROOT if your clone is elsewhere.
+# Set STAYON_ROOT outside the shared block if your clone is elsewhere.
 # Set startstayon=0 to disable the dailylogin window.
 export STAYON_ROOT="${STAYON_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private/Scripts and Testers/stayon}"
 startstayon=${startstayon:-0}
@@ -736,7 +752,7 @@ stayon() {
 
 # Keep the lobby in its own tmux window so dailylogin can finish.
 start_lan42() {
-  _dailylogin_enabled "${startlan42:-1}" || return 0
+  _dailylogin_enabled "${startlan42:-0}" || return 0
   local launcher="$LAN42_CLONE/lan42.sh"
   if [[ ! -f "$launcher" ]]; then
     print -u2 -- "LAN42 launcher missing: $launcher"
@@ -778,6 +794,10 @@ _dailylogin_settings() {
   _dailylogin_control_row startmailbox 'Start mailbox unless its worker is already running'
   _dailylogin_control_row startstayon 'Start stayon in automatic mode'
   _dailylogin_control_row adjustbrightness 'Set brightness to setbrightness'
+  _dailylogin_control_row loginreports 'Show local login-hour reports'
+  _dailylogin_control_row openproject 'Clean project and open VS Code'
+  _dailylogin_control_row openchrome 'Open Chrome if absent'
+  _dailylogin_control_row syncmainrepo 'Pull main repo; stage/commit/push changes'
   print -l -- '' 'Settings affecting these tasks'
   printf '  %-22s %s\n' \
     verbosity_level "${verbosity_level:-2} (1 = progress; 2+ = progress and settings)" \
@@ -794,9 +814,9 @@ _dailylogin_settings() {
     CODEX_START_DIR "${CODEX_START_DIR:-$MAIN_REPO_ROOT}" \
     CODEX_INSTALL_DIR "${CODEX_INSTALL_DIR:-$HOME/.local/bin}" \
     CODEX_HOME "${CODEX_HOME:-$HOME/.codex}"
-  print -l -- '  Always run: login-hours reports, project clean/open, Chrome request, main Git sync.' \
+  print -l -- '  Tasks run according to the controls above.' \
     '  Main Git sync retains its existing commit/push prompts.' \
-    '  Edit local controls outside the shared markers; TRUE/1 = ON, FALSE/0 = OFF.' ''
+    '  Run setupzshrc or edit your personal settings; TRUE/1 = ON, FALSE/0 = OFF.' ''
 }
 
 # "-" means always run. Command output remains visible at every verbosity level.
@@ -841,6 +861,10 @@ _dailylogin_chrome() {
 # Pull only: preserve local changes and stop on conflicts/divergence.
 pullzshrc() {
   local repo_root="${ZSHRC_SHARED_ROOT:-${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}}"
+  if [[ ! -d "$repo_root/.git" && ! -f "$repo_root/.git" ]]; then
+    print -- 'Update clone is unavailable; keeping the installed shell helpers.'
+    return 0
+  fi
   print -r -- "Pulling shared shell helpers from $repo_root"
   command git -C "$repo_root" -c merge.autostash=false -c rebase.autostash=false \
     pull --ff-only || {
@@ -850,6 +874,15 @@ pullzshrc() {
 }
 
 dailylogin() {
+  if [[ "${ZSHRC_SETUP_DONE:-0}" != 1 ]]; then
+    if [[ -o interactive && -t 0 ]]; then
+      setupzshrc || return $?
+      print -- 'Setup complete. Run dailylogin again to start your selected tasks.'
+      return 0
+    fi
+    print -u2 -- 'Shell setup required: run setupzshrc in an interactive terminal first.'
+    return 1
+  fi
   local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
   if _dailylogin_enabled "$autoupdatezshrc"; then
     if ! _dailylogin_run 'Pull shared repository' - pullzshrc ||
@@ -869,7 +902,7 @@ dailylogin() {
   _dailylogin_tasks "$@"
   if ! _daily_terminal show; then
     (( dailylogin_failed += 1 ))
-    _dailylogin_log FAILED 'Show tmux workspace (use dailyterm to reconnect)'
+    _dailylogin_log FAILED 'Show tmux workspace (use workterm to reconnect)'
   fi
   _dailylogin_summary
   (( dailylogin_failed == 0 ))
@@ -882,11 +915,11 @@ _dailylogin_tasks() {
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
   _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
-  _dailylogin_run 'Before-noon login report' - loginbefore12 || true
-  _dailylogin_run 'Weekly hours report' - hourslogged || true
-  _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" - curproj || true
-  _dailylogin_run 'Chrome window request' - _dailylogin_chrome || true
-  _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' - syncproj || true
+  _dailylogin_run 'Before-noon login report' loginreports loginbefore12 || true
+  _dailylogin_run 'Weekly hours report' loginreports hourslogged || true
+  _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" openproject curproj || true
+  _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
+  _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
 }
 
 # Ensure global full access; leave an already-correct config untouched.
@@ -933,7 +966,7 @@ PYCODEX
 # Install the official standalone CLI only when missing, then open its tmux window.
 # Optional local overrides: CODEX_INSTALL_DIR and CODEX_START_DIR.
 start_codex() {
-  _dailylogin_enabled "${startcodex:-1}" || return 0
+  _dailylogin_enabled "${startcodex:-0}" || return 0
   local install_dir="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
   local codex_bin installer
   local start_dir="${CODEX_START_DIR:-${MAIN_REPO_ROOT:-$HOME}}"
@@ -969,14 +1002,22 @@ if [ "$result" -ne 0 ]; then
   read -r _
 fi'
   _daily_terminal open --cwd "$start_dir" codex -- bash -c "$launch" codex-window "$start_dir" "$codex_bin" || return 1
-  print -- 'Codex is in tmux. Use dailyterm to return; sign in there if prompted.'
+  print -- 'Codex is in tmux. Use workterm to return; sign in there if prompted.'
 }
 
-# Update only the marked shared block; settings outside it stay local.
+# Refresh the marked shared block and installed helpers; personal settings stay local.
 synczshrc() {
   local repo_root="${ZSHRC_SHARED_ROOT:-${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}}"
-  command python3 "$repo_root/sync_zshrc.py" \
+  if [[ ! -f "$repo_root/Useful .zshrc edits (addition)" ]]; then
+    print -- 'Update source is unavailable; keeping the installed shell helpers.'
+    return 0
+  fi
+  command python3 "$ZSHRC_RUNTIME_ROOT/sync_zshrc.py" \
     --source "$repo_root/Useful .zshrc edits (addition)" \
+    --runtime "$ZSHRC_RUNTIME_ROOT" \
     --target "${ZDOTDIR:-$HOME}/.zshrc" "$@"
 }
+if [[ -o interactive && "${ZSHRC_SETUP_DONE:-0}" != 1 ]]; then
+  print -- 'First-time 42 shell setup: run setupzshrc to choose your paths and services.'
+fi
 # <<< 42 shared zshrc <<<
