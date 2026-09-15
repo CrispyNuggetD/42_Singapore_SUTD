@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/13 16:01:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/15 21:54:49 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,3 @@ int	main(int argc, char **argv, char **envp)
 	fds_close(&fds);
 	return (status);
 }
-cd
