@@ -16,7 +16,8 @@ setupzshrc
 `sync_zshrc.py` installs the shared terminal helpers. `setupzshrc` opens the
 setup wizard: enter your own email, repository paths, and current project, then
 choose which tasks to enable and save. Optional services and automatic updates
-default to off.
+default to off. The installer also enables mouse scrolling in `~/.tmux.conf`.
+For a tmux session that is already running, run `tmux set -g mouse on` once.
 
 Running `python3 setup_zshrc.py` alone only saves settings; it does not install
 the terminal helpers. Run `setupzshrc` again whenever you want to change them.

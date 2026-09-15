@@ -63,6 +63,27 @@ def read(path):
     return path.read_bytes().decode('utf-8')
 
 
+def install_tmux_mouse(path, check=False):
+    """Enable mouse scrolling while preserving existing tmux configuration."""
+    path = path.expanduser().resolve()
+    original = read(path) if path.exists() else ''
+    setting = 'set -g mouse on'
+    if original.rstrip().endswith(setting):
+        return
+    if check:
+        print(f'Mouse scrolling would be enabled in {path}.')
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        backup = path.with_name(path.name + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
+        shutil.copy2(path, backup)
+    with path.open('a') as output:
+        if original and not original.endswith('\n'):
+            output.write('\n')
+        output.write('\n# Enable mouse scrolling in tmux panes.\n' + setting + '\n')
+    print(f'Enabled mouse scrolling in {path} (applies to new tmux servers).')
+
+
 def sync(source, target, check=False, runtime=None):
     source = source.expanduser().resolve(strict=True)
     runtime = (runtime or Path.home() / '.local/share/42-shell').expanduser().resolve()
@@ -134,9 +155,11 @@ def main():
     parser.add_argument('--target', type=Path, default=Path(os.environ.get('ZDOTDIR') or Path.home()) / '.zshrc')
     parser.add_argument('--check', action='store_true', help='Check for an update and validate syntax without replacing the target')
     parser.add_argument('--runtime', type=Path, default=Path(os.environ.get('ZSHRC_RUNTIME_ROOT', str(Path.home() / '.local/share/42-shell'))))
+    parser.add_argument('--tmux-config', type=Path, default=Path.home() / '.tmux.conf')
     args = parser.parse_args()
     try:
         sync(args.source, args.target, args.check, args.runtime)
+        install_tmux_mouse(args.tmux_config, args.check)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f'zshrc sync failed: {error}\n')
 

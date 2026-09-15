@@ -8,6 +8,12 @@ source ~/.zshrc
 setupzshrc
 ```
 
+The installer enables mouse scrolling in `~/.tmux.conf`, preserving existing
+configuration and backing it up before changes. For an already running tmux
+session, run `tmux set -g mouse on` once. Scroll up to view pane history and
+press `q` to leave scroll mode. Hold Shift while dragging to use your terminal's
+normal text selection.
+
 `setupzshrc` shows the author's example destinations and asks for your own email,
 repository paths, project folder, and tmux session name. It also asks which tasks
 you want: Codex, mailbox, LAN42, Stayon, repository pulls, main-repository
