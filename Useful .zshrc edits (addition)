@@ -133,6 +133,25 @@ dailyterm() {
 }
 dailywindows() { _daily_terminal list; }
 
+# Close detached tmux sessions and their terminal jobs; keep attached sessions.
+quithidden() {
+  command -v tmux >/dev/null 2>&1 || { print -- 'tmux is not installed.'; return 0; }
+  local -a tmux_args
+  tmux_args=()
+  [[ -n "$DAILY_TMUX_SOCKET" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
+  local sessions session_id
+  sessions=$(command tmux "${tmux_args[@]}" list-sessions -F '#{session_id}' 2>/dev/null) || {
+    print -- 'No tmux sessions running.'
+    return 0
+  }
+  for session_id in ${(f)sessions}; do
+    # Check attachment inside the server immediately before closing the session.
+    command tmux "${tmux_args[@]}" if-shell -F -t "$session_id" '#{==:#{session_attached},0}' \
+      "kill-session -t $session_id" || return 1
+  done
+  print -- 'Detached tmux sessions closed. Attached sessions kept.'
+}
+
 # --- Daily login Mac remote mailbox ---
 export startmailbox=${startmailbox:-1}
 export MAC_REMOTE_ROOT="${MAC_REMOTE_ROOT:-$HOME/Documents/mac-remote}"  # Change if you cloned it elsewhere.
