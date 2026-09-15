@@ -25,6 +25,12 @@ the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 When ready, run `dailylogin` to start the tasks you enabled. See the
 [full shell setup guide](Study%20Notes/Codex/shell-setup.md) for more details.
 
+For fun, run `badapple` to play Bad Apple in your terminal. On first use it
+sets up `~/joke/play.sh` with assets from
+[bad-apple-ascii](https://github.com/trung-kieen/bad-apple-ascii).
+No sudo needed; audio uses VLC if available. Use `badapple --silent` for no
+audio, and Ctrl+C to stop.
+
 PISCINE 7:
 21 JUL - 15 AUG 2025
 

@@ -120,6 +120,14 @@ setupzshrc() {
   source "${ZDOTDIR:-$HOME}/.zshrc"
 }
 
+# Play Bad Apple; download its assets only on the first invocation.
+badapple() {
+  if [[ ! -f "$HOME/joke/play.sh" ]]; then
+    command python3 "$ZSHRC_RUNTIME_ROOT/setup_badapple.py" || return $?
+  fi
+  command bash "$HOME/joke/play.sh" "$@"
+}
+
 # MAIL identifies the campus account; setup asks for the actual address.
 export MAIL="${MAIL:-${USER}@student.42singapore.sg}"
 
