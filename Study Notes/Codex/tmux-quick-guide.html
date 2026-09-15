@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>tmux quick guide</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf2f8;color:#20304a;font:16px/1.55 system-ui,sans-serif}main{max-width:920px;margin:30px auto;background:white;padding:40px;border-radius:16px}header{border-bottom:3px solid #245bc1;padding-bottom:18px}.label{color:#137754;font-weight:750;letter-spacing:.15em;font-size:12px}h1{font-size:38px;margin:8px 0}h2{color:#245bc1;font-size:20px;margin:24px 0 10px}p{margin:10px 0}.box{background:#eaf6ef;border-left:4px solid #137754;padding:12px 16px;margin:20px 0}.warn{background:#fff5dd;border-color:#c1840c}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}code,kbd,pre{font-family:ui-monospace,"DejaVu Sans Mono",monospace}code{background:#eef2fa;color:#174eaa;padding:2px 5px;border-radius:4px;font-size:.9em}kbd{border:1px solid #c8d3e4;border-bottom-width:2px;background:#f8faff;border-radius:4px;padding:1px 5px;font-size:.85em}pre{background:#18263d;color:#e4efff;padding:15px;border-radius:8px;font-size:14px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;font-size:14px}th{text-align:left;background:#edf3ff;color:#234e94}th,td{padding:9px 12px;border-bottom:1px solid #dce4ef}li{margin:7px 0}a{color:#245bc1}footer{border-top:1px solid #dce4ef;margin-top:24px;padding-top:14px;color:#64748b;font-size:12px}@media(max-width:650px){main{margin:0;padding:22px}.grid{grid-template-columns:1fr;gap:0}}@media print{body{background:white;font-size:11px}main{margin:0;padding:0}h1{font-size:28px}h2{font-size:15px;margin-top:15px}table,pre{font-size:10px}th,td{padding:5px 8px}section,.box,table{break-inside:avoid}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style></head><body><main>
+<header><div class="label">TERMINAL ESSENTIALS</div><h1>tmux quick guide</h1><p>Hide your terminals. Keep work running. Return later.</p></header>
+<div class="box"><strong>Prefix</strong> = press <kbd>Ctrl</kbd> + <kbd>B</kbd>, <strong>release both</strong>, then press the next key.</div>
+<section><h2>1 · What the green bar means</h2><p>You are inside tmux. Its background server keeps your terminals running when you detach. The bar lists your windows.</p><pre>Session “daily” = your workspace
+  Window 0: Codex   ← a tmux window is like a tab
+  Window 1: Shell
+  Window 2: Server
+A pane is a split within a window, with its own terminal.</pre></section>
+<div class="grid"><section><h2>2 · Start and return</h2><p>From an ordinary terminal:</p><pre>tmux new -A -s daily</pre><p>Reconnect to <strong>daily</strong>, or create it if absent.</p><p>Already typed plain <code>tmux</code>? Name that session from its shell:</p><pre>tmux rename-session daily</pre><p>Use an unused name. List sessions: <code>tmux ls</code>.</p></section>
+<section><h2>3 · Make three windows</h2><ol><li>Run <code>codex</code> in the first window.</li><li><strong>Prefix → c</strong>: second shell.</li><li><strong>Prefix → c</strong>: third shell.</li><li><strong>Prefix → w</strong>: choose a window.</li></ol><p>Switching away hides Codex; it keeps running.</p><p><strong>Prefix → d</strong> detaches everything. Then close the desktop terminal window.</p></section></div>
+<section><h2>4 · Everyday controls</h2><table><thead><tr><th>Action</th><th>After Prefix, press…</th></tr></thead><tbody>
+<tr><td>Create window</td><td><kbd>c</kbd></td></tr>
+<tr><td>Browse windows; arrows + Enter to choose</td><td><kbd>w</kbd></td></tr>
+<tr><td>Switch to numbered window</td><td><kbd>0</kbd> / <kbd>1</kbd> / <kbd>2</kbd> …</td></tr>
+<tr><td>Rename window</td><td><kbd>,</kbd></td></tr>
+<tr><td>Detach; leave work running</td><td><kbd>d</kbd></td></tr>
+<tr><td>Split left/right · split top/bottom</td><td><kbd>%</kbd> · <kbd>&quot;</kbd></td></tr>
+<tr><td>Move between panes</td><td>Arrow key</td></tr>
+<tr><td>Zoom pane; repeat to restore</td><td><kbd>z</kbd></td></tr>
+<tr><td>Read retained output</td><td><kbd>[</kbd>, then Page Up; Esc to return</td></tr>
+<tr><td>Force-close pane; confirmation required</td><td><kbd>x</kbd></td></tr>
+</tbody></table><p><small>Default bindings · <a href="https://man.openbsd.org/tmux">tmux manual</a></small></p></section>
+<div class="grid"><section><h2>5 · Close for real</h2><p>Quit the program normally, then type <code>exit</code> at the shell prompt. This closes its pane; the final pane closes its window.</p><p><kbd>Ctrl</kbd> + <kbd>C</kbd> stops many foreground commands. It does <strong>not</strong> detach.</p><p>Force-closing with <strong>Prefix → x</strong> can lose unsaved work.</p></section>
+<section><h2>6 · Codex scrolling</h2><p>For future launches, inline mode preserves terminal scrollback:</p><pre>codex --no-alt-screen</pre><p>Inside tmux, use <strong>Prefix → [</strong> to read retained output. This is not a guaranteed fix for UI banners.</p></section></div>
+<div class="box warn"><strong>Remember:</strong> detached work still uses resources and can edit files. Approval prompts wait for you. Sleep pauses local work; reboot ends processes. Campus logout policies may terminate them too. Avoid starting tmux inside tmux.</div>
+<section><h2>Your dailylogin setup</h2><p>Reload once: <code>source ~/.zshrc</code>. Then use:</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><code>dailylogin</code></td><td>Run the workflow; reuse named tmux windows.</td></tr><tr><td><code>dailyterm</code></td><td>Enter or return to your daily workspace.</td></tr><tr><td><code>dailywindows</code></td><td>List its windows.</td></tr><tr><td><code>start_codex</code> / <code>start_lan42</code> / <code>start_mailbox</code></td><td>Launch independently; reuse a running window.</td></tr><tr><td><code>stayon</code> / <code>stayon stop</code></td><td>Start or stop Stayon; respects its existing controls.</td></tr></table><p>These helpers work outside tmux too. Chrome is skipped when running; VS Code reuses a window. Managed app windows retain output after stopping: rerun the helper to restart, or use <strong>Prefix → x</strong> to remove the window.</p></section>
+<footer>References: <a href="https://github.com/tmux/tmux/wiki/Getting-Started">Official tmux getting started</a> · <a href="https://man.openbsd.org/tmux">tmux manual</a> · <a href="https://learn.chatgpt.com/docs/developer-commands?surface=cli">Codex CLI reference</a><br>15 September 2026 · Self-contained HTML: open in a browser; print or save as PDF.</footer>
+</main></body></html>

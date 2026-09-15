@@ -1,3 +1,11 @@
+# >>> 42 shared zshrc >>>
+# Shared shell helpers: edit this repository file, then run synczshrc.
+# dailylogin pulls this repository, updates/reloads .zshrc, then runs its tasks.
+# Keep machine-specific settings OUTSIDE the markers in your local .zshrc.
+# Defaults below respect existing values. Local overrides can go after the block.
+# First install on another computer (preserves existing content):
+# python3 "/path/to/42_Singapore_SUTD/sync_zshrc.py"
+# Manual synczshrc: reload .zshrc afterward. dailylogin reloads it automatically.
 # Set up the prompt
 
 # There's a 'dailylogin' function that can both be run when logged in/ logout during
@@ -10,8 +18,8 @@
 # 2. Opens Visual Studio Code
 # 3. makes fclean to clean up library objects for, then, 
 # 4. Proper syncing with github, amongst other auxillary checks and error handling.
-# 5. Starts the enrolled Mac remote client in a separate terminal window.
-# 6. Opens the LAN42 lobby in another terminal (set startlan42=0 to skip).
+# 5. Starts the enrolled Mac remote client in a named tmux window.
+# 6. Opens the LAN42 lobby in a tmux window (set startlan42=0 to skip).
 
 ##### (A) Fun functions:
 # 2 Fun scripts. A 'loginbefore12' (Days you came before noon #commitment!!)
@@ -75,7 +83,7 @@
 # e.g. export PROJECTS_ROOTS="Core Curriculum/Projects"
 
 # 3. Change MAIN_REPO_ROOT to your GitHub cloned repo on campus PC,
-# e.g. export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+# e.g. export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
 ### (6) Zsh backwards cycling keybinds
 # Technically Shift + Tab was supposed to work out of the box but
@@ -87,8 +95,8 @@
 # Set MAC_REMOTE_ROOT below to the actual clone location on your campus computer.
 # Before opening a new window, start_mailbox pulls its clone with --ff-only.
 # A failed pull prevents startup; an existing worker is not restarted.
-# dailylogin opens a separate terminal running `bash device.sh start` (no sudo).
-# Leave that window open; closing it or logging out stops the worker.
+# dailylogin opens a named tmux window running `bash device.sh start` (no sudo).
+# Detach to hide the worker; Ctrl-C stops it. Reboot/logout policy may end it.
 # Repeated dailylogin calls skip an already-running worker, including EOD syncing.
 # Set startmailbox=0 to disable, or run start_mailbox by itself to restart it.
 # GNOME Terminal is preferred; xterm is the fallback. Both launch a new window.
@@ -101,18 +109,33 @@
 
 # Notes:
 # hnah (intra) user defined
-export MAIL='hnah@student.42singapore.sg'
+export MAIL="${MAIL:-hnah@student.42singapore.sg}"
 
 # current project name (change as needed, then `source ~/.zshrc`)
-export current_proj="2_pipex"
+export current_proj="${current_proj:-2_pipex}"
 
 # --- 42 paths ---
-export PROJECTS_ROOT="Core Curriculum/Projects"
-export MAIN_REPO_ROOT="$HOME/Documents/42_Singapore_SUTD"
+export PROJECTS_ROOT="${PROJECTS_ROOT:-Core Curriculum/Projects}"
+export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
+
+# Named terminal windows; safe to call helpers inside or outside tmux.
+export DAILY_TMUX_SESSION="${DAILY_TMUX_SESSION:-daily}"
+export DAILY_TMUX_HELPER="${DAILY_TMUX_HELPER:-$MAIN_REPO_ROOT/daily_terminal.py}"
+_daily_terminal() { command python3 "$DAILY_TMUX_HELPER" "$@"; }
+dailyterm() {
+  if [[ -n "$TMUX" ]]; then
+    command tmux has-session -t "=$DAILY_TMUX_SESSION" 2>/dev/null ||
+      command tmux new-session -d -s "$DAILY_TMUX_SESSION" || return 1
+    command tmux switch-client -t "=$DAILY_TMUX_SESSION"
+  else
+    command tmux new-session -A -s "$DAILY_TMUX_SESSION"
+  fi
+}
+dailywindows() { _daily_terminal list; }
 
 # --- Daily login Mac remote mailbox ---
-export startmailbox=1
-export MAC_REMOTE_ROOT="$HOME/Documents/mac-remote"  # Change if you cloned it elsewhere.
+export startmailbox=${startmailbox:-1}
+export MAC_REMOTE_ROOT="${MAC_REMOTE_ROOT:-$HOME/Documents/mac-remote}"  # Change if you cloned it elsewhere.
 
 # --- Daily login LAN42 lobby ---
 # Clone 42sg-campus-lan into Documents and run its setup.sh once.
@@ -120,14 +143,27 @@ export MAC_REMOTE_ROOT="$HOME/Documents/mac-remote"  # Change if you cloned it e
 export LAN42_CLONE="${LAN42_CLONE:-$HOME/Documents/42sg-campus-lan}"
 startlan42=${startlan42:-1}
 
+# --- Daily login Codex terminal (1 = enabled, 0 = disabled) ---
+startcodex=${startcodex:-1}
+
 # --- Daily login brightness ---
-export adjustbrightness=1
-export setbrightness=100
+export adjustbrightness=${adjustbrightness:-1}
+export setbrightness=${setbrightness:-100}
+
+# --- Daily login reporting ---
+# FALSE disables extra reporting; commands still show their own output/errors.
+# Level 1: task progress/results. Level 2: also show controls and settings.
+verbosity=${verbosity:-TRUE}
+verbosity_level=${verbosity_level:-2}
+
+# --- Daily login: update shared shell helpers before other tasks ---
+# TRUE enables pull/update/reload; FALSE skips it.
+autoupdatezshrc=${autoupdatezshrc:-TRUE}
 
 # --- Daily login: pull other Documents repositories ---
 # Edit here: 1 = enabled, 0 = disabled (original dailylogin behavior).
-pullotherrepos=1
-DOCUMENTS_REPOS_ROOT="$HOME/Documents"
+pullotherrepos=${pullotherrepos:-1}
+DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
 
 # --- Zsh backwards cycling ---
 bindkey "^[[Z" reverse-menu-complete
@@ -161,7 +197,7 @@ curproj() {
   make fclean || return 1
   
   echo "Launching Visual Studio Code"
-  code . || return 1
+  code --reuse-window . || return 1
 
   # --- Last edit (in the 42/Vogsphere clone) ---
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -216,7 +252,7 @@ cdmain() {
 # worktrees/submodules (.git files). Never stage, commit or push these repos.
 # Symlinked subdirectories are not followed; a symlinked root is supported.
 syncdocs() (
-  if [ "$pullotherrepos" != "1" ]; then
+  if ! _dailylogin_enabled "$pullotherrepos"; then
     echo "Other repository pulls disabled (pullotherrepos=$pullotherrepos)"
     return 0
   fi
@@ -549,7 +585,7 @@ hourslogged() {
 }
 
 adjust_brightness() {
-  if [ "$adjustbrightness" != "1" ]; then
+  if ! _dailylogin_enabled "$adjustbrightness"; then
     echo "Brightness adjustment disabled (adjustbrightness=$adjustbrightness)"
     return 0
   fi
@@ -581,9 +617,9 @@ adjust_brightness() {
   return 1
 }
 
-# Start the enrolled 42 worker in its own window, leaving dailylogin free to finish.
+# Start the enrolled 42 worker in its named tmux window.
 start_mailbox() {
-  if [ "${startmailbox:-1}" != "1" ]; then
+  if ! _dailylogin_enabled "${startmailbox:-1}"; then
     echo "Mac remote mailbox disabled (startmailbox=${startmailbox:-0})"
     return 0
   fi
@@ -629,6 +665,7 @@ PYLOCK
     local lock_result=$?
     if [ "$lock_result" -eq 2 ]; then
       echo "Mac remote mailbox is already running."
+      [[ "$DAILY_TMUX_BATCH" == 1 ]] || _daily_terminal show
       return 0
     fi
     echo "Could not check the mailbox worker lock; leaving it alone."
@@ -645,109 +682,271 @@ PYLOCK
   fi
 
   local worker_command='cd -- "$1" || exit 1
-printf "42 mailbox: leave this window open while logged in. Ctrl-C stops the worker.\n"
+printf "42 mailbox: detaching keeps the worker running. Ctrl-C stops it.\n"
 bash device.sh start
 worker_result=$?
 printf "\nMailbox stopped (exit %s). Check messages above; press Enter to close.\n" "$worker_result"
 read -r _'
-  local -a terminal_command
-  if command -v gnome-terminal >/dev/null 2>&1; then
-    terminal_command=(gnome-terminal --window --title="42 mailbox" -- bash -c "$worker_command" mailbox "$mailbox_root")
-  elif command -v xterm >/dev/null 2>&1; then
-    terminal_command=(xterm -T "42 mailbox" -e bash -c "$worker_command" mailbox "$mailbox_root")
-  else
-    echo "No supported terminal found (gnome-terminal or xterm)."
-    echo "Open a separate terminal in $mailbox_root and run: bash device.sh start"
-    return 1
-  fi
-
-  mkdir -p "$mailbox_root/.mailbox/42" || return 1
-  # nohup/disown keeps the new terminal independent of the dailylogin terminal.
-  # The worker still stops when its own window closes or the desktop logs out.
-  (umask 077; nohup "${terminal_command[@]}" \
-    >>"$mailbox_root/.mailbox/42/terminal-launch.log" 2>&1 </dev/null &!)
-  echo "Requested a separate 42 mailbox window. Leave it open while working."
-  echo "If it does not appear, check $mailbox_root/.mailbox/42/terminal-launch.log"
+  _daily_terminal open --cwd "$mailbox_root" mailbox -- bash -c "$worker_command" mailbox "$mailbox_root"
 }
 
 # Local runner (installed separately in the private campus repo).
 # Copy this block into ~/.zshrc. Override STAYON_ROOT if your clone is elsewhere.
 # Set startstayon=0 to disable the dailylogin window.
 export STAYON_ROOT="${STAYON_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private/Scripts and Testers/stayon}"
-startstayon=${startstayon:-1}
+startstayon=${startstayon:-0}
 stayon() {
   local runner="$STAYON_ROOT/stayon.py"
   if [[ ! -f "$runner" ]]; then
     echo "Runner missing; pull the private repo and run its setup.sh." >&2
     return 1
   fi
-  command python3 "$runner" "${@:-start}"
+  DAILY_TMUX_HELPER="$DAILY_TMUX_HELPER" command python3 "$runner" "${@:-start}"
 }
 
-# Keep the lobby in its own terminal so the rest of dailylogin can finish.
+# Keep the lobby in its own tmux window so dailylogin can finish.
 start_lan42() {
-  [[ "${startlan42:-1}" == 1 ]] || return 0
-  local opener="$LAN42_CLONE/useful-scripts/open_terminal.py"
-  if [[ ! -f "$opener" ]]; then
-    print -u2 -- "LAN42 helper missing: $opener"
-    print -u2 -- 'Clone/update 42sg-campus-lan in Documents and run sh setup.sh.'
+  _dailylogin_enabled "${startlan42:-1}" || return 0
+  local launcher="$LAN42_CLONE/lan42.sh"
+  if [[ ! -f "$launcher" ]]; then
+    print -u2 -- "LAN42 launcher missing: $launcher"
     return 1
   fi
-  command python3 "$opener"
+  _daily_terminal open --cwd "$LAN42_CLONE" lan42 -- sh "$launcher" "$@"
 }
 
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
 
-dailylogin() {
-  if [ "$pullotherrepos" = "1" ]; then
-    divider
-    echo "Pulling other repositories under $DOCUMENTS_REPOS_ROOT"
-    divider
-    syncdocs || echo "Some repositories need attention; see the summary above."
-  fi
-
-  divider
-  echo "Starting LAN42 lobby"
-  divider
-  start_lan42 || echo "LAN42 did not open; other dailylogin tasks will continue."
-
-  divider
-  echo "Starting Mac remote mailbox"
-  divider
-  start_mailbox
-  if [[ "${startstayon:-1}" == 1 ]]; then
-    stayon start --automatic
-  fi
-
-  divider
-  echo "Adjusting screen brightness"
-  divider
-  adjust_brightness
-
-  divider
-  echo "Days that I logged in before 12nn"
-  divider
-  loginbefore12
-
-  divider
-  echo "Hours logged for (50 hrs Intra_Award)"
-  divider
-  hourslogged
-
-  divider
-  echo "cd to current project"
-  divider
-  curproj
-  
-  divider
-  echo "Launching Google Chrome"
-  google-chrome >/dev/null 2>&1 &
-  divider
-  
-  divider
-  echo "sync proj. with github"
-  divider
-  syncproj
+# Shared boolean handling: controls accept TRUE/FALSE or 1/0.
+_dailylogin_enabled() {
+  [[ "$1" == 1 || "${(U)1}" == TRUE ]]
 }
+
+_dailylogin_log() {
+  _dailylogin_enabled "${verbosity:-TRUE}" || return 0
+  printf '[%-7s] %s\n' "$1" "$2"
+}
+
+_dailylogin_control_row() {
+  local key="$1" meaning="$2" value="${(P)1}" state=OFF
+  _dailylogin_enabled "$value" && state=ON
+  printf '  %-20s %-5s %-7s %s\n' "$key" "$state" "$value" "$meaning"
+}
+
+_dailylogin_settings() {
+  _dailylogin_enabled "${verbosity:-TRUE}" || return 0
+  [[ "${verbosity_level:-2}" == <-> ]] && (( verbosity_level >= 2 )) || return 0
+  print -l -- '' 'Daily login controls' '-------------------'
+  printf '  %-20s %-5s %-7s %s\n' 'Variable' 'State' 'Value' 'Effect'
+  _dailylogin_control_row verbosity 'Task progress and results'
+  _dailylogin_control_row autoupdatezshrc 'Pull shared repo, update .zshrc, then reload'
+  _dailylogin_control_row startcodex 'Ensure installation/full access; request Codex window'
+  _dailylogin_control_row pullotherrepos 'Pull other repos; main repo excluded'
+  _dailylogin_control_row startlan42 'Request LAN42 lobby window'
+  _dailylogin_control_row startmailbox 'Start mailbox unless its worker is already running'
+  _dailylogin_control_row startstayon 'Start stayon in automatic mode'
+  _dailylogin_control_row adjustbrightness 'Set brightness to setbrightness'
+  print -l -- '' 'Settings affecting these tasks'
+  printf '  %-22s %s\n' \
+    verbosity_level "${verbosity_level:-2} (1 = progress; 2+ = progress and settings)" \
+    setbrightness "${setbrightness}% (used only when adjustbrightness is ON)" \
+    current_proj "$current_proj" \
+    PROJECTS_ROOT "$PROJECTS_ROOT" \
+    MAIN_REPO_ROOT "$MAIN_REPO_ROOT" \
+    ZSHRC_SHARED_ROOT "${ZSHRC_SHARED_ROOT:-$MAIN_REPO_ROOT} (shared helpers)" \
+    ZDOTDIR "${ZDOTDIR:-$HOME} (.zshrc directory)" \
+    DOCUMENTS_REPOS_ROOT "$DOCUMENTS_REPOS_ROOT" \
+    MAC_REMOTE_ROOT "$MAC_REMOTE_ROOT" \
+    LAN42_CLONE "$LAN42_CLONE" \
+    STAYON_ROOT "$STAYON_ROOT" \
+    CODEX_START_DIR "${CODEX_START_DIR:-$MAIN_REPO_ROOT}" \
+    CODEX_INSTALL_DIR "${CODEX_INSTALL_DIR:-$HOME/.local/bin}" \
+    CODEX_HOME "${CODEX_HOME:-$HOME/.codex}"
+  print -l -- '  Always run: login-hours reports, project clean/open, Chrome request, main Git sync.' \
+    '  Main Git sync retains its existing commit/push prompts.' \
+    '  Edit local controls outside the shared markers; TRUE/1 = ON, FALSE/0 = OFF.' ''
+}
+
+# "-" means always run. Command output remains visible at every verbosity level.
+_dailylogin_run() {
+  local label="$1" control="$2" result
+  shift 2
+  if [[ "$control" != - ]] && ! _dailylogin_enabled "${(P)control}"; then
+    _dailylogin_log SKIP "$label ($control=${(P)control})"
+    (( dailylogin_skipped += 1 ))
+    return 0
+  fi
+  _dailylogin_log RUN "$label"
+  "$@"
+  result=$?
+  if (( result == 0 )); then
+    (( dailylogin_done += 1 ))
+    _dailylogin_log DONE "$label"
+  else
+    (( dailylogin_failed += 1 ))
+    _dailylogin_log FAILED "$label (exit $result)"
+  fi
+  return "$result"
+}
+
+_dailylogin_summary() {
+  _dailylogin_log SUMMARY "$dailylogin_done completed; $dailylogin_skipped skipped; $dailylogin_failed failed."
+}
+
+_dailylogin_chrome() {
+  command -v google-chrome >/dev/null 2>&1 || {
+    print -u2 -- 'google-chrome is not installed.'
+    return 1
+  }
+  # Match this user's Chrome processes; do not create another tab/window.
+  if command pgrep -u "$EUID" -x 'chrome|google-chrome' >/dev/null 2>&1; then
+    print -- 'Chrome is already running; keeping its existing windows.'
+    return 0
+  fi
+  (command google-chrome >/dev/null 2>&1 &!)
+}
+
+# Pull only: preserve local changes and stop on conflicts/divergence.
+pullzshrc() {
+  local repo_root="${ZSHRC_SHARED_ROOT:-${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}}"
+  print -r -- "Pulling shared shell helpers from $repo_root"
+  command git -C "$repo_root" -c merge.autostash=false -c rebase.autostash=false \
+    pull --ff-only || {
+      print -u2 -- "Repository pull failed; dailylogin stopped before updating .zshrc."
+      return 1
+    }
+}
+
+dailylogin() {
+  local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
+  if _dailylogin_enabled "$autoupdatezshrc"; then
+    if ! _dailylogin_run 'Pull shared repository' - pullzshrc ||
+       ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
+       ! _dailylogin_run 'Reload .zshrc' - source "${ZDOTDIR:-$HOME}/.zshrc"; then
+      _dailylogin_log STOP 'Remaining dailylogin tasks were not run because startup failed.'
+      _dailylogin_summary
+      return 1
+    fi
+  else
+    _dailylogin_log SKIP "Pull/update/reload .zshrc (autoupdatezshrc=$autoupdatezshrc)"
+    (( dailylogin_skipped += 3 ))
+  fi
+  # Report the effective settings and dispatch the functions loaded by source.
+  _dailylogin_settings
+  local -x DAILY_TMUX_BATCH=1
+  _dailylogin_tasks "$@"
+  if ! _daily_terminal show; then
+    (( dailylogin_failed += 1 ))
+    _dailylogin_log FAILED 'Show tmux workspace (use dailyterm to reconnect)'
+  fi
+  _dailylogin_summary
+  (( dailylogin_failed == 0 ))
+}
+
+_dailylogin_tasks() {
+  _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
+  _dailylogin_run "Pull other repositories under $DOCUMENTS_REPOS_ROOT" pullotherrepos syncdocs || true
+  _dailylogin_run 'LAN42 lobby window request' startlan42 start_lan42 || true
+  _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
+  _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
+  _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
+  _dailylogin_run 'Before-noon login report' - loginbefore12 || true
+  _dailylogin_run 'Weekly hours report' - hourslogged || true
+  _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" - curproj || true
+  _dailylogin_run 'Chrome window request' - _dailylogin_chrome || true
+  _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' - syncproj || true
+}
+
+# Ensure global full access; leave an already-correct config untouched.
+codex_full_access() {
+  python3 - "${CODEX_HOME:-$HOME/.codex}/config.toml" <<'PYCODEX'
+from pathlib import Path
+from datetime import datetime
+import re
+import shutil
+import sys
+
+config = Path(sys.argv[1]).expanduser().resolve()
+config.parent.mkdir(parents=True, exist_ok=True)
+original = config.read_text() if config.exists() else ""
+# Only replace global keys; preserve project and profile sections.
+section = re.search(r"(?m)^\s*\[", original)
+boundary = section.start() if section else len(original)
+header, sections = original[:boundary], original[boundary:]
+# Check both TOML quote styles before deciding whether any edit is necessary.
+def has_setting(key, value):
+    pattern = r"(?m)^[ \t]*" + key + r"[ \t]*=[ \t]*(['\"])" + re.escape(value) + r"\1[ \t]*(?:#.*)?$"
+    return re.search(pattern, header)
+if has_setting("approval_policy", "never") and has_setting("sandbox_mode", "danger-full-access"):
+    print(f"Codex global full access already enabled in {config}")
+    sys.exit(0)
+header = re.sub(
+    r'(?m)^[ \t]*(?:approval_policy|sandbox_mode)[ \t]*=.*(?:\n|$)',
+    "", header,
+)
+updated = ('approval_policy = "never"\n'
+           'sandbox_mode = "danger-full-access"\n' + header + sections)
+if updated != original:
+    if config.exists():
+        backup = config.with_name(config.name + ".bak-" + datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
+        shutil.copy2(config, backup)
+        print(f"Backup: {backup}")
+    config.write_text(updated)
+    config.chmod(0o600)
+print(f"Codex global full access configured in {config}")
+print("Restart Codex and start a new session to load the defaults.")
+PYCODEX
+}
+
+# Install the official standalone CLI only when missing, then open its tmux window.
+# Optional local overrides: CODEX_INSTALL_DIR and CODEX_START_DIR.
+start_codex() {
+  _dailylogin_enabled "${startcodex:-1}" || return 0
+  local install_dir="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
+  local codex_bin installer
+  local start_dir="${CODEX_START_DIR:-${MAIN_REPO_ROOT:-$HOME}}"
+  [[ -d "$start_dir" ]] || { print -u2 -- "Codex directory missing: $start_dir"; return 1; }
+  command -v tmux >/dev/null 2>&1 || { print -u2 -- 'tmux is required for Codex windows.'; return 1; }
+
+  codex_bin=$(whence -p codex)
+  if [[ -z "$codex_bin" && -x "$install_dir/codex" ]]; then
+    codex_bin="$install_dir/codex"
+  fi
+  if [[ -z "$codex_bin" ]]; then
+    print -- 'Installing Codex with the official standalone installer.'
+    installer=$(mktemp "${TMPDIR:-/tmp}/codex-install.XXXXXXXX") || return 1
+    if ! command curl -fsSL https://chatgpt.com/codex/install.sh -o "$installer"; then
+      command rm -f -- "$installer"
+      return 1
+    fi
+    if ! CODEX_NON_INTERACTIVE=1 CODEX_INSTALL_DIR="$install_dir" command sh "$installer"; then
+      command rm -f -- "$installer"
+      return 1
+    fi
+    command rm -f -- "$installer"
+    codex_bin="$install_dir/codex"
+    [[ -x "$codex_bin" ]] || { print -u2 -- "Installer did not create $codex_bin"; return 1; }
+  fi
+  codex_full_access || return 1
+  # Explicit flags also keep project-level defaults from reducing this launch's access.
+  local launch='cd -- "$1" || exit 1
+"$2" --ask-for-approval never --sandbox danger-full-access
+result=$?
+if [ "$result" -ne 0 ]; then
+  printf "Codex exited with status %s. Press Enter to close.\n" "$result"
+  read -r _
+fi'
+  _daily_terminal open --cwd "$start_dir" codex -- bash -c "$launch" codex-window "$start_dir" "$codex_bin" || return 1
+  print -- 'Codex is in tmux. Use dailyterm to return; sign in there if prompted.'
+}
+
+# Update only the marked shared block; settings outside it stay local.
+synczshrc() {
+  local repo_root="${ZSHRC_SHARED_ROOT:-${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}}"
+  command python3 "$repo_root/sync_zshrc.py" \
+    --source "$repo_root/Useful .zshrc edits (addition)" \
+    --target "${ZDOTDIR:-$HOME}/.zshrc" "$@"
+}
+# <<< 42 shared zshrc <<<

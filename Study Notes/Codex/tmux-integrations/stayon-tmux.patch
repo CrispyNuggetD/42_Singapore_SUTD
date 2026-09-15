@@ -1,0 +1,34 @@
+--- a/Scripts and Testers/stayon/stayon.py
++++ b/Scripts and Testers/stayon/stayon.py
+@@ -164,13 +164,22 @@
+         return run(automatic=args.automatic)
+     if confirmed_running():
+         print("Already running (child heartbeat verified).")
++        helper = os.environ.get("DAILY_TMUX_HELPER")
++        if helper and os.environ.get("DAILY_TMUX_BATCH") != "1":
++            subprocess.run([sys.executable, helper, "show"], check=True)
+         return 0
+     if active():
+         raise RuntimeError('Existing supervisor is not reporting a live child; stop it and retry.')
+     if not CONFIG.exists():
+         raise RuntimeError("Run setup.sh first.")
+     script = str(Path(__file__).resolve())
+-    if shutil.which("gnome-terminal"):
++    tmux_helper = os.environ.get("DAILY_TMUX_HELPER")
++    if tmux_helper:
++        if not Path(tmux_helper).is_file():
++            raise RuntimeError("Daily tmux helper missing: " + tmux_helper)
++        command = [sys.executable, tmux_helper, "open", "--cwd", str(Path(script).parent),
++                   "stayon", "--", sys.executable, script, "run"]
++    elif shutil.which("gnome-terminal"):
+         command = ["gnome-terminal", "--window", "--title=Session", "--", sys.executable, script, "run"]
+     elif shutil.which("xterm"):
+         command = ["xterm", "-T", "Session", "-e", sys.executable, script, "run"]
+@@ -201,6 +210,6 @@
+ if __name__ == "__main__":
+     try:
+         sys.exit(main())
+-    except (OSError, ValueError, KeyError, RuntimeError, subprocess.TimeoutExpired) as error:
++    except (OSError, ValueError, KeyError, RuntimeError, subprocess.TimeoutExpired, subprocess.CalledProcessError) as error:
+         print("Error: {}".format(error), file=sys.stderr)
+         sys.exit(1)
