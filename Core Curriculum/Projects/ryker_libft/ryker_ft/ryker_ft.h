@@ -15,6 +15,7 @@
 
 # include "printf_fd/ryker_ft_printf.h"
 
-int	ryker_ft_isspace(int c);
+int		ryker_ft_isspace(int c);
+void	ryker_ft_free_str_array(char **strings);
 
 #endif

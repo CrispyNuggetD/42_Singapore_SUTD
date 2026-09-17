@@ -1,34 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   heredoc_utils_bonus.c                              :+:      :+:    :+:   */
+/*   fd_open_utils_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/11 21:05:36 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 22:26:21 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 22:26:21 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-int	is_limiter_bonus(char *line, char *limiter)
+int	open_files_with_heredoc(t_pipeline *pipeline, int argc, char **argv)
 {
-	size_t	length;
-
-	length = ft_strlen(limiter);
-	if (ft_strncmp(line, limiter, length) != 0)
-		return (0);
-	if (line[length] == '\0')
+	pipeline->first_command = 3;
+	pipeline->last_command = argc - 2;
+	pipeline->input_fd = prepare_heredoc_bonus(argv[2]);
+	if (pipeline->input_fd < 0)
 		return (1);
-	if (line[length] == '\n' && line[length + 1] == '\0')
-		return (1);
-	return (0);
-}
-
-int	write_line_bonus(int fd, char *line)
-{
-	if (ryker_ft_printf_fd(fd, "%s", line) < 0)
-		return (-1);
+	pipeline->output_fd = open_output(argv[argc - 1], O_APPEND);
+	if (pipeline->output_fd < 0)
+		return (return_perror(argv[argc - 1]));
 	return (0);
 }

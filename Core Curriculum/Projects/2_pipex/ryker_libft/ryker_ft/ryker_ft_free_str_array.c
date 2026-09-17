@@ -1,30 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   wait_bonus.c                                       :+:      :+:    :+:   */
+/*   ryker_ft_free_str_array.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/11 21:05:36 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 22:03:54 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 22:03:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex_bonus.h"
+#include "ryker_ft.h"
 
-int	wait_pipeline_bonus(t_pipeline *pipeline)
+void	ryker_ft_free_str_array(char **strings)
 {
-	int	status;
-	int	remaining;
+	int	i;
 
-	if (waitpid(pipeline->last_pid, &status, 0) < 0)
-		return (return_perror("waitpid"));
-	remaining = pipeline->child_count - 1;
-	while (remaining-- > 0)
-		wait(NULL);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	if (WIFSIGNALED(status))
-		return (128 + WTERMSIG(status));
-	return (1);
+	if (!strings)
+		return ;
+	i = 0;
+	while (strings[i])
+	{
+		free(strings[i]);
+		i++;
+	}
+	free(strings);
 }

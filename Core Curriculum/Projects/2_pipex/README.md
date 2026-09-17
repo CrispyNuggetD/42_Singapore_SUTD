@@ -91,6 +91,74 @@ therefore requires the next character to be either the string terminator, or a
 newline immediately followed by the string terminator. The limiter line itself
 is not written into the here-document.
 
+### Why accept a limiter without a final newline?
+
+After matching the limiter's characters, `is_limiter_bonus()` checks:
+
+```c
+if (line[length] == '\0')
+    return (1);
+```
+
+Here, `length` is the limiter's length. For limiter `STOP`, this accepts the
+string `"STOP"`, as distinct from `"STOP\n"`, which the next check handles.
+The null terminator ends the C string; it is not an EOF byte read from stdin.
+The line reader adds it when returning the final characters collected before
+EOF. This check only accepts an exact match, not arbitrary input ending at EOF.
+
+Pressing Enter in a terminal normally supplies a newline, but stdin is not
+necessarily a keyboard: it can also be a file or a pipe. A producer can finish
+immediately after writing `STOP`, without writing a final newline.
+
+This is also a real Bash here-document case. The installed `man bash` explains
+in its `-s` option that Bash can read commands from stdin, including through a
+pipe. Its **Here Documents** section describes reading the body from the
+current input source. A script containing `<<STOP` remains a here-document
+when that script reaches Bash through a pipe; interactive typing is not a
+requirement. See also the official manual's
+[Bash invocation](https://www.gnu.org/software/bash/manual/html_node/Invoking-Bash.html)
+and [redirection](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+sections.
+
+The specific acceptance of a delimiter without a final newline was verified
+experimentally with Bash, rather than inferred from an explicit statement
+about this edge case in the manual:
+
+```sh
+# Exact delimiter followed by EOF, with no final newline: prints hello,
+# with no warning. Adding a newline after STOP is accepted too.
+printf 'cat <<STOP\nhello\nSTOP' | bash --noprofile --norc
+
+# EOF without the delimiter: prints hello and warns that STOP was missing.
+printf 'cat <<STOP\nhello\n' | bash --noprofile --norc
+```
+
+For a comparison matching the subject's `cmd << LIMITER | cmd1 >> file`
+structure, build the bonus and run the following from the project root:
+
+```sh
+make bonus
+test_dir=$(mktemp -d)
+printf 'cat <<STOP | wc -l >> "%s/bash_out"\nhello\nSTOP' "$test_dir" \
+    | bash --noprofile --norc
+printf 'hello\nSTOP' \
+    | ./pipex here_doc STOP "cat" "wc -l" "$test_dir/pipex_out"
+diff -u "$test_dir/bash_out" "$test_dir/pipex_out"
+```
+
+Both output files should contain `1` followed by a newline; `diff` should print
+nothing. The temporary directory keeps previous append output from affecting
+the comparison. Bash receives shell syntax plus the body through stdin; Pipex
+receives its command structure through arguments and only the body through
+stdin. A plain `printf ... | cat` would merely be a pipeline, but the Bash
+reference above actually parses and executes `<<STOP`.
+
+The subject (version 5.0, bonus section, printed page 10) asks for equivalent
+shell behavior and does not restrict input to a terminal. It does not name
+Bash specifically or separately define this EOF edge case. This test supports
+the delimiter check; it is not a claim that all Bash here-document features
+are implemented or that the whole program has been validated.
+
 ### Why I chose a temporary file
 
 We discussed two ways to turn the collected text into the first command's

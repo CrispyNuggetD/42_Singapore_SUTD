@@ -1,17 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipeline_bonus.c                                   :+:      :+:    :+:   */
+/*   pipeline_handler.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 18:29:46 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 21:55:50 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex_bonus.h"
-
+#include "pipex.h"
 
 static void	child_process(t_pipeline *pipeline, int current_command,
 		char **argv, char **envp)
@@ -61,7 +60,24 @@ static int	spawn_command(t_pipeline *pipeline, int current_command,
 	return (0);
 }
 
-int	run_pipeline_bonus(t_pipeline *pipeline, char **argv, char **envp)
+static int	wait_pipeline(t_pipeline *pipeline)
+{
+	int	status;
+	int	remaining;
+
+	if (waitpid(pipeline->last_pid, &status, 0) < 0)
+		return (return_perror("waitpid"));
+	remaining = pipeline->child_count - 1;
+	while (remaining-- > 0)
+		wait(NULL);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
+	return (1);
+}
+
+int	run_pipeline(t_pipeline *pipeline, char **argv, char **envp)
 {
 	int	current_command;
 	int	remaining;
@@ -81,5 +97,5 @@ int	run_pipeline_bonus(t_pipeline *pipeline, char **argv, char **envp)
 		current_command++;
 	}
 	close_pipeline(pipeline);
-	return (wait_pipeline_bonus(pipeline));
+	return (wait_pipeline(pipeline));
 }

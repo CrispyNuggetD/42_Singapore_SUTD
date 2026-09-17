@@ -1,28 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   memory.c                                           :+:      :+:    :+:   */
+/*   ryker_ft_free_str_array.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/27 19:22:31 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 22:03:54 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 22:03:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "ryker_ft.h"
+#include <stdlib.h>
 
-void	free_matrix(char **matrix)
+void	ryker_ft_free_str_array(char **strings)
 {
 	int	i;
 
-	if (!matrix)
+	if (!strings)
 		return ;
 	i = 0;
-	while (matrix[i])
+	while (strings[i])
 	{
-		free(matrix[i]);
+		free(strings[i]);
 		i++;
 	}
-	free(matrix);
+	free(strings);
 }

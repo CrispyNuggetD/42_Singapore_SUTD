@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   path.c                                             :+:      :+:    :+:   */
+/*   path_checker.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/27 19:22:31 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 22:14:36 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,6 @@ char	*resolve_path(char *command, char **envp)
 	if (!directories)
 		return (NULL);
 	path = search_directories(directories, command);
-	free_matrix(directories);
+	ryker_ft_free_str_array(directories);
 	return (path);
 }

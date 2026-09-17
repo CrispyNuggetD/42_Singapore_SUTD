@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 15:26:06 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 21:51:04 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,27 +22,11 @@
 # include <unistd.h>
 # include <errno.h>
 
-
-/* 
-typedef struct s_fds
-{
-	int	infile;
-	int	outfile;
-	int	pipefd[2];
-}	t_fds; */
-//REMOVE LATER AFT DONE [1/?]
-
 typedef struct s_pipeline
 {
 	int		input_fd;
 	int		output_fd;
 	int		pipefd[2];
-
-
-
-
-
-
 	int		first_command;
 	int		last_command;
 	int		child_count;
@@ -57,14 +41,15 @@ typedef enum e_usage_message_id
 }	t_usage_message_id;
 
 void	init_pipeline(t_pipeline *pipeline);
-void	fds_close(t_fds *fds);
-int		spawn_children(t_fds *fds, char **argv, char **envp);
+int		open_output(const char *path, int mode);
+int		open_files_no_heredoc(t_pipeline *pipeline, int argc, char **argv);
+void	close_and_void_fd(int *fd);
+int		close_pipeline(t_pipeline *pipeline);
+int		run_pipeline(t_pipeline *pipeline, char **argv, char **envp);
 void	execute_command(char *command, char **envp);
 char	*resolve_path(char *command, char **envp);
-void	free_matrix(char **matrix);
 void	exit_perror(char *message, int status);
 int		return_perror(char *message);
-int		print_usage(t_usage_message_id message_id)
-
+int		print_usage(t_usage_message_id message_id);
 
 #endif

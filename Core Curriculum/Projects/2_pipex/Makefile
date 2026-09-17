@@ -7,11 +7,20 @@ OBJ_DIR := obj
 INC_DIR := includes
 LIBFT_DIR := ryker_libft
 
-SRCS := main.c fds.c process.c execute.c path.c memory.c
+COMMON_SRCS := fd_open_utils.c usage_printer.c pipeline_handler.c execute.c \
+	path_checker.c cleanup_and_errors.c
+SRCS := main.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
-BONUS_SRCS := main_bonus.c pipeline_bonus.c wait_bonus.c heredoc_bonus.c \
-	heredoc_utils_bonus.c get_next_line_bonus.c execute.c path.c memory.c
+BONUS_ONLY_SRCS := main_bonus.c heredoc_helpers_bonus.c heredoc_bonus.c \
+	fd_open_utils_bonus.c get_next_line_bonus.c
+BONUS_SRCS := $(BONUS_ONLY_SRCS) $(COMMON_SRCS)
 BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
+BONUS_ONLY_OBJS := $(BONUS_ONLY_SRCS:%.c=$(OBJ_DIR)/%.o)
+LIBFT_HEADERS := $(LIBFT_DIR)/ryker_libft.h \
+	$(filter-out $(LIBFT_DIR)/ryker_ft/wip/%,\
+	$(wildcard $(LIBFT_DIR)/0_libft/*.h $(LIBFT_DIR)/1_ft_printf/*.h \
+	$(LIBFT_DIR)/1_get_next_line/*.h $(LIBFT_DIR)/ryker_ft/*.h \
+	$(LIBFT_DIR)/ryker_ft/*/*.h))
 LIBFT := $(LIBFT_DIR)/libft.a
 INCLUDES = -I$(INC_DIR)
 MANDATORY_MARKER := $(OBJ_DIR)/.mandatory
@@ -26,11 +35,11 @@ $(MANDATORY_MARKER): $(OBJS) $(LIBFT)
 	rm -f $(BONUS_MARKER)
 	touch $(MANDATORY_MARKER)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_DIR)/ryker_libft.h Makefile
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_HEADERS) Makefile
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BONUS_OBJS): $(INC_DIR)/pipex_bonus.h
+$(BONUS_ONLY_OBJS): $(INC_DIR)/pipex_bonus.h
 
 bonus: $(BONUS_MARKER)
 

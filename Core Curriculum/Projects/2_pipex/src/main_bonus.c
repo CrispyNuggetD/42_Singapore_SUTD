@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 17:55:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 22:27:55 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	main(int argc, char **argv, char **envp)
 
 	if (argc < 5)
 		return (print_usage(USAGE_BONUS));
-	heredoc_exists = is_heredoc(argv[1]);
+	heredoc_exists = is_exactly_heredoc(argv[1]);
 	if (heredoc_exists && argc < 6)
 		return (print_usage(USAGE_HEREDOC));
 	init_pipeline(&pipeline);
@@ -27,5 +27,5 @@ int	main(int argc, char **argv, char **envp)
 		return (close_pipeline(&pipeline));
 	else if (!heredoc_exists && open_files_no_heredoc(&pipeline, argc, argv) != 0)
 		return (close_pipeline(&pipeline));
-	return (run_pipeline_bonus(&pipeline, argv, envp));
+	return (run_pipeline(&pipeline, argv, envp));
 }
