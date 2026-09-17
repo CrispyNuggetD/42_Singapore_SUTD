@@ -101,6 +101,7 @@
 # The launcher handles its own update policy when a new lobby process starts.
 # STAYON_ROOT points to the separately installed private Stayon runner.
 # CODEX_INSTALL_DIR and CODEX_START_DIR override the install/start directories.
+# Codex defaults to ~/Documents/42_Singapore_SUTD_hnah_private/42; codex --cd selects another project.
 # codex_full_access updates global approval/sandbox defaults in CODEX_HOME/config.toml
 # (default directory: ~/.codex); start_codex also passes full-access launch flags.
 
@@ -137,6 +138,7 @@ export current_proj="${current_proj:-2_pipex}"
 # --- 42 paths ---
 export PROJECTS_ROOT="${PROJECTS_ROOT:-Core Curriculum/Projects}"
 export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
+export CODEX_START_DIR="${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}"
 
 # Named terminal windows; safe to call helpers inside or outside tmux.
 export DAILY_TMUX_SESSION="${DAILY_TMUX_SESSION:-daily}"
@@ -213,6 +215,9 @@ syncmainrepo=${syncmainrepo:-0}
 # --- Zsh backwards cycling ---
 bindkey "^[[Z" reverse-menu-complete
 bindkey "^[Z" reverse-menu-complete
+
+# This toggle is a setting, not a command; keep it out of command-name completion.
+zstyle ":completion:*:-command-:*:parameters" ignored-patterns adjustbrightness
 
 # compile helper
 alias compile='cc -Wall -Wextra -Werror'
@@ -819,7 +824,7 @@ _dailylogin_settings() {
     MAC_REMOTE_ROOT "$MAC_REMOTE_ROOT" \
     LAN42_CLONE "$LAN42_CLONE" \
     STAYON_ROOT "$STAYON_ROOT" \
-    CODEX_START_DIR "${CODEX_START_DIR:-$MAIN_REPO_ROOT}" \
+    CODEX_START_DIR "$CODEX_START_DIR" \
     CODEX_INSTALL_DIR "${CODEX_INSTALL_DIR:-$HOME/.local/bin}" \
     CODEX_HOME "${CODEX_HOME:-$HOME/.codex}"
   print -l -- '  Tasks run according to the controls above.' \
@@ -925,9 +930,10 @@ _dailylogin_tasks() {
   _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
   _dailylogin_run 'Before-noon login report' loginreports loginbefore12 || true
   _dailylogin_run 'Weekly hours report' loginreports hourslogged || true
-  _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" openproject curproj || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
   _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
+  # Finish in the project even when syncproj changes to the main repository.
+  _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" openproject curproj || true
 }
 
 # Ensure global full access; leave an already-correct config untouched.
@@ -973,11 +979,22 @@ PYCODEX
 
 # Install the official standalone CLI only when missing, then open its tmux window.
 # Optional local overrides: CODEX_INSTALL_DIR and CODEX_START_DIR.
+# Use the general workspace unless the caller explicitly chooses a directory.
+codex() {
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      -C|--cd|-C?*|--cd=*) command codex "$@"; return $? ;;
+    esac
+  done
+  command codex --cd "${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}" "$@"
+}
+
 start_codex() {
   _dailylogin_enabled "${startcodex:-0}" || return 0
   local install_dir="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
   local codex_bin installer
-  local start_dir="${CODEX_START_DIR:-${MAIN_REPO_ROOT:-$HOME}}"
+  local start_dir="${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}"
   [[ -d "$start_dir" ]] || { print -u2 -- "Codex directory missing: $start_dir"; return 1; }
   command -v tmux >/dev/null 2>&1 || { print -u2 -- 'tmux is required for Codex windows.'; return 1; }
 

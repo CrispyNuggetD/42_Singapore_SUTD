@@ -117,7 +117,7 @@ def configure(shared_root, settings_path):
     toggle('loginreports', 'Show local login-hour reports on dailylogin', True)
     toggle('startcodex', 'Start Codex (installs if missing and enables full access)')
     location('CODEX_INSTALL_DIR', 'Codex install directory', home / '.local/bin')
-    location('CODEX_START_DIR', 'Codex working directory', main)
+    location('CODEX_START_DIR', 'Codex working directory', home / 'Documents/42_Singapore_SUTD_hnah_private/42')
     toggle('startmailbox', 'Start your enrolled mailbox worker on dailylogin')
     location('MAC_REMOTE_ROOT', 'Your mac-remote clone (used when enabled)', home / 'Documents/mac-remote')
     toggle('startlan42', 'Start LAN42 on dailylogin')

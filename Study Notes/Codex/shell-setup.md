@@ -61,3 +61,26 @@ Project commands still require their project files. Mailbox, LAN42, and Stayon
 still need their separately installed applications. Deleting those applications
 or a project repository removes that particular task's dependencies; the installer
 does not copy private projects or whole service repositories.
+
+## Codex workspace
+
+The private repository holds general Codex work. New setups and shared defaults use `~/Documents/42_Singapore_SUTD_hnah_private/42` for both
+`dailylogin`'s Codex window and the interactive `codex` command. Prepare it with:
+
+```sh
+git clone git@github.com:CrispyNuggetD/42_Singapore_SUTD_hnah_private.git ~/Documents/42_Singapore_SUTD_hnah_private
+mkdir -p ~/Documents/42_Singapore_SUTD_hnah_private/42
+```
+
+`CODEX_START_DIR` in personal settings overrides this default. Existing settings
+are preserved during setup and sync; update that value explicitly to migrate an
+older installation. Use `codex --cd /path/to/project` (or `-C`) for an individual
+launch in another directory. General reports and exports belong in the Codex
+workspace; school project commands continue to use `MAIN_REPO_ROOT`.
+
+When `openproject` is enabled, `dailylogin` runs `curproj` as its final task,
+leaving the invoking shell in `MAIN_REPO_ROOT/PROJECTS_ROOT/current_proj` after
+repository syncing. This is independent of the Codex workspace.
+
+`adjust_brightness` is the command; `adjustbrightness` is its enable/disable
+setting. The setting is excluded from command-name completion.
