@@ -6,53 +6,53 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 23:08:59 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/18 01:10:05 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-static int	temp_error(char *name, int fd)
+static int	temp_file_error(char *tmp_filename, int *fd)
 {
 	perror("here_doc");
-	if (fd >= 0)
-		close(fd);
-	if (name)
+	close_and_void_fd(fd);
+	if (tmp_filename)
 	{
-		unlink(name);
-		free(name);
+		unlink(tmp_filename);
+		free(tmp_filename);
 	}
 	return (-1);
 }
 
-static char	*temp_name(int number)
+static char	*generate_unique_filepath(char *base_path, int version_number)
 {
 	char	*digits;
-	char	*name;
+	char	*unique_filepath;
 
-	digits = ft_itoa(number);
+	digits = ft_itoa(version_number);
 	if (!digits)
 		return (NULL);
-	name = ft_strjoin("/tmp/pipex_here_doc_", digits);
+	unique_filepath = ft_strjoin(base_path, digits);
 	free(digits);
-	return (name);
+	return (unique_filepath);
 }
 
-static int	create_temp(char **name)
+static int	create_temp_file(char **tmp_filename)
 {
 	int	fd;
-	int	number;
+	int	version_number;
 
-	number = 0;
-	while (number >= 0)
+	version_number = 0;
+	while (version_number >= 0)
 	{
-		*name = temp_name(number++);
-		if (!*name)
+		*tmp_filename = generate_unique_filepath("/tmp/pipex_here_doc_",
+				version_number++);
+		if (!*tmp_filename)
 			return (-1);
-		fd = open(*name, O_WRONLY | O_CREAT | O_EXCL, 0600);
+		fd = open(*tmp_filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
 		if (fd >= 0 || errno != EEXIST)
 			return (fd);
-		free(*name);
+		free(*tmp_filename);
 	}
 	return (-1);
 }
@@ -81,19 +81,17 @@ static int	collect_lines(int fd, char *limiter)
 
 int	prepare_heredoc_bonus(char *limiter)
 {
-	char	*name;
+	char	*tmp_filename;
 	int		write_fd;
 	int		read_fd;
 
-	write_fd = create_temp(&name);
-	if (write_fd < 0)
-		return (temp_error(name, -1));
-	if (collect_lines(write_fd, limiter) < 0)
-		return (temp_error(name, write_fd));
-	close(write_fd);
-	read_fd = open(name, O_RDONLY);
-	unlink(name);
-	free(name);
+	write_fd = create_temp_file(&tmp_filename);
+	if (write_fd < 0 || collect_lines(write_fd, limiter) < 0)
+		return (temp_file_error(tmp_filename, &write_fd));
+	close_and_void_fd(&write_fd);
+	read_fd = open(tmp_filename, O_RDONLY);
+	unlink(tmp_filename);
+	free(tmp_filename);
 	if (read_fd < 0)
 		perror("here_doc");
 	return (read_fd);

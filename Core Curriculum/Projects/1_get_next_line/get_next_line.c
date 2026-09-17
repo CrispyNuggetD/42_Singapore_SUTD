@@ -15,11 +15,11 @@
 char	*get_next_line(int fd)
 {
 	static char	*stash;
-	char		*new_stash;	
+	char		*new_stash;
 	ssize_t		read_num;
 	ssize_t		nl;
 
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
+	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
 		return (NULL);
 	while (1)
 	{

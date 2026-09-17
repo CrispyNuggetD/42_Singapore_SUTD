@@ -35,13 +35,9 @@ void	close_and_void_fd(int *fd)
 
 int	close_pipeline(t_pipeline *pipeline)
 {
-	if (pipeline->input_fd >= 0)
-		close_and_void_fd(&pipeline->input_fd);
-	if (pipeline->output_fd >= 0)
-		close_and_void_fd(&pipeline->output_fd);
-	if (pipeline->pipefd[0] >= 0)
-		close_and_void_fd(&pipeline->pipefd[0]);
-	if (pipeline->pipefd[1] >= 0)
-		close_and_void_fd(&pipeline->pipefd[1]);
+	close_and_void_fd(&pipeline->input_fd);
+	close_and_void_fd(&pipeline->output_fd);
+	close_and_void_fd(&pipeline->pipefd[0]);
+	close_and_void_fd(&pipeline->pipefd[1]);
 	return (1);
 }

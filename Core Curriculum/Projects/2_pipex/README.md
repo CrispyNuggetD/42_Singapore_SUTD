@@ -188,6 +188,59 @@ modern Bash implementations may use a pipe for smaller documents and temporary
 storage when needed. Minishell needs to reproduce the behavior, not blindly
 copy one shell's private mechanism.
 
+### What does `unlink()` actually remove?
+
+The error cleanup in `heredoc_bonus.c` contains:
+
+```c
+if (tmp_filename)
+{
+    unlink(tmp_filename);
+    free(tmp_filename);
+}
+```
+
+`tmp_filename` points to an allocated C string such as
+`"/tmp/pipex_here_doc_0"`. The `if` checks that this pointer is not `NULL`;
+it does **not** check whether the file exists.
+
+`unlink(tmp_filename)` removes that pathname from the filesystem. The name
+comes from removing a **link** between a directory entry and a file. A file
+can have several names (hard links), so removing one name does not necessarily
+remove the underlying file. Its storage can be reclaimed once its last hard
+link is gone and no process still has it open.
+
+These three cleanup operations manage different resources:
+
+| Operation | Resource released | What it does not do |
+|---|---|---|
+| `close_and_void_fd(fd)` | Closes the descriptor and sets the caller's integer to `-1` | Does not remove the pathname |
+| `unlink(tmp_filename)` | Removes the filesystem name | Does not close existing descriptors or free the C string |
+| `free(tmp_filename)` | Releases the allocated memory holding the pathname string | Does not remove the file or close it |
+
+The pathname string must remain valid until `unlink()` has used it, which is
+why `free()` comes afterward. `free()` does not reset the pointer to `NULL`;
+here, `temp_error()` immediately returns and the caller also returns, so that
+pointer is not used again.
+
+On the successful here-document path, the order is slightly different:
+
+```text
+write the body -> close write_fd -> open read_fd -> unlink the pathname
+                                               -> free the pathname string
+```
+
+The already-open `read_fd` still works after unlinking! The first command can
+read the collected text through it, although opening the old pathname again
+would fail unless someone creates a new file there. After the last open
+descriptor is closed, the file's storage can be reclaimed, assuming no other
+hard links exist. This lets the pipeline use the temporary data without
+keeping a named temporary file around.
+
+`unlink()` returns `0` on success or `-1` on failure and sets `errno`.
+The current cleanup ignores its return value, so removal is attempted but
+not guaranteed: a failed unlink can leave a temporary file behind.
+
 ## Output permissions: `0644`, `0666`, and `umask`
 
 The current code requests `0644` when creating an output file. For the shared

@@ -32,8 +32,7 @@ static void	child_process(t_pipeline *pipeline, int current_command,
 
 static void	advance_pipe(t_pipeline *pipeline, int current_command)
 {
-	if (pipeline->input_fd >= 0)
-		close_and_void_fd(&pipeline->input_fd);
+	close_and_void_fd(&pipeline->input_fd);
 	if (current_command < pipeline->last_command)
 	{
 		close_and_void_fd(&pipeline->pipefd[1]);

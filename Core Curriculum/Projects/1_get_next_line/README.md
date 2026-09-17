@@ -1,5 +1,7 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-09-18): corrected descriptor validation in mandatory and bonus GNL after reviewing reuse in Pipex. See [Post-submission update: file descriptor limits](#post-submission-update-file-descriptor-limits) for the bug, research, and remaining integration work.
+
 # Description
 
 ## get_next_line
@@ -72,7 +74,7 @@ char	*get_next_line(int fd)
 	ssize_t		read_num;
 	ssize_t		nl;
 
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
+	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
 		return (NULL);
 	while (1)
 	{
@@ -104,7 +106,7 @@ char	*get_next_line(int fd)
 
 Input validation:
 - ```fd < 0``` rejects invalid fd.
-- ```fd > 1024``` matches a common fd limit assumption used in many GNL solutions.
+- No fixed upper FD limit is needed for the mandatory single stash. When reading is needed, `read()` reports invalid descriptors; 1024 is not a universal OS limit.
 - ```BUFFER_SIZE <= 0``` rejects nonsense buffer sizes.
 - ```BUFFER_SIZE > SIZE_MAX - 1``` is a defensive overflow guard before BUFFER_SIZE + 1 allocations.
 
@@ -401,7 +403,7 @@ char	*get_next_line(int fd)
 	ssize_t		read_num;
 	ssize_t		nl;
 
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
 		return (NULL);
 	while (1)
 	{
@@ -510,6 +512,119 @@ int main(int c, char **v)
 ## Extra notes
 
 - Project can compile with or without the -D BUFFER_SIZE flag (so BUFFER_SIZE has a default in the header).
+
+## Post-submission update: file descriptor limits
+
+### Why revisit this after submission?
+
+While reviewing whether Pipex could reuse my original GNL, I noticed that both
+versions rejected `fd > 1024`. My original assumption was that file descriptors
+could only go up to 1024. Research showed that this mixed up an operating-system
+resource limit, a `select()` implementation limit, and my own array capacity.
+Passing online testers does not establish that every boundary was exercised.
+We have not inspected those testers, so their exact coverage is unknown.
+
+### What the research established
+
+- File descriptors are nonnegative integer handles, not necessarily numbers
+  below 1024. A process can have valid descriptors equal to or greater than
+  1024 when its resource limits allow them.
+- `RLIMIT_NOFILE` controls descriptor allocation. A limit of 1024 allows newly
+  allocated descriptor numbers through **1023**, because numbering starts at
+  zero. The soft limit can vary by environment and can be raised within the
+  permitted hard limit. `ulimit -Sn` and `ulimit -Hn` show the shell's soft and
+  hard limits; they are not constants built into C or GNL.
+- Linux/glibc `select()` uses `FD_SETSIZE == 1024`, restricting the descriptor
+  numbers that its sets can represent. That is a restriction of that interface,
+  not a universal restriction on `read()`. GNL does not use `select()`.
+- An array declared as `stash[1024]` has indexes **0 through 1023**, independently
+  of OS limits. It stores pointers to buffered strings indexed by FD; it does
+  not store or allocate the descriptors themselves.
+
+References consulted:
+
+- [POSIX getrlimit specification](https://pubs.opengroup.org/onlinepubs/7908799/xsh/getrlimit.html):
+  explains `RLIMIT_NOFILE` and the maximum newly allocated descriptor value.
+- [Linux getrlimit manual](https://man7.org/linux/man-pages/man2/getrlimit.2.html):
+  explains soft/hard limits and failures when descriptor allocation exceeds them.
+- [Linux select manual](https://man7.org/linux/man-pages/man2/select.2.html):
+  explains the glibc 1024-descriptor-set limitation and alternatives.
+
+### What changed in the code?
+
+| Version | Previous guard | Updated guard | Reason |
+|---|---|---|---|
+| Mandatory, one `static char *stash` | `fd < 0 || fd > 1024` | `fd < 0` | FD is not an array index; valid high descriptors should not be rejected arbitrarily. |
+| Bonus, `static char *stash[1024]` | `fd < 0 || fd > 1024` | `fd < 0 || fd >= 1024` | Reject index 1024 before accessing the fixed array. |
+
+The `BUFFER_SIZE` checks remain. The bonus fix deliberately retains its existing
+fixed capacity: it safely rejects high descriptors even when the OS considers
+them valid. Supporting those descriptors in bonus would require a different or
+larger storage design; merely removing its guard would cause out-of-bounds access.
+
+At exactly `fd == 1024`, the old bonus guard allowed `stash[1024]` to be read
+before any `read()` call could reject the descriptor. This is undefined behavior,
+even if descriptor 1024 is not open. Tests of `-1` or a much larger number would
+not catch it because those inputs were already rejected. A crash is not guaranteed;
+a sanitizer can detect the invalid access more reliably than output-only tests.
+
+### Validation approach
+
+Compile mandatory and bonus separately, because they export the same function
+names. Exercise negative descriptors, normal lines, empty input, final lines
+without a newline, repeated EOF, and alternating descriptors for bonus. Test bonus
+with exactly 1024 and above under AddressSanitizer/UndefinedBehaviorSanitizer.
+For mandatory, use a test harness with `fcntl(F_DUPFD, ...)` to obtain actual open
+descriptors at 1024 and above, subject to the process limit, then verify line output.
+The harness may use system APIs outside the GNL subject's allowed functions;
+those APIs are not added to the submitted implementation.
+
+### Local results (2026-09-18)
+
+The focused harness passed for mandatory and bonus with `-Wall -Wextra -Werror`
+and UndefinedBehaviorSanitizer. It covered normal/empty input, a final line
+without newline, repeated EOF, negative FD rejection, bonus alternating FDs,
+bonus reading through FD 1023, bonus rejection at 1024/1025, and mandatory reading
+through real open descriptors 1024/1025. Both changed C files passed Norminette.
+The initial AddressSanitizer run aborted during macOS runtime initialization
+with Apple Clang 16.0.0 on macOS 26.5. A separate minimal allocation program
+reproduced the same failure, including with a clean environment, isolating it
+from GNL. Retrying with Homebrew LLVM 23.1.1 resolved the startup failure: a
+valid control passed, an intentional heap overflow was detected, and both GNL
+harnesses passed with AddressSanitizer and UndefinedBehaviorSanitizer together.
+This is consistent with the older Apple sanitizer/runtime compatibility issue
+[documented by the c2pa-cpp project](https://github.com/contentauth/c2pa-cpp#sanitizer-test-builds-fail-on-macos).
+
+The new compiler initially expected a missing macOS 26 SDK. Explicitly selecting
+the installed SDK and a macOS 15 deployment target made the test builds work:
+
+```sh
+/opt/homebrew/opt/llvm/bin/clang \
+    -isysroot "$(xcrun --show-sdk-path)" -mmacosx-version-min=15.0 \
+    -Wall -Wextra -Werror -g -fsanitize=address,undefined \
+    test_main.c get_next_line.c get_next_line_utils.c -o gnl_asan
+./gnl_asan
+```
+
+Here `test_main.c` means the local test harness, not a submitted GNL source.
+For bonus, compile its `_bonus.c` files instead. LLVM was installed alongside
+the Apple compiler; no default compiler, shell PATH, or project Makefile was
+changed. No reboot was needed. These focused checks do not constitute a complete
+allocation-failure/leak audit.
+
+### What this does not resolve for Pipex
+
+Normal GNL is sufficient for reading heredoc stdin; multiple-FD support is not
+needed for that use. However, the existing API returns `NULL` for both EOF and
+errors, and stopping at a limiter can leave the static stash allocated. Some
+allocation-failure paths also retain it. Error reporting and explicit early
+cleanup still need a separate integration decision. This correction does not
+replace Pipex's `read_line_bonus()` or claim to resolve those issues.
+
+The original GNL project is the source of this update. Its two entry-point source
+files and this README are copied into the main Ryker libft and the embedded
+libraries in Pipex, FdF, and push_swap. Their helper implementations and APIs are
+unchanged. AI assisted with the review, documentation, propagation, and validation.
 
 # Resources
 
