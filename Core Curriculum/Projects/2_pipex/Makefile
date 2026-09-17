@@ -12,7 +12,7 @@ COMMON_SRCS := fd_open_utils.c usage_printer.c pipeline_handler.c execute.c \
 SRCS := main.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_ONLY_SRCS := main_bonus.c heredoc_helpers_bonus.c heredoc_bonus.c \
-	fd_open_utils_bonus.c get_next_line_bonus.c
+	fd_open_utils_bonus.c
 BONUS_SRCS := $(BONUS_ONLY_SRCS) $(COMMON_SRCS)
 BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_ONLY_OBJS := $(BONUS_ONLY_SRCS:%.c=$(OBJ_DIR)/%.o)
@@ -40,6 +40,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/pipex.h $(LIBFT_HEADERS) Makefile
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(BONUS_ONLY_OBJS): $(INC_DIR)/pipex_bonus.h
+
 
 bonus: $(BONUS_MARKER)
 

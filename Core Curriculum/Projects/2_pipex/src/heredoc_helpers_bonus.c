@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:57:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 23:04:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/18 03:28:22 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	is_exactly_heredoc(char *argument)
 	return (ft_strncmp(argument, "here_doc", sizeof("here_doc")) == 0);
 }
 
-int	is_limiter_bonus(char *line, char *limiter)
+int	is_limiter(char *line, char *limiter)
 {
 	size_t	length;
 
@@ -31,9 +31,9 @@ int	is_limiter_bonus(char *line, char *limiter)
 	return (0);
 }
 
-int	write_line_bonus(int fd, char *line)
+int	write_line_guaranteed(int heredoc_write_fd, char *line)
 {
-	if (ryker_ft_printf_fd(fd, "%s", line) < 0)
+	if (ryker_ft_printf_fd(heredoc_write_fd, "%s", line) < 0)
 		return (-1);
 	return (0);
 }

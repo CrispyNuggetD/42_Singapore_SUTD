@@ -14,7 +14,9 @@ PRINTF_SRCS = $(filter-out %_bonus.c 1_ft_printf/ft_printf_parse_specs.c \
 	1_ft_printf/ft_printf_printer_bonus.c
 GNL_SRCS = 1_get_next_line/get_next_line.c \
 	1_get_next_line/get_next_line_utils.c
-CUSTOM_SRCS = $(wildcard ryker_ft/*.c ryker_ft/*/*.c)
+WIP_SRCS = ryker_ft/file_unique/ryker_ft_create_open_unique_file_in_dir.c
+CUSTOM_SRCS = $(filter-out ryker_ft/wip/% $(WIP_SRCS),\
+	$(wildcard ryker_ft/*.c ryker_ft/*/*.c))
 SRCS = $(BASE_SRCS) $(PRINTF_SRCS) $(GNL_SRCS) $(CUSTOM_SRCS)
 OBJS = $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
 HEADERS = $(wildcard 0_libft/*.h 1_ft_printf/*.h 1_get_next_line/*.h \

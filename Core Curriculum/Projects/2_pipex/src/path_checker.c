@@ -39,40 +39,58 @@ static char	*join_command(char *directory, char *command)
 	return (path);
 }
 
-static char	*search_directories(char **directories, char *command)
+static t_path_result	search_directories(char **directories, char *command,
+		char **path)
 {
-	char	*path;
-	int		i;
+	int	i;
 
 	i = 0;
 	while (directories[i])
 	{
-		path = join_command(directories[i], command);
-		if (!path)
-			return (NULL);
-		if (access(path, F_OK) == 0)
-			return (path);
-		free(path);
+		*path = join_command(directories[i], command);
+		if (!*path)
+			return (PATH_ERROR);
+		if (access(*path, F_OK) == 0)
+			return (PATH_FOUND);
+		free(*path);
+		*path = NULL;
 		i++;
 	}
-	return (NULL);
+	return (PATH_NOT_FOUND);
 }
 
-char	*resolve_path(char *command, char **envp)
+static t_path_result	copy_command_path(char *command, char **path)
 {
-	char	**directories;
-	char	*path;
-	char	*value;
+	*path = ft_strdup(command);
+	if (!*path)
+	{
+		errno = ENOMEM;
+		return (PATH_ERROR);
+	}
+	return (PATH_FOUND);
+}
 
+t_path_result	resolve_path(char *command, char **envp, char **path)
+{
+	char			**directories;
+	char			*value;
+	t_path_result	result;
+
+	*path = NULL;
 	if (ft_strchr(command, '/'))
-		return (ft_strdup(command));
+		return (copy_command_path(command, path));
 	value = path_value(envp);
 	if (!value)
-		return (NULL);
+		return (PATH_NOT_FOUND);
 	directories = ft_split(value, ':');
 	if (!directories)
-		return (NULL);
-	path = search_directories(directories, command);
+	{
+		errno = ENOMEM;
+		return (PATH_ERROR);
+	}
+	result = search_directories(directories, command, path);
 	ryker_ft_free_str_array(directories);
-	return (path);
+	if (result == PATH_ERROR)
+		errno = ENOMEM;
+	return (result);
 }

@@ -93,7 +93,7 @@ is not written into the here-document.
 
 ### Why accept a limiter without a final newline?
 
-After matching the limiter's characters, `is_limiter_bonus()` checks:
+After matching the limiter's characters, `is_limiter()` checks:
 
 ```c
 if (line[length] == '\0')
@@ -188,6 +188,20 @@ modern Bash implementations may use a pipe for smaller documents and temporary
 storage when needed. Minishell needs to reproduce the behavior, not blindly
 copy one shell's private mechanism.
 
+### Shared unique-file creation
+
+`prepare_heredoc()` calls `ryker_ft_create_open_unique_file()` with the full
+`/tmp/pipex_here_doc_` prefix. The helper creates and opens a new write-only file,
+returns its allocated pathname, retries collisions, and clears the output path
+on failure. Its caller owns close/unlink/free. Main Ryker libft retains a separate
+one-level directory-creation wrapper as WIP for study. It is excluded from normal
+builds and entirely omitted from this Pipex copy, including its declaration.
+It has not yet been reviewed and understood by the author; passing tests alone
+do not make it ready for use. `mkdir()` and `stat()` are also outside Pipex's
+allowed-function list. See
+[the file_unique API](ryker_libft/ryker_ft/file_unique/README.md) for ownership,
+error codes, permissions, and limitations.
+
 ### What does `unlink()` actually remove?
 
 The error cleanup in `heredoc_bonus.c` contains:
@@ -240,6 +254,32 @@ keeping a named temporary file around.
 `unlink()` returns `0` on success or `-1` on failure and sets `errno`.
 The current cleanup ignores its return value, so removal is attempted but
 not guaranteed: a failed unlink can leave a temporary file behind.
+
+### Reusing GNL with caller-owned state
+
+Heredoc now uses `ryker_ft_get_next_line()` from
+[`ryker_libft/ryker_ft/gnl_status`](ryker_libft/ryker_ft/gnl_status/README.md).
+Its header is `ryker_ft_get_next_line.h`, exposed through the library umbrella.
+
+```c
+void            ryker_ft_gnl_init(t_gnl_info *gnl, int fd);
+t_gnl_result    ryker_ft_get_next_line(t_gnl_info *gnl, char **line);
+void            ryker_ft_gnl_cleanup(t_gnl_info *gnl);
+```
+
+The enum distinguishes `GNL_LINE` (1), `GNL_EOF` (0), and `GNL_ERROR` (-1).
+The caller owns `t_gnl_info`, which stores the stash, borrowed FD, and EOF flag.
+Returned lines are freed separately. Cleanup frees the stash without closing
+the FD, including when stopping early at the limiter or when writing fails.
+This replaces both the byte-at-a-time local implementation and the local prototype.
+
+The original GNL remains available. This extension shares its helpers rather
+than calling its entry point, whose private static stash and ambiguous `NULL`
+return cannot provide the extra control. The linked component README explains
+the full call sequence, why `nl` includes the newline, and ownership rules.
+Buffered reads can consume text after the limiter; cleanup discards it rather
+than returning it to stdin. Future Minishell reuse must account for this if
+command input continues from the same stream.
 
 ## Output permissions: `0644`, `0666`, and `umask`
 
@@ -297,3 +337,8 @@ simultaneous processes affect pipe creation. This was not a request to "vibe
 code" a submission I cannot explain. AI performed much of the mechanical
 editing and function calling, but I will read, understand, test, and edit every
 part before submission. I will not present code I do not understand as my own.
+
+## Work in progress
+
+See [wip/STATUS.md](wip/STATUS.md) for completed work, remaining shell-correctness
+tasks, validation limits, and the directory wrapper's WIP restrictions.

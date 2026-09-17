@@ -612,7 +612,7 @@ the Apple compiler; no default compiler, shell PATH, or project Makefile was
 changed. No reboot was needed. These focused checks do not constitute a complete
 allocation-failure/leak audit.
 
-### What this does not resolve for Pipex
+### What the bounds-only correction did not resolve for Pipex
 
 Normal GNL is sufficient for reading heredoc stdin; multiple-FD support is not
 needed for that use. However, the existing API returns `NULL` for both EOF and
@@ -621,10 +621,17 @@ allocation-failure paths also retain it. Error reporting and explicit early
 cleanup still need a separate integration decision. This correction does not
 replace Pipex's `read_line_bonus()` or claim to resolve those issues.
 
+Subsequent integration (2026-09-18): main Ryker libft now provides
+`ryker_ft/gnl_status/ryker_ft_get_next_line.h` with caller-owned `t_gnl_info`
+and explicit `t_gnl_result` values. Pipex uses that extension and has removed
+its local `read_line_bonus()` implementation. The extension shares original
+helpers and releases its own stash on early cleanup and allocation failures;
+the original subject-compatible entry point remains unchanged by that integration.
+
 The original GNL project is the source of this update. Its two entry-point source
 files and this README are copied into the main Ryker libft and the embedded
 libraries in Pipex, FdF, and push_swap. Their helper implementations and APIs are
-unchanged. AI assisted with the review, documentation, propagation, and validation.
+unchanged. AI assisted with the review, documentation, propagation, and validation. (But I did read and verified all the changes myself -- this took wayy too long to do properly.)
 
 # Resources
 

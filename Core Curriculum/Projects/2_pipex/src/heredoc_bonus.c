@@ -6,93 +6,60 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/18 01:10:05 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/18 05:07:50 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-static int	temp_file_error(char *tmp_filename, int *fd)
+static int	tmp_file_error(char *unique_filepath, int *heredoc_write_fd)
 {
 	perror("here_doc");
-	close_and_void_fd(fd);
-	if (tmp_filename)
+	close_and_void_fd(heredoc_write_fd);
+	if (unique_filepath)
 	{
-		unlink(tmp_filename);
-		free(tmp_filename);
+		unlink(unique_filepath);
+		free(unique_filepath);
 	}
 	return (-1);
 }
 
-static char	*generate_unique_filepath(char *base_path, int version_number)
+static int	collect_heredoc_lines(int heredoc_write_fd, char *limiter)
 {
-	char	*digits;
-	char	*unique_filepath;
+	char			*line;
+	t_gnl_info		gnl;
+	t_gnl_result	result;
 
-	digits = ft_itoa(version_number);
-	if (!digits)
-		return (NULL);
-	unique_filepath = ft_strjoin(base_path, digits);
-	free(digits);
-	return (unique_filepath);
-}
-
-static int	create_temp_file(char **tmp_filename)
-{
-	int	fd;
-	int	version_number;
-
-	version_number = 0;
-	while (version_number >= 0)
+	ryker_ft_gnl_init(&gnl, STDIN_FILENO);
+	result = ryker_ft_get_next_line(&gnl, &line);
+	while (result == GNL_LINE && !is_limiter(line, limiter))
 	{
-		*tmp_filename = generate_unique_filepath("/tmp/pipex_here_doc_",
-				version_number++);
-		if (!*tmp_filename)
-			return (-1);
-		fd = open(*tmp_filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
-		if (fd >= 0 || errno != EEXIST)
-			return (fd);
-		free(*tmp_filename);
-	}
-	return (-1);
-}
-
-static int	collect_lines(int fd, char *limiter)
-{
-	char	*line;
-	int		result;
-
-	result = read_line_bonus(STDIN_FILENO, &line);
-	while (result > 0 && !is_limiter_bonus(line, limiter))
-	{
-		if (write_line_bonus(fd, line) < 0)
-		{
-			free(line);
-			return (-1);
-		}
+		if (write_line_guaranteed(heredoc_write_fd, line) < 0)
+			return (heredoc_cleanup(&gnl, line, -1));
 		free(line);
-		result = read_line_bonus(STDIN_FILENO, &line);
+		result = ryker_ft_get_next_line(&gnl, &line);
 	}
-	free(line);
-	if (result < 0)
-		return (-1);
-	return (0);
+	if (result == GNL_ERROR)
+		return (heredoc_cleanup(&gnl, line, -1));
+	return (heredoc_cleanup(&gnl, line, 0));
 }
 
-int	prepare_heredoc_bonus(char *limiter)
+int	prepare_heredoc(char *limiter)
 {
-	char	*tmp_filename;
-	int		write_fd;
+	char	*unique_filepath;
+	int		heredoc_write_fd;
 	int		read_fd;
 
-	write_fd = create_temp_file(&tmp_filename);
-	if (write_fd < 0 || collect_lines(write_fd, limiter) < 0)
-		return (temp_file_error(tmp_filename, &write_fd));
-	close_and_void_fd(&write_fd);
-	read_fd = open(tmp_filename, O_RDONLY);
-	unlink(tmp_filename);
-	free(tmp_filename);
+	heredoc_write_fd = ryker_ft_create_open_unique_file(&unique_filepath,
+			"/tmp/pipex_here_doc_");
+	if (heredoc_write_fd < 0
+		|| collect_heredoc_lines(heredoc_write_fd, limiter) < 0)
+		return (tmp_file_error(unique_filepath, &heredoc_write_fd));
+	close_and_void_fd(&heredoc_write_fd);
+	read_fd = open(unique_filepath, O_RDONLY);
 	if (read_fd < 0)
-		perror("here_doc");
+		return (tmp_file_error(unique_filepath, &heredoc_write_fd));
+	unlink(unique_filepath);
+	free(unique_filepath);
 	return (read_fd);
 }

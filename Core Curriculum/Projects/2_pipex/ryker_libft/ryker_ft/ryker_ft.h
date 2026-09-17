@@ -14,6 +14,8 @@
 # define RYKER_FT_H
 
 # include "printf_fd/ryker_ft_printf.h"
+# include "gnl_status/ryker_ft_get_next_line.h"
+# include "file_unique/ryker_ft_file_unique.h"
 # include <stdlib.h>
 
 int		ryker_ft_isspace(int c);

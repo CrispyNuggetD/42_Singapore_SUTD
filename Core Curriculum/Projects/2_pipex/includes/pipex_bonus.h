@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 22:27:55 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/18 03:27:14 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@
 
 int		is_exactly_heredoc(char *argument);
 int		open_files_with_heredoc(t_pipeline *pipeline, int argc, char **argv);
-int		read_line_bonus(int fd, char **line);
-int		is_limiter_bonus(char *line, char *limiter);
-int		write_line_bonus(int fd, char *line);
-int		prepare_heredoc_bonus(char *limiter);
+int		is_limiter(char *line, char *limiter);
+int		write_line_guaranteed(int heredoc_write_fd, char *line);
+int		prepare_heredoc(char *limiter);
+
+int		heredoc_cleanup(t_gnl_info *gnl, char *line, int status);
 
 #endif

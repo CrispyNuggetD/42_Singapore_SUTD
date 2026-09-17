@@ -41,3 +41,10 @@ int	close_pipeline(t_pipeline *pipeline)
 	close_and_void_fd(&pipeline->pipefd[1]);
 	return (1);
 }
+
+int	heredoc_cleanup(t_gnl_info *gnl, char *line, int status)
+{
+	free(line);
+	ryker_ft_gnl_cleanup(gnl);
+	return (status);
+}
