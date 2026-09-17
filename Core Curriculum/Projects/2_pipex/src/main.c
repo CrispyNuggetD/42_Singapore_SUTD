@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 15:53:15 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 17:53:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,9 @@ int	main(int argc, char **argv, char **envp)
 	if (argc != 5)
 		return (print_usage(USAGE_MANDATORY));
 	init_pipeline(&pipeline);
-	if (open_files_no_heredoc(&pipeline, argv) != 0)
-	{
-		pipeline_close(&pipeline);
-		return (1);
-	}
+	if (open_files_no_heredoc(&pipeline, argc, argv) != 0)
+		return (close_pipeline(&pipeline));
 	status = spawn_children(&pipeline, argv, envp);
-	pipeline_close(&pipeline);
+			//pipeline_close(&pipeline);
 	return (status);
 }

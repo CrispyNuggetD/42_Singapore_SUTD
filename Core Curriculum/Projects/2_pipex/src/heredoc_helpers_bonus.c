@@ -1,16 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fd_helpers_bonus.c                                 :+:      :+:    :+:   */
+/*   heredoc_helpers_bonus.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:57:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 15:49:38 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 17:04:42 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+int	is_heredoc(char *argument)
+{
+	return (ft_strncmp(argument, "here_doc", 9) == 0);
+}
 
 int	open_files_with_heredoc(t_pipeline *pipeline, int argc, char **argv)
 {

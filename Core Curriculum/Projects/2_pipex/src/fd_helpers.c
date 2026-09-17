@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:57:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 15:55:02 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 17:54:52 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int	open_files_no_heredoc(t_pipeline *pipeline, int argc, char **argv)
 	return (0);
 }
 
-static void	close_and_void_fd(int *fd)
+void	close_and_void_fd(int *fd)
 {
 	if (*fd >= 0)
 	{
