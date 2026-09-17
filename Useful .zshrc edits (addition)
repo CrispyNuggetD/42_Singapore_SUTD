@@ -174,6 +174,34 @@ quithidden() {
   print -- 'Detached tmux sessions closed. Attached sessions kept.'
 }
 
+# Save work and private chats before closing ALL tmux sessions (attached too).
+# Failures keep terminals open so you can fix the reported repositories and retry.
+leaveschool() {
+  local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
+  local failed=0
+  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+    command python3 "$helper" backup || return 1
+  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+    command python3 "$helper" push-all || failed=1
+  # Cover a private clone configured outside the Documents scan as well.
+  local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
+  local docs="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
+  if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
+    command python3 "$helper" push-private || failed=1
+  fi
+  if (( failed )); then
+    print -u2 -- 'leaveschool: some pushes failed; tmux kept open. Fix the errors and retry.'
+    return 1
+  fi
+  print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
+  command -v tmux >/dev/null 2>&1 || return 0
+  local -a tmux_args
+  tmux_args=()
+  [[ -n "$DAILY_TMUX_SOCKET" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
+  command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1 || return 0
+  command tmux "${tmux_args[@]}" kill-server
+}
+
 # --- Daily login Mac remote mailbox ---
 export startmailbox=${startmailbox:-0}
 export MAC_REMOTE_ROOT="${MAC_REMOTE_ROOT:-$HOME/Documents/mac-remote}"  # Change if you cloned it elsewhere.

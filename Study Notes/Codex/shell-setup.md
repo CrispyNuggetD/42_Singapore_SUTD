@@ -84,3 +84,27 @@ repository syncing. This is independent of the Codex workspace.
 
 `adjust_brightness` is the command; `adjustbrightness` is its enable/disable
 setting. The setting is excluded from command-name completion.
+
+## Leaving school
+
+Run `leaveschool` to copy new or updated Codex session JSONL files into the
+separate private repository's `42/codex_cache/sessions`, commit all non-ignored
+changes in repositories below `DOCUMENTS_REPOS_ROOT` (default `~/Documents`),
+and push each current branch to its configured upstream. Nested repositories
+are saved before their parents. The Mac mailbox and symlinked subdirectories
+are excluded. Repositories without an upstream, detached heads, unfinished Git
+operations, and rejected pushes are reported; other repositories still run.
+No force pushes or automatic merges are performed.
+
+After successful backup and pushes, **all sessions on the selected tmux server
+are closed, including attached sessions**. Any save failure keeps tmux open so
+you can fix the error and retry. `DAILY_TMUX_SOCKET` selects an explicit server;
+otherwise the current/default tmux server is used. `quithidden` remains available
+separately for closing detached sessions only.
+
+`CODEX_PRIVATE_REPO_ROOT` may select another location of the same private clone.
+The helper rejects a destination in the shared repo or behind a symlink. Only
+`CODEX_HOME/sessions/**/*.jsonl` is copied (default `~/.codex/sessions`); credentials,
+databases, attachments, and other Codex files are excluded. Existing backups
+are retained. An active chat can continue writing after the snapshot; its later
+updates are copied on the next run. This command does not shut down the computer.
