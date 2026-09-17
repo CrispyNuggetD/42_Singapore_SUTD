@@ -1,31 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   usage_printer.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 15:53:15 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 10:10:34 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 14:40:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int argc, char **argv, char **envp)
+int	print_usage(t_usage_message_id message_id)
 {
-	t_pipeline	pipeline;
-	int			status;
-
-	if (argc != 5)
-		return (print_usage(USAGE_MANDATORY));
-	init_pipeline(&pipeline);
-	if (open_files_no_heredoc(&pipeline, argv) != 0)
-	{
-		pipeline_close(&pipeline);
-		return (1);
-	}
-	status = spawn_children(&pipeline, argv, envp);
-	pipeline_close(&pipeline);
-	return (status);
+	if (message_id == USAGE_MANDATORY)
+		ryker_ft_printf_fd(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n");
+	else if (message_id == USAGE_HEREDOC)
+		ryker_ft_printf_fd(2, "Usage: ./pipex here_doc LIMITER cmd... outfile\n");
+	else if (message_id == USAGE_BONUS)
+		ryker_ft_printf_fd(2, "Usage: ./pipex infile cmd... outfile\n");
+	return (1);
 }

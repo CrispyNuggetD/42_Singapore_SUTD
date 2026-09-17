@@ -120,6 +120,31 @@ modern Bash implementations may use a pipe for smaller documents and temporary
 storage when needed. Minishell needs to reproduce the behavior, not blindly
 copy one shell's private mechanism.
 
+## Output permissions: `0644`, `0666`, and `umask`
+
+The current code requests `0644` when creating an output file. For the shared
+output-opening helper, I plan to use `0666` to match ordinary shell redirection
+and make the helper suitable for reuse in Minishell.
+
+The mode passed to `open()` is a starting permission set, not necessarily the
+file's final permissions. In the usual case without a default directory ACL,
+the process's `umask` removes permissions: `mode & ~umask`.
+
+| Requested mode | `umask` | Result |
+|---|---|---|
+| `0644` | `0022` | `0644` |
+| `0666` | `0022` | `0644` |
+| `0644` | `0002` | `0644` |
+| `0666` | `0002` | `0664` |
+
+Hard-coding `0644` prevents group/others write access even when the user's
+`umask` would permit it. Requesting `0666` lets that mask determine which read
+and write permissions to remove; it does not request execute permission.
+With `umask 0077`, either mode produces `0600`.
+
+This creation mode only applies when `O_CREAT` creates a new file. Appending
+to or truncating an existing file does not reset its permission bits.
+
 ## Build
 
 ```sh

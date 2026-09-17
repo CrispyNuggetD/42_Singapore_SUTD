@@ -1,28 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex_bonus.h                                      :+:      :+:    :+:   */
+/*   ryker_global_wip.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 09:55:49 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 14:22:16 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 14:22:16 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_BONUS_H
-# define PIPEX_BONUS_H
+#ifndef RYKER_GLOBAL_WIP_H
+# define RYKER_GLOBAL_WIP_H
 
-# include "pipex.h"
-# include <errno.h>
+# include <stddef.h>
+# include <stdlib.h>
 
+typedef struct s_ryker_global
+{
+	void	**stuff;
+	size_t	count;
+}	t_ryker_global;
 
-
-int		read_line_bonus(int fd, char **line);
-int		is_limiter_bonus(char *line, char *limiter);
-int		write_line_bonus(int fd, char *line);
-int		prepare_heredoc_bonus(char *limiter);
-int		wait_pipeline_bonus(t_pipeline *pipeline);
-int		run_pipeline_bonus(t_pipeline *pipeline, char **argv, char **envp);
+int				ryker_ft_global_append(t_ryker_global *container, void *payload);
+t_ryker_global	*ryker_ft_global_container(void);
+void			ryker_ft_global_clear(t_ryker_global *container);
 
 #endif

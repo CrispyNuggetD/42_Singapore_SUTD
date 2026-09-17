@@ -6,23 +6,12 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/11 21:05:36 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/17 14:50:38 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-static void	close_pipeline(t_pipeline *pipeline)
-{
-	if (pipeline->input_fd >= 0)
-		close(pipeline->input_fd);
-	if (pipeline->output_fd >= 0)
-		close(pipeline->output_fd);
-	if (pipeline->pipefd[0] >= 0)
-		close(pipeline->pipefd[0]);
-	if (pipeline->pipefd[1] >= 0)
-		close(pipeline->pipefd[1]);
-}
 
 static void	child_process(t_pipeline *pipeline, int command,
 		char **argv, char **envp)
@@ -45,11 +34,11 @@ static void	child_process(t_pipeline *pipeline, int command,
 static void	advance_pipe(t_pipeline *pipeline, int command)
 {
 	if (pipeline->input_fd >= 0)
-		close(pipeline->input_fd);
+		close_and_void_fd(&pipeline->input_fd);
 	pipeline->input_fd = -1;
 	if (command < pipeline->last_command)
 	{
-		close(pipeline->pipefd[1]);
+		close_and_void_fd(&pipeline->pipefd[1]);
 		pipeline->pipefd[1] = -1;
 		pipeline->input_fd = pipeline->pipefd[0];
 		pipeline->pipefd[0] = -1;

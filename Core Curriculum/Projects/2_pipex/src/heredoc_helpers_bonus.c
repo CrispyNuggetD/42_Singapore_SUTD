@@ -1,28 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex_bonus.h                                      :+:      :+:    :+:   */
+/*   fd_helpers_bonus.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 09:55:49 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/01 13:57:17 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 15:49:38 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_BONUS_H
-# define PIPEX_BONUS_H
+#include "pipex.h"
 
-# include "pipex.h"
-# include <errno.h>
-
-
-
-int		read_line_bonus(int fd, char **line);
-int		is_limiter_bonus(char *line, char *limiter);
-int		write_line_bonus(int fd, char *line);
-int		prepare_heredoc_bonus(char *limiter);
-int		wait_pipeline_bonus(t_pipeline *pipeline);
-int		run_pipeline_bonus(t_pipeline *pipeline, char **argv, char **envp);
-
-#endif
+int	open_files_with_heredoc(t_pipeline *pipeline, int argc, char **argv)
+{
+	pipeline->first_command = 3;
+	pipeline->last_command = argc - 2;
+	pipeline->input_fd = prepare_heredoc_bonus(argv[2]);
+	if (pipeline->input_fd < 0)
+		return (1);
+	pipeline->output_fd = open_output(argv[argc - 1], O_APPEND);
+	if (pipeline->output_fd < 0)
+		return (return_perror(argv[argc - 1]));
+	return (0);
+}
