@@ -108,3 +108,25 @@ The helper rejects a destination in the shared repo or behind a symlink. Only
 databases, attachments, and other Codex files are excluded. Existing backups
 are retained. An active chat can continue writing after the snapshot; its later
 updates are copied on the next run. This command does not shut down the computer.
+
+
+## Returning from home
+
+On the Mac, `leavehome` exports only changed chats listed in the local school-import manifest. `leavehome --check` previews without exporting or pushing. Mac-only conversations, credentials, config and databases are excluded. The snapshots and their index live only in the private repository's `42/codex_cache/return_to_school/` directory. The command commits only that directory, preserves other staged/unstaged work, and refuses to push unrelated unpublished commits. It leaves applications open.
+
+On Ubuntu, the updated `dailylogin` runs `importhome` before opening the project. `importhome` first pulls the private repo with fast-forward-only Git, then registers returned snapshots in the current `CODEX_HOME` using Codex's local metadata reader and `migrate-rollouts`. Original school chats remain intact; choose the returned copy to continue. Linux project paths replace Mac working-directory metadata. Restart/reload the VS Code window if the history list is stale.
+
+For a first manual update at school:
+
+```zsh
+pullzshrc
+synczshrc
+source ~/.zshrc
+importhome
+```
+
+With `autoupdatezshrc` enabled, normal `dailylogin` performs the update and import. The return importer needs the current private `Scripts and Testers/codex_school_import.py` helper, a Codex CLI supporting `migrate-rollouts`, and the same `CODEX_HOME` used by the VS Code extension. Set `CODEX_BIN` to the extension's Codex executable if the standalone CLI is older. No direct SQLite writes, extension setting changes, or model turns are used for importing.
+
+Each changed Mac revision becomes a distinct school snapshot, so independent edits do not overwrite one another. Repeating a handoff is a no-op. An unchanged returned copy backed up by `leaveschool` is not imported into the Mac again. If you continue that copy at school, its new revision can be picked up on the Mac as usual. Manually created Mac chats/forks outside the import manifest are not exported.
+
+The VS Code extension is powered by [Codex app-server](https://learn.chatgpt.com/docs/app-server). This script is a local transcript-transfer workflow using the installed CLI's migration support, rather than an automatic account-wide chat sync feature. Keep the school CLI and extension compatible; importing into another CODEX_HOME will not update the extension's history.

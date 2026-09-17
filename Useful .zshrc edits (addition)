@@ -202,6 +202,20 @@ leaveschool() {
   command tmux "${tmux_args[@]}" kill-server
 }
 
+# Pull private Mac returns, then register separate resumable Ubuntu chat copies.
+# Uses the same CODEX_HOME as the extension; no credentials/config are copied.
+importhome() {
+  local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
+  GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes -o ConnectTimeout=15" \
+    command git -C "$private" -c merge.autostash=false -c rebase.autostash=false \
+    pull --no-rebase --ff-only || return 1
+  local helper="$ZSHRC_RUNTIME_ROOT/codex_return.py"
+  # First update can still be running the previous installer's helper list.
+  [[ -f "$helper" ]] || helper="${ZSHRC_SHARED_ROOT:-$MAIN_REPO_ROOT}/codex_return.py"
+  command python3 "$helper" import \
+    --private "$private" --main-repo "$MAIN_REPO_ROOT" "$@"
+}
+
 # --- Daily login Mac remote mailbox ---
 export startmailbox=${startmailbox:-0}
 export MAC_REMOTE_ROOT="${MAC_REMOTE_ROOT:-$HOME/Documents/mac-remote}"  # Change if you cloned it elsewhere.
@@ -952,6 +966,7 @@ dailylogin() {
 _dailylogin_tasks() {
   _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
   _dailylogin_run "Pull other repositories under $DOCUMENTS_REPOS_ROOT" pullotherrepos syncdocs || true
+  _dailylogin_run 'Import school-chat continuations returned from home' - importhome || true
   _dailylogin_run 'LAN42 lobby window request' startlan42 start_lan42 || true
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
