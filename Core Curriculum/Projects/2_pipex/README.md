@@ -391,8 +391,11 @@ the more specific diagnostic "Is a directory". Classification may therefore
 require context in addition to the saved error code.
 
 These results describe the tested reference shell; edge-case behavior can vary
-between shells and versions. Execution-error classification and PATH-search
-improvements remain work in progress, tracked in [wip/STATUS.md](wip/STATUS.md).
+between shells and versions. The scoped execution-error classification is implemented and tested against
+local Bash 5.1.16. It preserves the original system diagnostic; custom Bash
+wording and script fallback are outside this change. Its post-failure existence
+check can race with filesystem changes. PATH-search improvements remain
+pending, tracked in [wip/STATUS.md](wip/STATUS.md).
 The distinction guiding that work is that the error code describes the failed
 operation, while the exit status communicates the program's chosen outcome.
 

@@ -1,3 +1,19 @@
+## Latest resume point — execution-error classification
+
+- Task (2) is implemented for the agreed Pipex scope: preserve the execve
+  error, distinguish missing paths from other execution failures, report the
+  original error, free allocations, and exit with the selected status.
+- `exec_failure_status()` chooses the status; `exec_failure()` handles reporting,
+  cleanup, and exit. Passing errno by value preserves it before helper calls.
+- Both builds and five failure cases passed against local Bash 5.1.16; normal
+  execution, closed-stderr status preservation, and execute.c Norm also passed.
+- Next: discuss task (3), PATH candidate selection and empty/missing PATH
+  behavior, before implementation. Do not expand into Minishell behavior.
+- Limits: no custom Bash diagnostics or ENOEXEC script fallback; the access()
+  check after execve() can race with filesystem changes. Full audits remain.
+
+---
+
 # Pipex checkpoint — 2026-09-18
 
 This is a development checkpoint, not a claim of final subject compliance.
@@ -26,15 +42,22 @@ authorization to implement every remaining item.
   or `PATH_ERROR`, with allocated output only on success. Allocation failures set
   `ENOMEM`, report the system error, release arguments, and exit 1 rather than 127.
 
-## Next shell-correctness tasks — not implemented
+## Shell-correctness task status
 
-### (2) Classify execve failures
+### (2) Classify execve failures — scoped implementation complete
 
-`execute_command()` still exits 126 for every failed `execve()` call. Save errno
-immediately and classify errors before cleanup. Verify against the chosen shell
-with focused tests: missing explicit executable paths, non-executable files,
-directories, and missing script interpreters. Do not assume every ENOENT means
-the executable pathname itself is absent. Keep diagnostics tied to the real error.
+The failed execve error is captured by value in `exec_failure()` before any
+reporting or cleanup. `exec_failure_status()` defaults to 126; for ENOENT it
+checks the path with access(F_OK), choosing 127 only if that check also fails
+with ENOENT. The original errno is restored for perror, then allocations are
+freed and the selected status is returned through exit.
+
+Mandatory and bonus tests matched local Bash 5.1.16 for missing explicit paths,
+non-executable files, directories, missing script interpreters, and a
+non-directory path component. Diagnostics retain the original system error;
+custom Bash wording and ENOEXEC script fallback are not implemented. The
+existence check can race with filesystem changes. A closed-stderr check retained
+status 127, normal execution passed, and execute.c passed Norm.
 
 ### (3) Improve PATH search
 
