@@ -955,6 +955,7 @@ dailylogin() {
   _dailylogin_settings
   local -x DAILY_TMUX_BATCH=1
   _dailylogin_tasks "$@"
+  _dailylogin_run 'Empty shell window' - _daily_terminal open --cwd "$PWD" zsh -- zsh -i || true
   if ! _daily_terminal show; then
     (( dailylogin_failed += 1 ))
     _dailylogin_log FAILED 'Show tmux workspace (use workterm to reconnect)'

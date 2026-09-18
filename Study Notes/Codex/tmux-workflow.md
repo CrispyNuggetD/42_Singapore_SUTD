@@ -16,6 +16,10 @@ Reload existing shells once with `source ~/.zshrc`. New shells load the update a
 
 Existing enable/disable controls still apply. All launch helpers work independently outside tmux.
 During dailylogin, terminal launches are collected and the workspace is shown once at the end.
+An empty interactive `zsh` window is created after the app windows, in the current project
+directory (or the current directory when opening a project is disabled). With Codex,
+LAN42, and mailbox enabled, this is the fourth window, `3:zsh`. Later logins reuse
+this shell while it is running; exiting it lets the next login restart it.
 If already attached elsewhere, another desktop terminal is not opened. Use its Ctrl+B, then w chooser.
 A headless launch creates the session and prints a reconnect command.
 
