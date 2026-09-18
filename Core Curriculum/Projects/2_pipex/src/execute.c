@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/18 05:43:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/18 17:44:59 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ void	execute_command(char *command, char **envp)
 	char			**args;
 	char			*path;
 	t_path_result	result;
+	int				saved_errno;
 
 	args = ft_split(command, ' ');
 	if (!args)
@@ -46,6 +47,7 @@ void	execute_command(char *command, char **envp)
 	if (result == PATH_NOT_FOUND)
 		command_not_found(args[0], args);
 	execve(path, args, envp);
+	saved_errno = errno;
 	perror(args[0]);
 	free(path);
 	ryker_ft_free_str_array(args);
