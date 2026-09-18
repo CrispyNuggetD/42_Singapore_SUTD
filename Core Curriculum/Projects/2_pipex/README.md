@@ -306,6 +306,96 @@ With `umask 0077`, either mode produces `0600`.
 This creation mode only applies when `O_CREAT` creates a new file. Appending
 to or truncating an existing file does not reset its permission bits.
 
+## Execution errors and process exit statuses
+
+Handling a failed command involves three separate responsibilities: preserving
+why execution failed, reporting that failure, and choosing the result returned
+to the parent. Keeping these responsibilities separate is necessary for
+shell-compatible error handling.
+
+### Two numbering systems
+
+Although both fit in an `int`, `errno` and a process exit status represent
+different information:
+
+| Value | Meaning | Consumer |
+|---|---|---|
+| `errno`, optionally copied into `saved_errno` | Why a particular operation failed | Error-handling code, `perror()`, or `strerror()` |
+| Process exit status | The result a process reports when it finishes | Its parent through `waitpid()`, or the shell through `$?` |
+
+For example, `EACCES` means permission denied and has value 13 on the local
+Linux system. After an execution failure with that error, `exit(saved_errno)`
+would report status 13. It would not produce the shell status 126 expected for
+that execution failure. The program must select the appropriate exit status.
+
+Error comparisons should use symbolic names such as `EACCES` and `ENOENT`,
+because their numeric values can differ across systems. Bash's exit-status
+conventions assign 127 to a command not found and 126 to a command found but
+unable to execute. See the
+[Bash exit-status documentation](https://www.gnu.org/s/bash/manual/html_node/Exit-Status.html).
+An executed program can also choose its own status, so observing 126 alone
+does not identify the specific operation that failed.
+
+In the Unix process model used here, the parent obtains the low eight bits of
+the value passed to `exit()` as the normal exit status. Exiting with an arbitrary
+`errno` value is therefore not a general mechanism for transmitting the original
+error to the parent.
+
+### Preserving the cause before handling the failure
+
+A successful `execve()` replaces the process image and never returns. If it
+returns with failure, `errno` describes the cause at that point. Copying it
+immediately preserves that information for subsequent classification and
+cleanup:
+
+```text
+execve fails -> save errno -> classify failure -> report original error
+             -> free allocations -> exit with the selected shell status
+```
+
+The same principle applies to `open()`, `read()`, `write()`, and `fork()`.
+Saving the error is useful whenever intervening operations could overwrite it
+before it has been fully handled. It is not required merely because a
+particular system call was used.
+
+For an immediate report followed by termination, a helper such as
+`exit_perror("malloc", 1)` can use the current `errno`, provided the allocation
+error has not been overwritten. Here, `1` is the chosen process exit status.
+For delayed reporting, restore the saved value to `errno` before `perror()`,
+or obtain its message with `strerror(saved_errno)`. Neither reporting function
+chooses the process's exit status.
+
+Only interpret `errno` when the operation's return value indicates failure.
+A successful operation does not necessarily clear an earlier error.
+
+### Why execution failures need classification
+
+Reporting immediately after `execve()` and then always exiting with 126
+preserves the diagnostic, but loses distinctions needed for shell behavior.
+The following focused tests illustrate those distinctions using Bash installed
+on the local 42 computer:
+
+| Attempt | Execution error observed | Local Bash exit status |
+|---|---|---|
+| Missing explicit executable path | `ENOENT` | 127 |
+| Existing file without execute permission | `EACCES` | 126 |
+| Directory used as a command | `EACCES` | 126 |
+| Existing executable script with a missing `#!` interpreter | `ENOENT` | 126 |
+| Path with a non-directory component | `ENOTDIR` | 126 |
+
+In particular, `ENOENT` does not prove that the executable file itself is
+missing: a script may exist while the interpreter named by its `#!` line does
+not. Mapping every `ENOENT` to 127 would not reproduce these local Bash results.
+Similarly, a directory can produce `EACCES` from execution while Bash reports
+the more specific diagnostic "Is a directory". Classification may therefore
+require context in addition to the saved error code.
+
+These results describe the tested reference shell; edge-case behavior can vary
+between shells and versions. Execution-error classification and PATH-search
+improvements remain work in progress, tracked in [wip/STATUS.md](wip/STATUS.md).
+The distinction guiding that work is that the error code describes the failed
+operation, while the exit status communicates the program's chosen outcome.
+
 ## Build
 
 ```sh
