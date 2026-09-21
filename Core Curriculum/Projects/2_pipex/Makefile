@@ -9,7 +9,7 @@ LIBFT_DIR := libft
 
 COMMON_SRCS := fd_open_utils.c usage_printer.c pipeline_handler.c execute.c \
 	path_checker.c path_splitter_empty_as_dot.c path_candidate.c \
-	cleanup_and_errors.c
+	cleanup_and_errors.c argument_parser.c
 SRCS := main.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_ONLY_SRCS := main_bonus.c heredoc_helpers_bonus.c heredoc_bonus.c \

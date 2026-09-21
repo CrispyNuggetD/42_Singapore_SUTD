@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 14:49:58 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 21:42:25 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,9 @@ void	execute_command(char *command_str, char **envp)
 	char			*exec_fail_path;
 	t_path_result	result;
 
-	args = ft_split(command_str, ' ');
+	args = split_command_args(command_str);
 	if (!args)
-		exit_perror("malloc", 1);
+		exit_perror("pipex: argument parsing", 1);
 	if (!args[0])
 		command_not_found(NULL, args);
 	result = attempt_possible_candidates(args, envp, &exec_fail_path);

@@ -57,6 +57,7 @@ void			close_and_void_fd(int *fd);
 int				close_pipeline(t_pipeline *pipeline);
 int				run_pipeline(t_pipeline *pipeline, char **argv, char **envp);
 char			**split_path_empty_as_dot(char *path);
+char			**split_command_args(const char *command);
 void			execute_command(char *command_str, char **envp);
 t_path_result	attempt_possible_candidates(char **args, char **envp,
 					char **exec_fail_path);
