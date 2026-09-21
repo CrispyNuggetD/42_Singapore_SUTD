@@ -32,6 +32,8 @@ Mandatory and bonus use separate entry points. The bonus implementation is in
 `*_bonus.c` and `*_bonus.h` files as required by the subject. Build markers
 also remember which version currently produced `pipex`, so repeating the same
 build does not relink and switching modes rebuilds the correct executable.
+If `pipex` is deleted while a marker remains, Make forces the selected mode to
+link again; a marker alone no longer counts as a completed build.
 
 ### Run the mandatory version
 
@@ -86,6 +88,40 @@ program with the requested command. The parent must close its unused pipe ends;
 otherwise a reader can wait forever because some process still owns a write
 end. It then uses `waitpid()` to reap every child and returns the final
 command's exit status, like a normal shell pipeline.
+
+### File-open errors and child cleanup
+
+An input or output open error is reported by the parent, but a normal pipeline
+still starts. Missing input prevents the first command from executing; later
+commands can read EOF. Missing output prevents only the last command from
+executing, so earlier commands can still perform side effects. The final child's
+status determines the pipeline result. Heredoc collection failure still aborts
+setup; an output-open failure after collection follows the same final-child rule.
+
+For example, assume `infile` is readable, the current directory is writable,
+and opening `unwritable_file` for output fails:
+
+```sh
+< infile touch marker | cat > unwritable_file
+./pipex infile "touch marker" "cat" unwritable_file
+```
+
+In both cases, `touch` still creates `marker` even though the final command's
+output redirection fails. The pipeline reports the output error and exits with
+status 1. The commands run concurrently, so the error may appear before `marker`
+is created.
+
+That is why the output-open check calls `perror(argv[argc - 1])` without
+returning a setup failure. Returning there would make the parent abort before
+forking either command. Instead, `output_fd` remains `-1`, and the final child
+closes its descriptors and exits without executing `cat`; earlier children
+can still execute. Use separate fresh marker names when comparing the two runs
+so a marker left by the first run does not hide a failure in the second.
+
+Each child selects its output descriptor (next pipe or final file), checks its
+input/output, and closes all pipeline descriptors before exiting on a missing
+redirection or dup2 failure. This also closes inherited output and pipe ends in
+the first child when input could not be opened.
 
 ## Bonus: a rolling pipeline
 

@@ -41,6 +41,6 @@ int	open_files_no_heredoc(t_pipeline *pipeline, int argc, char **argv)
 		perror(argv[1]);
 	pipeline->output_fd = open_output(argv[argc - 1], O_TRUNC);
 	if (pipeline->output_fd < 0)
-		return (return_perror(argv[argc - 1]));
+		perror(argv[argc - 1]);
 	return (0);
 }

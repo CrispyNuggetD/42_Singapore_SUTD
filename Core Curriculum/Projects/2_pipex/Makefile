@@ -29,6 +29,11 @@ BONUS_MARKER := $(OBJ_DIR)/.bonus
 
 all: $(NAME)
 
+# A mode marker is valid only while its executable still exists.
+ifeq ($(wildcard $(NAME)),)
+$(MANDATORY_MARKER) $(BONUS_MARKER): FORCE
+endif
+
 $(NAME): $(MANDATORY_MARKER)
 
 $(MANDATORY_MARKER): $(OBJS) $(LIBFT)

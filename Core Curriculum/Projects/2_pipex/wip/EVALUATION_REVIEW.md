@@ -31,18 +31,17 @@ Result: not submission-ready. This is a local rehearsal, not an official grade.
 2. Single/double quoted arguments and tab-separated command arguments do not
    match Bash. For input containing two `apple a1` lines, `grep 'apple a1'`
    piped into `wc -l` yields 0 instead of 2. Parsing only splits on literal spaces.
-3. Make does not recreate a deleted executable if obj/.mandatory still exists.
-   Reproduction in the isolated copy: make; remove only pipex; make.
-   Make reports success but the executable remains absent. Ordinary repeated
-   builds do not relink, and clean/fclean/re work.
-4. An output-open failure stops the whole pipeline before cmd1 starts.
-   `pipex input "touch marker" cat directory` does not create marker;
-   `< input touch marker | cat > directory` does. Both report status 1, so
-   comparing status alone misses this difference.
-5. With missing input, the first child exits before close_pipeline(). Valgrind
-   reports three project descriptors still open: output and both pipe ends.
-   The OS reclaims them on exit; this is explicit FD-cleanup debt, not a heap leak.
-   Valgrind's own inherited log descriptor was excluded from this finding.
+3. Deleted-executable rebuild fixed: if pipex is absent, Make forces the selected
+   mode marker's link recipe to run. Tested for mandatory and bonus; repeating
+   either build afterward does not relink.
+4. Output-open failure behavior fixed: the parent reports the error but still
+   launches the pipeline. Only the final child fails its unavailable output
+   redirection; earlier commands can run. Tested with touch side effects in
+   mandatory, multi-command bonus, and heredoc modes.
+5. Child FD cleanup fixed: missing input/output and failed dup2 paths now close
+   the pipeline descriptors before exit. Six fresh Valgrind filesystem-error
+   cases show no unclosed project descriptors, heap errors, or leaks.
+   Valgrind's own inherited log descriptor is excluded from the FD check.
 
 ## Function and submission checks
 
@@ -64,15 +63,20 @@ concern came from another mirror and is withdrawn for this checklist.
 
 ## Results and limits
 
-40 of 45 local build/runtime/heap checks passed. This ratio is not a score:
-Norm, forbidden-function review, documentation, and FD cleanup are separate checks.
-The five failures are deleted-binary rebuild, three parser cases, and first-command
-side effects after output failure.
+42 of 45 local build/runtime/heap checks now pass. The three remaining failures
+are single quotes, double quotes, and tab separators, deliberately deferred by
+the owner to Minishell. This ratio is not an evaluation score or a waiver of
+shell-equivalence requirements.
 
-Five- and twenty-pipe cases passed. Heredoc passed normal termination, EOF,
+Five- and twenty-pipe cases pass. Heredoc passes normal termination, EOF,
 limiter without final newline, large input, and repeated append checks.
-Four Valgrind failure-path runs reported no heap errors or leaks; one exposed
-the descriptor cleanup issue above. This does not cover every fork/pipe/dup2,
+Additional checks confirm deleted-binary rebuild and no relink in both modes.
+Six fresh Valgrind runs cover missing input and output-open failure in both
+builds, including multi-command and heredoc side effects; no project FDs remain
+open in the exiting processes, and no heap errors/leaks were reported.
+Fresh FD logs: /tmp/pipex-fixed-fds-vacmroia/.
+
+Full Pipex/embedded-libft Norm passes. This does not cover every fork/pipe/dup2,
 signal, interrupted-wait, write, or unlink failure. No score or mandatory/bonus
 approval is asserted. Peer understanding and the official submission are not tested.
 
@@ -85,7 +89,7 @@ Harnesses and logs: /tmp/pipex-path-audit/ . Test copy path is recorded in
 |---|---|---|
 | clean build | PASS |  |
 | mandatory no relink | PASS |  |
-| rebuild deleted executable | FAIL |  |
+| rebuild deleted executable | PASS |  |
 | argument count 0 | PASS |  |
 | argument count 1 | PASS |  |
 | argument count 2 | PASS |  |
@@ -110,7 +114,7 @@ Harnesses and logs: /tmp/pipex-path-audit/ . Test copy path is recorded in
 | tab delimiter | FAIL | status 0/0 |
 | early reader exit | PASS | status 0/0 |
 | concurrent commands | PASS | 1.00s |
-| first command runs despite output-open failure | FAIL |  |
+| first command runs despite output-open failure | PASS |  |
 | bonus builds | PASS |  |
 | bonus no relink | PASS |  |
 | multiple pipes | PASS |  |
@@ -124,7 +128,7 @@ Harnesses and logs: /tmp/pipex-path-audit/ . Test copy path is recorded in
 | 5 pipes | PASS |  |
 | 20 pipes | PASS |  |
 | heredoc repeated append | PASS |  |
-| Valgrind all input cat missing_93811 | PASS | 3 process logs; status 127 |
-| Valgrind all missing cat wc -l | PASS | 3 process logs; status 0 |
-| Valgrind all input missing_93811 missing_93812 | PASS | 3 process logs; status 127 |
-| Valgrind bonus here_doc END missing_93811 | PASS | 3 process logs; status 127 |
+| Valgrind all input cat missing_93811 | PASS | 3 current-run process logs; status 127 |
+| Valgrind all missing cat wc -l | PASS | 3 current-run process logs; status 0 |
+| Valgrind all input missing_93811 missing_93812 | PASS | 3 current-run process logs; status 127 |
+| Valgrind bonus here_doc END missing_93811 | PASS | 3 current-run process logs; status 127 |

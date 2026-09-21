@@ -15,17 +15,19 @@
 static void	child_process(t_pipeline *pipeline, int current_command,
 		char **argv, char **envp)
 {
-	if (pipeline->input_fd < 0)
-		exit(1);
-	if (dup2(pipeline->input_fd, STDIN_FILENO) < 0)
-		exit_perror("dup2", 1);
+	int	output_fd;
+
+	output_fd = pipeline->pipefd[1];
 	if (current_command == pipeline->last_command)
+		output_fd = pipeline->output_fd;
+	if (pipeline->input_fd < 0 || output_fd < 0)
+		exit(close_pipeline(pipeline));
+	if (dup2(pipeline->input_fd, STDIN_FILENO) < 0
+		|| dup2(output_fd, STDOUT_FILENO) < 0)
 	{
-		if (dup2(pipeline->output_fd, STDOUT_FILENO) < 0)
-			exit_perror("dup2", 1);
+		perror("dup2");
+		exit(close_pipeline(pipeline));
 	}
-	else if (dup2(pipeline->pipefd[1], STDOUT_FILENO) < 0)
-		exit_perror("dup2", 1);
 	close_pipeline(pipeline);
 	execute_command(argv[current_command], envp);
 }

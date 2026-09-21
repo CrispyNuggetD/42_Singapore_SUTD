@@ -1,3 +1,17 @@
+## Pipeline and Makefile evaluation fixes (2026-09-21)
+
+- Output-open errors now fail only the final child; earlier commands run in
+  mandatory, multi-command bonus, and heredoc pipelines.
+- Children close pipeline FDs before exiting on missing redirections or dup2 errors.
+- Missing executables rebuild despite stale mode markers; both modes still avoid
+  relinking on repeated builds.
+- Rehearsal: 42/45 checks pass. Only the three deliberately deferred quote/tab
+  parser cases fail. Six additional fresh Valgrind cases pass heap/FD checks;
+  both modes pass deleted-binary rebuild/no-relink checks. Full Norm passes.
+- See EVALUATION_REVIEW.md for evidence and remaining audit limits.
+
+---
+
 ## Printf copies and header layout synchronized (2026-09-21)
 
 - Updated the standalone printf helper as well as the four expanded-library
