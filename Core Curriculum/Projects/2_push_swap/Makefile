@@ -11,7 +11,14 @@ RM			= rm -f
 LIBFT_DIR	= libft
 LIBFT		= $(LIBFT_DIR)/libft.a
 
-INCLUDES = -I.
+SRC_DIR		= src
+INC_DIR		= includes
+INCLUDES	= -I$(INC_DIR) -Idebug
+LIBFT_HEADERS = $(LIBFT_DIR)/ryker_libft.h \
+	$(wildcard $(LIBFT_DIR)/0_libft/*.h $(LIBFT_DIR)/1_ft_printf/*.h \
+	$(LIBFT_DIR)/1_get_next_line/*.h $(LIBFT_DIR)/ryker_ft/*.h \
+	$(LIBFT_DIR)/ryker_ft/*/*.h)
+HEADERS = $(INC_DIR)/push_swap.h $(LIBFT_HEADERS)
 
 SRCS		= main_push_swap.c \
 			  parse_sort_input.c \
@@ -33,34 +40,47 @@ SRCS		= main_push_swap.c \
 			  bfs_operations_reverse_rotate.c \
 			  bfs_optimiser_lehmer_rank.c \
 			  chunk_extract_optimal.c \
-			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c \
+			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c
 
 OBJ_DIR		= obj
 OBJS		= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
 
 all: $(NAME)
 
-debug: $(LIBFT)
+debug: $(DEBUG_NAME)
+
+$(DEBUG_NAME): $(addprefix $(SRC_DIR)/,$(SRCS)) $(HEADERS) \
+	debug/DO_NOT_SUBMIT_DEBUG_bfs_results.c \
+	debug/DO_NOT_SUBMIT_DEBUG_bfs_results.h $(LIBFT) Makefile
 	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) -DBFS_DEBUG $(INCLUDES) $(SRCS) \
+	$(CC) $(CFLAGS) -DBFS_DEBUG $(INCLUDES) $(addprefix $(SRC_DIR)/,$(SRCS)) \
 		debug/DO_NOT_SUBMIT_DEBUG_bfs_results.c $(LIBFT) -o $(DEBUG_NAME)
 
-analyse_bfs: $(LIBFT)
-	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) \
-		debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
-		bfs.c bfs_utils.c bfs_verify_node.c \
-		bfs_operations_swap_push.c bfs_operations_rotate.c \
-		bfs_operations_reverse_rotate.c bfs_optimiser_lehmer_rank.c \
-		circular_buffer_utils.c $(LIBFT) -o $(ANALYSIS_NAME)
+BFS_SRCS = bfs_utils.c bfs_verify_node.c bfs_operations_swap_push.c \
+	bfs_operations_rotate.c bfs_operations_reverse_rotate.c \
+	bfs_optimiser_lehmer_rank.c
+ANALYSIS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
+	$(addprefix $(SRC_DIR)/,bfs.c circular_buffer_utils.c $(BFS_SRCS))
+ALL_PATHS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \
+	$(addprefix $(SRC_DIR)/,$(BFS_SRCS))
 
-analyse_bfs_all_paths: $(LIBFT)
+analyse_bfs: $(ANALYSIS_NAME)
+
+$(ANALYSIS_NAME): $(ANALYSIS_SRCS) $(HEADERS) $(LIBFT) Makefile
 	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) \
-		debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \
-		bfs_utils.c bfs_verify_node.c bfs_operations_swap_push.c \
-		bfs_operations_rotate.c bfs_operations_reverse_rotate.c \
-		bfs_optimiser_lehmer_rank.c $(LIBFT) -o $(ALL_PATHS_NAME)
+	$(CC) $(CFLAGS) $(INCLUDES) $(ANALYSIS_SRCS) $(LIBFT) -o $@
+
+analyse_bfs_all_paths: $(ALL_PATHS_NAME)
+
+$(ALL_PATHS_NAME): $(ALL_PATHS_SRCS) $(HEADERS) $(LIBFT) Makefile
+	mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) $(ALL_PATHS_SRCS) $(LIBFT) -o $@
+
+generator: $(BIN_DIR)/generator
+
+$(BIN_DIR)/generator: debug/DO_NOT_SUBMIT_DEBUG_generator.c Makefile
+	mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) $< -o $@
 
 $(LIBFT): FORCE
 	$(MAKE) -C $(LIBFT_DIR)
@@ -68,23 +88,22 @@ $(LIBFT): FORCE
 $(NAME): $(LIBFT) $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
 
-$(OBJ_DIR)/%.o: %.c push_swap.h $(LIBFT_DIR)/ryker_libft.h Makefile
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) Makefile
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -rf $(OBJ_DIR)
-	$(RM) $(SRCS:.c=.o)
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
 	$(RM) $(NAME) $(DEBUG_NAME) $(ANALYSIS_NAME) $(ALL_PATHS_NAME)
-	rm -rf $(BIN_DIR)
+	$(RM) $(BIN_DIR)/generator
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
-.PHONY: all debug analyse_bfs analyse_bfs_all_paths clean fclean re
+.PHONY: all generator debug analyse_bfs analyse_bfs_all_paths clean fclean re
 
 FORCE:
 

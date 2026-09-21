@@ -1,0 +1,7 @@
+# Build products (also covered by the parent repository rules).
+/obj/
+/bin/
+/push_swap
+*.o
+*.a
+*.d

@@ -10,7 +10,7 @@
  * must stay outside the submitted push_swap source list.
  */
 
-#include "../push_swap.h"
+#include "push_swap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

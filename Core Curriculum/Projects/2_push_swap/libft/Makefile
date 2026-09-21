@@ -19,7 +19,7 @@ CUSTOM_SRCS = $(filter-out ryker_ft/wip/% $(WIP_SRCS),\
 	$(wildcard ryker_ft/*.c ryker_ft/*/*.c))
 SRCS = $(BASE_SRCS) $(PRINTF_SRCS) $(GNL_SRCS) $(CUSTOM_SRCS)
 OBJS = $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
-HEADERS = $(wildcard 0_libft/*.h 1_ft_printf/*.h 1_get_next_line/*.h \
+HEADERS = ryker_libft.h $(wildcard 0_libft/*.h 1_ft_printf/*.h 1_get_next_line/*.h \
 	ryker_ft/*.h ryker_ft/*/*.h)
 INCLUDES = -I0_libft -I1_ft_printf -I1_get_next_line -Iryker_ft
 

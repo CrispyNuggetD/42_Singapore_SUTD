@@ -13,7 +13,7 @@
  * This debug program uses unauthorised functions.  Do not submit it.
  */
 
-#include "../push_swap.h"
+#include "push_swap.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

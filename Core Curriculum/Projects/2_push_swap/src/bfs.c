@@ -13,7 +13,7 @@
 #include "push_swap.h"
 
 #ifdef BFS_DEBUG
-# include "debug/DO_NOT_SUBMIT_DEBUG_bfs_results.h"
+# include "DO_NOT_SUBMIT_DEBUG_bfs_results.h"
 #endif
 
 static void	gen_brute_state(t_brutestate *state, cbuf *a, cbuf *b)

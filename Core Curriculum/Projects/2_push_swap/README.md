@@ -1,620 +1,331 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
-# Description
+<a id="top"></a>
 
-## Build output layout
+# push_swap — studying sorting through stack operations and shortest paths
 
-The required executable remains `./push_swap`. Object files are built in `obj/`.
-Optional development tools use the repository-wide `bin/` convention:
+<a id="at-a-glance"></a>
 
-| Command | Executable |
-| --- | --- |
-| `make debug` | `bin/push_swap_debug` |
-| `make analyse_bfs` | `bin/bfs_analyser` |
-| `make analyse_bfs_all_paths` | `bin/bfs_all_paths` |
+## At a glance
 
-The root `.gitignore` ignores `obj/`, `bin/` and `.bonus` at any depth.
-`make clean` removes objects; `make fclean` also removes the executables and `bin/`.
-This convention is for optional development tools; subject-required executables
-keep their expected names and locations.
+✅ = implemented. 🚧 = partial or experimental. ❌ = not met or not implemented.
+These describe the current code and study tools; they are not evaluation scores.
 
-## Push_swap
+**Work in progress: this implementation does not yet meet the subject's move
+requirements.** The repository already contains stack operations, a BFS search,
+chunk-extraction experiments, and saved analysis data. Those are useful building
+blocks, but they do not establish a compliant or efficient final solver.
 
-**Push_swap** is a ...
+| Status | Feature | Current behavior |
+|---|---|---|
+| 🚧 | Integer input | Parses separate arguments and space-separated strings; includes sign, range, duplicate and 500-value checks. Edge cases still need correction and validation. |
+| ✅ | Rank normalisation | Replaces each distinct value with its position in sorted order. |
+| ✅ | Circular-buffer stacks | Stores A and B in fixed arrays with wrapping read/write indices. |
+| ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
+| ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
+| 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This is the active development path. |
+| ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
+| ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
+| ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
+| ❌ | Subject move requirements | Not met yet; no passing 100/500-number benchmark is claimed. |
+| ❌ | Clean instruction-only output | The current solver prints progress and route diagnostics to stdout alongside moves. |
+| ❌ | Bonus checker implementation | The supplied Linux checker is a reference binary, not a checker written for this project. |
 
-- Repeated calls should...
-- Function 2
-- function 3
+[↑ Back to top](#top)
 
-- This sentence uses $\` and \`$ delimiters to show math inline: $`\sqrt{3x-1}+(1+x)^2`$
+<a id="design-choices-and-edge-cases"></a>
 
+## Design choices and edge cases
 
-This repository contains:
-- Mandatory implementation: `get_next_line.c`, `get_next_line_utils.c`, `get_next_line.h` 
-- Bonus implementation (multi-fd): `get_next_line_bonus.c`, `get_next_line_utils_bonus.c`, `get_next_line_bonus.h` 
+| Status | Choice | Why it matters |
+|---|---|---|
+| ✅ | [Normalise before searching](#rank-normalisation) | Relative order determines sorting; original integer magnitudes need not appear in BFS states. |
+| ✅ | [Circular buffers](#circular-buffer-stacks) | Stack operations reuse fixed storage without allocating nodes for each move. |
+| ✅ | [Encode states directly](#bfs-and-state-indexing) | A permutation and split identify both stacks, allowing direct visited-bit lookup. |
+| 🚧 | [Protect the hidden part of A](#chunk-extraction-and-the-hidden-stack) | Restricts the active search so a chunk can be considered separately from the rest of the stack. |
+| 🚧 | [Compare extraction routes](#chunk-extraction-and-the-hidden-stack) | Tries both initial rotation directions and at most one direction change; this is not a global optimality proof. |
+| ✅ | [Reverse BFS for study](#analysis-tools-and-study-data) | Reuses distances from the goal to enumerate shortest solutions for small permutations. |
+| ❌ | [Submission edge cases](#current-limitations) | Output, trivial inputs, parser safety, memory handling and compliance still need work. |
 
-# Quick feature list
+[↑ Back to top](#top)
 
-### Mandatory
-- `char *get_next_line(int fd);`
-- Returns:
-  - A heap-allocated string containing the next line (including `\n` if present)
-  - Or `NULL` on EOF (nothing left) or on error 
-- Uses only:
-  - `read`, `malloc`, `free`.
-- For correctness, in this project there are no forbidden functions like `lseek()`, no global variables, no libft usage. 
+<a id="contents"></a>
 
-### Bonus
-- Manages multiple file descriptors “at the same time”:
-  - You can run this program and alternate calls between fd 3, 4, 5, etc. and each keeps its own reading state 
-- Still uses only **one static variable** (implemented as one static array indexed by fd). 
+## Contents
 
-## Algorithm explanation & justification 
+- [At a glance](#at-a-glance)
+- [Design choices and edge cases](#design-choices-and-edge-cases)
+- [Description](#description)
+- [Instructions](#instructions)
+- [Rank normalisation](#rank-normalisation)
+- [Circular-buffer stacks](#circular-buffer-stacks)
+- [BFS and state indexing](#bfs-and-state-indexing)
+- [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
+- [Analysis tools and study data](#analysis-tools-and-study-data)
+- [Checks and current limitations](#checks-and-current-limitations)
+- [Resources and use of AI](#resources)
 
-This implementation uses the standard (and intended) approach:
+[↑ Back to top](#top)
 
-1. Maintain a static “stash” that persists between calls.
-2. Append newly read bytes into the stash until:
-3. newline \n exists in stash → split and return one line
-4. Or read() returns 0 (EOF) → return the remaining stash as the last line (if non-empty).
-5. Keep the leftover bytes (after the returned line) inside stash for the next call.
+<a id="description"></a>
 
-This design is justified because:
+## Description
 
-- It respects the requirement “read as little as possible”:
+Push_swap explores sorting with two stacks and a limited vocabulary of moves.
+The intended result is an ascending stack A, an empty stack B, and a short list
+of instructions that reproduces the sort.
 
-1. We only read more when we can’t yet produce a full line. 
-2. It correctly returns a line including ```\n``` when present. 
-3. The static stash is exactly the concept the project is meant to teach.
+This version is also a study of the search space: how to represent a state,
+recognise a state already visited, recover a path, and use small optimal solutions
+to investigate larger sorting strategies. The saved reports are reference material
+for that investigation, including cases with several equally short solutions.
 
-# Explanations of main parts of code
+The main program currently runs the experimental chunk solver unconditionally.
+The small-case alternative in `solve.c` exists, but is bypassed by that early
+return. The sections below distinguish the active solver from the analysis tools.
 
-## Mandatory 
+[↑ Back to top](#top)
 
-## 1. get_next_line.h
+<a id="instructions"></a>
 
-```c
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 67
-# endif
+## Instructions
+
+Run these commands from the project directory. Building requires `make`, a C
+compiler available as `cc`, and `ar`. The Makefile builds the bundled `libft/`
+automatically; no sibling checkout or extra library copy is needed.
+
+### Build and clean
+
+```sh
+make                      # ./push_swap
+make debug                # bin/push_swap_debug
+make analyse_bfs          # bin/bfs_analyser
+make analyse_bfs_all_paths # bin/bfs_all_paths
+make generator            # bin/generator
+make clean
+make fclean
+make re
 ```
 
-- BUFFER_SIZE defaults to 67 here, but is overridable by the compiler flag -D BUFFER_SIZE=n
+`make debug` defines `BFS_DEBUG` and links the logging helper. The logging call
+in the old BFS implementation is currently commented out, so this target does
+not guarantee a separate report. The ordinary executable already prints diagnostics.
 
-## 2. get_next_line.c
+`make clean` removes project and libft objects. `make fclean` also removes built
+executables and the library archive. Both preserve study reports and the supplied
+checker. Repeated builds leave unchanged executables alone.
 
-```c
-char	*get_next_line(int fd)
-{
-	static char	*stash;
-	char		*new_stash;	
-	ssize_t		read_num;
-	ssize_t		nl;
+### Run the development solver
 
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
-		return (NULL);
-	while (1)
-	{
-		nl = find_len(stash, '\n');
-		if (nl > 0 && stash[nl - 1] == '\n')
-			return (newline_ret(&stash));
-		new_stash = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-		if (!new_stash)
-			return (NULL);
-		read_num = read(fd, new_stash, BUFFER_SIZE);
-		if (read_num < 0)
-			return (read_error(&stash, new_stash));
-		new_stash[read_num] = '\0';
-		stash = gnl_strjoin(stash, new_stash);
-		if (!stash)
-			return (NULL);
-		if (read_num == 0)
-			return (fd_end_handler(&stash));
-	}
-}
+```sh
+./push_swap 3 2 1
+./push_swap "3 2 1"
+./bin/generator 5
 ```
 
-### What each part is doing:
+Start with small inputs. The current BFS reserves space for the configured maximum
+state count even for a small problem; larger searches can be expensive.
+Output contains both instructions and diagnostics, so piping it directly to the
+checker or counting all stdout lines does not provide a valid subject benchmark.
 
-```static char *stash;```
+### Project layout
 
-- Persists between calls.
-- Stores “unreturned leftover bytes” from previous reads.
+| Path | Purpose |
+|---|---|
+| [`src/`](src/) | Solver, parsing, stack operations and BFS implementation. |
+| [`includes/push_swap.h`](includes/push_swap.h) | Shared structures, limits and function declarations. |
+| [`libft/`](libft/) | Self-contained library sources used by this project. |
+| [`debug/`](debug/) | Analysis and generator sources. |
+| [`debug/results/`](debug/results/) | Study reports and trial logs, kept in Git. |
+| [`tests/checker_linux`](tests/checker_linux) | Supplied Linux checker binary. |
+| [`notes.md`](notes.md) | Working questions, ideas and unfinished plans. |
+| `obj/`, `bin/`, `push_swap` | Generated build products, ignored by Git. |
 
-Input validation:
-- ```fd < 0``` rejects invalid fd.
-- ```fd > 1024``` matches a common fd limit assumption used in many GNL solutions.
-- ```BUFFER_SIZE <= 0``` rejects nonsense buffer sizes.
-- ```BUFFER_SIZE > SIZE_MAX - 1``` is a defensive overflow guard before BUFFER_SIZE + 1 allocations.
+The `DO_NOT_SUBMIT` name on `src/DO_NOT_SUBMIT_DEBUG_hidden_bfs.c` reflects its
+experimental role; it is still a dependency of the main build.
 
----
+[↑ Back to top](#top)
 
-Main loop ```(while (1))```:
+<a id="rank-normalisation"></a>
 
-### Step A: detect whether stash already contains a full line
+## Rank normalisation
 
-```nl = find_len(stash, '\n');```
+[`rank_values.c`](src/rank_values.c) counts how many input values are smaller
+than each value. For distinct inputs, that gives ranks from `0` to `n - 1`:
 
-This returns the length up to and including \n (or 0 if stash is NULL/empty).
-
-```if (nl > 0 && stash[nl - 1] == '\n')```
-
-Confirms that the counted prefix ends in newline.
-
-If yes → ```newline_ret(&stash)``` splits stash into:
-
-1. return line
-
-2. leftover stash
-
-### Step B: read more when we can’t return a line yet
-
-1. Allocate ```new_stash``` of size ```BUFFER_SIZE + 1``` for a null-terminated chunk.
-
-2. ```read(fd, new_stash, BUFFER_SIZE)``` fills it.
-
-3. If ```read_num < 0``` → error:
-
-	- ```read_error(&stash, new_stash)``` frees memory and returns NULL.
-
-4. ```new_stash[read_num] = '\0';``` ensures it’s a C-string.
-
-### Step C: append chunk to stash
-
-```stash = gnl_strjoin(stash, new_stash);```
-
-Returns a new combined buffer and frees both inputs.
-
-- If join failed → return ```NULL```.
-
-### Step D: EOF handling
-
-If ```read_num == 0```, no more bytes:
-
-- fd_end_handler(&stash) decides:
-
-if ```stash``` non-empty → return it (final ```line```)
-
-- else ```free``` stash and return ```NULL```
-
-This loop structure matches the subject’s intended behavior: keep reading until you can return a line, without reading the entire file first.
-
-## 3. get_next_line_utils.c (helpers)
-
-### Helper Function 1 of 5: find_len
-
-#### Purpose:
-
-A small utility that behaves like:
-
-- “count characters until ```look_for``` or ```\0```”
-- includes ```look_for``` in the count if it’s found
-
-#### Code:
-
-```c
-ssize_t	find_len(const char *s, int look_for)
-{
-	ssize_t	len;
-
-	len = 0;
-	if (!s)
-		return (0);
-	while (*s && *s != look_for)
-	{
-		len++;
-		s++;
-	}
-	if (*s && *s == look_for)
-		len++;
-	return (len);
-}
+```text
+values:  40  -8  12
+ranks:    2   0   1
 ```
 
-#### Key details:
+The ordering is preserved, so the same stack moves sort either representation.
+The current implementation compares every value with every other value, taking
+O(n²) time. Small BFS states store normalised ranks as unsigned bytes; the main
+stacks still store integers.
 
-- If ```s == NULL``` → ```returns 0``` (this is “implicit guard” for stash being ```NULL```).
+[↑ Back to top](#top)
 
-- If ```look_for``` is found (e.g. ```\n```) → length **includes** it.
+<a id="circular-buffer-stacks"></a>
 
-That’s why ```nl > 0 && stash[nl - 1]``` == '\n' works cleanly.
+## Circular-buffer stacks
 
----
+Each stack has an integer array, a capacity, a read index and a write index.
+The indices wrap around the array. One spare slot distinguishes a full buffer
+from an empty one, so `n` input values use a capacity of `n + 1`.
 
-### Helper Function 2 of 5: newline_ret
+The circular-buffer helpers implement the underlying movements. The
+`stack_operation_*.c` wrappers also append an encoded move to the solution.
+The output helper translates those codes back to names such as `sa`, `pb` and
+`rra`, one instruction per line. The solver's additional diagnostic prints are
+what currently prevent the complete output from being instruction-only.
 
-#### Purpose:
+[↑ Back to top](#top)
 
-Split stash into:
+<a id="bfs-and-state-indexing"></a>
 
-```gnl_buf``` = “line to return” (prefix ending at ```\n``` if present)
+## BFS and state indexing
 
-```temp_buf``` = “new stash” (remaining suffix after that prefix)
+A BFS state stores one permutation and a split position. The prefix represents
+A and the suffix represents B. For `n` distinct ranks, there are `n!`
+permutations and `n + 1` possible splits:
 
-#### Code:
-
-```c
-char	*newline_ret(char **buf)
-{
-	char	*temp_buf;
-	char	*gnl_buf;
-	ssize_t	prefix;
-	ssize_t	suffix;
-
-	prefix = find_len(*buf, '\n');
-	suffix = find_len(*buf, '\0') - prefix;
-	temp_buf = malloc(sizeof(char) * (suffix + 1));
-	if (!temp_buf)
-		return (NULL);
-	temp_buf[suffix] = '\0';
-	while (suffix--)
-		temp_buf[suffix] = (*buf)[prefix + suffix];
-	gnl_buf = malloc(sizeof(char) * (prefix + 1));
-	if (!gnl_buf)
-	{
-		free(temp_buf);
-		return (NULL);
-	}
-	gnl_buf[prefix] = '\0';
-	while (prefix--)
-		gnl_buf[prefix] = (*buf)[prefix];
-	free(*buf);
-	*buf = temp_buf;
-	return (gnl_buf);
-}
+```text
+possible states = (n + 1) × n! = (n + 1)!
+state ID        = split × n! + Lehmer rank(permutation)
 ```
 
-#### Line-by-line logic:
+[`bfs_optimiser_lehmer_rank.c`](src/bfs_optimiser_lehmer_rank.c) computes that ID.
+The solver uses it to look up one visited bit per state. Each discovered node
+also records its parent and the move used to reach it, allowing the final path
+to be reconstructed backwards.
 
-1. ```prefix = find_len(*buf, '\n');```
+BFS finds a shortest path within the graph it actually explores. The active
+solver tries only `sa`, `sb`, `pa`, `pb`, `ra` and `rra`, with additional
+restrictions to protect hidden values in A. Its result must not be described as
+the globally shortest solution over all eleven operations.
 
-	- If newline exists, prefix **includes** it.
+With `BRUTE_MAX_N` set to 10, the configured maximum is `11! = 39,916,800`
+states. The main BFS allocates that many nodes for every call. Compact state
+encoding helps, but does not remove factorial growth or the current allocation cost.
 
-	- If newline doesn’t exist, prefix **becomes full string length** (because it stops at ```\0``` and doesn’t add).
+[↑ Back to top](#top)
 
-2. ```suffix = find_len(*buf, '\0') - prefix;```
+<a id="chunk-extraction-and-the-hidden-stack"></a>
 
-**Remaining** chars **after** the prefix.
+## Chunk extraction and the hidden stack
 
-3. Allocate ```temp_buf``` sized ```suffix + 1```.
+The active development path processes successive rank intervals of up to ten
+values. It first moves the selected interval from A to B, then creates temporary
+stacks containing the active chunk, searches for a solution and replays that
+solution on the real stacks.
 
-4. Copy the suffix segment from original ```buffer``` into ```temp_buf```.
+[`chunk_extract_optimal.c`](src/chunk_extract_optimal.c) simulates extraction
+routes before executing one. It tries each initial rotation direction and each
+point at which to reverse direction after collecting a target value. It chooses
+the lowest rotation-plus-push cost among those candidates.
 
-5. Allocate ```gnl_buf``` sized ```prefix + 1```.
+“Optimal” here refers only to that limited family of extraction routes. The code
+does not compare arbitrary direction changes or the total future sorting cost.
+Likewise, a short BFS solution for one chunk does not prove that the full sequence
+meets the subject's move requirements.
 
-6. Copy the prefix segment from original ```buffer``` into ```gnl_buf```.
+The search treats the unseen portion of A as a boundary: it disallows A rotations
+when the visible portion is nonempty and disallows `sa` when fewer than two visible
+values are available. This is the experiment behind “hidden BFS”. Its overall
+correctness and efficiency still need broader validation.
 
-7. ```Free``` old stash ```(free(*buf))``` and **replace** it with the **new** leftover ```(*buf = temp_buf)```.
+[↑ Back to top](#top)
 
-8. Return ```gnl_buf``` to caller; caller owns it and must ```free()``` it.
+<a id="analysis-tools-and-study-data"></a>
 
-This is the core “split” mechanic that makes the ```static stash``` workable.
+## Analysis tools and study data
 
----
+The two analysis executables accept an `n` from 2 to 7 and write timestamped
+reports into their working directory. For a small reverse-BFS study:
 
-### Helper Function 3 of 5: read_error
-
-#### Purpose:
-
-Centralized cleanup for ```read()``` failure:
-
-1. ```Free``` the newly allocated read buffer
-
-2. ```Free``` ```stash``` and reset it to ```NULL```
-
-3. Return ```NULL```
-
-#### Code:
-
-```c
-char	*read_error(char **stash, char *new_stash)
-{
-	free(new_stash);
-	free(*stash);
-	*stash = NULL;
-	return (NULL);
-}
+```sh
+make analyse_bfs_all_paths
+mkdir -p debug/results
+(cd debug/results && ../../bin/bfs_all_paths 3)
 ```
 
----
+The reverse analyser builds distances from the sorted goal, uses all eleven
+operations, and enumerates shortest paths by following moves that reduce the
+remaining distance. This differs from the restricted search in the main solver.
 
-### Helper Function 4 of 5: gnl_strjoin
+The permutation analyser can be run with
+`(cd debug/results && ../../bin/bfs_analyser 3)` after `make analyse_bfs`.
+It calls the current `brute_solve`, so its results depend on the current search
+restrictions. Historical reports can reflect an earlier version of the search.
 
-#### Purpose:
+| Saved material | What to study |
+|---|---|
+| [`debug/results/`](debug/results/) | All preserved BFS reports and 500-number trial logs. |
+| [All shortest paths, n = 5](debug/results/push_swap_bfs_all_paths_n5_2026-08-24_22-02-49.txt) | The report records 120 starting permutations, 720 graph states and a maximum optimal distance of 9. |
+| [All shortest paths, n = 7](debug/results/push_swap_bfs_all_paths_n7_2026-08-24_22-02-53.txt) | The report records 5,040 starting permutations, 40,320 graph states and a maximum optimal distance of 13. |
+| [`notes.md`](notes.md) | Questions about pattern discovery, heuristics and how small solutions might inform larger cases. |
 
-1. Append ```new_buf``` onto ````buf````, returning a newly allocated buffer:
+These numbers describe the saved reports, not a fresh evaluation of the current
+executable. The reports are important study data and are **not ignored**. Build
+cleanup does not delete them. Larger all-path reports can grow quickly because
+one starting permutation may have many equally short solutions.
 
-2. Handles ```buf == NULL``` via ```find_len(NULL, '\0') == 0```
+[↑ Back to top](#top)
 
-3. Always frees both inputs on success.
+<a id="checks-and-current-limitations"></a>
 
-4. Also frees **both** on allocation failure (so caller doesn’t leak).
+## Checks and current limitations
 
-#### Code:
+### Build checks
 
-```c
-char	*gnl_strjoin(char *buf, char *new_buf)
-{
-	char	*temp_buf;
-	ssize_t	new_buf_len;
-	ssize_t	buf_len;
+The following checks passed during the directory reorganisation. They establish
+build behavior, not sorting correctness or a subject score.
 
-	new_buf_len = find_len(new_buf, '\0');
-	buf_len = find_len(buf, '\0');
-	temp_buf = malloc(sizeof(char) * (new_buf_len + buf_len + 1));
-	if (!temp_buf)
-	{
-		free(buf);
-		free(new_buf);
-		return (NULL);
-	}
-	temp_buf[new_buf_len + buf_len] = '\0';
-	while (new_buf_len--)
-		temp_buf[buf_len + new_buf_len] = new_buf[new_buf_len];
-	while (buf_len--)
-		temp_buf[buf_len] = buf[buf_len];
-	free(buf);
-	free(new_buf);
-	return (temp_buf);
-}
-```
+| Result | Check |
+|---|---|
+| ✅ | Main executable and all four development tools build with `-Wall -Wextra -Werror`. |
+| ✅ | Repeating all build targets leaves executable and archive timestamps unchanged. |
+| ✅ | `make clean` removes objects while preserving executables. |
+| ✅ | `make fclean` removes build products while preserving the checker and all 17 existing study reports. |
+| ✅ | All targets rebuild after cleanup. |
+| ✅ | Deleted main and analyser executables are recreated. |
 
-#### How it copies:
+<a id="current-limitations"></a>
 
-- It copies from the end backwards using ```while (len--)```.
+### Current limitations
 
-	- That avoids needing an extra index variable.
+The next milestone is a correct, compliant instruction stream, followed by
+measured move-count improvements. Outstanding work includes:
 
-1. First copies new_buf to the end region.
+- Meeting the subject's move requirements and recording reproducible benchmarks.
+- Removing solver diagnostics from stdout and checking results with the supplied checker.
+- Correct handling of trivial inputs: one integer currently prints `Error`, and sorted input has no early exit before the chunk solver.
+- Hardening parsing. A non-space character immediately after digits can leave the count unchanged before an array write; long strings of leading zeroes also hit the digit-count limit.
+- Completing allocation-failure handling and solution cleanup; no leak-free result is claimed.
+- Reducing the fixed maximum-size BFS allocation and validating chunk replay across larger inputs.
+- Reviewing Norm, allowed functions and global variables before submission. A successful build is not a compliance check.
 
-2. Then copies buf into the front region.
+[↑ Back to top](#top)
 
-3. **Returns** the combined string.
+<a id="resources"></a>
 
----
+## Resources
 
-### Helper Function 5 of 5: fd_end_handler
+- [Working notes](notes.md) and [saved study reports](debug/results/) document the investigation and examples.
+- [Bundled libft documentation](libft/README.md) describes the shared library.
+- [Pipex README](../2_pipex/README.md) provides the structure used here: feature status, design explanations, reproducible commands and explicit limitations.
+- Harvard CS50 lectures by David J. Malan, peer discussions and debugging references contributed to the broader learning process recorded in the previous README.
 
-#### Purpose:
+### Use of AI
 
-Handle EOF ```(read_num == 0)``` consistently:
+I use ChatGPT for explanations, alternative approaches and tradeoffs, and help
+when I am stuck. My preference is to work through the reasoning and derive an
+approach before receiving a complete solution. Questions about computation,
+hardware and algorithmic costs are part of that learning process too.
 
-- If ```stash``` contains something → return it as final ```line```
+AI also helped organise this project's files, check its build behavior and rewrite
+this README against the current source. The feature descriptions distinguish
+implemented mechanisms from unfinished requirements; AI assistance is not evidence
+that the solver is correct or ready for evaluation.
 
-- Else clean up and return ```NULL```
-
-#### Code:
-
-```c
-char	*fd_end_handler(char **stash)
-{
-	if (*stash && (*stash)[0] != '\0')
-		return (newline_ret(stash));
-	free(*stash);
-	*stash = NULL;
-	return (NULL);
-}
-```
-
-#### Note:
-
-- If ```stash``` is non-empty but has no newline, ```newline_ret()``` still returns the whole buffer as a line.
-
-	- (because ```find_len(*buf, '\n')``` becomes full length).
-
-- If stash is empty or ```NULL``` → it frees and returns ```NULL```.
-
-# Bonus version documentation (multi-fd)
-
-## File: get_next_line_bonus.c
-
-### Function: ```get_next_line``` (bonus)
-
-#### Code:
-
-```c
-char	*get_next_line(int fd)
-{
-	static char	*stash[1024];
-	char		*new_stash;	
-	ssize_t		read_num;
-	ssize_t		nl;
-
-	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
-		return (NULL);
-	while (1)
-	{
-		nl = find_len(stash[fd], '\n');
-		if (nl > 0 && stash[fd][nl - 1] == '\n')
-			return (newline_ret(&stash[fd]));
-		new_stash = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-		if (!new_stash)
-			return (NULL);
-		read_num = read(fd, new_stash, BUFFER_SIZE);
-		if (read_num < 0)
-			return (read_error(&stash[fd], new_stash));
-		new_stash[read_num] = '\0';
-		stash[fd] = gnl_strjoin(stash[fd], new_stash);
-		if (!stash[fd])
-			return (NULL);
-		if (read_num == 0)
-			return (fd_end_handler(&stash[fd]));
-	}
-}
-```
-
-## What changed vs mandatory:
-
-Instead of ```static char *stash;```, the bonus uses:
-
-```static char *stash[1024];```
-
-Each **fd gets its own independent stash**:
-
-```stash[3]```, ```stash[4]```, … each **persist** across calls
-
-This satisfies the requirement to interleave reads across fds without mixing state. 
-
-## File: get_next_line_utils_bonus.c
-
-- Same helper logic as the mandatory utilities (split/join/find_len/error handling), reused for the bonus build.
-
-# Instructions
-
-1. Open ```terminal```, ```cd``` to desired storage directory, ```git clone``` my repository, ```cd``` into the get_next_line directory.
-
-## Provided main.c (development tester)
-
-#### Note: This main.c is **NOT** meant to be submitted in the final repo.
-
-- It is included here as a convenient local tester and to document how I validated behavior.
-
-- It is also not leak-perfect - Just good enough for a quick sanity check.
-
-```c
-#include "get_next_line.h"
-#include <stdio.h>
-#include <fcntl.h> 
-
-static int gnl_atoi(char *v)
-{
-	int i = 0;
-	int a = 0;
-	while (v[i])
-	{
-		a *= 10;
-		a += v[i] - '0';
-		i ++;
-	}
-	if (!a)
-		write(1, "invalid integer\n", 4);
-	return (a);
-}
-
-int main(int c, char **v)
-{
-	int	i = 0;
-	if (c < 3)
-		return (1);
-	int fd = open(v[1], O_RDONLY); //change to '0' for stdin
-	if (fd < 0)
-		return ((write(1, "u no the allow open\n", 8)), 1);
-	int line = gnl_atoi(v[2]);
-	char *the_line = NULL;
-	while (line)
-	{
-		the_line = get_next_line(fd);
-		if (the_line == NULL)
-			return ((write(1, "finish le\n", 4)), (close(fd)), 1);
-		while (the_line[i])
-			i++;
-		write(1, the_line, i);
-		line--;
-	}	
-	free(the_line);
-	close(fd);
-}
-```
-
-## Terminal commands to compile and run program
-
-1. Compile the needed .c file using:
-
-	1. Mandatory segment: ```cc -Wall -Wextra -Werror -D BUFFER_SIZE=<INSERT_NUMBER> get_next_line.c get_next_line_utils.c get_next_line.h main.c```
-	
-	2. Bonus segment: ```cc -Wall -Wextra -Werror -D BUFFER_SIZE=<INSERT_NUMBER> get_next_line_bonus.c get_next_line_utils_bonus.c get_next_line_bonus.h main.c```
-
-2. Run program with ```./a.out``` in terminal.
-
-## Extra notes
-
-- Project can compile with or without the -D BUFFER_SIZE flag (so BUFFER_SIZE has a default in the header).
-
-# Resources
-
-## Resources used:
-
-- Optimisation by caching overlapping paths (Dynamic Programming) instead of Brute Force (e.g. BFS): https://www.youtube.com/shorts/h7EmrFyTCmw
-- How to write LaTex in GitHub Markdown, e.g. This sentence uses \$\` and \`\$ delimiters to show math inline: $`\sqrt{3x-1}+(1+x)^2`$: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions
-
-- Harvard CS50 Youtube Series (up till Linked Lists), by David J. Malan.
-- Various Stackover Flow forum Q&As, mostly for debugging error codes or finding out best practices.
-- Several posts and videos about how NOT to code (inefficiencies, silent bugs).
-- Peer-shared web-articles.
-- Of course needless to say, my peers also were great help in providing invaluable "irl" advice you can't find online :\)
-
-## Usage of A.I.
-
-- Other than Google search's own generative A.I. responses (mostly for VIM commands like :set nonu)
-- I subscribe to ChatGPT Plus, so that's the only coding "advisor" I use.
-
-### Usage of ChatGPT
-- I have a Custom Folder "Computer Science", whatever help or nerding out goes inside.
-- Things like "What 'is' computation?", or "Why is M-series Chips' designed with so much L1-I Cache?" or "Why is division so expensive", goes inside there.
-- I often ask for "many ways to do the same thing", such as 5 types of algos (hardcoding INT_MIN, fixed buffer, recursion...) and the tradeoffs.
-- I use it for help with projects, which brings me to:
-
----
-
-### ChatGPT for coding:
-
-#### Summary of A.I. usage
-
-- Lots of A.I. used, but systematic and no vibe-coding.
-
-- Explain till I understand, and (I try my best to) internalise.
-
-- Asks and learns "more than required" with A.I.
-
-- Help with README formatting and better layout and paraphrasing of concepts.
-
----
-
-
-### ChatGPT's "Computer Science" - 7 Custom Instructions:
-
-1. I am interested in computing in general rather than just trying to “score/ pass/ get the best answer or algo”, so things like theoretical computing (P=NP) or hardware and engineering (L1 Cache, Assembly) are relevant or interesting too (I.e. trivia can be given but convo should not “stray too far”). 
-
-2. In working on programming problems, especially starting on “new projects” (copy pasting questions/ projects of 42), do NOT give code or model answer immediately. 
-
-3. Assist and guide in computational thinking/ problem solving (including mathematical/ intuition simplification of presented problem). 
-
-4. This will help develop me into a problem solver/ thinker rather than a prompt engineer/ vibe-coder.
-
-5. When “stuck”, clues guiding to “derivation” of the state-of-the-art algo (e.g. sorting/ path-finding algos) can be assisted.
-
-6. Final best algo name and code should only be given “at end” or when “stuck”. 
-
-7. Make sure all (if any), generated code conforms to Norm/ norminette as per version 4 (V4).
-
----
-
-#### Example of prompts used
-
----
-
-1. (Sometimes) Clarifying subject.pdf interpretation (I'm not too good at understanding extent required of questions yet, oops)
-
-2. Of course, S.O.S. when I'm stuck/ no idea how to start, asking: "Do NOT give me any code (or solution when debugging), guide me through".
-
-3. Difference between making function prototype with ```*stash``` and ```**stash```
-
----
-
-## Contact Details
-
-##### For further queries/ help:
-
-I am Christopher Hui-Kang Nah and my 42 intra is ```hnah```.
-
-I am contactable via:
-
-1. Email: christopher_nah@yahoo.com.sg
-
-2. LinkedIn: linkedin.com/in/crispynugget/
-
-```
-42BeyondTheCode
-```
-
-##### EOF :D
+[↑ Back to top](#top)
