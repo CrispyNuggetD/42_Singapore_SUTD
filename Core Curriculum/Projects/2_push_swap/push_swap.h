@@ -13,7 +13,7 @@
 #ifndef PUSH_SWAP_H
 # define PUSH_SWAP_H
 
-# include "ryker_libft/ryker_libft.h"
+# include "libft/ryker_libft.h"
 # include <stdio.h>
 # include <unistd.h>
 

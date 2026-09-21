@@ -4,32 +4,68 @@
 
 ## Description
 
-Pipex recreates shell pipelines using Unix file descriptors and processes. The
-mandatory program behaves like:
+Pipex explores Unix pipes, file descriptors, and process creation in C. It
+connects commands with `pipe()`, starts them with `fork()` and `execve()`, and
+redirects their input and output with `dup2()`.
+
+The mandatory version connects two commands between an input and output file.
+The bonus adds multiple pipes and a here-document mode with output append.
+The implementation notes below explain the design and its current limitations.
+
+## Instructions
+
+Run the following commands from this project's directory. Building requires
+`make`, a C compiler available as `cc`, and `ar` for the bundled `libft` archive.
+The Makefile builds the library automatically; no separate installation is needed.
+
+### Build and clean
 
 ```sh
-< infile cmd1 | cmd2 > outfile
+make          # mandatory executable
+make bonus    # bonus executable
+make clean
+make fclean
+make re
 ```
 
-and is invoked as:
+Mandatory and bonus use separate entry points. The bonus implementation is in
+`*_bonus.c` and `*_bonus.h` files as required by the subject. Build markers
+also remember which version currently produced `pipex`, so repeating the same
+build does not relink and switching modes rebuilds the correct executable.
+
+### Run the mandatory version
 
 ```sh
-./pipex infile "cmd1" "cmd2" outfile
+make
+./pipex infile "grep a1" "wc -w" outfile
 ```
 
-The bonus accepts any number of commands and also supports a here-document:
+This connects the commands like the shell pipeline:
 
 ```sh
-./pipex infile "cmd1" "cmd2" ... "cmdN" outfile
-./pipex here_doc LIMITER "cmd1" "cmd2" ... "cmdN" outfile
+< infile grep a1 | wc -w > outfile
 ```
 
-These correspond to:
+The input file must exist and be readable. The output file is created if needed;
+an existing output file is truncated.
+
+### Run the bonus version
 
 ```sh
-< infile cmd1 | cmd2 | ... | cmdN > outfile
-cmd1 << LIMITER | cmd2 | ... | cmdN >> outfile
+make bonus
+./pipex infile "cat" "grep a1" "wc -l" outfile
+./pipex here_doc STOP "cat" "wc -l" outfile
 ```
+
+For `here_doc`, enter input lines followed by `STOP` on its own line. That
+limiter ends collection and is excluded from the data sent to the commands.
+The result is appended to `outfile`, preserving its existing contents.
+
+Both builds produce `./pipex`; use `make` or `make bonus` to select the version.
+Command strings currently split only on spaces. See
+[command-parsing limitations](#command-parsing-deliberately-deferred-to-minishell)
+for the deliberately unimplemented quote and tab handling, and
+[the evaluation review](wip/EVALUATION_REVIEW.md) for other known issues.
 
 ## How the mandatory pipeline works
 
@@ -199,7 +235,7 @@ builds and entirely omitted from this Pipex copy, including its declaration.
 It has not yet been reviewed and understood by the author; passing tests alone
 do not make it ready for use. `mkdir()` and `stat()` are also outside Pipex's
 allowed-function list. See
-[the file_unique API](ryker_libft/ryker_ft/file_unique/README.md) for ownership,
+[the file_unique API](libft/ryker_ft/file_unique/README.md) for ownership,
 error codes, permissions, and limitations.
 
 ### What does `unlink()` actually remove?
@@ -258,7 +294,7 @@ not guaranteed: a failed unlink can leave a temporary file behind.
 ### Reusing GNL with caller-owned state
 
 Heredoc now uses `ryker_ft_get_next_line()` from
-[`ryker_libft/ryker_ft/gnl_status`](ryker_libft/ryker_ft/gnl_status/README.md).
+[`libft/ryker_ft/gnl_status`](libft/ryker_ft/gnl_status/README.md).
 Its header is `ryker_ft_get_next_line.h`, exposed through the library umbrella.
 
 ```c
@@ -404,9 +440,9 @@ operation, while the exit status communicates the program's chosen outcome.
 The main change implements **behavior 1 of the six-part PATH study plan**:
 try a later executable when an earlier candidate is not executable. Supporting
 it also required limited permission-error retention and a stop/continue rule.
-It would therefore be inaccurate to say that behaviors 2 and 3 are untouched,
-or that all six behaviors are complete. These six items are subdivisions of
-PATH-search task (3) in the older checkpoint, not six separate subject tasks.
+The subsequent study steps completed the six-item checklist for the agreed
+Pipex scope documented below. These six items are subdivisions of PATH-search
+task (3) in the older checkpoint, not six separate subject tasks.
 
 ### What changed from the previous implementation?
 
@@ -490,8 +526,9 @@ successfully execute the program.
 
 ### Current retry and reporting rules
 
-- If the `F_OK` precheck fails, free this candidate and continue.
-- If `execve()` fails with `EACCES`, retain the first denied candidate and
+- If the `F_OK` precheck fails with an error other than `EACCES`, free this
+  candidate and continue.
+- If either the precheck or `execve()` fails with `EACCES`, retain the first denied candidate and
   continue. Free later denied candidates rather than replacing the first.
 - If `execve()` fails with another error, save that error, replace any retained
   denied path with this candidate, and return `EXEC_FAILED` immediately.
@@ -538,39 +575,127 @@ missing, normal explicit execution, and missing explicit execution. The two-deni
 check required exactly one diagnostic naming the first path. Changed C files and
 the header passed Norm. These checks are not a full leak, FD, or failure audit.
 
+### Agreed Pipex scope
+
+For this study, keep the current stop/continue policy: skip candidates whose
+existence check fails, remembering the first permission denial; after an
+execution attempt, retry only `EACCES` and report other errors immediately.
+Behavior 3 is reviewed for this agreed scope; no broader retry policy is planned
+in this step. The six behaviors are a learning checklist, not six mandatory
+requirements from the Pipex subject.
+
+This policy does not attempt full shell compatibility. In particular, if a
+candidate disappears between `access()` and `execve()`, or execution fails because
+its interpreter is missing, the execution error stops the search even if a later
+candidate could work. Broader error classification, filesystem-race handling,
+`ENOEXEC` shell-script fallback, and shell quoting are outside this step.
+This scope decision does not establish complete subject compliance.
+
+### Command parsing deliberately deferred to Minishell
+
+Shell-style single/double quote parsing and tab-separated arguments are
+explicitly not implemented in this Pipex version. These are deferred to my
+Minishell work as a learning-scope decision. Currently, `execute_command()`
+uses `ft_split(command_str, ' ')`: only literal spaces separate arguments,
+and quote characters are not interpreted or removed.
+
+For example, `"grep a1"` works because the invoking shell removes the outer
+quotes before Pipex receives the command string. By contrast, `"grep 'apple a1'"`
+contains inner quotes that Pipex does not parse, and a tab between `grep` and
+`a1` is not treated as a separator. Both cases differ from Bash in local tests.
+Documenting this limitation does not make it an exemption from the subject's
+shell-equivalence requirements or guarantee acceptance during evaluation.
+
+### Why use `path = ""` when PATH is missing?
+
+`path_value()` returns `NULL` when the environment has no `PATH` variable.
+Returning `COMMAND_NOT_FOUND` there would skip searching entirely, even when
+the requested executable exists in the current directory.
+
+Instead, `path = ""` feeds one empty entry into `split_path_empty_as_dot()`.
+The splitter converts that entry to `.`, so both unset PATH and `PATH=""`
+search the current directory. This does not add `/bin` or `/usr/bin` as defaults.
+Commands containing `/` still use the direct-path branch before PATH lookup.
+The empty string is a borrowed literal: the splitter reads it and allocates
+the directory strings separately; the literal itself is neither modified nor freed.
+
+This choice matches the tested local Bash 5.1.16 behavior with PATH explicitly
+unset inside the shell. Unsetting it inside Bash avoids confusing this behavior
+with the default PATH Bash may assign during startup. A missing command still
+returns `COMMAND_NOT_FOUND` after the current-directory search is exhausted;
+a denied candidate follows the existing permission-error policy.
+
 ### What remains from the six-part study plan?
 
 | Behavior | Current scope and remaining work |
 |---|---|
 | 1. Try later candidates | Implemented for permission-denied execution attempts, including an earlier directory; later usable commands can run. |
-| 2. Remember permission failures | Partly implemented: retain the first `execve()` EACCES. Permission failures from the F_OK precheck are still discarded. |
-| 3. Decide when to stop | A limited policy exists: retry EACCES, stop on other execve errors. Broader error cases and reference-shell comparisons remain. |
-| 4. Preserve empty PATH entries | Not implemented. `ft_split()` still drops leading, trailing, and consecutive empty entries that should represent the current directory. |
-| 5. Define empty/missing PATH behavior | Unchanged: both currently lead to not found for a plain command name. Deliberate reference-shell checks remain. |
-| 6. Preserve allocation handling and cleanup | Existing allocation errors remain separate from not found, and discarded/retained paths have cleanup paths. The changed search still needs allocation-failure injection and a full ownership audit. |
+| 2. Remember permission failures | Implemented for `EACCES` from both `access()` and `execve()`. Real filesystem checks pass in mandatory and bonus builds, including inaccessible directories and first-denied reporting. |
+| 3. Decide when to stop | Reviewed for the agreed Pipex scope above: retry `EACCES`, stop on other `execve()` errors. |
+| 4. Preserve empty PATH entries | Implemented by `split_path_empty_as_dot()`: leading, trailing, and consecutive empty entries become `.`. Seven focused PATH lookup cases, build, and changed-file Norm checks passed. |
+| 5. Define empty/missing PATH behavior | Implemented: both empty and unset PATH search the current directory, matching the focused local Bash 5.1.16 comparison. Slash-containing commands bypass PATH lookup. |
+| 6. Preserve allocation handling and cleanup | Completed for PATH lookup and its execution-error caller: ownership reviewed, every allocation position injected across ten scenarios, and Valgrind clean. Details below. |
 
-In particular, an inaccessible directory may make the F_OK precheck fail with
-permission denied, which is currently treated like any other failed precheck.
-Filesystem changes between checking and executing can also change the result.
-There is no ENOEXEC shell-script fallback, and command splitting still does not
-implement shell quoting. Full Bash equivalence is outside this study step.
+An inaccessible directory can make the `F_OK` precheck fail with permission
+denied; this now retains the first denied candidate just like an `execve()`
+permission failure. Full Bash equivalence remains outside this study step.
 
-## Build
+### PATH allocation and ownership audit (2026-09-21)
 
-```sh
-make          # mandatory executable
-make bonus    # bonus executable
-make clean
-make fclean
-make re
-```
+The directory array is zero-initialized, so a failed entry allocation leaves a
+NULL terminator for partial-array cleanup. Candidate construction frees its
+intermediate prefix even if the second join fails. If a later allocation fails
+after a denied candidate was retained, that candidate is freed and the output
+pointer is cleared. The resolver then frees the directory array and sets ENOMEM.
+The caller frees its command arguments and exits 1, rather than reporting
+command not found.
 
-Mandatory and bonus use separate entry points. The bonus implementation is in
-`*_bonus.c` and `*_bonus.h` files as required by the subject. Build markers
-also remember which version currently produced `pipex`, so repeating the same
-build does not relink and switching modes rebuilds the correct executable.
+A candidate is either freed by the helper or transferred to the failure-path
+output. Later denied candidates are freed; a terminal error frees the previously
+retained path before replacing it. On failure the caller reports and frees the
+retained path. Successful execve replaces the process and its address space.
 
-## Use of AI
+A temporary C harness linked the actual splitter, resolver, candidate helper,
+execution caller, and libft. Wrapped allocation calls failed each allocation
+position in turn; wrapped access/execve calls supplied deterministic outcomes.
+Ten scenarios covered missing candidates, access and execve permission denial,
+multiple denied candidates, denial followed by missing or terminal failure,
+missing interpreters, empty entries, empty/unset PATH, and direct paths.
+The harness checked 65 resolver allocation failures and 85 caller allocation
+failures, including ENOMEM, cleared output pointers, exit status 1, and no live
+allocations or invalid frees. Valgrind reported 785 allocations and 785 frees,
+zero bytes remaining, and zero errors.
+
+Eight separate real filesystem cases passed for both mandatory and bonus builds:
+inaccessible then usable, inaccessible then missing, non-executable then usable,
+two non-executable candidates, directory then usable, all missing, non-executable
+then missing, and inaccessible then non-executable. Success emitted no earlier
+permission diagnostic; failed searches reported the first denied path once.
+Changed C files and the header passed Norminette. Test harnesses and logs remain
+outside the repository in `/tmp/pipex-path-audit/`.
+
+This completes item 6 for PATH handling. It is not a full pipeline, file-descriptor,
+heredoc, or process-failure audit, nor a claim of full shell compatibility.
+
+## Resources
+
+### References
+
+- System-call manuals: `man 2 pipe`, `man 2 fork`, `man 2 dup2`,
+  `man 2 execve`, `man 2 open`, `man 2 waitpid`, and `man 2 unlink`.
+- [GNU Bash: redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+  for input/output redirection and here-documents.
+- [GNU Bash: invocation](https://www.gnu.org/software/bash/manual/html_node/Invoking-Bash.html)
+  for the shell modes used in reference tests.
+- [GNU Bash: exit status](https://www.gnu.org/s/bash/manual/html_node/Exit-Status.html)
+  for interpreting command results.
+- [Zsh: redirection](https://zsh.sourceforge.io/Doc/Release/Redirection.html)
+  for the shell comparisons discussed in the technical notes.
+- [Bundled libft documentation](libft/README.md), including
+  [GNL state and cleanup](libft/ryker_ft/gnl_status/README.md) and
+  [temporary-file creation](libft/ryker_ft/file_unique/README.md).
+
+### Use of AI
 
 AI helped me scaffold the initial project in the style of my FdF repository,
 call and edit functions under my direction, test edge cases, and check the code

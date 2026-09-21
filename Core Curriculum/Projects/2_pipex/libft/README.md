@@ -3,7 +3,7 @@
 # Ryker libft
 
 An expanded library of completed 42 projects and reusable custom extensions.
-`Projects/ryker_libft` is the master package copied into consuming projects;
+`Projects/libft` is the master package copied into consuming projects;
 `Projects/0_libft` remains the base project archive.
 
 ## Component index
@@ -34,6 +34,7 @@ Small independent helpers live directly in `ryker_ft/`.
 | Function | Contract |
 | --- | --- |
 | [`ryker_ft_isspace`](ryker_ft/ryker_ft_isspace.c) | Recognizes only `' '`, preserving push_swap's original behavior; it is not a full whitespace classifier. |
+| [`ryker_ft_free_str_array`](ryker_ft/ryker_ft_free_str_array.c) | Frees each string in a NULL-terminated allocated array, then the array itself. Accepts `NULL`; does not reset the caller's pointer. |
 
 ## Build and integration
 
@@ -47,17 +48,17 @@ Small independent helpers live directly in `ryker_ft/`.
 The Makefile compiles the components into separate object directories and
 archives their objects together. It does not embed archives inside archives.
 
-Copy the usable `ryker_libft/` sources into a consuming project, excluding WIP.
+Copy the usable `libft/` sources into a consuming project, excluding WIP.
 In particular, omit `ryker_ft/file_unique/ryker_ft_create_open_unique_file_in_dir.c`
 from Pipex. Its Makefile
-should invoke `$(MAKE) -C ryker_libft` and link `ryker_libft/libft.a`.
+should invoke `$(MAKE) -C libft` and link `libft/libft.a`.
 From a project header inside `includes/`, include:
 
 ```c
-#include "../ryker_libft/ryker_libft.h"
+#include "../libft/ryker_libft.h"
 ```
 
-For a header at the project root, use `"ryker_libft/ryker_libft.h"`.
+For a header at the project root, use `"libft/ryker_libft.h"`.
 The umbrella header includes component headers through relative paths, so
 consumers need no additional include paths into library subdirectories.
 Headers supply declarations; `libft.a` supplies implementations for linking.
@@ -67,7 +68,7 @@ Rebuild consumers after updating their library copies. Do not copy `obj/` or
 
 ## Adding a custom component
 
-1. Develop the component in the master `Projects/ryker_libft` package.
+1. Develop the component in the master `Projects/libft` package.
 2. Put related sources and their public header in `ryker_ft/<customization>/`.
    Keep a small independent helper directly in `ryker_ft/` when appropriate.
 3. Expose the public header or helper declaration through `ryker_ft/ryker_ft.h`.
@@ -104,8 +105,19 @@ details and test evidence in the linked component documentation.
 | 2026-09-18 | `file_unique` | Extracted exclusive file creation from Pipex, fixed failure cleanup and counter overflow, and retained a separate directory wrapper as WIP (not built or included in Pipex). See [contract and tests](ryker_ft/file_unique/README.md). |
 | 2026-09-18 | `gnl_status` | Added caller-owned GNL state, line/EOF/error results, and cleanup; integrated it into Pipex heredoc. See [API and validation](ryker_ft/gnl_status/README.md). |
 | 2026-09-18 | Original GNL | Removed the mandatory FD cap and fixed the bonus array guard. Documented FD-limit research and successful ASan/UBSan checks using LLVM. See [bounds update](1_get_next_line/README.md#post-submission-update-file-descriptor-limits). |
+| 2026-09-17 | String-array cleanup | Added `ryker_ft_free_str_array` for shared cleanup in Pipex. |
 | 2026-09-14 | `printf_fd` | Added configurable output for Pipex while retaining the formatter's algorithms and standard-output default. See [printf update](1_ft_printf/README.md#post-submission-update-custom-fd-and-ryker-libft). |
 
 AI assistance with implementation, documentation, and validation is described in
 the core-project and component notes. Each extension's limitations remain part
 of its documented contract.
+
+## Package naming update (2026-09-21)
+
+The expanded package directory is `libft/`. Its umbrella header remains
+`ryker_libft.h`, while the original base header remains `0_libft/libft.h`.
+Their distinct include guards avoid collisions. Consumers include
+`libft/ryker_libft.h` (or `../libft/ryker_libft.h` from an includes directory).
+The archive is still `libft.a`; the original base API is unchanged.
+See the [printf initialization update](1_ft_printf/README.md#post-submission-update-explicit-struct-initialization)
+for the synchronized post-submission formatter change.

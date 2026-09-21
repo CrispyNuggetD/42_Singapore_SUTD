@@ -1,6 +1,6 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
-> Post-submission update (2026-09-14): this directory remains the original base libft project. My expanded library for later projects is maintained separately as `ryker_libft`. See [Expanded Ryker libft](#post-submission-update-expanded-ryker-libft) below.
+> Post-submission update (2026-09-14): this directory remains the original base libft project. My expanded library for later projects is maintained separately as `libft`. See [Expanded Ryker libft](#post-submission-update-expanded-ryker-libft) below.
 
 # Description
 
@@ -480,7 +480,7 @@ Date: 2026-09-14. The earlier sections describe the original libft project.
 ### Original project and expanded package
 
 `Projects/0_libft` remains the base project archive, with its base-only Makefile.
-The expanded library is maintained separately in [Projects/ryker_libft](../ryker_libft/README.md).
+The expanded library is maintained separately in [Projects/libft](../libft/README.md).
 This makes the distinction between the submitted project and later additions visible.
 For later 42 projects whose subjects permit an expanded libft, I use this package;
 the permitted functions and library use still depend on each project's subject.
@@ -489,7 +489,7 @@ the permitted functions and library use still depend on each project's subject.
 Projects/
 ├── 0_libft/                 Original base project
 ├── 1_ft_printf/             Printf project, with documented FD update
-└── ryker_libft/             Expanded master package
+└── libft/             Expanded master package
     ├── Makefile
     ├── 0_libft/             Base libft functions
     ├── 1_ft_printf/         Bonus printf with FD support
@@ -512,23 +512,23 @@ The original libft function bodies are not rewritten by this packaging change.
 
 ### Building and copying the package
 
-Copy the whole `ryker_libft/` directory into the consuming project, keeping its
+Copy the whole `libft/` directory into the consuming project, keeping its
 name. Pipex, FdF and Push_swap now use this layout. Keep project-only code outside
 the package so later replacements do not overwrite it.
 
-The consuming Makefile invokes `$(MAKE) -C ryker_libft` and links
-`ryker_libft/libft.a`.
+The consuming Makefile invokes `$(MAKE) -C libft` and links
+`libft/libft.a`.
 
 Include the package header from a project header in `includes/`:
 
 ```c
-#include "../ryker_libft/ryker_libft.h"
+#include "../libft/ryker_libft.h"
 ```
 
-For a project header at the project root, use `"ryker_libft/ryker_libft.h"`.
+For a project header at the project root, use `"libft/ryker_libft.h"`.
 The package header includes its component headers through relative paths, so
 consumers need no include search paths into package subdirectories. Headers
-provide declarations for compilation; `ryker_libft/libft.a` supplies implementations
+provide declarations for compilation; `libft/libft.a` supplies implementations
 for linking. The package Makefile manages its own internal compiler include paths.
 
 The package master Makefile compiles base libft, bonus printf, ordinary GNL and

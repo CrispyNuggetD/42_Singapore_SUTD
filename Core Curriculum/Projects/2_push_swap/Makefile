@@ -8,7 +8,7 @@ CC			= cc
 CFLAGS		= -Wall -Wextra -Werror
 RM			= rm -f
 
-LIBFT_DIR	= ryker_libft
+LIBFT_DIR	= libft
 LIBFT		= $(LIBFT_DIR)/libft.a
 
 INCLUDES = -I.

@@ -14,7 +14,7 @@
 # define FDF_H
 
 # include "mlx.h"
-# include "../ryker_libft/ryker_libft.h"
+# include "../libft/ryker_libft.h"
 # include <math.h>
 # include <stdlib.h>
 # include <unistd.h>

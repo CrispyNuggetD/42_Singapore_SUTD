@@ -17,7 +17,8 @@ int	print_usage(t_usage_message_id message_id)
 	if (message_id == USAGE_MANDATORY)
 		ryker_ft_printf_fd(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n");
 	else if (message_id == USAGE_HEREDOC)
-		ryker_ft_printf_fd(2, "Usage: ./pipex here_doc LIMITER cmd... outfile\n");
+		ryker_ft_printf_fd(2,
+			"Usage: ./pipex here_doc LIMITER cmd... outfile\n");
 	else if (message_id == USAGE_BONUS)
 		ryker_ft_printf_fd(2, "Usage: ./pipex infile cmd... outfile\n");
 	return (1);

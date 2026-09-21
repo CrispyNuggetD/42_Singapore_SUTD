@@ -6,7 +6,7 @@ CFLAGS := -Wall -Wextra -Werror
 SRC_DIR := src
 OBJ_DIR := obj
 INC_DIR := includes
-LIBFT_DIR := ryker_libft
+LIBFT_DIR := libft
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME), Darwin)

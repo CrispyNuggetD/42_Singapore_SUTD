@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
- 
+
 int	main(int argc, char **argv, char **envp)
 {
 	t_pipeline	pipeline;
@@ -25,7 +25,8 @@ int	main(int argc, char **argv, char **envp)
 	init_pipeline(&pipeline);
 	if (heredoc_exists && open_files_with_heredoc(&pipeline, argc, argv) != 0)
 		return (close_pipeline(&pipeline));
-	else if (!heredoc_exists && open_files_no_heredoc(&pipeline, argc, argv) != 0)
+	else if (!heredoc_exists
+		&& open_files_no_heredoc(&pipeline, argc, argv) != 0)
 		return (close_pipeline(&pipeline));
 	return (run_pipeline(&pipeline, argv, envp));
 }

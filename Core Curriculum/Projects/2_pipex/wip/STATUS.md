@@ -1,3 +1,55 @@
+## Printf copies and header layout synchronized (2026-09-21)
+
+- Updated the standalone printf helper as well as the four expanded-library
+  copies; added dated post-submission notes and validation to all printf READMEs.
+- Restored ryker_libft.h as the umbrella and 0_libft/libft.h as the base header.
+  Package directories remain libft; consumer includes and Makefiles agree.
+- Standalone printf: nine mandatory and twenty bonus comparisons passed.
+  Each expanded-library copy passed twenty comparisons; Pipex (both builds),
+  FdF, push_swap, and master-library builds pass. Pipex full Norm and the
+  standalone changed-helper Norm pass. Mandatory binaries/archives restored.
+
+---
+
+## Printf initialization correction (2026-09-21)
+
+- Replaced two compound-literal struct assignments with ft_memset calls in
+  all four library copies, preserving the pad-character and FD defaults.
+- Twenty printf output/return checks passed per copy; both Pipex builds pass.
+- Neither Pipex binary imports external memcpy or memset anymore under the
+  current campus compiler/build flags. Helper Norm and eight runtime checks pass.
+
+---
+
+## Norm formatting cleanup (2026-09-21)
+
+- Fixed long lines and blank-line whitespace in usage_printer.c/main_bonus.c,
+  plus the header width in ryker_ft_free_str_array.c. No behavior changes.
+- Full Norminette check over src, includes, and libft passes.
+- Mandatory and bonus builds pass; mandatory binary restored.
+- Remaining evaluation findings are in EVALUATION_REVIEW.md.
+
+---
+
+## PATH study checklist completed for agreed scope (2026-09-21)
+
+- Items 1/2: retry later candidates and retain the first permission denial from
+  either access or execve; verified with real inaccessible-directory cases.
+- Item 3: reviewed limited retry policy; stop on non-EACCES execve errors.
+- Items 4/5: empty entries become dot; both empty and unset PATH search the
+  current directory. Explicit paths bypass lookup.
+- Item 6: PATH ownership audit and allocation-failure injection completed:
+  65 resolver failures and 85 execution-caller failures over ten scenarios.
+  ENOMEM, NULL output on allocation failure, status 1, and cleanup verified.
+  Valgrind: 785 allocations/frees, zero remaining bytes, zero errors.
+- Mandatory and bonus builds each passed eight real filesystem retry/reporting
+  cases; changed C files/header passed Norm. Mandatory binary restored afterward.
+- README records the scope and validation. Temporary harnesses/logs are in
+  /tmp/pipex-path-audit/. Broader pipeline/FD/heredoc audits remain separate.
+- Older entries below describe historical checkpoints.
+
+---
+
 ## Current reapplication onto 42 edits (2026-09-21)
 
 - Reapplied the discussed candidate retries while retaining upstream names:

@@ -2,6 +2,7 @@
 
 > Post-submission update (2026-09-14): printf now supports a configurable output FD for reuse in Pipex. See [Post-submission update: custom FD and Ryker libft](#post-submission-update-custom-fd-and-ryker-libft) for the changes from the submitted implementation.
 
+> Post-submission update (2026-09-21): struct initialization now uses our own `ft_memset`. See [the initialization update](#post-submission-update-explicit-struct-initialization).
 # Description
 
 - This project recodes a *somewhat relatively* functional ```printf()``` function as per found in ```<stdio.h>```.
@@ -981,3 +982,31 @@ The package builds the bonus variant. Its printf header uses a relative include 
 The original formatter remains the basis of this code. AI assisted with the post-submission argument-forwarding refactor, FD-setting function, custom wrapper, build integration and this documentation, under my direction. These additions should not be confused with the original submitted implementation.
 
 Build and Norm checks do not by themselves establish identical behavior on every platform. In particular, the original numeric helpers' `va_list` handling is retained; campus-environment regression testing remains relevant when moving between architectures.
+
+## Post-submission update: explicit struct initialization
+
+Date: 2026-09-21. This is a change after submission, separate from the original
+formatter described above.
+
+The print/context initializers now use `ft_memset(ptr, 0, sizeof(*ptr))` instead
+of assigning a zero-initialized compound literal. With the campus Clang build,
+the old struct assignments generated external `memset` and `memcpy` calls.
+Calling our own `ft_memset` directly removes those imports from the Pipex
+binaries under the tested build flags. No copy is needed, so `ft_memcpy` is not
+used in these initializers. The space padding character and configured output
+FD are still assigned after clearing the structs.
+
+This change is synchronized across the standalone printf project and the four
+expanded-library copies: master, Pipex, FdF, and push_swap. It does not add format
+specifiers or change the intended output/return-value behavior. AI assisted with
+the symbol inspection, mechanical edits, and focused regression checks under my
+direction. These edits are not claimed to be part of the original submission.
+
+Validation on the campus compiler: the standalone mandatory build passed nine
+output/return-value comparisons with standard printf; its bonus build and each
+of the four expanded-library copies passed twenty. Cases cover empty/literal
+output, characters including NUL, strings, integer limits, hex, and pointers;
+bonus checks also cover padding, precision, signs, and alternate form. Both
+Pipex builds, FdF, push_swap, and the master library build passed. The changed
+helper passes Norminette. These are focused regression checks, not an exhaustive
+printf-conformance audit or a claim about the original submitted binary.

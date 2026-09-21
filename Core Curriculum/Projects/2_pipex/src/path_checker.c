@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 15:41:45 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 16:45:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,8 @@ t_path_result	attempt_possible_candidates(char **args, char **envp,
 		return (copy_direct_path(args[0], exec_fail_path));
 	path = path_value(envp);
 	if (!path)
-		return (COMMAND_NOT_FOUND);
-	directories = ft_split(path, ':');
+		path = "";
+	directories = split_path_empty_as_dot(path);
 	if (!directories)
 	{
 		errno = ENOMEM;

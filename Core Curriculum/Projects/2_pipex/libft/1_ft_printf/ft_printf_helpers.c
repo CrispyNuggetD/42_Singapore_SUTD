@@ -21,13 +21,13 @@
 
 void	ft_printf_init_t_print(t_print *paper)
 {
-	*paper = (t_print){0};
+	ft_memset(paper, 0, sizeof(*paper));
 	paper->pad_char = ' ';
 }
 
 void	ft_printf_init_t_context(t_context *context)
 {
-	*context = (t_context){0};
+	ft_memset(context, 0, sizeof(*context));
 	context->fd = ft_printf_fd_setting(-1);
 }
 
@@ -71,22 +71,8 @@ int	is_numeric_conv(int conversion)
 // && is_numeric(spec->conversion)
 // Needed as precision suppresses 0 padding only for numeric conversions
 
-/* 
-Compound literal (t_print){0} creates a temporary t_print value.
-Because of {0}, the first field is init 0, 
-and all the rest become 0 too.
-
-This simplistic init is same as:
-static void	init_t_print(t_print *paper)
-{
-	paper->sign = 0;
-	paper->prefix = NULL;
-	paper->prefix_len = 0;
-	paper->core = NULL;
-	paper->core_len = 0;
-	paper->prec_zeros = 0;
-	paper->pad_len = 0;
-	paper->pad_char = ' ';
-	paper->left = 0;
-}
+/*
+Clear the destination directly with our own ft_memset. A zero-initialized
+compound literal followed by struct assignment can generate external memset
+and memcpy calls with the campus compiler. Restore nonzero defaults afterward.
 */
