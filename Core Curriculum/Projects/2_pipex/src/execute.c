@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 13:49:26 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 14:49:58 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,13 +40,13 @@ static int	exec_failure_status(char *path, int saved_errno)
 	return (126);
 }
 
-static void	exec_failure(char *path, char **args, int saved_errno)
+static void	exec_failure_error(char *path, char **args, int saved_errno)
 {
 	int	status;
 
 	status = exec_failure_status(path, saved_errno);
 	errno = saved_errno;
-	perror(args[0]);
+	perror(path);
 	free(path);
 	ryker_ft_free_str_array(args);
 	exit(status);
@@ -63,11 +63,12 @@ void	execute_command(char *command_str, char **envp)
 		exit_perror("malloc", 1);
 	if (!args[0])
 		command_not_found(NULL, args);
-	result = resolve_path(args[0], envp, &command_path);
+	result = attempt_possible_candidates(args, envp, &command_path);
 	if (result == PATH_ERROR)
 		path_lookup_error(args);
 	if (result == PATH_NOT_FOUND)
 		command_not_found(args[0], args);
-	execve(command_path, args, envp);
-	exec_failure(command_path, args, errno);
+	if (result == DIRECT_PATH_SUPPLIED)
+		execve(command_path, args, envp);
+	exec_failure_error(command_path, args, errno);
 }

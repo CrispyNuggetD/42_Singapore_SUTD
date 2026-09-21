@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 13:49:27 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 14:49:51 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,27 +39,28 @@ static char	*join_command(char *directory, char *command)
 	return (path);
 }
 
-static t_path_result	search_directories(char **directories, char *command,
+static t_path_result	search_directories(char **directories, char **args, char **envp,
 		char **command_path)
 {
-	int	i;
+	char	*candidate_command;
+	int		i;
+
 
 	i = 0;
 	while (directories[i])
 	{
-		*command_path = join_command(directories[i], command);
-		if (!*command_path)
+		candidate_command = join_command(directories[i++], args[0]);
+		if (!candidate_command)
+		{
+			free(*command_path);
+			*command_path = NULL;
 			return (PATH_ERROR);
-		if (access(*command_path, F_OK) == 0)
-			return (PATH_FOUND);
-		free(*command_path);
-		*command_path = NULL;
-		i++;
+		}
 	}
 	return (PATH_NOT_FOUND);
 }
 
-static t_path_result	copy_command_path(char *command, char **command_path)
+static t_path_result	copy_direct_path(char *command, char **command_path)
 {
 	*command_path = ft_strdup(command);
 	if (!*command_path)
@@ -67,18 +68,18 @@ static t_path_result	copy_command_path(char *command, char **command_path)
 		errno = ENOMEM;
 		return (PATH_ERROR);
 	}
-	return (PATH_FOUND);
+	return (DIRECT_PATH_SUPPLIED);
 }
 
-t_path_result	resolve_path(char *command, char **envp, char **command_path)
+t_path_result	resolve_path(char **args, char **envp, char **command_path)
 {
 	char			**directories;
 	char			*path;
 	t_path_result	result;
 
 	*command_path = NULL;
-	if (ft_strchr(command, '/'))
-		return (copy_command_path(command, command_path));
+	if (ft_strchr(args[0], '/'))
+		return (copy_direct_path(args[0], command_path));
 	path = path_value(envp);
 	if (!path)
 		return (PATH_NOT_FOUND);
@@ -88,7 +89,7 @@ t_path_result	resolve_path(char *command, char **envp, char **command_path)
 		errno = ENOMEM;
 		return (PATH_ERROR);
 	}
-	result = search_directories(directories, command, command_path);
+	result = search_directories(directories, args, envp, command_path);
 	ryker_ft_free_str_array(directories);
 	if (result == PATH_ERROR)
 		errno = ENOMEM;
