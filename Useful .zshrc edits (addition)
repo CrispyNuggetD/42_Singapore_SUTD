@@ -75,8 +75,7 @@
 # PROJECTS_ROOT is relative to MAIN_REPO_ROOT, e.g. "Core Curriculum/Projects".
 # curproj enters MAIN_REPO_ROOT/PROJECTS_ROOT/current_proj, runs make fclean,
 # then code --reuse-window .; it returns early if either command fails.
-# It also displays local Git history. The main-repo history lookup currently
-# uses "Projects/$current_proj"; that legacy path may miss a differently nested project.
+# It also displays local Git history using PROJECTS_ROOT/current_proj.
 # cdmain enters MAIN_REPO_ROOT.
 # syncproj runs git pull and displays status. If changes exist, it stages ALL
 # changes, asks for a commit title/body, commits, and pushes. Its Git steps do
@@ -298,13 +297,13 @@ curproj() {
     echo "Not a git repo here (no .git found)."
   fi
 
-  # --- Local main-repo history for the legacy Projects/<project> path ---
+  # --- Local main-repo history for the configured project path ---
   if [ -d "$MAIN_REPO_ROOT/.git" ]; then
     # Get last commit in main repo that touched this project folder
     local last_sync_line
     last_sync_line=$(git -C "$MAIN_REPO_ROOT" log -1 \
       --pretty="%h %s (%cr)" \
-      -- "Projects/$current_proj" 2>/dev/null)
+      -- "$PROJECTS_ROOT/$current_proj" 2>/dev/null)
 
     if [ -n "$last_sync_line" ]; then
       echo "Last sync to main repo (GitHub) for this project:"
@@ -314,7 +313,7 @@ curproj() {
       local last_sync_date today yesterday
       last_sync_date=$(git -C "$MAIN_REPO_ROOT" log -1 \
         --date=short --pretty="%cd" \
-        -- "Projects/$current_proj" 2>/dev/null)
+        -- "$PROJECTS_ROOT/$current_proj" 2>/dev/null)
 
       today=$(date +%Y-%m-%d)
       yesterday=$(date -d 'yesterday' +%Y-%m-%d)
