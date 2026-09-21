@@ -1,3 +1,51 @@
+## Reapplied after upstream renames (2026-09-21)
+
+- Pulled upstream through 24f497d and reapplied the PATH retry study changes.
+- Preserved upstream names: command_str is the full input command,
+  command_path is the selected/retained executable path, and path in
+  resolve_path is the PATH environment value.
+- Execution errors now use perror(path), identifying the retained failed
+  candidate. Command-not-found diagnostics still use the command name.
+- Revalidation: mandatory and bonus builds each passed nine focused checks,
+  including two denied candidates reporting only the first path. Changed C
+  files and header passed Norm; git diff --check passed.
+
+---
+
+## Study naming clarification (2026-09-21)
+
+- Replaced the overloaded PATH_FOUND result with explicit outcomes:
+  PATH_READY means an explicit path is ready for the caller to execute;
+  EXEC_FAILED means stop and report the retained execution error.
+- The candidate helper returns SEARCH_CONTINUE when another directory should
+  be tried. PATH_NOT_FOUND is reserved for the overall lookup result.
+- Successful execve never returns any result. The retry policy is unchanged.
+
+---
+
+## Latest study step — retry later PATH candidates (2026-09-20)
+
+- Implemented behavior (1) of the six-item study breakdown: attempt execution
+  during PATH search and continue after EACCES, so an earlier non-executable
+  file or directory does not hide a later usable executable.
+- `search_directories()` builds one candidate at a time; `try_path_candidate()`
+  attempts execution. Successful execve replaces the child and never returns.
+- The first denied candidate is retained for the final diagnostic if no later
+  candidate works. Other execve errors stop the search, preserving the prior
+  failure classification. This is a limited retry policy, not the full error
+  policy planned in behaviors (2)/(3).
+- `resolve_path()` now takes the full argument array. For PATH searches,
+  EXEC_FAILED means a failed execution's path and errno are available for final
+  reporting; explicit slash-containing paths are still executed by the caller.
+- Existing F_OK prechecks remain: inaccessible candidates that fail that check
+  are still skipped. Empty entries and empty/missing PATH are unchanged.
+- Mandatory and bonus builds each passed seven focused checks: denied then
+  usable, directory then usable, first usable wins, denied then missing,
+  explicit denied path, all missing, and normal explicit execution.
+- Changed C files and header passed Norm. No full leak/FD audit performed.
+
+---
+
 ## Latest resume point — execution-error classification
 
 - Task (2) is implemented for the agreed Pipex scope: preserve the execve

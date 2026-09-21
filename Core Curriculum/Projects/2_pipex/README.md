@@ -394,10 +394,167 @@ These results describe the tested reference shell; edge-case behavior can vary
 between shells and versions. The scoped execution-error classification is implemented and tested against
 local Bash 5.1.16. It preserves the original system diagnostic; custom Bash
 wording and script fallback are outside this change. Its post-failure existence
-check can race with filesystem changes. PATH-search improvements remain
-pending, tracked in [wip/STATUS.md](wip/STATUS.md).
+check can race with filesystem changes. The first PATH-search improvement is
+now implemented below; remaining work is tracked in [wip/STATUS.md](wip/STATUS.md).
 The distinction guiding that work is that the error code describes the failed
 operation, while the exit status communicates the program's chosen outcome.
+
+## PATH search: trying later candidates (2026-09-21)
+
+The main change implements **behavior 1 of the six-part PATH study plan**:
+try a later executable when an earlier candidate is not executable. Supporting
+it also required limited permission-error retention and a stop/continue rule.
+It would therefore be inaccurate to say that behaviors 2 and 3 are untouched,
+or that all six behaviors are complete. These six items are subdivisions of
+PATH-search task (3) in the older checkpoint, not six separate subject tasks.
+
+### What changed from the previous implementation?
+
+Previously, `search_directories()` returned the first candidate for which
+`access(candidate, F_OK)` succeeded. `F_OK` checks existence, not executable
+permission. `execute_command()` then attempted that single path and exited if
+execution failed. An earlier existing file could hide a later usable command.
+
+For example, with PATH `/first:/second` and command `hello world`:
+
+| Candidate | State | Previous behavior | Current behavior |
+|---|---|---|---|
+| `/first/hello` | Exists without execute permission | Select it, fail execution, exit 126 | Remember the permission failure and continue |
+| `/second/hello` | Executable program | Never reached | Execute it with `world` as its argument |
+
+Execution attempts now happen inside the directory search. We did not merely
+replace `F_OK` with `X_OK`: an execute-permission check alone cannot establish
+that loading the program will succeed. The existing `F_OK` precheck remains,
+with the limitations described below.
+
+### Follow one command through the functions
+
+1. `execute_command()` splits `command_str` into `args`. For `hello world`,
+   `args[0]` is `hello`, followed by the argument `world` and a NULL terminator.
+2. It passes the whole argument array to `resolve_path()`. The search needs
+   both `args` and `envp` because it now calls `execve()`.
+3. If `args[0]` contains `/`, `resolve_path()` copies that explicit path and
+   returns `PATH_READY`. The caller executes it once without searching PATH.
+4. Otherwise, `resolve_path()` retrieves the PATH value into its local `path`,
+   splits it into `directories`, and calls `search_directories()`.
+5. The loop allocates one `candidate` by joining a directory with `args[0]`.
+   `try_path_candidate()` checks existence and attempts execution.
+6. Successful `execve()` replaces the child process image. It never returns
+   to the helper, loop, or caller. The requested program starts running in
+   that child; it is not another function inside Pipex.
+7. Failed attempts either permit the next directory or end the search. If
+   the search returns, the caller handles allocation failure, command not
+   found, or the retained execution error.
+
+If the executed program later exits with a nonzero status, that does not resume
+PATH searching. Execution already succeeded; the parent receives the program's
+exit status through its normal waiting logic.
+
+The name `resolve_path()` still understates its responsibility: for a plain
+command name it attempts execution, whereas for an explicit path it prepares
+the path for the caller. This remains a possible future readability refactor.
+
+### Why keep both `candidate` and `command_path`?
+
+`candidate` is the path being tried now. During PATH search, `*command_path`
+retains the first candidate that reached `execve()` and failed with `EACCES`.
+For example, it can retain `/first/hello` while `candidate` holds
+`/second/hello`.
+
+The `char **command_path` parameter is an output pointer to one `char *`
+variable in the caller. It is not an array of found paths. Assigning a
+candidate to `*command_path` transfers responsibility for that allocated string;
+it does not duplicate the string. The helper must not free a retained string
+while the caller still needs it.
+
+Keeping the failed path lets the existing final error handler identify the
+file. It is a design choice: another implementation could free each candidate
+immediately and retain only error information, with a different reporting API.
+The loop does not need an array containing every candidate.
+
+### Return values now describe distinct outcomes
+
+The old `PATH_FOUND` name was removed because it had acquired two meanings:
+a path ready to execute, and an execution failure ready to report.
+
+| Result | Meaning | Where it is used |
+|---|---|---|
+| `PATH_READY` | An explicit path is prepared; execution has not been attempted | `resolve_path()` to `execute_command()` |
+| `EXEC_FAILED` | Stop searching and report the retained path and error | Candidate helper, search, and caller |
+| `SEARCH_CONTINUE` | Try another directory | Candidate helper to the loop only |
+| `PATH_NOT_FOUND` | Overall lookup has no usable or retained denied candidate | Lookup to caller; exits 127 |
+| `PATH_ERROR` | Lookup allocation failed | Lookup to caller; exits 1 |
+
+Successful execution returns none of these. At the loop's comparison with
+`EXEC_FAILED`, reaching the comparison means the helper returned and did not
+successfully execute the program.
+
+### Current retry and reporting rules
+
+- If the `F_OK` precheck fails, free this candidate and continue.
+- If `execve()` fails with `EACCES`, retain the first denied candidate and
+  continue. Free later denied candidates rather than replacing the first.
+- If `execve()` fails with another error, save that error, replace any retained
+  denied path with this candidate, and return `EXEC_FAILED` immediately.
+- If directories run out and a denied path is retained, restore `EACCES` and
+  return `EXEC_FAILED`. The final handler reports permission denied and exits 126.
+- If directories run out with no retained path, return `PATH_NOT_FOUND`.
+- If candidate allocation fails, free any retained path, clear the output
+  pointer, and return `PATH_ERROR`; this must not become command not found.
+
+The existing `exec_failure()` selects an exit status, restores the original
+error for `perror()`, frees the retained
+path and arguments, and exits. It now uses `perror(path)` instead of
+`perror(args[0])`, so an execution error identifies the failed file. The
+command-not-found diagnostic still names the command.
+
+The candidate helper is in the new `src/path_candidate.c`; the Makefile includes
+it in both builds. `includes/pipex.h` declares the helper, the updated resolver
+parameters, and the clearer result names.
+
+### In what sense is this closer to Bash?
+
+Local Bash experiments showed these specific behaviors:
+
+- Three non-executable candidates followed by an executable fourth candidate:
+  the fourth ran, and stderr was empty. Earlier skipped candidates were not
+  reported.
+- Two non-executable candidates with no usable later candidate: Bash printed
+  one permission-denied diagnostic naming the first candidate and exited 126.
+
+Our implementation now supports those behaviors: retries are silent, a later
+success produces no earlier permission diagnostic, and an exhausted search can
+report the first denied path once. It also preserves the first usable candidate
+rather than continuing after successful execution.
+
+These are observed behavioral matches, not a claim to implement Bash's internal
+search algorithm or all its diagnostics. The earlier failure-classification
+checks used Bash 5.1.16; the later candidate-reporting experiments used the
+installed `/bin/bash`. Diagnostic prefixes and some error wording still differ.
+
+After reapplying onto upstream commit `24f497d`, mandatory and bonus builds each
+passed nine focused checks: denied then usable, directory then usable, first
+usable wins, two denied paths, denied then missing, explicit denied path, all
+missing, normal explicit execution, and missing explicit execution. The two-denied
+check required exactly one diagnostic naming the first path. Changed C files and
+the header passed Norm. These checks are not a full leak, FD, or failure audit.
+
+### What remains from the six-part study plan?
+
+| Behavior | Current scope and remaining work |
+|---|---|
+| 1. Try later candidates | Implemented for permission-denied execution attempts, including an earlier directory; later usable commands can run. |
+| 2. Remember permission failures | Partly implemented: retain the first `execve()` EACCES. Permission failures from the F_OK precheck are still discarded. |
+| 3. Decide when to stop | A limited policy exists: retry EACCES, stop on other execve errors. Broader error cases and reference-shell comparisons remain. |
+| 4. Preserve empty PATH entries | Not implemented. `ft_split()` still drops leading, trailing, and consecutive empty entries that should represent the current directory. |
+| 5. Define empty/missing PATH behavior | Unchanged: both currently lead to not found for a plain command name. Deliberate reference-shell checks remain. |
+| 6. Preserve allocation handling and cleanup | Existing allocation errors remain separate from not found, and discarded/retained paths have cleanup paths. The changed search still needs allocation-failure injection and a full ownership audit. |
+
+In particular, an inaccessible directory may make the F_OK precheck fail with
+permission denied, which is currently treated like any other failed precheck.
+Filesystem changes between checking and executing can also change the result.
+There is no ENOEXEC shell-script fallback, and command splitting still does not
+implement shell quoting. Full Bash equivalence is outside this study step.
 
 ## Build
 
