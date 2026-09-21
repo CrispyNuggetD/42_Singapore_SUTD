@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/21 15:07:34 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 22:14:36 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 16:07:03 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ t_path_result	attempt_one_candidate(char *candidate_command, char **args,
 			errno = saved_errno;
 			return (EXEC_FAILED);
 		}
-		if (!*exec_fail_path)
-		{
-			*exec_fail_path = candidate_command;
-			return (SEARCH_CONTINUE);
-		}
+	}
+	if (errno == EACCES && !*exec_fail_path)
+	{
+		*exec_fail_path = candidate_command;
+		return (SEARCH_CONTINUE);
 	}
 	free(candidate_command);
 	return (SEARCH_CONTINUE);
