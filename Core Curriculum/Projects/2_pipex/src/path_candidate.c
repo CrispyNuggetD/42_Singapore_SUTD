@@ -5,7 +5,7 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
+/*   Created: 2026/09/21 15:07:34 by hnah              #+#    #+#             */
 /*   Updated: 2026/09/17 22:14:36 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
@@ -14,7 +14,7 @@
 
 /* Success never returns; otherwise continue or report a final failure. */
 t_path_result	attempt_one_candidate(char *candidate_command, char **args,
-		char **envp, char **command_path)
+		char **envp, char **exec_fail_path)
 {
 	int	saved_errno;
 
@@ -24,14 +24,14 @@ t_path_result	attempt_one_candidate(char *candidate_command, char **args,
 		saved_errno = errno;
 		if (saved_errno != EACCES)
 		{
-			free(*command_path);
-			*command_path = candidate_command;
+			free(*exec_fail_path);
+			*exec_fail_path = candidate_command;
 			errno = saved_errno;
 			return (EXEC_FAILED);
 		}
-		if (!*command_path)
+		if (!*exec_fail_path)
 		{
-			*command_path = candidate_command;
+			*exec_fail_path = candidate_command;
 			return (SEARCH_CONTINUE);
 		}
 	}

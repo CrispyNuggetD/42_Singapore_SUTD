@@ -55,7 +55,7 @@ static void	exec_failure_error(char *path, char **args, int saved_errno)
 void	execute_command(char *command_str, char **envp)
 {
 	char			**args;
-	char			*command_path;
+	char			*exec_fail_path;
 	t_path_result	result;
 
 	args = ft_split(command_str, ' ');
@@ -63,12 +63,12 @@ void	execute_command(char *command_str, char **envp)
 		exit_perror("malloc", 1);
 	if (!args[0])
 		command_not_found(NULL, args);
-	result = attempt_possible_candidates(args, envp, &command_path);
-	if (result == PATH_ERROR)
+	result = attempt_possible_candidates(args, envp, &exec_fail_path);
+	if (result == ALLOCATION_FAILED)
 		path_lookup_error(args);
-	if (result == PATH_NOT_FOUND)
+	if (result == COMMAND_NOT_FOUND)
 		command_not_found(args[0], args);
 	if (result == DIRECT_PATH_SUPPLIED)
-		execve(command_path, args, envp);
-	exec_failure_error(command_path, args, errno);
+		execve(exec_fail_path, args, envp);
+	exec_failure_error(exec_fail_path, args, errno);
 }

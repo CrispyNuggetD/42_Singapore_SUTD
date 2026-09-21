@@ -453,16 +453,16 @@ exit status through its normal waiting logic.
 `attempt_possible_candidates()` attempts execution for a plain command name.
 For an explicit path, it prepares the path for execution by the caller.
 
-### Why keep both `candidate_command` and `command_path`?
+### Why keep both `candidate_command` and `exec_fail_path`?
 
-`candidate_command` is the path being tried now. During PATH search, `*command_path`
+`candidate_command` is the path being tried now. During PATH search, `*exec_fail_path`
 retains the first candidate that reached `execve()` and failed with `EACCES`.
 For example, it can retain `/first/hello` while `candidate_command` holds
 `/second/hello`.
 
-The `char **command_path` parameter is an output pointer to one `char *`
+The `char **exec_fail_path` parameter is an output pointer to one `char *`
 variable in the caller. It is not an array of found paths. Assigning a
-candidate to `*command_path` transfers responsibility for that allocated string;
+candidate to `*exec_fail_path` transfers responsibility for that allocated string;
 it does not duplicate the string. The helper must not free a retained string
 while the caller still needs it.
 
@@ -481,8 +481,8 @@ a path ready to execute, and an execution failure ready to report.
 | `DIRECT_PATH_SUPPLIED` | An explicit path is prepared; execution has not been attempted | `attempt_possible_candidates()` to `execute_command()` |
 | `EXEC_FAILED` | Stop searching and report the retained path and error | Candidate helper, search, and caller |
 | `SEARCH_CONTINUE` | Try another directory | Candidate helper to the loop only |
-| `PATH_NOT_FOUND` | Overall lookup has no usable or retained denied candidate | Lookup to caller; exits 127 |
-| `PATH_ERROR` | Lookup allocation failed | Lookup to caller; exits 1 |
+| `COMMAND_NOT_FOUND` | Overall lookup has no usable or retained denied candidate | Lookup to caller; exits 127 |
+| `ALLOCATION_FAILED` | Lookup allocation failed | Lookup to caller; exits 1 |
 
 Successful execution returns none of these. At the loop's comparison with
 `EXEC_FAILED`, reaching the comparison means the helper returned and did not
@@ -497,9 +497,9 @@ successfully execute the program.
   denied path with this candidate, and return `EXEC_FAILED` immediately.
 - If directories run out and a denied path is retained, restore `EACCES` and
   return `EXEC_FAILED`. The final handler reports permission denied and exits 126.
-- If directories run out with no retained path, return `PATH_NOT_FOUND`.
+- If directories run out with no retained path, return `COMMAND_NOT_FOUND`.
 - If candidate allocation fails, free any retained path, clear the output
-  pointer, and return `PATH_ERROR`; this must not become command not found.
+  pointer, and return `ALLOCATION_FAILED`; this must not become command not found.
 
 The existing `exec_failure_error()` selects an exit status, restores the original
 error for `perror()`, frees the retained

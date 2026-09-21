@@ -42,8 +42,8 @@ typedef enum e_usage_message_id
 
 typedef enum e_path_result
 {
-	PATH_ERROR = -1,
-	PATH_NOT_FOUND = 0,
+	ALLOCATION_FAILED = -1,
+	COMMAND_NOT_FOUND = 0,
 	DIRECT_PATH_SUPPLIED = 1,
 	EXEC_FAILED,
 	SEARCH_CONTINUE
@@ -58,9 +58,9 @@ int				close_pipeline(t_pipeline *pipeline);
 int				run_pipeline(t_pipeline *pipeline, char **argv, char **envp);
 void			execute_command(char *command_str, char **envp);
 t_path_result	attempt_possible_candidates(char **args, char **envp,
-					char **command_path);
+					char **exec_fail_path);
 t_path_result	attempt_one_candidate(char *candidate_command, char **args,
-					char **envp, char **command_path);
+					char **envp, char **exec_fail_path);
 void			exit_perror(char *message, int status);
 int				return_perror(char *message);
 int				print_usage(t_usage_message_id message_id);

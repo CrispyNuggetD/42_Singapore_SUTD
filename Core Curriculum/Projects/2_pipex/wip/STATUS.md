@@ -19,7 +19,7 @@
 
 - Pulled upstream through 24f497d and reapplied the PATH retry study changes.
 - Preserved upstream names: command_str is the full input command,
-  command_path is the selected/retained executable path, and path in
+  exec_fail_path is the selected/retained executable path, and path in
   resolve_path is the PATH environment value.
 - Execution errors now use perror(path), identifying the retained failed
   candidate. Command-not-found diagnostics still use the command name.
@@ -35,7 +35,7 @@
   PATH_READY means an explicit path is ready for the caller to execute;
   EXEC_FAILED means stop and report the retained execution error.
 - The candidate helper returns SEARCH_CONTINUE when another directory should
-  be tried. PATH_NOT_FOUND is reserved for the overall lookup result.
+  be tried. COMMAND_NOT_FOUND is reserved for the overall lookup result.
 - Successful execve never returns any result. The retry policy is unchanged.
 
 ---
@@ -103,8 +103,8 @@ authorization to implement every remaining item.
 - Integrated file creation into Pipex; report reopen errors before cleanup.
 - Reorganized library documentation into component indexes and dated updates.
   Synced reusable components into main libft, Pipex, FdF, and push_swap copies.
-- Completed shell task (1): `resolve_path()` returns `PATH_FOUND`, `PATH_NOT_FOUND`,
-  or `PATH_ERROR`, with allocated output only on success. Allocation failures set
+- Completed shell task (1): `resolve_path()` returns `PATH_FOUND`, `COMMAND_NOT_FOUND`,
+  or `ALLOCATION_FAILED`, with allocated output only on success. Allocation failures set
   `ENOMEM`, report the system error, release arguments, and exit 1 rather than 127.
 
 ## Shell-correctness task status

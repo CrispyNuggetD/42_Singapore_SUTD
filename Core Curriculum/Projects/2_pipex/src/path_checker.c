@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 14:49:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 15:41:45 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ static char	*join_command(char *directory, char *command)
 }
 
 static t_path_result	search_directories(char **directories, char **args,
-		char **envp, char **command_path)
+		char **envp, char **exec_fail_path)
 {
 	char	*candidate_command;
 	int		i;
@@ -51,53 +51,53 @@ static t_path_result	search_directories(char **directories, char **args,
 		candidate_command = join_command(directories[i++], args[0]);
 		if (!candidate_command)
 		{
-			free(*command_path);
-			*command_path = NULL;
-			return (PATH_ERROR);
+			free(*exec_fail_path);
+			*exec_fail_path = NULL;
+			return (ALLOCATION_FAILED);
 		}
 		if (attempt_one_candidate(candidate_command, args,
-				envp, command_path) == EXEC_FAILED)
+				envp, exec_fail_path) == EXEC_FAILED)
 			return (EXEC_FAILED);
 	}
-	if (!*command_path)
-		return (PATH_NOT_FOUND);
+	if (!*exec_fail_path)
+		return (COMMAND_NOT_FOUND);
 	errno = EACCES;
 	return (EXEC_FAILED);
 }
 
-static t_path_result	copy_direct_path(char *command, char **command_path)
+static t_path_result	copy_direct_path(char *command, char **exec_fail_path)
 {
-	*command_path = ft_strdup(command);
-	if (!*command_path)
+	*exec_fail_path = ft_strdup(command);
+	if (!*exec_fail_path)
 	{
 		errno = ENOMEM;
-		return (PATH_ERROR);
+		return (ALLOCATION_FAILED);
 	}
 	return (DIRECT_PATH_SUPPLIED);
 }
 
 t_path_result	attempt_possible_candidates(char **args, char **envp,
-		char **command_path)
+		char **exec_fail_path)
 {
 	char			**directories;
 	char			*path;
 	t_path_result	result;
 
-	*command_path = NULL;
+	*exec_fail_path = NULL;
 	if (ft_strchr(args[0], '/'))
-		return (copy_direct_path(args[0], command_path));
+		return (copy_direct_path(args[0], exec_fail_path));
 	path = path_value(envp);
 	if (!path)
-		return (PATH_NOT_FOUND);
+		return (COMMAND_NOT_FOUND);
 	directories = ft_split(path, ':');
 	if (!directories)
 	{
 		errno = ENOMEM;
-		return (PATH_ERROR);
+		return (ALLOCATION_FAILED);
 	}
-	result = search_directories(directories, args, envp, command_path);
+	result = search_directories(directories, args, envp, exec_fail_path);
 	ryker_ft_free_str_array(directories);
-	if (result == PATH_ERROR)
+	if (result == ALLOCATION_FAILED)
 		errno = ENOMEM;
 	return (result);
 }
