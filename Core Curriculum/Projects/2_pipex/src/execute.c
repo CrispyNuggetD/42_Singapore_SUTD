@@ -24,7 +24,7 @@ static void	command_not_found(char *command, char **args)
 
 static void	path_lookup_error(char **args)
 {
-	perror("pipex: resolve_path");
+	perror("pipex: attempt_possible_candidates");
 	ryker_ft_free_str_array(args);
 	exit(1);
 }

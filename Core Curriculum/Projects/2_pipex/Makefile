@@ -8,7 +8,7 @@ INC_DIR := includes
 LIBFT_DIR := ryker_libft
 
 COMMON_SRCS := fd_open_utils.c usage_printer.c pipeline_handler.c execute.c \
-	path_checker.c cleanup_and_errors.c
+	path_checker.c path_candidate.c cleanup_and_errors.c
 SRCS := main.c $(COMMON_SRCS)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 BONUS_ONLY_SRCS := main_bonus.c heredoc_helpers_bonus.c heredoc_bonus.c \

@@ -431,14 +431,14 @@ with the limitations described below.
 
 1. `execute_command()` splits `command_str` into `args`. For `hello world`,
    `args[0]` is `hello`, followed by the argument `world` and a NULL terminator.
-2. It passes the whole argument array to `resolve_path()`. The search needs
+2. It passes the whole argument array to `attempt_possible_candidates()`. The search needs
    both `args` and `envp` because it now calls `execve()`.
-3. If `args[0]` contains `/`, `resolve_path()` copies that explicit path and
-   returns `PATH_READY`. The caller executes it once without searching PATH.
-4. Otherwise, `resolve_path()` retrieves the PATH value into its local `path`,
+3. If `args[0]` contains `/`, `attempt_possible_candidates()` copies that explicit path and
+   returns `DIRECT_PATH_SUPPLIED`. The caller executes it once without searching PATH.
+4. Otherwise, `attempt_possible_candidates()` retrieves the PATH value into its local `path`,
    splits it into `directories`, and calls `search_directories()`.
-5. The loop allocates one `candidate` by joining a directory with `args[0]`.
-   `try_path_candidate()` checks existence and attempts execution.
+5. The loop allocates one `candidate_command` by joining a directory with `args[0]`.
+   `attempt_one_candidate()` checks existence and attempts execution.
 6. Successful `execve()` replaces the child process image. It never returns
    to the helper, loop, or caller. The requested program starts running in
    that child; it is not another function inside Pipex.
@@ -450,15 +450,14 @@ If the executed program later exits with a nonzero status, that does not resume
 PATH searching. Execution already succeeded; the parent receives the program's
 exit status through its normal waiting logic.
 
-The name `resolve_path()` still understates its responsibility: for a plain
-command name it attempts execution, whereas for an explicit path it prepares
-the path for the caller. This remains a possible future readability refactor.
+`attempt_possible_candidates()` attempts execution for a plain command name.
+For an explicit path, it prepares the path for execution by the caller.
 
-### Why keep both `candidate` and `command_path`?
+### Why keep both `candidate_command` and `command_path`?
 
-`candidate` is the path being tried now. During PATH search, `*command_path`
+`candidate_command` is the path being tried now. During PATH search, `*command_path`
 retains the first candidate that reached `execve()` and failed with `EACCES`.
-For example, it can retain `/first/hello` while `candidate` holds
+For example, it can retain `/first/hello` while `candidate_command` holds
 `/second/hello`.
 
 The `char **command_path` parameter is an output pointer to one `char *`
@@ -479,7 +478,7 @@ a path ready to execute, and an execution failure ready to report.
 
 | Result | Meaning | Where it is used |
 |---|---|---|
-| `PATH_READY` | An explicit path is prepared; execution has not been attempted | `resolve_path()` to `execute_command()` |
+| `DIRECT_PATH_SUPPLIED` | An explicit path is prepared; execution has not been attempted | `attempt_possible_candidates()` to `execute_command()` |
 | `EXEC_FAILED` | Stop searching and report the retained path and error | Candidate helper, search, and caller |
 | `SEARCH_CONTINUE` | Try another directory | Candidate helper to the loop only |
 | `PATH_NOT_FOUND` | Overall lookup has no usable or retained denied candidate | Lookup to caller; exits 127 |
@@ -502,7 +501,7 @@ successfully execute the program.
 - If candidate allocation fails, free any retained path, clear the output
   pointer, and return `PATH_ERROR`; this must not become command not found.
 
-The existing `exec_failure()` selects an exit status, restores the original
+The existing `exec_failure_error()` selects an exit status, restores the original
 error for `perror()`, frees the retained
 path and arguments, and exits. It now uses `perror(path)` instead of
 `perror(args[0])`, so an execution error identifies the failed file. The

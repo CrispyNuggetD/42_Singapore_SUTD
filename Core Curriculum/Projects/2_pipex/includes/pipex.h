@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:05:09 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/17 21:51:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 15:06:06 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,9 @@ typedef enum e_path_result
 {
 	PATH_ERROR = -1,
 	PATH_NOT_FOUND = 0,
-	PATH_FOUND = 1
+	DIRECT_PATH_SUPPLIED = 1,
+	EXEC_FAILED,
+	SEARCH_CONTINUE
 }	t_path_result;
 
 void			init_pipeline(t_pipeline *pipeline);
@@ -54,8 +56,11 @@ int				open_files_no_heredoc(t_pipeline *pipeline, int argc,
 void			close_and_void_fd(int *fd);
 int				close_pipeline(t_pipeline *pipeline);
 int				run_pipeline(t_pipeline *pipeline, char **argv, char **envp);
-void			execute_command(char *command, char **envp);
-t_path_result	resolve_path(char *command, char **envp, char **path);
+void			execute_command(char *command_str, char **envp);
+t_path_result	attempt_possible_candidates(char **args, char **envp,
+					char **command_path);
+t_path_result	attempt_one_candidate(char *candidate_command, char **args,
+					char **envp, char **command_path);
 void			exit_perror(char *message, int status);
 int				return_perror(char *message);
 int				print_usage(t_usage_message_id message_id);

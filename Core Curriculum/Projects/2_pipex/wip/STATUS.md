@@ -1,3 +1,20 @@
+## Current reapplication onto 42 edits (2026-09-21)
+
+- Reapplied the discussed candidate retries while retaining upstream names:
+  candidate_command, DIRECT_PATH_SUPPLIED, attempt_possible_candidates,
+  copy_direct_path, and exec_failure_error.
+- Connected the candidate helper, declarations, enum results, and Makefile.
+  Retain the first execve EACCES, try later candidates silently, and report
+  the retained path once if none succeeds. Other execution errors stop search.
+- Omitted the array-free-only errno save/restore for the stated 42 target
+  (glibc 2.35). Other execution-error capture remains intact.
+- README now follows the current names. Older entries below are historical.
+- Local mandatory and bonus builds each passed ten focused execution checks,
+  including retained first-denied diagnostics and missing-interpreter status.
+  Changed C files/header passed Norm and git diff --check passed.
+
+---
+
 ## Reapplied after upstream renames (2026-09-21)
 
 - Pulled upstream through 24f497d and reapplied the PATH retry study changes.
@@ -28,7 +45,7 @@
 - Implemented behavior (1) of the six-item study breakdown: attempt execution
   during PATH search and continue after EACCES, so an earlier non-executable
   file or directory does not hide a later usable executable.
-- `search_directories()` builds one candidate at a time; `try_path_candidate()`
+- `search_directories()` builds one candidate at a time; `attempt_one_candidate()`
   attempts execution. Successful execve replaces the child and never returns.
 - The first denied candidate is retained for the final diagnostic if no later
   candidate works. Other execve errors stop the search, preserving the prior

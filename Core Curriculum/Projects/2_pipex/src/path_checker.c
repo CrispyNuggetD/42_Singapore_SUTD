@@ -39,12 +39,11 @@ static char	*join_command(char *directory, char *command)
 	return (path);
 }
 
-static t_path_result	search_directories(char **directories, char **args, char **envp,
-		char **command_path)
+static t_path_result	search_directories(char **directories, char **args,
+		char **envp, char **command_path)
 {
 	char	*candidate_command;
 	int		i;
-
 
 	i = 0;
 	while (directories[i])
@@ -56,8 +55,14 @@ static t_path_result	search_directories(char **directories, char **args, char **
 			*command_path = NULL;
 			return (PATH_ERROR);
 		}
+		if (attempt_one_candidate(candidate_command, args,
+				envp, command_path) == EXEC_FAILED)
+			return (EXEC_FAILED);
 	}
-	return (PATH_NOT_FOUND);
+	if (!*command_path)
+		return (PATH_NOT_FOUND);
+	errno = EACCES;
+	return (EXEC_FAILED);
 }
 
 static t_path_result	copy_direct_path(char *command, char **command_path)
@@ -71,7 +76,8 @@ static t_path_result	copy_direct_path(char *command, char **command_path)
 	return (DIRECT_PATH_SUPPLIED);
 }
 
-t_path_result	resolve_path(char **args, char **envp, char **command_path)
+t_path_result	attempt_possible_candidates(char **args, char **envp,
+		char **command_path)
 {
 	char			**directories;
 	char			*path;
