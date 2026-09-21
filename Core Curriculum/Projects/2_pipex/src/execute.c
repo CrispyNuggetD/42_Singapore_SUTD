@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 19:10:52 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/18 22:54:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/21 13:49:26 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,22 +52,22 @@ static void	exec_failure(char *path, char **args, int saved_errno)
 	exit(status);
 }
 
-void	execute_command(char *command, char **envp)
+void	execute_command(char *command_str, char **envp)
 {
 	char			**args;
-	char			*path;
+	char			*command_path;
 	t_path_result	result;
 
-	args = ft_split(command, ' ');
+	args = ft_split(command_str, ' ');
 	if (!args)
 		exit_perror("malloc", 1);
 	if (!args[0])
 		command_not_found(NULL, args);
-	result = resolve_path(args[0], envp, &path);
+	result = resolve_path(args[0], envp, &command_path);
 	if (result == PATH_ERROR)
 		path_lookup_error(args);
 	if (result == PATH_NOT_FOUND)
 		command_not_found(args[0], args);
-	execve(path, args, envp);
-	exec_failure(path, args, errno);
+	execve(command_path, args, envp);
+	exec_failure(command_path, args, errno);
 }
