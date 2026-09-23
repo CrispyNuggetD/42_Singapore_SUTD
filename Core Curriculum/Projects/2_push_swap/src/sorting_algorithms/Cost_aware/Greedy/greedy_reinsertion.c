@@ -6,29 +6,53 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 18:52:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 23:15:32 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "greedy_reinsertion.h"
 
+static int	greedy_scan_target(circle_buf *a, int desired_rank, int reverse)
+{
+	int	current_rank;
+	int	index;
+	int	prev_rank;
 
-/*
-** TODO: Find the insertion target for ONE rank, scanning logical A positions.
-** What if rank exceeds every value? What if A is empty?
-** Empty A should succeed with target_index = GREEDY_NO_TARGET.
-** This function chooses a position, not a rotation direction. No mutation.
-*/
+	index = 0;
+	prev_rank = -1;
+	while (cbuf_read_at(a, index, &current_rank) == SUCCESS
+		&& (current_rank - desired_rank) * reverse < 0)
+	{
+		if (prev_rank != -1 && (current_rank - prev_rank) * reverse < 0)
+			break ;
+		prev_rank = current_rank;
+		index += reverse;
+	}
+	return (index);
+}
+
+/* Return a logical insertion target without changing A. */
+/* It is a bit cursed, but it works. */
 int	greedy_find_target(circle_buf *a, int desired_rank, int *target_index)
 {
-	int current_rank;
-	int index;
+	int	current_rank;
+	int	index;
+	int	reverse;
 
-	while (cbuf_read_at(a, index, &current_rank) == SUCCESS && current_rank > desired_rank)
-		index--;
-	while (cbuf_read_at(a, index, &current_rank) == SUCCESS && current_rank < desired_rank)
-		index++;
-	*target_index = index;
+	reverse = 1;
+	*target_index = GREEDY_NO_TARGET;
+	if (cbuf_len(a) == 0)
+		return (SUCCESS);
+	if (cbuf_read_at(a, 0, &current_rank) == SUCCESS
+		&& current_rank > desired_rank)
+		reverse = -1;
+	index = greedy_scan_target(a, desired_rank, reverse);
+	if (index < 0)
+		index += cbuf_len(a) + 1;
+	if (index == cbuf_len(a))
+		*target_index = 0;
+	else
+		*target_index = index;
 	return (SUCCESS);
 }
 
@@ -40,11 +64,28 @@ int	greedy_find_target(circle_buf *a, int desired_rank, int *target_index)
 int	greedy_plan_candidate(circle_buf *a, circle_buf *b, int b_index,
 		t_greedy_plan *plan)
 {
-	(void)a;
-	(void)b;
-	(void)b_index;
-	(void)plan;
-	return (ERROR);
+	int	b_candidate;
+	int	target_index;
+	int	other_cost;
+
+	if (cbuf_read_at(b, b_index, &b_candidate) ||
+		greedy_find_target(a, b_candidate, &target_index) == ERROR)
+		return (ERROR);
+	plan->candidate_rank = b_candidate;
+	if (cbuf_len(a) == 0)
+		plan->rot_a = 0;
+	else
+		plan->rot_a = target_index;
+	plan->rot_b = b_index;
+	plan->cost = ryker_ft_max(plan->rot_a, plan->rot_b) + 1;
+	other_cost = ryker_ft_max((cbuf_len(a) - plan->rot_a), (cbuf_len(b) - plan->rot_b)) + 1;
+	if (ryker_ft_update_min(&plan->cost, other_cost) == 1)
+	{
+		plan->rot_a = target_index - cbuf_len(a);
+		plan->rot_b = b_index - cbuf_len(b);
+	}
+	other_cost = ryker_ft_max((target_index - cbuf_len(a)), (cbuf_len(b) - plan->rot_b) + 1;
+	return (SUCCESS);
 }
 
 /*
@@ -58,6 +99,18 @@ int	greedy_choose_plan(circle_buf *a, circle_buf *b, t_greedy_plan *best)
 	(void)b;
 	(void)best;
 	return (ERROR);
+
+
+	else if (target_index > (cbuf_len(a) / 2))
+		plan->rot_a = target_index - cbuf_len(a);
+	else
+		plan->rot_a = target_index;
+	if (cbuf_len(b) == 0)
+		plan->rot_b = 0;
+	else if (b_index > (cbuf_len(b) / 2))
+		plan->rot_b = b_index - cbuf_len(b);
+	else
+		plan->rot_b = b_index;
 }
 
 /*
@@ -72,58 +125,5 @@ int	greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
 	(void)a;
 	(void)b;
 	(void)plan;
-	return (ERROR);
-}
-
-/*
-** TODO: Baseline preparation starts with empty B; leave at most three in A
-** and sort that seed. Handle zero, one and two elements too.
-** Postcondition: A is empty or circularly ascending; all ranks are retained.
-** Keep this independent of insertion, so a future LIS/BFS seed can replace it.
-** Existing small-sort helper is static in solve.c; inspect it before reuse.
-*/
-int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b)
-{
-	(void)x;
-	(void)a;
-	(void)b;
-	return (ERROR);
-}
-
-/*
-** TODO: Repeatedly choose and execute a fresh plan until B is empty.
-** Already empty B is SUCCESS. Do not prepare A here or reuse stale plans.
-** Caller supplies empty or circularly ascending A, not a hidden unsorted tail.
-*/
-int	greedy_insert_all(soln *x, circle_buf *a, circle_buf *b)
-{
-	(void)x;
-	(void)a;
-	(void)b;
-	return (ERROR);
-}
-
-/*
-** TODO: Bring A's minimum to its top by the cheaper rotation direction.
-** Requires circularly ascending A. Empty/singleton/already aligned: SUCCESS.
-*/
-int	greedy_align_min(soln *x, circle_buf *a)
-{
-	(void)x;
-	(void)a;
-	return (ERROR);
-}
-
-/*
-** TODO: Compose preparation, insertion and alignment; propagate failures.
-** Initial contract: B empty, distinct normalised ranks stored in A.
-** After implementation, select this in solve.c when ready to try it.
-** Future seed strategies can instead call insert_all and align_min directly.
-*/
-int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b)
-{
-	(void)x;
-	(void)a;
-	(void)b;
 	return (ERROR);
 }

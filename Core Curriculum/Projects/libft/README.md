@@ -29,10 +29,14 @@ customization; related functions share one component directory.
 
 ### Standalone helpers
 
-Small independent helpers live directly in `ryker_ft/`.
+Small independent helpers live directly in `ryker_ft/`; numeric helpers live
+in [`ryker_ft/math/`](ryker_ft/math/README.md).
 
 | Function | Contract |
 | --- | --- |
+| [`ryker_ft_update_max`](ryker_ft/math/ryker_ft_update_max.c), [`ryker_ft_update_min`](ryker_ft/math/ryker_ft_update_min.c) | Update an initialised integer through a valid pointer when the candidate is larger/smaller. Ties leave it unchanged. Return `-1` for a null destination, `0` if unchanged, `1` if updated. See [math contracts](ryker_ft/math/README.md). |
+| [`ryker_ft_abs`](ryker_ft/math/ryker_ft_abs.c) | Returns the absolute value of an `int`. Input must not be `INT_MIN`, whose magnitude cannot fit in `int`; this precondition is not checked. No allocation or side effects. |
+| [`ryker_ft_max`](ryker_ft/math/ryker_ft_max.c) | Returns the larger of two `int` values; equal inputs return that same value. Accepts the full `int` range without arithmetic overflow, allocation or side effects. |
 | [`ryker_ft_isspace`](ryker_ft/ryker_ft_isspace.c) | Recognizes only `' '`, preserving push_swap's original behavior; it is not a full whitespace classifier. |
 | [`ryker_ft_free_str_array`](ryker_ft/ryker_ft_free_str_array.c) | Frees each string in a NULL-terminated allocated array, then the array itself. Accepts `NULL`; does not reset the caller's pointer. |
 
@@ -102,6 +106,9 @@ details and test evidence in the linked component documentation.
 
 | Date | Component | Change |
 | --- | --- | --- |
+| 2026-09-23 | Math updates | Added `ryker_ft_update_max` and `ryker_ft_update_min` to the master library and push_swap copy only. |
+| 2026-09-23 | `ryker_ft_abs` | Added an absolute-value helper with an explicit `INT_MIN` exclusion to the master library and push_swap copy only. Existing source discovery includes it in `libft.a`. |
+| 2026-09-23 | `ryker_ft_max` | Added an integer maximum helper and public declaration to the master library and push_swap copy only. Existing source discovery includes it in `libft.a`. |
 | 2026-09-18 | `file_unique` | Extracted exclusive file creation from Pipex, fixed failure cleanup and counter overflow, and retained a separate directory wrapper as WIP (not built or included in Pipex). See [contract and tests](ryker_ft/file_unique/README.md). |
 | 2026-09-18 | `gnl_status` | Added caller-owned GNL state, line/EOF/error results, and cleanup; integrated it into Pipex heredoc. See [API and validation](ryker_ft/gnl_status/README.md). |
 | 2026-09-18 | Original GNL | Removed the mandatory FD cap and fixed the bonus array guard. Documented FD-limit research and successful ASan/UBSan checks using LLVM. See [bounds update](1_get_next_line/README.md#post-submission-update-file-descriptor-limits). |

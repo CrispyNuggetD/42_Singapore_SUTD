@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 18:41:03 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 21:50:08 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,15 @@ void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count)
 /* Read a logical position from the top without changing the stack. */
 int	cbuf_read_at(circle_buf *stack, int read_index, int *value)
 {
+	int len;
+	
 	if (!stack || !value)
 		return (ERROR);
-	if (read_index < 0 || read_index >= cbuf_len(stack))
+	len = cbuf_len(stack);
+	if (read_index <= -len || read_index >= len)
 		return (ERROR);
+	if (read_index < 0)
+		read_index += len;
 	*value = stack->buf[(stack->read_idx + read_index) % stack->capacity];
 	return (SUCCESS);
 }

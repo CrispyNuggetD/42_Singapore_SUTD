@@ -2,18 +2,18 @@
 
 int	ra(soln *x, circle_buf *a)
 {
-	append(x, RA);
+	append_move_to_soln(x, RA);
 	return (cbuf_rotate(a));
 }
 
 int	rb(soln *x, circle_buf *b)
 {
-	append(x, RB);
+	append_move_to_soln(x, RB);
 	return (cbuf_rotate(b));
 }
 
 int	rr(soln *x, circle_buf *a, circle_buf *b)
 {
-	append(x, RR);
+	append_move_to_soln(x, RR);
 	return (cbuf_rotate(a) | cbuf_rotate(b));
 }

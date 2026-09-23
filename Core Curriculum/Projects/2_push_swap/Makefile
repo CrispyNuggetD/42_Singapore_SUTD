@@ -43,6 +43,7 @@ SRCS		= main_push_swap.c \
 			  $(BFS_DIR)/bfs_operations_reverse_rotate.c \
 			  $(BFS_DIR)/bfs_optimiser_lehmer_rank.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
 			  chunk_extract_optimal.c \
 			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c
 

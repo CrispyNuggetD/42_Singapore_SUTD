@@ -19,4 +19,13 @@
 
 int	ryker_ft_isspace(int c);
 
+int		ryker_ft_max(int one, int two);
+
+/* Precondition: one != INT_MIN. */
+int		ryker_ft_abs(int one);
+
+/* Return -1 for NULL, 0 unchanged, 1 updated. dest must be initialised. */
+int		ryker_ft_update_max(int *dest, int candidate);
+int		ryker_ft_update_min(int *dest, int candidate);
+
 #endif

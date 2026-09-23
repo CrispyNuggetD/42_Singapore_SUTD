@@ -96,7 +96,7 @@ int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
 
 /* solutions */
-void	append(soln *x, char move);
+void	append_move_to_soln(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
 int	get_order_top_three(circle_buf *a);
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
