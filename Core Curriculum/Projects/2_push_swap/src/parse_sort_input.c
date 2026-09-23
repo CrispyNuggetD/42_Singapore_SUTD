@@ -1,14 +1,5 @@
 #include "push_swap.h"
 
-/* int parse_input(input *input, char **argv)
-{
-	input->input_len = 
-	input->sorted_input = malloc(sizeof(int) * (size + 1));
-	return(SUCCESS);
-} */
-
-//		printf("check_4: '%c'\n", *str_moving);	
-
 static int	has_duplicates(const int *count, const int *values);
 static int	is_improper_int(char **str_move, int *count, int sign);
 static int	exceed_int_range(char **str_move, const char *int_limit);

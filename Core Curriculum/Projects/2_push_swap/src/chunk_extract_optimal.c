@@ -23,10 +23,10 @@ static void	set_initial_direction(int *direction, int first, int turn_after)
 		*direction = -*direction;
 }
 
-static int	simulate_route(cbuf *a, int min, int max, int first,
+static int	simulate_route(circle_buf *a, int min, int max, int first,
 		int turn_after)
 {
-	cbuf	temp;
+	circle_buf	temp;
 	int		direction;
 	int		collected;
 	int		cost;
@@ -56,7 +56,7 @@ static int	simulate_route(cbuf *a, int min, int max, int first,
 	return (cost);
 }
 
-static int	execute_route(soln *x, cbuf *a, cbuf *b, int min, int max,
+static int	execute_route(soln *x, circle_buf *a, circle_buf *b, int min, int max,
 		int first, int turn_after)
 {
 	int	direction;
@@ -82,7 +82,7 @@ static int	execute_route(soln *x, cbuf *a, cbuf *b, int min, int max,
 	return (SUCCESS);
 }
 
-int	extract_chunk_optimal(soln *x, cbuf *a, cbuf *b, int min, int max)
+int	extract_chunk_optimal(soln *x, circle_buf *a, circle_buf *b, int min, int max)
 {
 	int	best_cost;
 	int	best_direction;

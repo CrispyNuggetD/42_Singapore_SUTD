@@ -12,7 +12,7 @@
 
 #include "push_swap.h"
 
-int	cbuf_push_top(cbuf *stack, int number)
+int	cbuf_push_top(circle_buf *stack, int number)
 {
 	int	cbuf_cap;
 
@@ -24,7 +24,7 @@ int	cbuf_push_top(cbuf *stack, int number)
 	return (SUCCESS);
 }
 
-int	cbuf_push_bottom(cbuf *stack, int number)
+int	cbuf_push_bottom(circle_buf *stack, int number)
 {
 	int	cbuf_cap;
 
@@ -36,7 +36,7 @@ int	cbuf_push_bottom(cbuf *stack, int number)
 	return (SUCCESS);
 }
 
-int	cbuf_pop_top(cbuf *stack, int *pop_number)
+int	cbuf_pop_top(circle_buf *stack, int *pop_number)
 {
 	int	cbuf_cap;
 
@@ -48,7 +48,7 @@ int	cbuf_pop_top(cbuf *stack, int *pop_number)
 	return (SUCCESS);
 }
 
-int	cbuf_pop_bottom(cbuf *stack, int *pop_number)
+int	cbuf_pop_bottom(circle_buf *stack, int *pop_number)
 {
 	int	cbuf_cap;
 

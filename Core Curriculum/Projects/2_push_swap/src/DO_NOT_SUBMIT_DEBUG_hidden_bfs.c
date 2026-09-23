@@ -3,7 +3,7 @@
 static int	g_start;
 static int	g_end;
 
-static int	copy_active_b(cbuf *fake_b, cbuf *real_b, int count)
+static int	copy_active_b(circle_buf *fake_b, circle_buf *real_b, int count)
 {
 	int	i;
 	int	index;
@@ -20,7 +20,7 @@ static int	copy_active_b(cbuf *fake_b, cbuf *real_b, int count)
 	return (SUCCESS);
 }
 
-static int	replay_one(soln *x, cbuf *a, cbuf *b, char move)
+static int	replay_one(soln *x, circle_buf *a, circle_buf *b, char move)
 {
 	if (move == SA)
 		return (sa(x, a));
@@ -41,7 +41,7 @@ static int	replay_one(soln *x, cbuf *a, cbuf *b, char move)
 	return (ERROR);
 }
 
-static int	replay_bfs(soln *real, soln *fake, cbuf *a, cbuf *b)
+static int	replay_bfs(soln *real, soln *fake, circle_buf *a, circle_buf *b)
 {
 	int	i;
 
@@ -63,14 +63,14 @@ static void	free_fake_solution(soln *fake)
 	free(fake->ans_len);
 }
 
-static int	solve_active_chunk(soln *real, cbuf *a, cbuf *b, int count)
+static int	solve_active_chunk(soln *real, circle_buf *a, circle_buf *b, int count)
 {
-	cbuf	fake_a;
-	cbuf	fake_b;
+	circle_buf	fake_a;
+	circle_buf	fake_b;
 	soln	fake;
 
-	fake_a = (cbuf){0};
-	fake_b = (cbuf){0};
+	fake_a = (circle_buf){0};
+	fake_b = (circle_buf){0};
 	fake_a.capacity = a->capacity;
 	fake_b.capacity = b->capacity;
 	if (copy_active_b(&fake_b, b, count) == ERROR)
@@ -91,7 +91,7 @@ static int	solve_active_chunk(soln *real, cbuf *a, cbuf *b, int count)
 	return (SUCCESS);
 }
 
-int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b)
+int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b)
 {
 	int	total;
 	int	chunk;

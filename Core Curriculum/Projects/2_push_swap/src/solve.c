@@ -1,6 +1,6 @@
 #include "push_swap.h"
 
-static int	hardcode_check_one(soln *x, cbuf *a)
+static int	hardcode_check_one(soln *x, circle_buf *a)
 {
 	int	a_size;
 	int	pattern;
@@ -31,7 +31,7 @@ static int	hardcode_check_one(soln *x, cbuf *a)
 	return (SUCCESS);
 }
 
-int	solve(soln *x, cbuf *a, cbuf *b, int count)
+int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
 {
 	if (1)
 		return (debug_hidden_bfs(x, a, b));

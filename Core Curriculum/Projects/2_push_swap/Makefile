@@ -18,27 +18,31 @@ LIBFT_HEADERS = $(LIBFT_DIR)/ryker_libft.h \
 	$(wildcard $(LIBFT_DIR)/0_libft/*.h $(LIBFT_DIR)/1_ft_printf/*.h \
 	$(LIBFT_DIR)/1_get_next_line/*.h $(LIBFT_DIR)/ryker_ft/*.h \
 	$(LIBFT_DIR)/ryker_ft/*/*.h)
-HEADERS = $(INC_DIR)/push_swap.h $(LIBFT_HEADERS)
+HEADERS = $(INC_DIR)/push_swap.h $(INC_DIR)/greedy_reinsertion.h $(LIBFT_HEADERS)
+
+CBUF_DIR = data_structures/circular_buffer
+BFS_DIR = sorting_algorithms/Brute_force/BFS
 
 SRCS		= main_push_swap.c \
 			  parse_sort_input.c \
 			  stack_operation_swap_push.c \
 			  stack_operation_rotate.c \
 			  stack_operation_reverse_rotate.c \
-			  circular_buffer_utils.c \
-			  circular_buffer_move_element.c \
-			  circular_buffer_insert_remove.c \
+			  $(CBUF_DIR)/circular_buffer_utils.c \
+			  $(CBUF_DIR)/circular_buffer_move_element.c \
+			  $(CBUF_DIR)/circular_buffer_insert_remove.c \
 			  debug_tools.c \
 			  rank_values.c \
 			  stack_utils.c \
 			  solve.c \
-			  bfs.c \
-			  bfs_utils.c \
-			  bfs_verify_node.c \
-			  bfs_operations_swap_push.c \
-			  bfs_operations_rotate.c \
-			  bfs_operations_reverse_rotate.c \
-			  bfs_optimiser_lehmer_rank.c \
+			  $(BFS_DIR)/bfs.c \
+			  $(BFS_DIR)/bfs_utils.c \
+			  $(BFS_DIR)/bfs_verify_node.c \
+			  $(BFS_DIR)/bfs_operations_swap_push.c \
+			  $(BFS_DIR)/bfs_operations_rotate.c \
+			  $(BFS_DIR)/bfs_operations_reverse_rotate.c \
+			  $(BFS_DIR)/bfs_optimiser_lehmer_rank.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
 			  chunk_extract_optimal.c \
 			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c
 
@@ -60,9 +64,11 @@ BFS_SRCS = bfs_utils.c bfs_verify_node.c bfs_operations_swap_push.c \
 	bfs_operations_rotate.c bfs_operations_reverse_rotate.c \
 	bfs_optimiser_lehmer_rank.c
 ANALYSIS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
-	$(addprefix $(SRC_DIR)/,bfs.c circular_buffer_utils.c $(BFS_SRCS))
+	$(SRC_DIR)/$(BFS_DIR)/bfs.c \
+	$(SRC_DIR)/$(CBUF_DIR)/circular_buffer_utils.c \
+	$(addprefix $(SRC_DIR)/$(BFS_DIR)/,$(BFS_SRCS))
 ALL_PATHS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \
-	$(addprefix $(SRC_DIR)/,$(BFS_SRCS))
+	$(addprefix $(SRC_DIR)/$(BFS_DIR)/,$(BFS_SRCS))
 
 analyse_bfs: $(ANALYSIS_NAME)
 

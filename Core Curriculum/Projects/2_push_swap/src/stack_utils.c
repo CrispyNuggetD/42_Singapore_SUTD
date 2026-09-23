@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 23:46:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 18:16:32 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 // 20260723(Thu)13:34:11+08:00
 
-void	append(soln *x, char move)
+void	append_soln_move(soln *x, char move)
 {
 	x->ans[x->cur][x->step] = move;
 	x->step++;
@@ -48,7 +48,7 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 }
 
 /*
-int	larger_top(soln *x, cbuf *a)
+int	larger_top(soln *x, circle_buf *a)
 {
 	int	top_idx;
 
@@ -57,7 +57,7 @@ int	larger_top(soln *x, cbuf *a)
 }
 */
 
-int	get_order_top_three(cbuf *a)
+int	get_order_top_three(circle_buf *a)
 {
 	int	first_idx;
 	int	second_idx;

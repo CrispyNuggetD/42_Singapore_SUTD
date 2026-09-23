@@ -6,12 +6,11 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/24 18:02:07 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 18:12:09 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
-//printf("Cur num: %i\nCur index: %i\n", values[count-1], count-1);
 
 static int	free_and_error(void)
 {
@@ -23,8 +22,8 @@ int	main(int argc, char **argv)
 {
 	int	i;
 	int	count;
-	cbuf	a;
-	cbuf	b;
+	circle_buf	a;
+	circle_buf	b;
 	soln	x;
 
 	i = 1;
@@ -40,7 +39,7 @@ int	main(int argc, char **argv)
 		return (free_and_error());
 	if (rank_values(count, b.buf, a.buf) == ERROR)
 		return (free_and_error());
-	cbuf_info(&a, &b, count);
+	cbuf_init_ab(&a, &b, count);
 	if (soln_init(&x, 10, BUBBLE_SORT_MAX_500) == ERROR)
 		return (free_and_error());
 	if (solve(&x, &a, &b, count) == ERROR)

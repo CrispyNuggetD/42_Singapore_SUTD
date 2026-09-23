@@ -70,8 +70,8 @@ static int	next_permutation(int *values, int n)
 static int	solve_permutation(t_analysis_result *result,
 		const int *values, int n)
 {
-	cbuf	a;
-	cbuf	b;
+	circle_buf	a;
+	circle_buf	b;
 	soln	x;
 	char	*answers[1];
 	int	answer_len;
@@ -84,7 +84,7 @@ static int	solve_permutation(t_analysis_result *result,
 		result->values[i] = values[i];
 		i++;
 	}
-	cbuf_info(&a, &b, n);
+	cbuf_init_ab(&a, &b, n);
 	answers[0] = result->solution;
 	answer_len = 0;
 	x.ans = answers;

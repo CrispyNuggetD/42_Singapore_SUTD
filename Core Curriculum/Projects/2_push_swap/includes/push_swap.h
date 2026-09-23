@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/14 03:44:33 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 18:02:22 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,13 @@
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
 
 
-typedef struct s_cbuf
+typedef struct s_circle_buf
 {
 	int	buf[501];
 	int	capacity;
 	int	read_idx;
 	int	write_idx;
-}	cbuf;
+}	circle_buf;
 
 typedef struct s_soln
 {
@@ -80,27 +80,16 @@ typedef struct s_brutenode
 # define RRB	'A'
 # define RRR	'B'
 
-/* typedef enum e_length
-{
-	LEN_NONE,
-	LEN_HH,
-	LEN_H,
-	LEN_L,
-	LEN_LL
-}	t_length; */
-
-// typedef int	(*t_handler)(t_context *context);
-
 /* debugger */
 void	debug_print_int_array(const int *array, int size);
-void	cbuf_print(cbuf *stack, char name);
-void	cbuf_print_stacks(cbuf *a, cbuf *b);
+void	cbuf_print(circle_buf *stack, char name);
+void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
 void	debug_print_soln(const soln *x);
 int		print_first_soln(const soln *x);
 
 /* do not submit*/
-int	debug_hidden_bfs(soln *real, cbuf *a, cbuf *b);
-int	extract_chunk_optimal(soln *x, cbuf *a, cbuf *b, int min, int max);
+int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b);
+int	extract_chunk_optimal(soln *x, circle_buf *a, circle_buf *b, int min, int max);
 
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
@@ -109,11 +98,11 @@ int	rank_values(const int count, const int *values, int *ranks);
 /* solutions */
 void	append(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
-int	get_order_top_three(cbuf *a);
-int	solve(soln *x, cbuf *a, cbuf *b, int count);
+int	get_order_top_three(circle_buf *a);
+int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
 
 /* bfs solver */
-int	brute_solve(soln *x, cbuf *a, cbuf *b);
+int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
 int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
 		int total, int n);
 int	is_brute_goal(t_brutestate *state, int n);
@@ -139,33 +128,34 @@ void	brute_rotate_right(t_brutestate *state, int start, int end);
 int		calculate_state_id(t_brutestate *a, int n);
 
 
-/* cbuf core */
-void	cbuf_info(cbuf *a, cbuf *b, int count);
-int	cbuf_is_empty(cbuf *stack);
-int	cbuf_is_full(cbuf *stack);
-int	cbuf_len(cbuf *stack);
-// int	cbuf_free(cbuf *stack);
+/* circle_buf core */
+void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count);
+int	cbuf_read_at(circle_buf *stack, int index, int *value);
+int	cbuf_is_empty(circle_buf *stack);
+int	cbuf_is_full(circle_buf *stack);
+int	cbuf_len(circle_buf *stack);
+// int	cbuf_free(circle_buf *stack);
 
-/* cbuf operations */
-int	cbuf_push_top(cbuf *stack, int number);
-int	cbuf_push_bottom(cbuf *stack, int number);
-int	cbuf_pop_bottom(cbuf *stack, int *pop_number);
-int	cbuf_pop_top(cbuf *stack, int *pop_number);
-int	cbuf_swap_top(cbuf *stack);
-int	cbuf_rotate(cbuf *stack);
-int	cbuf_rev_rotate(cbuf *stack);
+/* circle_buf operations */
+int	cbuf_push_top(circle_buf *stack, int number);
+int	cbuf_push_bottom(circle_buf *stack, int number);
+int	cbuf_pop_bottom(circle_buf *stack, int *pop_number);
+int	cbuf_pop_top(circle_buf *stack, int *pop_number);
+int	cbuf_swap_top(circle_buf *stack);
+int	cbuf_rotate(circle_buf *stack);
+int	cbuf_rev_rotate(circle_buf *stack);
 
 /* push_swap operations */
-int	sa(soln *x, cbuf *a);
-int	sb(soln *x, cbuf *b);
-int	ss(soln *x, cbuf *a, cbuf *b);
-int	pa(soln *x, cbuf *a, cbuf *b);
-int	pb(soln *x, cbuf *a, cbuf *b);
-int	ra(soln *x, cbuf *a);
-int	rb(soln *x, cbuf *b);
-int	rr(soln *x, cbuf *a, cbuf *b);
-int	rra(soln *x, cbuf *a);
-int	rrb(soln *x, cbuf *b);
-int	rrr(soln *x, cbuf *a, cbuf *b);
+int	sa(soln *x, circle_buf *a);
+int	sb(soln *x, circle_buf *b);
+int	ss(soln *x, circle_buf *a, circle_buf *b);
+int	pa(soln *x, circle_buf *a, circle_buf *b);
+int	pb(soln *x, circle_buf *a, circle_buf *b);
+int	ra(soln *x, circle_buf *a);
+int	rb(soln *x, circle_buf *b);
+int	rr(soln *x, circle_buf *a, circle_buf *b);
+int	rra(soln *x, circle_buf *a);
+int	rrb(soln *x, circle_buf *b);
+int	rrr(soln *x, circle_buf *a, circle_buf *b);
 
 #endif

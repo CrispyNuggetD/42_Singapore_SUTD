@@ -6,13 +6,13 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/04/23 13:46:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/23 18:41:03 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-void	cbuf_info(cbuf *a, cbuf *b, int count)
+void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count)
 {
 	a->capacity = count + 1;
 	a->read_idx = 0;
@@ -23,18 +23,29 @@ void	cbuf_info(cbuf *a, cbuf *b, int count)
 	return ;
 }
 
-int	cbuf_len(cbuf *stack)
+/* Read a logical position from the top without changing the stack. */
+int	cbuf_read_at(circle_buf *stack, int read_index, int *value)
+{
+	if (!stack || !value)
+		return (ERROR);
+	if (read_index < 0 || read_index >= cbuf_len(stack))
+		return (ERROR);
+	*value = stack->buf[(stack->read_idx + read_index) % stack->capacity];
+	return (SUCCESS);
+}
+
+int	cbuf_len(circle_buf *stack)
 {
 	return ((stack->write_idx - stack->read_idx + stack->capacity) \
 % stack->capacity);
 }
 
-int	cbuf_is_empty(cbuf *stack)
+int	cbuf_is_empty(circle_buf *stack)
 {
 	return (stack->read_idx == stack->write_idx);
 }
 
-int	cbuf_is_full(cbuf *stack)
+int	cbuf_is_full(circle_buf *stack)
 {
 	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
 }

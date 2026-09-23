@@ -16,7 +16,7 @@ void	debug_print_int_array(const int *array, int size)
 	printf("\n");
 }
 
-static void	cbuf_print_metadata(cbuf *stack, char name)
+static void	cbuf_print_metadata(circle_buf *stack, char name)
 {
 	ft_putchar_fd(name, 2);
 	ft_putstr_fd(" [len=", 2);
@@ -30,7 +30,7 @@ static void	cbuf_print_metadata(cbuf *stack, char name)
 	ft_putstr_fd("]: ", 2);
 }
 
-void	cbuf_print(cbuf *stack, char name)
+void	cbuf_print(circle_buf *stack, char name)
 {
 	int	offset;
 	int	index;
@@ -50,7 +50,7 @@ void	cbuf_print(cbuf *stack, char name)
 	ft_putchar_fd('\n', 2);
 }
 
-void	cbuf_print_stacks(cbuf *a, cbuf *b)
+void	cbuf_print_stacks(circle_buf *a, circle_buf *b)
 {
 	cbuf_print(a, 'A');
 	cbuf_print(b, 'B');

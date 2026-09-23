@@ -12,7 +12,7 @@
 
 #include "push_swap.h"
 
-int	cbuf_rotate(cbuf *stack)
+int	cbuf_rotate(circle_buf *stack)
 {
 	int	top_idx;
 	int	insert_idx;
@@ -29,7 +29,7 @@ int	cbuf_rotate(cbuf *stack)
 	return (SUCCESS);
 }
 
-int	cbuf_rev_rotate(cbuf *stack)
+int	cbuf_rev_rotate(circle_buf *stack)
 {
 	int	new_top_idx;
 	int	bottom_idx;
@@ -46,7 +46,7 @@ int	cbuf_rev_rotate(cbuf *stack)
 	return (SUCCESS);
 }
 
-int	cbuf_swap_top(cbuf *stack)
+int	cbuf_swap_top(circle_buf *stack)
 {
 	int	first_idx;
 	int	second_idx;

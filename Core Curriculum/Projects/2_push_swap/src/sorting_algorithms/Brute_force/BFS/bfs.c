@@ -16,7 +16,7 @@
 # include "DO_NOT_SUBMIT_DEBUG_bfs_results.h"
 #endif
 
-static void	gen_brute_state(t_brutestate *state, cbuf *a, cbuf *b)
+static void	gen_brute_state(t_brutestate *state, circle_buf *a, circle_buf *b)
 {
 	int	offset;
 	int	index;
@@ -80,7 +80,7 @@ static void	mark_state_visited(unsigned char *visited, int state_id)
 /* later: check duplicate upgrade to Lehmer */
 /* A no-op such as sb when B is empty is handled automatically: 
 temp remains identical to nodes[i].state, so brute_state_exists() finds it and it isn't appended. */
-static int	bfs_find_goal(t_brutenode *nodes, cbuf *a, cbuf *b)
+static int	bfs_find_goal(t_brutenode *nodes, circle_buf *a, circle_buf *b)
 {
 	t_brutestate	temp;
 	int			n;
@@ -172,7 +172,7 @@ static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 	x->step = len;
 }
 
-int	brute_solve(soln *x, cbuf *a, cbuf *b)
+int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
 {
 	t_brutenode	*nodes;
 	int			goal;
@@ -201,7 +201,7 @@ int	brute_solve(soln *x, cbuf *a, cbuf *b)
 	return (SUCCESS);
 }
 
-/* int	brute_solve(soln *x, cbuf *a, cbuf *b)
+/* int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
 {
 	t_brutenode	nodes[BRUTE_TOTAL_N_PLUS_1_FACTORIAL];
 	int			goal;

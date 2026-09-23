@@ -58,6 +58,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Description](#description)
 - [Instructions](#instructions)
 - [Rank normalisation](#rank-normalisation)
+- [Why radix as my basic algo?](#why-radix)
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [BFS and state indexing](#bfs-and-state-indexing)
 - [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
@@ -162,6 +163,69 @@ The ordering is preserved, so the same stack moves sort either representation.
 The current implementation compares every value with every other value, taking
 O(n²) time. Small BFS states store normalised ranks as unsigned bytes; the main
 stacks still store integers.
+
+[↑ Back to top](#top)
+
+<a id="why-radix"></a>
+
+## Why radix as my basic algo?
+
+So the plan now is to implement radix as my **basic algo** first. I've already
+experimented with BFS, but taking those ideas further can come later. First I
+want a straightforward sort working and to understand why its moves work.
+
+What confused me was: why radix? Why can't I just use insertion sort, merge
+sort, or another divide-and-conquer algo?
+
+Actually, I can. With a normal array, though, I can access whatever position I
+want. In `push_swap`, even if I know exactly where a number belongs, I still
+have to get it there using pushes, swaps and rotations. That movement is what
+costs me. Spending more time thinking about a move can be worth it if I end up
+printing fewer operations.
+
+Insertion sort can translate into rotating to the right position and pushing
+a number in. Merge sort is possible too. I initially wondered whether reverse
+rotation or access to the end of the array breaks it, but that's not really the
+issue: managing the sorted runs and reaching the next element of each run takes
+more work with stacks. Partitioning around a pivot is possible as well; I just
+have to manage those partitions through the allowed operations.
+
+Radix happens to fit these operations quite naturally. First, **ranks let me
+ignore how big the actual numbers are**:
+
+```text
+Values:  -40   900   7   120
+Ranks:     0     3   1     2
+```
+
+I'm basically saying: "I don't care that this number is 900. I care that it's
+the biggest of these four."
+
+Sorting the ranks gives the same order as sorting the original values. But now,
+instead of dealing with negatives and potentially huge numbers, I've got a tidy
+range from `0` to `n - 1`. That keeps the number of binary digits I need to
+process small.
+
+Then radix goes through those ranks **one bit at a time**, starting from the
+rightmost bit. Each pass splits them into two groups: current bit is `0`, or
+current bit is `1`.
+
+So my "two classes" aren't really small indices versus large indices. The groups
+change depending on which bit I'm looking at. On the first pass, for example,
+I'm separating evens from odds.
+
+That's where the two stacks come in handy: I can push one group to B and rotate
+the other group within A. Then I bring B back. Done properly, each group keeps
+its relative order, so the next bit's pass builds on the previous pass instead
+of undoing it. Pushing a group to B reverses its order, and pushing it all back
+reverses it again.
+
+So ranks make the numbers convenient to work with, and radix gives me a
+repetitive process that fits the stack operations. It's a good basic algo
+because it's straightforward and predictable, with O(n log n) stack operations
+for the usual binary passes. That doesn't mean it gives the fewest moves.
+Getting this baseline working comes first; exploring greedy move costs and
+more BFS ideas comes later.
 
 [↑ Back to top](#top)
 
@@ -311,6 +375,7 @@ measured move-count improvements. Outstanding work includes:
 
 ## Resources
 
+- [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. Related reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
 - [Working notes](notes.md) and [saved study reports](debug/results/) document the investigation and examples.
 - [Bundled libft documentation](libft/README.md) describes the shared library.
 - [Pipex README](../2_pipex/README.md) provides the structure used here: feature status, design explanations, reproducible commands and explicit limitations.
