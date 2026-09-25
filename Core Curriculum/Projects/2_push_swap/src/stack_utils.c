@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 22:09:21 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/25 18:31:07 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,4 +83,25 @@ int	get_order_top_three(circle_buf *a)
 			return (231);
 	}
 	return (132);
+}
+
+/*
+** TODO: Bring A's minimum to its top by the cheaper rotation direction.
+** Requires circularly ascending A. Empty/singleton/already aligned: SUCCESS.
+*/
+int	rot_a_min_to_top(soln *x, circle_buf *a)
+{
+	int	current_rank;
+	int	index;
+	int	scan_direction;
+
+	scan_direction = 1;
+	*target_index = -1;
+	if (cbuf_read_at(a, 0, &current_rank) == SUCCESS
+		&& current_rank > 0)
+		scan_direction = -1;
+	index = greedy_scan_target(a, 0, scan_direction);
+	if (index < 0)
+	//reverse
+	return (ERROR);
 }

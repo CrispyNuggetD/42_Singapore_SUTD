@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 22:01:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/25 18:24:04 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,22 +34,19 @@ int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b)
 */
 int	greedy_insert_all(soln *x, circle_buf *a, circle_buf *b)
 {
-	(void)x;
-	(void)a;
-	(void)b;
+	t_greedy_plan	best_plan;
+
+	while (cbuf_len(b) && greedy_choose_plan(a, b, &best_plan) == SUCCESS)
+	{
+		if (greedy_execute_plan(x, a, b, &best_plan) == ERROR)
+			return (ERROR);
+	}
+	if (cbuf_len(b) == 0)
+		return (SUCCESS);
 	return (ERROR);
 }
 
-/*
-** TODO: Bring A's minimum to its top by the cheaper rotation direction.
-** Requires circularly ascending A. Empty/singleton/already aligned: SUCCESS.
-*/
-int	greedy_align_min(soln *x, circle_buf *a)
-{
-	(void)x;
-	(void)a;
-	return (ERROR);
-}
+
 
 /*
 ** TODO: Compose preparation, insertion and alignment; propagate failures.
@@ -63,4 +60,69 @@ int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b)
 	(void)a;
 	(void)b;
 	return (ERROR);
+}
+//last
+
+static int	greedy_non_shared_moves(soln *x, circle_buf *a, circle_buf *b,
+		t_greedy_plan *temp)
+{
+	while (temp->rot_a > 0)
+	{
+		if (ra(x, a) != SUCCESS)
+			return (ERROR);
+		temp->rot_a--;
+	}
+	while (temp->rot_a < 0)
+	{
+		if (rra(x, a) != SUCCESS)
+			return (ERROR);
+		temp->rot_a++;
+	}
+	while (temp->rot_b > 0)
+	{
+		if (rb(x, b) != SUCCESS)
+			return (ERROR);
+		temp->rot_b--;
+	}
+	while (temp->rot_b < 0)
+	{
+		if (rrb(x, b) != SUCCESS)
+			return (ERROR);
+		temp->rot_b++;
+	}
+	return (SUCCESS);
+}
+
+/*
+** TODO: Execute a fresh plan using existing operation wrappers and soln.
+** Share compatible rotations, finish leftovers, then push. Check failures.
+** Use local remaining counts so the caller's plan stays unchanged.
+*/
+int	greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
+		const t_greedy_plan *plan)
+{
+	t_greedy_plan	temp;
+	int				shared_rot;
+	int				outcome;
+
+	temp = *plan;
+	outcome = 0;
+	shared_rot = (temp.rot_a * temp.rot_b) > 0;
+	shared_rot = shared_rot * ryker_ft_sign(temp.rot_a);
+	while (shared_rot != 0 && temp.rot_a != 0
+		&& temp.rot_b != 0 && outcome == 0)
+	{
+		if (shared_rot == 1)
+			outcome = rr(x, a, b);
+		if (shared_rot == -1)
+			outcome = rrr(x, a, b);
+		if (outcome == 0)
+		{
+			temp.rot_a -= shared_rot;
+			temp.rot_b -= shared_rot;
+		}
+	}
+	if (outcome != 0 || greedy_non_shared_moves(x, a, b, &temp) == ERROR)
+		return (ERROR);
+	return (pa(x, a, b));
 }

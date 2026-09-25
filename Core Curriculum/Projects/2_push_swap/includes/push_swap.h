@@ -134,6 +134,7 @@ int	cbuf_read_at(circle_buf *stack, int index, int *value);
 int	cbuf_is_empty(circle_buf *stack);
 int	cbuf_is_full(circle_buf *stack);
 int	cbuf_len(circle_buf *stack);
+int	cbuf_rev_moves(circle_buf *stack, int moves);
 // int	cbuf_free(circle_buf *stack);
 
 /* circle_buf operations */

@@ -29,4 +29,6 @@ int		ryker_ft_abs(int one);
 int		ryker_ft_update_max(int *dest, int candidate);
 int		ryker_ft_update_min(int *dest, int candidate);
 
+int		ryker_ft_sign(int value);
+
 #endif

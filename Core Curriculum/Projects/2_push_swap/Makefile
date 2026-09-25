@@ -29,6 +29,7 @@ SRCS		= main_push_swap.c \
 			  stack_operation_rotate.c \
 			  stack_operation_reverse_rotate.c \
 			  $(CBUF_DIR)/circular_buffer_utils.c \
+			  $(CBUF_DIR)/circular_buffer_get_info.c \
 			  $(CBUF_DIR)/circular_buffer_move_element.c \
 			  $(CBUF_DIR)/circular_buffer_insert_remove.c \
 			  debug_tools.c \

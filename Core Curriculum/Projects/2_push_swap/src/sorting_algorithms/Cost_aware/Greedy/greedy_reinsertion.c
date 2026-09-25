@@ -6,13 +6,13 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 23:15:32 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/25 18:26:21 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "greedy_reinsertion.h"
 
-static int	greedy_scan_target(circle_buf *a, int desired_rank, int reverse)
+static int	greedy_scan_target(circle_buf *a, int desired_rank, int scan_dir)
 {
 	int	current_rank;
 	int	index;
@@ -21,12 +21,12 @@ static int	greedy_scan_target(circle_buf *a, int desired_rank, int reverse)
 	index = 0;
 	prev_rank = -1;
 	while (cbuf_read_at(a, index, &current_rank) == SUCCESS
-		&& (current_rank - desired_rank) * reverse < 0)
+		&& (current_rank - desired_rank) * scan_dir < 0)
 	{
-		if (prev_rank != -1 && (current_rank - prev_rank) * reverse < 0)
+		if (prev_rank != -1 && (current_rank - prev_rank) * scan_dir < 0)
 			break ;
 		prev_rank = current_rank;
-		index += reverse;
+		index += scan_dir;
 	}
 	return (index);
 }
@@ -37,16 +37,16 @@ int	greedy_find_target(circle_buf *a, int desired_rank, int *target_index)
 {
 	int	current_rank;
 	int	index;
-	int	reverse;
+	int	scan_direction;
 
-	reverse = 1;
+	scan_direction = 1;
 	*target_index = GREEDY_NO_TARGET;
 	if (cbuf_len(a) == 0)
 		return (SUCCESS);
 	if (cbuf_read_at(a, 0, &current_rank) == SUCCESS
 		&& current_rank > desired_rank)
-		reverse = -1;
-	index = greedy_scan_target(a, desired_rank, reverse);
+		scan_direction = -1;
+	index = greedy_scan_target(a, desired_rank, scan_direction);
 	if (index < 0)
 		index += cbuf_len(a) + 1;
 	if (index == cbuf_len(a))
@@ -56,74 +56,84 @@ int	greedy_find_target(circle_buf *a, int desired_rank, int *target_index)
 	return (SUCCESS);
 }
 
+static void	greedy_update_best_cost(int candidate_costs[4], int rev_cost[2],
+	t_greedy_plan *plan)
+{
+	int	current_candidate;
+	int	best_candidate;
+
+	current_candidate = 1;
+	best_candidate = 0;
+	while (current_candidate < 4)
+	{
+		if (ryker_ft_update_min(&plan->cost,
+				candidate_costs[current_candidate]))
+			best_candidate = current_candidate;
+		current_candidate++;
+	}
+	if (best_candidate == 1)
+		plan->rot_b = -rev_cost[1];
+	else if (best_candidate == 2)
+		plan->rot_a = -rev_cost[0];
+	else if (best_candidate == 3)
+	{
+		plan->rot_a = -rev_cost[0];
+		plan->rot_b = -rev_cost[1];
+	}
+	return ;
+}
+
 /*
-** TODO: For one valid B index, find its target and compare all four routes.
-** Remember top-index zero and empty A. Keep the winning signed rotations.
-** Include the push in cost. Do not rotate stacks while evaluating a plan.
+** For one valid B index, find its target and compare all four routes.
+** Included the push in cost.
 */
 int	greedy_plan_candidate(circle_buf *a, circle_buf *b, int b_index,
-		t_greedy_plan *plan)
+	t_greedy_plan *plan)
 {
-	int	b_candidate;
 	int	target_index;
-	int	other_cost;
+	int	candidate_costs[4];
+	int	rev_cost[2];
 
-	if (cbuf_read_at(b, b_index, &b_candidate) ||
-		greedy_find_target(a, b_candidate, &target_index) == ERROR)
+	if (cbuf_read_at(b, b_index, &plan->candidate_rank)
+		|| greedy_find_target(a, plan->candidate_rank, &target_index) == ERROR)
 		return (ERROR);
-	plan->candidate_rank = b_candidate;
 	if (cbuf_len(a) == 0)
 		plan->rot_a = 0;
 	else
 		plan->rot_a = target_index;
 	plan->rot_b = b_index;
-	plan->cost = ryker_ft_max(plan->rot_a, plan->rot_b) + 1;
-	other_cost = ryker_ft_max((cbuf_len(a) - plan->rot_a), (cbuf_len(b) - plan->rot_b)) + 1;
-	if (ryker_ft_update_min(&plan->cost, other_cost) == 1)
-	{
-		plan->rot_a = target_index - cbuf_len(a);
-		plan->rot_b = b_index - cbuf_len(b);
-	}
-	other_cost = ryker_ft_max((target_index - cbuf_len(a)), (cbuf_len(b) - plan->rot_b) + 1;
+	rev_cost[0] = cbuf_rev_moves(a, plan->rot_a);
+	rev_cost[1] = cbuf_rev_moves(b, plan->rot_b);
+	candidate_costs[0] = ryker_ft_max(plan->rot_a, plan->rot_b) + 1;
+	candidate_costs[1] = plan->rot_a + rev_cost[1] + 1;
+	candidate_costs[2] = rev_cost[0] + plan->rot_b + 1;
+	candidate_costs[3] = ryker_ft_max(rev_cost[0], rev_cost[1]) + 1;
+	plan->cost = candidate_costs[0];
+	greedy_update_best_cost(candidate_costs, rev_cost, plan);
 	return (SUCCESS);
 }
 
 /*
-** TODO: Evaluate each candidate in B, retaining the cheapest complete plan.
+** Evaluate each candidate in B, retaining the cheapest complete plan.
 ** First minimum wins ties for now. Empty B returns ERROR: no candidate.
-** How will you initialise best without comparing uninitialised fields?
 */
 int	greedy_choose_plan(circle_buf *a, circle_buf *b, t_greedy_plan *best)
 {
-	(void)a;
-	(void)b;
-	(void)best;
-	return (ERROR);
+	t_greedy_plan	candidate_plan;
+	int				b_index;
+	int				b_len;
 
-
-	else if (target_index > (cbuf_len(a) / 2))
-		plan->rot_a = target_index - cbuf_len(a);
-	else
-		plan->rot_a = target_index;
-	if (cbuf_len(b) == 0)
-		plan->rot_b = 0;
-	else if (b_index > (cbuf_len(b) / 2))
-		plan->rot_b = b_index - cbuf_len(b);
-	else
-		plan->rot_b = b_index;
-}
-
-/*
-** TODO: Execute a fresh plan using existing operation wrappers and soln.
-** Share compatible rotations, finish leftovers, then push. Check failures.
-** Use local remaining counts so the caller's plan stays unchanged.
-*/
-int	greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
-		const t_greedy_plan *plan)
-{
-	(void)x;
-	(void)a;
-	(void)b;
-	(void)plan;
-	return (ERROR);
+	b_len = cbuf_len(b);
+	if (b_len == 0)
+		return (ERROR);
+	b_index = 0;
+	while (b_index < b_len)
+	{
+		if (greedy_plan_candidate(a, b, b_index, &candidate_plan) == ERROR)
+			return (ERROR);
+		if (b_index == 0 || candidate_plan.cost < best->cost)
+			*best = candidate_plan;
+		b_index++;
+	}
+	return (SUCCESS);
 }
