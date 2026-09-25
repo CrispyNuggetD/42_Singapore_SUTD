@@ -812,6 +812,11 @@ start_lan42() {
     print -u2 -- "LAN42 launcher missing: $launcher"
     return 1
   fi
+  # Owner-only: refresh the auth endpoint and start it on this campus seat.
+  # Students without private auth-server.json do nothing here.
+  if [[ -f "$LAN42_CLONE/campus_lan/auth_daily.py" ]]; then
+    (builtin cd -- "$LAN42_CLONE" && command python3 -m campus_lan.auth_daily) || return
+  fi
   _daily_terminal open --cwd "$LAN42_CLONE" lan42 -- sh "$launcher" "$@"
 }
 
