@@ -1,5 +1,9 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares three-value and circular-LIS seeds; BFS experiments are parked under `Brute_force/WIP`. Both active candidates run through the same greedy insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
+
+> Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
+
 <a id="top"></a>
 
 # push_swap — studying sorting through stack operations and shortest paths
@@ -23,12 +27,13 @@ blocks, but they do not establish a compliant or efficient final solver.
 | ✅ | Circular-buffer stacks | Stores A and B in fixed arrays with wrapping read/write indices. |
 | ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
 | ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
-| 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This is the active development path. |
+| 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This remains an experimental path. |
+| ✅ | Seed comparison | Three-value and circular-LIS seeds feed greedy reinsertion; BFS experiments are parked in WIP. The first shortest active candidate is printed. |
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
 | ❌ | Subject move requirements | Not met yet; no passing 100/500-number benchmark is claimed. |
-| ❌ | Clean instruction-only output | The current solver prints progress and route diagnostics to stdout alongside moves. |
+| ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics go to stderr. |
 | ❌ | Bonus checker implementation | The supplied Linux checker is a reference binary, not a checker written for this project. |
 
 [↑ Back to top](#top)
@@ -477,6 +482,7 @@ measured move-count improvements. Outstanding work includes:
 
 ## Resources
 
+- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **Further research TODO list** proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
 - [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. Related reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
 - [Working notes](notes.md) and [saved study reports](debug/results/) document the investigation and examples.
 - [Bundled libft documentation](libft/README.md) describes the shared library.
@@ -496,3 +502,30 @@ implemented mechanisms from unfinished requirements; AI assistance is not eviden
 that the solver is correct or ready for evaluation.
 
 [↑ Back to top](#top)
+
+## Seed candidate flow
+
+`solve()` loops over `t_seed_mode`; `ALGO_COUNT` is the enum's final value, so
+allocation and iteration use the same candidate count. The active choices are
+three-value and circular-LIS seeds. Each run starts from fresh copies of the
+original stacks and records its own solution. Preparation never calls
+`new_soln_init()`. The first shortest completed solution wins ties.
+
+| Stage | File | Responsibility |
+| --- | --- | --- |
+| Candidate loop | `src/solve.c` | Reset stacks and solution once per seed mode. |
+| Preparation | `greedy_prepare.c` | Keep three values or a circular LIS. |
+| Composition | `greedy_stages.c` | Prepare, greedily insert B into A, then align A's minimum. |
+| Execution | `greedy_execute.c` | Share compatible rotations, finish separate rotations, then push. |
+
+The restricted BFS seed implementation and proposed bounded all-eleven-move
+search are both parked under [Brute_force/WIP](src/sorting_algorithms/Brute_force/WIP/README.md).
+That README explains the file roles, differences, unfinished work, and how to
+reconnect an implementation later. Neither is included in the active build.
+
+Build with `make`, then run `python3 tests/test_seed_candidates.py`. The regression
+replays both active candidates, verifies sorted A and empty B, and checks that
+stdout matches the first shortest candidate. It covers every permutation of sizes
+2–5 and sorted, reversed, and deterministic shuffled inputs through 500 values.
+The refactored seed-flow C files pass Norminette; the repository still has
+pre-existing violations elsewhere, including the shared header and LIS code.

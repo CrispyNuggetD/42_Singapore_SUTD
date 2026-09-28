@@ -15,7 +15,7 @@
 static size_t		itoa_no_sign(long long n, char buf[21], const char **start);
 static void			print_sign(const t_context *context, t_print *paper, \
 long long arg);
-static long long	read_signed(va_list arg, t_length length);
+static long long	read_signed(va_list *arg, t_length length);
 
 int	ft_printf_d_i(t_context *context)
 {
@@ -26,7 +26,7 @@ int	ft_printf_d_i(t_context *context)
 	t_print		paper;
 
 	ft_printf_init_t_print(&paper);
-	arg = read_signed(*(context->input), context->spec->length);
+	arg = read_signed(context->input, context->spec->length);
 	print_sign(context, &paper, arg);
 	digit_len = itoa_no_sign(arg, text, &start);
 	if ((context->spec->flags & FLAG_PREC) && \
@@ -43,21 +43,21 @@ context->spec->precision == 0 && arg == 0)
 //If ever support *, negative precision means “precision not specified"
 //hence keep precision >= 0
 
-static long long	read_signed(va_list arg, t_length length)
+static long long	read_signed(va_list *arg, t_length length)
 {
 	long long	temp_arg;
 
 	temp_arg = 0;
 	if (length == LEN_NONE)
-		temp_arg = (long long)va_arg(arg, int);
+		temp_arg = (long long)va_arg(*arg, int);
 	else if (length == LEN_HH)
-		temp_arg = (long long)(signed char)va_arg(arg, int);
+		temp_arg = (long long)(signed char)va_arg(*arg, int);
 	else if (length == LEN_H)
-		temp_arg = (long long)(short)va_arg(arg, int);
+		temp_arg = (long long)(short)va_arg(*arg, int);
 	else if (length == LEN_L)
-		temp_arg = (long long)va_arg(arg, long);
+		temp_arg = (long long)va_arg(*arg, long);
 	else
-		temp_arg = va_arg(arg, long long);
+		temp_arg = va_arg(*arg, long long);
 	return (temp_arg);
 }
 

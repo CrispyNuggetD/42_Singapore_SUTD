@@ -108,6 +108,7 @@ details and test evidence in the linked component documentation.
 
 | Date | Component | Change |
 | --- | --- | --- |
+| 2026-09-29 | Printf portability | Numeric helpers now consume the shared `va_list` through a pointer. Fixes mixed-format argument reuse and the Apple Silicon debug-print crash; see [implementation and validation](1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption). |
 | 2026-09-28 | `ryker_ft_array_max_at` | Added array maximum/index lookup to master libft and the push_swap copy, with first-maximum tie handling and null/empty errors. |
 | 2026-09-25 | `ryker_ft_sign` | Added the sign helper to the master library and push_swap copy, with public declaration and automatic archive inclusion. |
 | 2026-09-23 | Math updates | Added `ryker_ft_update_max` and `ryker_ft_update_min` to the master library and push_swap copy only. |

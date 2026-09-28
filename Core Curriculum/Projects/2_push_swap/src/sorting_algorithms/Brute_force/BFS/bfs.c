@@ -212,6 +212,9 @@ int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
 	t_brutenode	*nodes;
 	int			goal;
 
+#ifdef BFS_DEBUG
+	debug_print_bfs_memory(BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+#endif
 	printf("BFS ALLOCATING: %zu bytes\n",
 		sizeof(t_brutenode) * (size_t)BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
 	fflush(stdout);

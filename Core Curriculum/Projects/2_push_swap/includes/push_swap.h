@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/28 23:13:18 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 02:00:51 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,12 @@
 # define BRUTE_MAX_N			10
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
 
+typedef enum e_seed_mode
+{
+	SEED_THREE,
+	SEED_LIS,
+	ALGO_COUNT
+}	t_seed_mode;
 
 typedef struct s_circle_buf
 {
@@ -84,11 +90,12 @@ typedef struct s_brutenode
 # define RRR	'B'
 
 /* debugger */
+void	debug_print_bfs_memory(size_t node_count);
 void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(circle_buf *stack, char name);
 void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
 void	debug_print_soln(const soln *x, circle_buf *a_ori);
-int		print_first_soln(const soln *x);
+int		print_best_soln(const soln *x);
 
 /* do not submit*/
 int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b);
@@ -110,7 +117,7 @@ int	rot_a_min_to_top(soln *x, circle_buf *a);
 /* Solver entry points; callers do not need algorithm-specific headers. */
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
 int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b,
-		char keep_flags[500]);
+		t_seed_mode mode);
 int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
 
 /* bfs solver */

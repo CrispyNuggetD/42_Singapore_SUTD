@@ -18,7 +18,7 @@ LIBFT_HEADERS = $(LIBFT_DIR)/ryker_libft.h \
 	$(wildcard $(LIBFT_DIR)/0_libft/*.h $(LIBFT_DIR)/1_ft_printf/*.h \
 	$(LIBFT_DIR)/1_get_next_line/*.h $(LIBFT_DIR)/ryker_ft/*.h \
 	$(LIBFT_DIR)/ryker_ft/*/*.h)
-HEADERS = $(INC_DIR)/push_swap.h $(INC_DIR)/greedy_reinsertion.h $(LIBFT_HEADERS)
+HEADERS = $(wildcard $(INC_DIR)/*.h) $(LIBFT_HEADERS)
 
 CBUF_DIR = data_structures/circular_buffer
 BFS_DIR = sorting_algorithms/Brute_force/BFS
@@ -46,6 +46,8 @@ SRCS		= main_push_swap.c \
 			  $(BFS_DIR)/bfs_optimiser_lehmer_rank.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c \
 			  chunk_extract_optimal.c \
 			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c
 

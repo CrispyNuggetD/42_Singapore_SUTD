@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   solve.c                                            :+:      :+:    :+:   */
+/*   bfs_seed.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,24 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "push_swap.h"
+#ifndef BFS_SEED_H
+# define BFS_SEED_H
 
-/* Each candidate owns a fresh copy; preparation never resets a solution. */
-int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
+# include "push_swap.h"
+
+typedef struct s_seed_search
 {
-	circle_buf	stacks[2];
-	t_seed_mode	mode;
+	t_brutenode		*nodes;
+	unsigned char	*visited;
+	int				n;
+	int				capacity;
+	int				head;
+	int				count;
+}	t_seed_search;
 
-	if (count != cbuf_len(a) || cbuf_len(b) != 0)
-		return (ERROR);
-	mode = SEED_THREE;
-	while (mode < ALGO_COUNT)
-	{
-		if (new_soln_init(x, stacks, a, b) == ERROR)
-			return (ERROR);
-		if (greedy_reinsertion(x, &stacks[A], &stacks[B], mode) == ERROR)
-			return (ERROR);
-		mode++;
-	}
-	return (SUCCESS);
-}
+int	bfs_seed_sort(soln *x, circle_buf *a, circle_buf *b);
+int	seed_search_init(t_seed_search *search, circle_buf *a);
+int	seed_search_goal(t_seed_search *search);
+int	seed_is_goal(t_brutestate *state, int n);
+int	seed_replay(soln *x, circle_buf *a, circle_buf *b, char *route);
+#endif

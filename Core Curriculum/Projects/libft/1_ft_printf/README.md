@@ -1,8 +1,45 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-09-29): numeric handlers now advance the shared `va_list` through a pointer, fixing mixed-format output and an Apple Silicon crash. See [the variadic portability update](#post-submission-update-portable-variadic-argument-consumption).
+
 > Post-submission update (2026-09-14): printf now supports a configurable output FD for reuse in Pipex. See [Post-submission update: custom FD and Ryker libft](#post-submission-update-custom-fd-and-ryker-libft) for the changes from the submitted implementation.
 
 > Post-submission update (2026-09-21): struct initialization now uses our own `ft_memset`. See [the initialization update](#post-submission-update-explicit-struct-initialization).
+## Post-submission update: portable variadic argument consumption
+
+**2026-09-29 — applied with Codex assistance to standalone ft_printf, master
+`Projects/libft`, and the push_swap, Pipex, and FDF library copies.**
+
+The signed-decimal, unsigned-decimal, lowercase-hex, and uppercase-hex helpers
+previously accepted `va_list` by value. On Apple Silicon macOS this advanced a
+copy of the argument cursor. A following conversion reused the previous argument:
+`"%d %d"` with `1, 2` printed `1 1`, and `"%d %s"` with `1, "sa"` could pass
+address `0x1` to `ft_strlen` and crash. The original behavior happened to work on
+the typical x86-64 Linux array-based `va_list` implementation; that behavior was
+not a portable way to share argument traversal.
+
+Both `read_signed` and `read_unsigned` now accept `va_list *`. Their callers pass
+`context->input` directly, and every extraction inside those helpers uses
+`va_arg(*arg, type)`. Their declarations and definitions agree. The `%s`, `%c`,
+and `%p` handlers already dereference `context->input`, so they need no change.
+The `ft_printf`, `ft_vprintf`, and FD-wrapper interfaces remain unchanged.
+
+Passing a pointer to an initialized `va_list` is supported by the C standard
+(see [section 7.16 and footnote 295](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf)).
+This shares traversal deliberately on both platforms; it does not use `va_copy`,
+which would create an independent traversal instead. Rebuild the archive and
+its consumers after updating sources.
+
+Validation on Apple Silicon macOS: all five library copies built with
+`-Wall -Wextra -Werror`; eight mixed-format cases matched system `printf` output
+and return counts for each copy, and for the FD wrapper in all four expanded
+packages. Cases covered consecutive integers, integers followed by strings,
+characters and pointers, `hh`/`h`/`l`/`ll` modifiers, signed and unsigned limits,
+and flags, width, and precision. The push_swap consumer completed three generated
+runs each at 2, 11, 100, and 500 values without a crash. These are formatter and
+crash-regression checks, not proof of sorting correctness or move-count targets.
+Linux execution was not performed in this update.
+
 # Description
 
 - This project recodes a *somewhat relatively* functional ```printf()``` function as per found in ```<stdio.h>```.

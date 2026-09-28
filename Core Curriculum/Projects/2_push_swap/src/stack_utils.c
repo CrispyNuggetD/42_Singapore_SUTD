@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/28 23:17:53 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 03:19:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 
 	x->cur = -1;
 	x->step = -1;
-	x->ans_len = malloc(sizeof(int) * soln_num);
-	x->ans = malloc(sizeof(char *) * soln_num);
+	x->ans_len = ft_calloc(sizeof(int) * soln_num + 1);
+	x->ans = ft_calloc(sizeof(char *) * soln_num + 1);
 	if (!x->ans)
 		return (ERROR);
 	cur_soln = (int)soln_num;
@@ -51,6 +51,7 @@ int	new_soln_init(soln *x, circle_buf stacks[2], circle_buf *a_ori, circle_buf *
 	if (!x || !stacks || !a_ori || !b_ori)
 		return (ERROR);
 	x->cur++;
+	x->ans_len[x->cur] = 0;
 	x->step = 0;
 	stacks[A] = *a_ori;
 	stacks[B] = *b_ori;

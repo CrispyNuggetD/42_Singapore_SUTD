@@ -45,5 +45,6 @@ int	greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
 
 /* Requires empty or circularly ascending A; accepts arbitrary B. */
 int	greedy_insert_all(soln *x, circle_buf *a, circle_buf *b);
-int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b);
+int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b,
+		t_seed_mode mode);
 #endif

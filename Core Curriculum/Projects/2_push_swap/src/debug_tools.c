@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/23 06:01:57 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/28 23:22:34 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 01:35:48 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,18 +179,52 @@ static int	print_move(char move)
 	return (SUCCESS);
 }
 
-int	print_first_soln(const soln *x)
+int	print_best_soln(const soln *x)
 {
 	int	i;
+	int	best_algo;
 
-	if (x == NULL || x->ans == NULL || x->ans_len == NULL)
+	if (x == NULL || x->ans == NULL || x->ans_len == NULL || x->cur < 0)
 		return (ERROR);
-	i = 0;
-	while (i < x->ans_len[0])
+	i = 1;
+	best_algo = 0;
+	while (i <= x->cur)
 	{
-		if (print_move(x->ans[0][i]) == ERROR)
+		if (x->ans_len[i] < x->ans_len[best_algo])
+			best_algo = i;
+		i++;
+	}
+	i = 0;
+	while (i < x->ans_len[best_algo])
+	{
+		if (print_move(x->ans[best_algo][i]) == ERROR)
 			return (ERROR);
 		i++;
 	}
 	return (SUCCESS);
+}
+
+/* Planned storage, not measured resident memory. KB/MB use decimal units. */
+void	debug_print_bfs_memory(size_t node_count)
+{
+	size_t	states;
+	size_t	nodes;
+	size_t	visited;
+
+	states = sizeof(t_brutestate) * node_count;
+	nodes = sizeof(t_brutenode) * node_count;
+	visited = (node_count + 7) / 8;
+	ryker_ft_printf_fd(2, "[BFS MEMORY] capacity: %llu states\n",
+		(unsigned long long)node_count);
+	ryker_ft_printf_fd(2, "state: %llu bytes; node: %llu bytes\n",
+		(unsigned long long)sizeof(t_brutestate),
+		(unsigned long long)sizeof(t_brutenode));
+	ryker_ft_printf_fd(2, "state payload: %llu bytes / %llu KB / %llu MB\n",
+		(unsigned long long)states, (unsigned long long)(states / 1000),
+		(unsigned long long)(states / 1000000));
+	ryker_ft_printf_fd(2, "node table: %llu bytes / %llu KB / %llu MB\n",
+		(unsigned long long)nodes, (unsigned long long)(nodes / 1000),
+		(unsigned long long)(nodes / 1000000));
+	ryker_ft_printf_fd(2, "visited: %llu bytes; combined: %llu bytes\n",
+		(unsigned long long)visited, (unsigned long long)(nodes + visited));
 }
