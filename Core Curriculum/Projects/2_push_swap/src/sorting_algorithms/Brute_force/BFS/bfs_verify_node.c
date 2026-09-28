@@ -14,6 +14,10 @@
 
 static void	brute_apply_rotate(t_brutestate *state, char move, int n);
 
+/*
+** Simulate one encoded move on a compact state; do not record or print it.
+** Supports all eleven operations, although the current search tries only six.
+*/
 void	brute_apply_move(t_brutestate *state, char move, int n)
 {
 	if (move == SA)
@@ -30,6 +34,9 @@ void	brute_apply_move(t_brutestate *state, char move, int n)
 		brute_apply_rotate(state, move, n);
 }
 
+/*
+** Dispatch rotation codes to compact-state helpers; ignore unrecognised codes.
+*/
 static void	brute_apply_rotate(t_brutestate *state, char move, int n)
 {
 	if (move == RA)
@@ -77,6 +84,10 @@ int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
 	return (0);
 } */
 
+/*
+** Accept only split == 0 and values n-1 down to 0: empty A, descending B.
+** This chunk-search goal differs from the final project goal of sorted A.
+*/
 int	is_brute_goal(t_brutestate *state, int n)
 {
 	int	i;

@@ -16,6 +16,10 @@ static const int	g_factorial[12] = {
 	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
 };
 
+/*
+** Encode the permutation by counting smaller values to the right of each entry.
+** Factorial weights produce a permutation rank from 0 to n! - 1.
+*/
 static int	calculate_lehmer_rank(t_brutestate *state, int n)
 {
 	int	rank;
@@ -40,6 +44,10 @@ static int	calculate_lehmer_rank(t_brutestate *state, int n)
 	}
 	return (rank);
 }
+/*
+** Combine the A/B split and permutation rank into a visited-table index.
+** ID = split * n! + permutation rank; requires n distinct ranks in the state.
+*/
 int	calculate_state_id(t_brutestate *a, int n)
 {
 	return (a->split * g_factorial[n] + calculate_lehmer_rank(a, n));

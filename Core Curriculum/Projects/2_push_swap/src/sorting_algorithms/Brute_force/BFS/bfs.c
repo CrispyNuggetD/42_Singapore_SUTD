@@ -16,6 +16,10 @@
 # include "DO_NOT_SUBMIT_DEBUG_bfs_results.h"
 #endif
 
+/*
+** Flatten A then B, top to bottom, into value[]; split records the size of A.
+** Copy ranks without renormalising them; callers must supply small local ranks.
+*/
 static void	gen_brute_state(t_brutestate *state, circle_buf *a, circle_buf *b)
 {
 	int	offset;
@@ -48,6 +52,11 @@ static void	gen_brute_state(t_brutestate *state, circle_buf *a, circle_buf *b)
 
 //
 
+/*
+** Reject moves that would involve the unmodelled tail of real A.
+** Block sa with fewer than two visible values and A rotations when A is visible.
+** This guard covers the six moves currently tried by bfs_find_goal.
+*/
 static int	move_hits_hidden_a(t_brutestate *state, char move)
 {
 	if (state->split < 2 && move == SA)
@@ -57,6 +66,10 @@ static int	move_hits_hidden_a(t_brutestate *state, char move)
 	return (0);
 }
 
+/*
+** Apply a move to a search-state copy only if the hidden-A guard permits it.
+** Return 1 when permitted, 0 when blocked; a permitted move may still be a no-op.
+*/
 static int	brute_apply_wall_move(t_brutestate *state, char move, int n)
 {
 	if (move_hits_hidden_a(state, move))
@@ -65,11 +78,17 @@ static int	brute_apply_wall_move(t_brutestate *state, char move, int n)
 	return (1);
 }
 
+/*
+** Read the visited bit for this encoded state; nonzero means already discovered.
+*/
 static int	state_was_visited(unsigned char *visited, int state_id)
 {
 	return (visited[state_id / 8] & (1 << (state_id % 8)));
 }
 
+/*
+** Set the visited bit so later routes to the same state are skipped.
+*/
 static void	mark_state_visited(unsigned char *visited, int state_id)
 {
 	visited[state_id / 8] |= (1 << (state_id % 8));
@@ -80,6 +99,13 @@ static void	mark_state_visited(unsigned char *visited, int state_id)
 /* later: check duplicate upgrade to Lehmer */
 /* A no-op such as sb when B is empty is handled automatically: 
 temp remains identical to nodes[i].state, so brute_state_exists() finds it and it isn't appended. */
+/*
+** Explore states breadth first using sa, sb, pa, pb, ra and rra plus the A guard.
+** Save each new state with its parent and move; visited bits also discard no-ops.
+** Return the goal node index, or -1 if exhausted. Current early errors return
+** ERROR (1), which overlaps a valid node index; the caller only checks negatives.
+** Shortest paths here are only within this restricted move graph.
+*/
 static int	bfs_find_goal(t_brutenode *nodes, circle_buf *a, circle_buf *b)
 {
 	t_brutestate	temp;
@@ -147,6 +173,10 @@ static int	bfs_find_goal(t_brutenode *nodes, circle_buf *a, circle_buf *b)
 	return (-1);
 }
 
+/*
+** Walk parent links backwards and write the route in forward execution order.
+** Replace the current solution route and length; do not apply moves to stacks.
+*/
 static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 {
 	int	node;
@@ -172,6 +202,11 @@ static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 	x->step = len;
 }
 
+/*
+** Allocate the configured maximum node table, search, and reconstruct a route.
+** Leave the input stacks unchanged; callers must replay the route themselves.
+** Current goal: empty A and descending B. Progress diagnostics go to stdout.
+*/
 int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
 {
 	t_brutenode	*nodes;

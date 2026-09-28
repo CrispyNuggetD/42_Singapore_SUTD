@@ -6,13 +6,13 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/25 18:26:21 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/28 16:02:25 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "greedy_reinsertion.h"
 
-static int	greedy_scan_target(circle_buf *a, int desired_rank, int scan_dir)
+int	greedy_scan_target(circle_buf *a, int desired_rank, int scan_dir)
 {
 	int	current_rank;
 	int	index;
@@ -102,8 +102,8 @@ int	greedy_plan_candidate(circle_buf *a, circle_buf *b, int b_index,
 	else
 		plan->rot_a = target_index;
 	plan->rot_b = b_index;
-	rev_cost[0] = cbuf_rev_moves(a, plan->rot_a);
-	rev_cost[1] = cbuf_rev_moves(b, plan->rot_b);
+	rev_cost[0] = cbuf_opp_moves(a, plan->rot_a);
+	rev_cost[1] = cbuf_opp_moves(b, plan->rot_b);
 	candidate_costs[0] = ryker_ft_max(plan->rot_a, plan->rot_b) + 1;
 	candidate_costs[1] = plan->rot_a + rev_cost[1] + 1;
 	candidate_costs[2] = rev_cost[0] + plan->rot_b + 1;

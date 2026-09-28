@@ -59,6 +59,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Instructions](#instructions)
 - [Rank normalisation](#rank-normalisation)
 - [Why radix as my basic algo?](#why-radix)
+- [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [BFS and state indexing](#bfs-and-state-indexing)
 - [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
@@ -226,6 +227,107 @@ because it's straightforward and predictable, with O(n log n) stack operations
 for the usual binary passes. That doesn't mean it gives the fewest moves.
 Getting this baseline working comes first; exploring greedy move costs and
 more BFS ideas comes later.
+
+[↑ Back to top](#top)
+
+<a id="lis-lds-guarantee"></a>
+
+## LIS, LDS and the square-root guarantee
+
+A subsequence can skip intervening numbers, but keeps their original relative
+order. So in `1 8 2 9 3 4`, I can keep `1 2 3 4` as an increasing subsequence.
+LIS means longest increasing subsequence; LDS means longest decreasing subsequence.
+
+The **Erdős–Szekeres theorem** says that, for positive integers $r$ and $s$, any
+sequence of distinct numbers with length
+
+$$
+n \geq (r - 1)(s - 1) + 1
+$$
+
+contains an increasing subsequence of length at least $r$, **or** a decreasing
+subsequence of length at least $s$.
+See [the theorem statement in this research paper](https://www.sciencedirect.com/science/article/am/pii/S0195669821001505).
+
+Taking equal thresholds gives the square-root guarantee:
+
+$$
+\max\bigl(\operatorname{LIS}(A),\operatorname{LDS}(A)\bigr)
+\geq \left\lceil\sqrt{n}\right\rceil.
+$$
+
+For my 500-number input:
+
+$$
+(23 - 1)^2 + 1 = 485 \leq 500,
+\qquad
+\left\lceil\sqrt{500}\right\rceil = 23.
+$$
+
+So yes, there must be an LIS **or** LDS of at least 23 elements. The catch is
+that I don't get to choose which one the theorem guarantees. A completely
+descending input has
+
+$$
+\operatorname{LIS}(A) = 1,
+\qquad
+\operatorname{LDS}(A) = 500.
+$$
+
+For my planned LIS preparation, I'll keep an increasing subsequence in A and
+push the rest to B before greedy reinsertion. This theorem alone doesn't
+guarantee that I can keep 23 elements in A: the long subsequence might be
+decreasing. It also doesn't promise a particular push_swap move count.
+
+### Why keep the longest seed?
+
+What makes a useful seed for my reinsertion algo? Once I've pushed the other
+elements to B, the elements kept in A must be circularly ascending. An increasing
+subsequence gives me that property. It doesn't need consecutive ranks or a `0`
+at the start: greedy reinsertion can fill the gaps later.
+
+Suppose I start with $n$ elements in A and empty B, and keep a seed $S$ of
+length $k$. If I push each remaining element to B exactly once, then return
+each to A exactly once, the push count is
+
+$$
+P(S) = \underbrace{(n-k)}_{\mathrm{pb}}
+     + \underbrace{(n-k)}_{\mathrm{pa}}
+     = 2(n-k).
+$$
+
+So every extra element I keep saves exactly two pushes under this strategy:
+
+$$
+P(k+1)-P(k)=-2.
+$$
+
+That's my mathematical reason for starting with LIS: among ordinary increasing
+subsequence seeds, choosing the longest one minimises this push count. It is
+not a lower bound for every possible push_swap algorithm; other strategies
+can use swaps or different transfers.
+
+For example, both seeds below have length 9 and require just two pushes:
+
+```text
+Input: 0 1 2 8 4 9 10 11 12 13
+Keep:  0 1 2 8   9 10 11 12 13   -> move 4 out and back
+Keep:  0 1 2   4 9 10 11 12 13   -> move 8 out and back
+```
+
+The catch is rotations. If $R(S)$ counts the rotation instructions for
+extraction, reinsertion and final alignment (with `rr` or `rrr` counting as one
+instruction), this push-and-rotate strategy has total cost
+
+$$
+M(S)=2(n-|S|)+R(S).
+$$
+
+A longer seed reduces the first term, but can change the second. So LIS is a
+justified starting heuristic, not proof of the fewest total moves. For now,
+I'll keep the first longest seed I find; comparing rotation costs between
+seeds can come later. Circular seed selection can also retain more than an
+ordinary LIS: `8 9 0 1 2` is already circularly ascending as a whole.
 
 [↑ Back to top](#top)
 

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   debug_tools.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/23 06:01:57 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/28 23:22:34 by hnah             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "push_swap.h"
 // 20260723(Thu)05:57:24+08:00
 
@@ -8,12 +20,12 @@ void	debug_print_int_array(const int *array, int size)
 	i = 0;
 	while (i < size)
 	{
-		printf("%d", array[i]);
+		ryker_ft_printf_fd(STDERR_FILENO, "%d", array[i]);
 		if (i < size - 1)
-			printf(" ");
+			ryker_ft_printf_fd(STDERR_FILENO, " ");
 		i++;
 	}
-	printf("\n");
+	ryker_ft_printf_fd(STDERR_FILENO, "\n");
 }
 
 static void	cbuf_print_metadata(circle_buf *stack, char name)
@@ -83,7 +95,7 @@ static const char	*move_name(char move)
 	return ("UNKNOWN");
 }
 
-void	debug_print_soln(const soln *x)
+void	debug_print_soln(const soln *x, circle_buf *a_ori)
 {
 	int	solution_index;
 	int	move_index;
@@ -91,38 +103,43 @@ void	debug_print_soln(const soln *x)
 
 	if (x == NULL)
 	{
-		printf("[SOLN DEBUG] x is NULL\n");
+		ryker_ft_printf_fd(STDERR_FILENO, "[SOLN DEBUG] x is NULL\n");
 		return ;
 	}
-	printf("\n========== SOLUTION DEBUG ==========\n");
-	printf("ans address     : %p\n", (void *)x->ans);
-	printf("ans_len address : %p\n", (void *)x->ans_len);
-	printf("current solution: %d\n", x->cur);
-	printf("current step    : %d\n", x->step);
+	ryker_ft_printf_fd(STDERR_FILENO, "Input sequence (original ranks):\n");
+	if (a_ori != NULL)
+		cbuf_print(a_ori, 'A');
+	else
+		ryker_ft_printf_fd(STDERR_FILENO, "a_ori is NULL\n");
+	ryker_ft_printf_fd(STDERR_FILENO, "\n========== SOLUTION DEBUG ==========\n");
+	ryker_ft_printf_fd(STDERR_FILENO, "ans address     : %p\n", (void *)x->ans);
+	ryker_ft_printf_fd(STDERR_FILENO, "ans_len address : %p\n", (void *)x->ans_len);
+	ryker_ft_printf_fd(STDERR_FILENO, "current solution: %d\n", x->cur);
+	ryker_ft_printf_fd(STDERR_FILENO, "current step    : %d\n", x->step);
 	if (x->ans == NULL || x->ans_len == NULL)
 	{
-		printf("Cannot inspect solutions: NULL pointer\n");
-		printf("====================================\n");
+		ryker_ft_printf_fd(STDERR_FILENO, "Cannot inspect solutions: NULL pointer\n");
+		ryker_ft_printf_fd(STDERR_FILENO, "====================================\n");
 		return ;
 	}
 	solution_index = 0;
 	while (solution_index <= x->cur)
 	{
 		length = x->ans_len[solution_index];
-		printf("\nSolution [%d]\n", solution_index);
-		printf("Stored length: %d\n", length);
-		printf("Encoded      : ");
+		ryker_ft_printf_fd(STDERR_FILENO, "\nSolution [%d]\n", solution_index);
+		ryker_ft_printf_fd(STDERR_FILENO, "Stored length: %d\n", length);
+		ryker_ft_printf_fd(STDERR_FILENO, "Encoded      : ");
 		move_index = 0;
 		while (move_index < length)
 		{
-			printf("%c", x->ans[solution_index][move_index]);
+			ryker_ft_printf_fd(STDERR_FILENO, "%c", x->ans[solution_index][move_index]);
 			move_index++;
 		}
-		printf("\nDecoded moves:\n");
+		ryker_ft_printf_fd(STDERR_FILENO, "\nDecoded moves:\n");
 		move_index = 0;
 		while (move_index < length)
 		{
-			printf("  Step %d: %s [%c]\n",
+			ryker_ft_printf_fd(STDERR_FILENO, "  Step %d: %s [%c]\n",
 				move_index + 1,
 				move_name(x->ans[solution_index][move_index]),
 				x->ans[solution_index][move_index]);
@@ -130,7 +147,7 @@ void	debug_print_soln(const soln *x)
 		}
 		solution_index++;
 	}
-	printf("\n====================================\n\n");
+	ryker_ft_printf_fd(STDERR_FILENO, "\n====================================\n\n");
 }
 
 static int	print_move(char move)

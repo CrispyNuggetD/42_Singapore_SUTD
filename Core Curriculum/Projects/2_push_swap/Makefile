@@ -36,6 +36,7 @@ SRCS		= main_push_swap.c \
 			  rank_values.c \
 			  stack_utils.c \
 			  solve.c \
+			  sorting_algorithms/Exact_hardcoded/hardcode.c \
 			  $(BFS_DIR)/bfs.c \
 			  $(BFS_DIR)/bfs_utils.c \
 			  $(BFS_DIR)/bfs_verify_node.c \

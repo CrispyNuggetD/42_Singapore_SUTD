@@ -34,6 +34,7 @@ in [`ryker_ft/math/`](ryker_ft/math/README.md).
 
 | Function | Contract |
 | --- | --- |
+| [`ryker_ft_array_max_at`](ryker_ft/math/ryker_ft_array_max_at.c) | Returns the first maximum's index and writes its value; `-1` for null/empty input. See [array and output requirements](ryker_ft/math/README.md). |
 | [`ryker_ft_sign`](ryker_ft/math/ryker_ft_sign.c) | Returns `-1`, `0`, or `1` according to the integer’s sign. All `int` values are supported. |
 | [`ryker_ft_update_max`](ryker_ft/math/ryker_ft_update_max.c), [`ryker_ft_update_min`](ryker_ft/math/ryker_ft_update_min.c) | Update an initialised integer through a valid pointer when the candidate is larger/smaller. Ties leave it unchanged. Return `-1` for a null destination, `0` if unchanged, `1` if updated. See [math contracts](ryker_ft/math/README.md). |
 | [`ryker_ft_abs`](ryker_ft/math/ryker_ft_abs.c) | Returns the absolute value of an `int`. Input must not be `INT_MIN`, whose magnitude cannot fit in `int`; this precondition is not checked. No allocation or side effects. |
@@ -107,6 +108,7 @@ details and test evidence in the linked component documentation.
 
 | Date | Component | Change |
 | --- | --- | --- |
+| 2026-09-28 | `ryker_ft_array_max_at` | Added array maximum/index lookup to master libft and the push_swap copy, with first-maximum tie handling and null/empty errors. |
 | 2026-09-25 | `ryker_ft_sign` | Added the sign helper to the master library and push_swap copy, with public declaration and automatic archive inclusion. |
 | 2026-09-23 | Math updates | Added `ryker_ft_update_max` and `ryker_ft_update_min` to the master library and push_swap copy only. |
 | 2026-09-23 | `ryker_ft_abs` | Added an absolute-value helper with an explicit `INT_MIN` exclusion to the master library and push_swap copy only. Existing source discovery includes it in `libft.a`. |

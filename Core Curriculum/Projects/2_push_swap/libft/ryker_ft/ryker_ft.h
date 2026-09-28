@@ -13,6 +13,8 @@
 #ifndef RYKER_FT_H
 # define RYKER_FT_H
 
+# include <sys/types.h>
+
 # include "printf_fd/ryker_ft_printf.h"
 # include "gnl_status/ryker_ft_get_next_line.h"
 # include "file_unique/ryker_ft_file_unique.h"
@@ -29,5 +31,8 @@ int		ryker_ft_update_max(int *dest, int candidate);
 int		ryker_ft_update_min(int *dest, int candidate);
 
 int		ryker_ft_sign(int value);
+
+/* First maximum index; -1 for NULL/empty. See math/README.md. */
+ssize_t	ryker_ft_array_max_at(int *array, int *max, size_t len);
 
 #endif

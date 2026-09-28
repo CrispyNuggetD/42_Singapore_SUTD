@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 18:02:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/28 23:13:18 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,9 @@ typedef struct s_brutenode
 # define ERR_PARSE_INPUT		3
 # define ERR_SORT_INPUT		4
 
+# define A		0
+# define B		1
+
 # define SA		'1'
 # define SB		'2'
 # define SS		'3'
@@ -84,7 +87,7 @@ typedef struct s_brutenode
 void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(circle_buf *stack, char name);
 void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
-void	debug_print_soln(const soln *x);
+void	debug_print_soln(const soln *x, circle_buf *a_ori);
 int		print_first_soln(const soln *x);
 
 /* do not submit*/
@@ -95,14 +98,22 @@ int	extract_chunk_optimal(soln *x, circle_buf *a, circle_buf *b, int min, int ma
 int	count_int_in_str(char *str, int *count, int *values);
 int	rank_values(const int count, const int *values, int *ranks);
 
-/* solutions */
+/* Solution storage and shared sorting helpers. */
 void	append_move_to_soln(soln *x, char move);
 int	soln_init(soln *x, const int soln_num, const int steps_limit);
+int	new_soln_init(soln *x, circle_buf stacks[2], circle_buf *a_ori,
+		circle_buf *b_ori);
 int	get_order_top_three(circle_buf *a);
+int	hardcode_three(soln *x, circle_buf *a);
+int	rot_a_min_to_top(soln *x, circle_buf *a);
+
+/* Solver entry points; callers do not need algorithm-specific headers. */
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
+int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b,
+		char keep_flags[500]);
+int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
 
 /* bfs solver */
-int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
 int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
 		int total, int n);
 int	is_brute_goal(t_brutestate *state, int n);
@@ -134,7 +145,8 @@ int	cbuf_read_at(circle_buf *stack, int index, int *value);
 int	cbuf_is_empty(circle_buf *stack);
 int	cbuf_is_full(circle_buf *stack);
 int	cbuf_len(circle_buf *stack);
-int	cbuf_rev_moves(circle_buf *stack, int moves);
+int	cbuf_opp_moves(circle_buf *stack, int moves);
+int	cbuf_lis(circle_buf *stack, char keep_flags[500]);
 // int	cbuf_free(circle_buf *stack);
 
 /* circle_buf operations */

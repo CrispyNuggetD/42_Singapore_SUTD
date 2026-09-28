@@ -12,16 +12,25 @@
 
 #include "push_swap.h"
 
+/*
+** Simulate rra: move the last value of the A prefix to its front.
+*/
 void	brute_rra(t_brutestate *state)
 {
 	brute_rotate_right(state, 0, state->split - 1);
 }
 
+/*
+** Simulate rrb: move the last value of the B suffix to its front.
+*/
 void	brute_rrb(t_brutestate *state, int n)
 {
 	brute_rotate_right(state, state->split, n - 1);
 }
 
+/*
+** Simulate reverse rotation of both stacks independently.
+*/
 void	brute_rrr(t_brutestate *state, int n)
 {
 	brute_rra(state);

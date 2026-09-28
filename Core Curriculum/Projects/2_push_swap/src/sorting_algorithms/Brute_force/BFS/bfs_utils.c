@@ -13,6 +13,9 @@
 #include "push_swap.h"
 
 // swaps two elements inside the array during BFS
+/*
+** Swap two physical entries in the compact state array without changing split.
+*/
 void	brute_swap_at(t_brutestate *state, int a, int b)
 {
 	int	temp;
@@ -23,6 +26,10 @@ void	brute_swap_at(t_brutestate *state, int a, int b)
 }
 
 // rotates the elements in the array to the left during BFS
+/*
+** Rotate inclusive array range [start, end] left: its first value becomes last.
+** Empty or one-element ranges are unchanged; split is unchanged.
+*/
 void	brute_rotate_left(t_brutestate *state, int start, int end)
 {
 	int	temp;
@@ -41,6 +48,10 @@ void	brute_rotate_left(t_brutestate *state, int start, int end)
 }
 
 // rotates the elements in the array to the right during BFS
+/*
+** Rotate inclusive array range [start, end] right: its last value becomes first.
+** Empty or one-element ranges are unchanged; split is unchanged.
+*/
 void	brute_rotate_right(t_brutestate *state, int start, int end)
 {
 	int	temp;

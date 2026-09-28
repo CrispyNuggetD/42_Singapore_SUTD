@@ -1,8 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   DO_NOT_SUBMIT_DEBUG_hidden_bfs.c                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/24 16:44:38 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/23 18:05:28 by hnah             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "push_swap.h"
 
 static int	g_start;
 static int	g_end;
 
+/*
+** Copy the top count values of real B into temporary B in the same order.
+** Subtract g_start so this contiguous rank chunk becomes local ranks 0..count-1.
+*/
 static int	copy_active_b(circle_buf *fake_b, circle_buf *real_b, int count)
 {
 	int	i;
@@ -20,6 +36,10 @@ static int	copy_active_b(circle_buf *fake_b, circle_buf *real_b, int count)
 	return (SUCCESS);
 }
 
+/*
+** Execute and record one supported move on the real stacks.
+** Handles single-stack swaps, pushes and rotations; combined moves return ERROR.
+*/
 static int	replay_one(soln *x, circle_buf *a, circle_buf *b, char move)
 {
 	if (move == SA)
@@ -41,6 +61,10 @@ static int	replay_one(soln *x, circle_buf *a, circle_buf *b, char move)
 	return (ERROR);
 }
 
+/*
+** Replay the temporary solution in order on real stacks, recording each move.
+** Stop on the first failed operation.
+*/
 static int	replay_bfs(soln *real, soln *fake, circle_buf *a, circle_buf *b)
 {
 	int	i;
@@ -56,6 +80,9 @@ static int	replay_bfs(soln *real, soln *fake, circle_buf *a, circle_buf *b)
 	return (SUCCESS);
 }
 
+/*
+** Release the buffers of the temporary one-route solution.
+*/
 static void	free_fake_solution(soln *fake)
 {
 	free(fake->ans[0]);
@@ -63,6 +90,11 @@ static void	free_fake_solution(soln *fake)
 	free(fake->ans_len);
 }
 
+/*
+** Build empty temporary A and a locally ranked copy of the active B chunk.
+** Search for moves, replay them on real stacks, then free the temporary route.
+** The current BFS goal leaves this chunk in descending B, with temporary A empty.
+*/
 static int	solve_active_chunk(soln *real, circle_buf *a, circle_buf *b, int count)
 {
 	circle_buf	fake_a;
@@ -91,6 +123,12 @@ static int	solve_active_chunk(soln *real, circle_buf *a, circle_buf *b, int coun
 	return (SUCCESS);
 }
 
+/*
+** Experimental chunk driver: extract successive rank intervals from A to B,
+** solve each temporary chunk with restricted BFS, and replay its route.
+** Print extraction/search move counts. Earlier values are hidden from the search.
+** This is not an unrestricted BFS over the entire input or a final A-sort pass.
+*/
 int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b)
 {
 	int	total;

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/23 21:06:39 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/28 22:51:23 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,19 +38,20 @@ int	main(int argc, char **argv)
 	if (count < 2 || rank_values(count, b.buf, a.buf) == ERROR)
 		return (free_and_error());
 	cbuf_init_ab(&a, &b, count);
-	if (soln_init(&x, 10, BUBBLE_SORT_MAX_500) == ERROR)
+	if (soln_init(&x, 3, BUBBLE_SORT_MAX_500) == ERROR)
 		return (free_and_error());
 	if (solve(&x, &a, &b, count) == ERROR)
 		return (free_and_error());
-	if (print_first_soln(&x) == ERROR)
-		return (free_and_error());
+	/* if (print_first_soln(&x) == ERROR)
+		return (free_and_error()); */
+	debug_print_soln(&x, &a);
 	/*
 	printf("\n values: \n");
 	debug_print_int_array(b.buf, count);
 	printf("\n ranks: \n");
 	debug_print_int_array(a.buf, count);
 	cbuf_print_stacks(&a, &b);
-	debug_print_soln(&x);
+	debug_print_soln(&x, &a);
 	*/
 	return (SUCCESS);
 }

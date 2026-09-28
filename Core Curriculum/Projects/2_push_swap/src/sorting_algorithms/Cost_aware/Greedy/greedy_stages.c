@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/25 18:24:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/28 22:49:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,47 @@
 */
 int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b)
 {
-	(void)x;
-	(void)a;
-	(void)b;
-	return (ERROR);
+	int	total_len;
+	int	seed_len;
+	int	push_to_b;
+	int	outcome;
+
+	seed_len = 3;
+	total_len = cbuf_len(a);
+	push_to_b = total_len - seed_len;
+	outcome = SUCCESS;
+	while (push_to_b > 0 && outcome == SUCCESS)
+	{
+		outcome = pb(x, a, b);
+		push_to_b--;
+	}
+	if (outcome == SUCCESS)
+		outcome = hardcode_three(x, a);
+	return (outcome);
+} 
+
+static int	greedy_prepare_LIS(soln *x, circle_buf *a, circle_buf *b,
+	char keep_flags[500])
+{
+	int	total_len;
+	int	outcome;
+	int	i;
+
+	total_len = cbuf_len(a);
+	outcome = SUCCESS;
+	i = 0;
+	while (total_len > 0 && outcome == SUCCESS)
+	{
+		if (keep_flags[i] == 0)
+			outcome = pb(x, a, b);
+		else if (keep_flags[i] == 1)
+			outcome = ra(x, a);
+		total_len--;
+		i++;
+	}
+	return (outcome);
 }
+
 
 /*
 ** TODO: Repeatedly choose and execute a fresh plan until B is empty.
@@ -45,23 +81,6 @@ int	greedy_insert_all(soln *x, circle_buf *a, circle_buf *b)
 		return (SUCCESS);
 	return (ERROR);
 }
-
-
-
-/*
-** TODO: Compose preparation, insertion and alignment; propagate failures.
-** Initial contract: B empty, distinct normalised ranks stored in A.
-** After implementation, select this in solve.c when ready to try it.
-** Future seed strategies can instead call insert_all and align_min directly.
-*/
-int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b)
-{
-	(void)x;
-	(void)a;
-	(void)b;
-	return (ERROR);
-}
-//last
 
 static int	greedy_non_shared_moves(soln *x, circle_buf *a, circle_buf *b,
 		t_greedy_plan *temp)
@@ -125,4 +144,22 @@ int	greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
 	if (outcome != 0 || greedy_non_shared_moves(x, a, b, &temp) == ERROR)
 		return (ERROR);
 	return (pa(x, a, b));
+}
+
+/*
+** Compose preparation, insertion and alignment; propagate failures.
+** Initial contract: B empty, distinct normalised ranks stored in A.
+** After implementation, select this in solve.c when ready to try it.
+** Future seed strategies can instead call
+** insert_all and rot_a_min_to_top directly.
+*/
+int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b, char keep_flags[500])
+{
+	if (!keep_flags && (greedy_prepare(x, a, b) == ERROR))
+		return (ERROR);
+	else if (keep_flags && (greedy_prepare_LIS(x, a, b, keep_flags) == ERROR))
+		return (ERROR);
+	if (greedy_insert_all(x, a, b) || rot_a_min_to_top(x, a) == ERROR)
+		return (ERROR);
+	return (SUCCESS);
 }

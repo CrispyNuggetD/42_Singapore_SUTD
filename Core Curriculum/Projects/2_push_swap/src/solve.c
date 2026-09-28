@@ -1,53 +1,44 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   solve.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/23 17:11:30 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/28 23:17:50 by hnah             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "push_swap.h"
 
-static int	hardcode_check_one(soln *x, circle_buf *a)
+int	solve(soln *x, circle_buf *a_ori, circle_buf *b_ori, int count)
 {
-	int	a_size;
-	int	pattern;
+	char keep_flags[500];
+	circle_buf	stacks[2];
 
-	a_size = cbuf_len(a);
-	if (a_size == 3)
-	{
-		pattern = get_order_top_three(a);
-		if (pattern == 321)
-		{
-			if (sa(x, a) == ERROR)
-				return (ERROR);
-			return (rra(x, a));
-		}
-		else if (pattern == 312)
-			return (ra(x, a));
-		else if (pattern == 231)
-			return (rra(x, a));
-		else if (pattern == 213)
-			return (sa(x, a));
-		else if (pattern == 132)
-		{
-			if (sa(x, a) == ERROR)
-				return (ERROR);
-			return (ra(x, a));
-		}
-	}
-	return (SUCCESS);
-}
-
-int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
-{
-	if (1)
-		return (debug_hidden_bfs(x, a, b));
+	if (0)
+		return (debug_hidden_bfs(x, &stacks[A], &stacks[B]));
 	if (count <= BRUTE_MAX_N)
 	{
+		new_soln_init(x, stacks, a_ori, b_ori);
 		printf("sizeof(t_brutestate) = %zu\n", sizeof(t_brutestate));
 		printf("sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
 		printf("KB sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL / 1000);
 		printf("MB sizeof(all t_brutestate) = %zu\n", sizeof(t_brutestate) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL / 1000000);
 		
-		if (brute_solve(x, a, b) == ERROR)
+		if (brute_solve(x, &stacks[A], &stacks[B]) == ERROR)
 			return (ERROR);
 	}
 	else //check if b is empty and a is less than 3-5 items later.
 	{
-		if (hardcode_check_one(x, a) == ERROR)
+		new_soln_init(x, stacks, a_ori, b_ori);
+		if (greedy_reinsertion(x, &stacks[A], &stacks[B], NULL) == ERROR)
+			return (ERROR);
+		new_soln_init(x, stacks, a_ori, b_ori);
+		ft_memset(&keep_flags, 0, sizeof(keep_flags));
+		if (cbuf_lis(&stacks[A], keep_flags)
+			|| greedy_reinsertion(x, &stacks[A], &stacks[B], keep_flags) == ERROR)
 			return (ERROR);
 	}
 	return (SUCCESS);
