@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:42:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 03:19:28 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 03:48:35 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,21 +27,17 @@ int	soln_init(soln *x, const int soln_num, const int steps_limit)
 
 	x->cur = -1;
 	x->step = -1;
-	x->ans_len = ft_calloc(sizeof(int) * soln_num + 1);
-	x->ans = ft_calloc(sizeof(char *) * soln_num + 1);
-	if (!x->ans)
+	x->ans_len = ft_calloc(soln_num, sizeof(int));
+	x->ans = ft_calloc(soln_num + 1, sizeof(char *));
+	if (!x->ans || !x->ans_len)
 		return (ERROR);
-	cur_soln = (int)soln_num;
-	while (cur_soln-- > 0)
+	cur_soln = 0;
+	while (cur_soln < soln_num)
 	{
 		x->ans[cur_soln] = malloc(sizeof(char) * steps_limit);
 		if (!x->ans[cur_soln])
-		{
-			while (++cur_soln < soln_num)
-				free(x->ans[cur_soln]);
-			free(x->ans);
 			return (ERROR);
-		}
+		cur_soln++;
 	}
 	return (SUCCESS);
 }

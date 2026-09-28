@@ -21,3 +21,10 @@ includes these sources automatically through `ryker_ft/*/*.c`.
 `ryker_ft_array_max_at` does not allocate memory; only its output is modified.
 Equal maxima resolve to the lowest index. Its signed index type is provided
 by `<sys/types.h>` in the public header.
+
+## Minimum helper (2026-09-29)
+
+`ryker_ft_min(int one, int two)` returns the smaller value, with no allocation
+or side effects. It accepts the full `int` range and returns that value for ties.
+This existing push_swap helper was copied forward into master libft, Pipex and
+FDF with its public declaration, without replacing other library components.

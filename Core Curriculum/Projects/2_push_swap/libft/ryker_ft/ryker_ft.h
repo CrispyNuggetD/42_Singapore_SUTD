@@ -19,9 +19,11 @@
 # include "gnl_status/ryker_ft_get_next_line.h"
 # include "file_unique/ryker_ft_file_unique.h"
 
-int	ryker_ft_isspace(int c);
+int		ryker_ft_isspace(int c);
+void	ryker_ft_free_str_array(char **strings);
 
 int		ryker_ft_max(int one, int two);
+int		ryker_ft_min(int one, int two);
 
 /* Precondition: one != INT_MIN. */
 int		ryker_ft_abs(int one);

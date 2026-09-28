@@ -39,7 +39,9 @@ in [`ryker_ft/math/`](ryker_ft/math/README.md).
 | [`ryker_ft_update_max`](ryker_ft/math/ryker_ft_update_max.c), [`ryker_ft_update_min`](ryker_ft/math/ryker_ft_update_min.c) | Update an initialised integer through a valid pointer when the candidate is larger/smaller. Ties leave it unchanged. Return `-1` for a null destination, `0` if unchanged, `1` if updated. See [math contracts](ryker_ft/math/README.md). |
 | [`ryker_ft_abs`](ryker_ft/math/ryker_ft_abs.c) | Returns the absolute value of an `int`. Input must not be `INT_MIN`, whose magnitude cannot fit in `int`; this precondition is not checked. No allocation or side effects. |
 | [`ryker_ft_max`](ryker_ft/math/ryker_ft_max.c) | Returns the larger of two `int` values; equal inputs return that same value. Accepts the full `int` range without arithmetic overflow, allocation or side effects. |
+| [`ryker_ft_min`](ryker_ft/math/ryker_ft_min.c) | Returns the smaller of two integers; supports the full `int` range without arithmetic overflow. |
 | [`ryker_ft_isspace`](ryker_ft/ryker_ft_isspace.c) | Recognizes only `' '`, preserving push_swap's original behavior; it is not a full whitespace classifier. |
+| [`ryker_ft_free_str_array`](ryker_ft/ryker_ft_free_str_array.c) | Frees each string in a NULL-terminated allocated array, then the array itself. Accepts `NULL`; does not reset the caller's pointer. |
 
 ## Build and integration
 
@@ -107,6 +109,7 @@ details and test evidence in the linked component documentation.
 
 | Date | Component | Change |
 | --- | --- | --- |
+| 2026-09-29 | Library synchronization | Synced stable library updates forward into this push_swap copy only, including `ryker_ft_free_str_array`, its declaration, documentation and WIP build exclusions. Separately copied `ryker_ft_min` forward into master libft, Pipex and FDF as explicitly requested; their other library components were preserved. |
 | 2026-09-29 | Printf portability | Numeric helpers now consume the shared `va_list` through a pointer. Fixes mixed-format argument reuse and the Apple Silicon debug-print crash; see [implementation and validation](1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption). |
 | 2026-09-28 | `ryker_ft_array_max_at` | Added array maximum/index lookup to master libft and the push_swap copy, with first-maximum tie handling and null/empty errors. |
 | 2026-09-25 | `ryker_ft_sign` | Added the sign helper to the master library and push_swap copy, with public declaration and automatic archive inclusion. |
@@ -116,6 +119,7 @@ details and test evidence in the linked component documentation.
 | 2026-09-18 | `file_unique` | Extracted exclusive file creation from Pipex, fixed failure cleanup and counter overflow, and retained a separate directory wrapper as WIP (not built or included in Pipex). See [contract and tests](ryker_ft/file_unique/README.md). |
 | 2026-09-18 | `gnl_status` | Added caller-owned GNL state, line/EOF/error results, and cleanup; integrated it into Pipex heredoc. See [API and validation](ryker_ft/gnl_status/README.md). |
 | 2026-09-18 | Original GNL | Removed the mandatory FD cap and fixed the bonus array guard. Documented FD-limit research and successful ASan/UBSan checks using LLVM. See [bounds update](1_get_next_line/README.md#post-submission-update-file-descriptor-limits). |
+| 2026-09-17 | String-array cleanup | Added `ryker_ft_free_str_array` for shared cleanup in Pipex. |
 | 2026-09-14 | `printf_fd` | Added configurable output for Pipex while retaining the formatter's algorithms and standard-output default. See [printf update](1_ft_printf/README.md#post-submission-update-custom-fd-and-ryker-libft). |
 
 AI assistance with implementation, documentation, and validation is described in

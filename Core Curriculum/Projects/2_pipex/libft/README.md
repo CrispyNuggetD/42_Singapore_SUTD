@@ -102,6 +102,7 @@ details and test evidence in the linked component documentation.
 
 | Date | Component | Change |
 | --- | --- | --- |
+| 2026-09-29 | `ryker_ft_min` | Copied the existing push_swap minimum helper forward with its public declaration. Returns the smaller integer, supports the full `int` range, and performs no allocation. No other library components were replaced. |
 | 2026-09-29 | Printf portability | Numeric helpers now consume the shared `va_list` through a pointer. Fixes mixed-format argument reuse and the Apple Silicon debug-print crash; see [implementation and validation](1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption). |
 | 2026-09-18 | `file_unique` | Extracted exclusive file creation from Pipex, fixed failure cleanup and counter overflow, and retained a separate directory wrapper as WIP (not built or included in Pipex). See [contract and tests](ryker_ft/file_unique/README.md). |
 | 2026-09-18 | `gnl_status` | Added caller-owned GNL state, line/EOF/error results, and cleanup; integrated it into Pipex heredoc. See [API and validation](ryker_ft/gnl_status/README.md). |

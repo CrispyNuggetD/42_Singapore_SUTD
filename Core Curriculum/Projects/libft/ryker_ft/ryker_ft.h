@@ -36,4 +36,7 @@ int		ryker_ft_sign(int value);
 /* First maximum index; -1 for NULL/empty. See math/README.md. */
 ssize_t	ryker_ft_array_max_at(int *array, int *max, size_t len);
 
+/* Return the smaller integer; accepts the full int range. */
+int		ryker_ft_min(int one, int two);
+
 #endif

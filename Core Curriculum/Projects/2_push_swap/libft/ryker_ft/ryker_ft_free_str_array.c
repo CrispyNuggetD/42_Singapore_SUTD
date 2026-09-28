@@ -1,26 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ryker_ft.h                                         :+:      :+:    :+:   */
+/*   ryker_ft_free_str_array.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/13 05:27:07 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/21 21:04:57 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/17 22:03:54 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/17 22:03:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RYKER_FT_H
-# define RYKER_FT_H
+#include "ryker_ft.h"
+#include <stdlib.h>
 
-# include "printf_fd/ryker_ft_printf.h"
-# include "gnl_status/ryker_ft_get_next_line.h"
-# include "file_unique/ryker_ft_file_unique.h"
-# include <stdlib.h>
+void	ryker_ft_free_str_array(char **strings)
+{
+	int	i;
 
-void	ryker_ft_free_str_array(char **strings);
-
-/* Return the smaller integer; accepts the full int range. */
-int		ryker_ft_min(int one, int two);
-
-#endif
+	if (!strings)
+		return ;
+	i = 0;
+	while (strings[i])
+	{
+		free(strings[i]);
+		i++;
+	}
+	free(strings);
+}

@@ -6,16 +6,19 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 03:20:31 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 03:47:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-static int	free_and_error(void)
+static int	free_and_error(soln *x)
 {
-	ryker_ft_free_str_array(x->ans);
-	free(x->ans_len);
+	if (x)
+	{
+		ryker_ft_free_str_array(x->ans);
+		free(x->ans_len);
+	}
 	ft_putendl_fd("Error", STDERR_FILENO);
 	return (ERROR);
 }
@@ -35,17 +38,17 @@ int	main(int argc, char **argv)
 	while (i < argc)
 	{
 		if (count_int_in_str(argv[i++], &count, b.buf) == ERROR)
-			return (free_and_error());
+			return (free_and_error(NULL));
 	}
 	if (rank_values(count, b.buf, a.buf) == ERROR)
-		return (free_and_error());
+		return (free_and_error(NULL));
 	cbuf_init_ab(&a, &b, count);
 	if (soln_init(&x, ALGO_COUNT, BUBBLE_SORT_MAX_500) == ERROR)
-		return (free_and_error());
+		return (free_and_error(&x));
 	if (solve(&x, &a, &b, count) == ERROR)
-		return (free_and_error());
+		return (free_and_error(&x));
 	if (print_best_soln(&x) == ERROR)
-		return (free_and_error());
+		return (free_and_error(&x));
 	debug_print_soln(&x, &a);
 	/*
 	printf("\n values: \n");
@@ -55,7 +58,7 @@ int	main(int argc, char **argv)
 	cbuf_print_stacks(&a, &b);
 	debug_print_soln(&x, &a);
 	*/
-	ryker_ft_free_str_array(x->ans);
-	free(x->ans_len);
+	ryker_ft_free_str_array(x.ans);
+	free(x.ans_len);
 	return (SUCCESS);
 }
