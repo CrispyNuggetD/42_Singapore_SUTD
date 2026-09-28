@@ -1,5 +1,7 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-09-28): incomplete `here_doc` invocations now show the heredoc usage message. See [Post-submission update: heredoc argument validation](#post-submission-update-heredoc-argument-validation) for the change from the submitted implementation.
+
 <a id="top"></a>
 
 # pipex — following file descriptors through a shell pipeline
@@ -70,6 +72,7 @@ mandatory and bonus requirements. Follow a link for the explanation.
 - [Evaluation: 45 checks and examples](#evaluation-checks)
 - [Reference comparison: Darren's Pipex](#reference-comparison-darrens-pipex)
 - [Resources](#resources)
+- [Post-submission update: heredoc argument validation](#post-submission-update-heredoc-argument-validation)
 
 [↑ Back to top](#top)
 
@@ -1135,5 +1138,29 @@ simultaneous processes affect pipe creation. This was not a request to "vibe
 code" a submission I cannot explain. AI performed much of the mechanical
 editing and function calling, but I have read, understood, tested, and edited every
 part before submission. I do not present code I do not understand as my own.
+
+[↑ Back to top](#top)
+
+<a id="post-submission-update-heredoc-argument-validation"></a>
+
+## Post-submission update: heredoc argument validation
+
+Date: 2026-09-28. I made this change in `src/main_bonus.c` after submission.
+
+Previously, the initial `argc < 5` check returned the normal bonus usage message
+before checking whether `argv[1]` was `here_doc`. For example, `./pipex here_doc`
+printed `Usage: ./pipex infile cmd... outfile`, even though I had selected
+heredoc mode.
+
+I moved heredoc detection before argument-count validation. `heredoc_exists`
+starts at zero, and `argc > 1` guards the check of `argv[1]`. Normal mode then
+requires `argc >= 5`, while heredoc mode requires `argc >= 6`, including the
+program name. An incomplete heredoc invocation now prints
+`Usage: ./pipex here_doc LIMITER cmd... outfile` even when `argc < 5`.
+
+This corrects the choice of usage message; the minimum argument counts and
+heredoc collection logic are unchanged. I made the code edit; AI helped review
+the control flow and document it. The 45-check evaluation recorded above is
+the earlier result, not a rerun for this post-submission change.
 
 [↑ Back to top](#top)

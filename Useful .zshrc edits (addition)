@@ -33,7 +33,7 @@
 #  6. adjust_brightness: set screen brightness to setbrightness (0-100).
 #  7. loginbefore12 and hourslogged: report local login history.
 #  8. curproj: enter the project, run make fclean, and open/reuse VS Code.
-#  9. Request Chrome if it is not already running for this user.
+#  9. Clear stale profile locks and request Chrome if it is not already running.
 # 10. syncproj: pull the main repository, then commit/push if there are changes.
 # Finally show the tmux workspace. Repeated runs reuse running managed windows,
 # but repeat reports, project cleaning, and Git tasks; this is not a once-only job.
@@ -159,7 +159,7 @@ quithidden() {
   command -v tmux >/dev/null 2>&1 || { print -- 'tmux is not installed.'; return 0; }
   local -a tmux_args
   tmux_args=()
-  [[ -n "$DAILY_TMUX_SOCKET" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
+  [[ -n "${DAILY_TMUX_SOCKET:-}" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
   local sessions session_id
   sessions=$(command tmux "${tmux_args[@]}" list-sessions -F '#{session_id}' 2>/dev/null) || {
     print -- 'No tmux sessions running.'
@@ -196,7 +196,7 @@ leaveschool() {
   command -v tmux >/dev/null 2>&1 || return 0
   local -a tmux_args
   tmux_args=()
-  [[ -n "$DAILY_TMUX_SOCKET" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
+  [[ -n "${DAILY_TMUX_SOCKET:-}" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
   command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1 || return 0
   command tmux "${tmux_args[@]}" kill-server
 }
@@ -267,6 +267,33 @@ alias compile='cc -Wall -Wextra -Werror'
 
 # code execution helper with valgrind and leak flags
 alias run='valgrind --leak-check=full --show-leak-kinds=all'
+
+# Clear stale Chrome profile locks after closing Chrome on all computers.
+# Optional argument: a custom Chrome user-data directory.
+unblockchrome() {
+  local profile_dir="${1:-${CHROME_USER_DATA_DIR:-${CHROME_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/google-chrome}}"
+  local process_status
+
+  if (( $# > 1 )); then
+    print -u2 -- 'Usage: unblockchrome [user-data-directory]'
+    return 1
+  fi
+  command pgrep -u "$EUID" -x 'chrome|google-chrome' >/dev/null 2>&1
+  process_status=$?
+  if (( process_status == 0 )); then
+    print -u2 -- 'Close Chrome before running unblockchrome.'
+    return 1
+  elif (( process_status != 1 )); then
+    print -u2 -- 'Could not check whether Chrome is running; locks left unchanged.'
+    return 1
+  fi
+  if [[ ! -d "$profile_dir" ]]; then
+    print -u2 -- "Chrome profile directory not found: $profile_dir"
+    return 1
+  fi
+  command rm -f -- "$profile_dir/SingletonLock" "$profile_dir/SingletonSocket" "$profile_dir/SingletonCookie" || return 1
+  print -r -- "Chrome locks cleared: $profile_dir"
+}
 
 # Enter the configured project folder, clean it, open VS Code, and report history.
 curproj() {
@@ -905,6 +932,7 @@ _dailylogin_summary() {
 }
 
 _dailylogin_chrome() {
+  local profile_dir="${CHROME_USER_DATA_DIR:-${CHROME_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/google-chrome}"
   command -v google-chrome >/dev/null 2>&1 || {
     print -u2 -- 'google-chrome is not installed.'
     return 1
@@ -913,6 +941,11 @@ _dailylogin_chrome() {
   if command pgrep -u "$EUID" -x 'chrome|google-chrome' >/dev/null 2>&1; then
     print -- 'Chrome is already running; keeping its existing windows.'
     return 0
+  fi
+  # A first launch has no profile yet. Existing profiles may carry stale locks
+  # from another campus computer; recheck processes before removing them.
+  if [[ -d "$profile_dir" ]]; then
+    unblockchrome "$profile_dir" || return 1
   fi
   (command google-chrome >/dev/null 2>&1 &!)
 }

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 21:05:36 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/18 03:28:55 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/28 16:47:19 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,11 @@ int	main(int argc, char **argv, char **envp)
 	t_pipeline	pipeline;
 	int			heredoc_exists;
 
-	if (argc < 5)
+	heredoc_exists = 0;
+	if (argc > 1)
+		heredoc_exists = is_exactly_heredoc(argv[1]);
+	if (!heredoc_exists && argc < 5)
 		return (print_usage(USAGE_BONUS));
-	heredoc_exists = is_exactly_heredoc(argv[1]);
 	if (heredoc_exists && argc < 6)
 		return (print_usage(USAGE_HEREDOC));
 	init_pipeline(&pipeline);
