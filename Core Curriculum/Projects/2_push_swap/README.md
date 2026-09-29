@@ -247,9 +247,9 @@ LIS means longest increasing subsequence; LDS means longest decreasing subsequen
 The **Erdős–Szekeres theorem** says that, for positive integers $r$ and $s$, any
 sequence of distinct numbers with length
 
-$$
+```math
 n \geq (r - 1)(s - 1) + 1
-$$
+```
 
 contains an increasing subsequence of length at least $r$, **or** a decreasing
 subsequence of length at least $s$.
@@ -257,28 +257,28 @@ See [the theorem statement in this research paper](https://www.sciencedirect.com
 
 Taking equal thresholds gives the square-root guarantee:
 
-$$
+```math
 \max\bigl(\operatorname{LIS}(A),\operatorname{LDS}(A)\bigr)
 \geq \left\lceil\sqrt{n}\right\rceil.
-$$
+```
 
 For my 500-number input:
 
-$$
+```math
 (23 - 1)^2 + 1 = 485 \leq 500,
 \qquad
 \left\lceil\sqrt{500}\right\rceil = 23.
-$$
+```
 
 So yes, there must be an LIS **or** LDS of at least 23 elements. The catch is
 that I don't get to choose which one the theorem guarantees. A completely
 descending input has
 
-$$
+```math
 \operatorname{LIS}(A) = 1,
 \qquad
 \operatorname{LDS}(A) = 500.
-$$
+```
 
 For my planned LIS preparation, I'll keep an increasing subsequence in A and
 push the rest to B before greedy reinsertion. This theorem alone doesn't
@@ -296,17 +296,17 @@ Suppose I start with $n$ elements in A and empty B, and keep a seed $S$ of
 length $k$. If I push each remaining element to B exactly once, then return
 each to A exactly once, the push count is
 
-$$
+```math
 P(S) = \underbrace{(n-k)}_{\mathrm{pb}}
      + \underbrace{(n-k)}_{\mathrm{pa}}
      = 2(n-k).
-$$
+```
 
 So every extra element I keep saves exactly two pushes under this strategy:
 
-$$
+```math
 P(k+1)-P(k)=-2.
-$$
+```
 
 That's my mathematical reason for starting with LIS: among ordinary increasing
 subsequence seeds, choosing the longest one minimises this push count. It is
@@ -325,9 +325,9 @@ The catch is rotations. If $R(S)$ counts the rotation instructions for
 extraction, reinsertion and final alignment (with `rr` or `rrr` counting as one
 instruction), this push-and-rotate strategy has total cost
 
-$$
+```math
 M(S)=2(n-|S|)+R(S).
-$$
+```
 
 A longer seed reduces the first term, but can change the second. So LIS is a
 justified starting heuristic, not proof of the fewest total moves. For now,
@@ -387,18 +387,18 @@ does not generate every permutation.
 
 For each position $i$, count the smaller values to its right:
 
-$$
-c\sb{i}=\#\lbrace j:i<j<n,\ p\sb{j}<p\sb{i}\rbrace,
-\qquad 0\le c\sb{i}\le n-1-i.
-$$
+```math
+c_{i}=\#\lbrace j:i<j<n,\ p_{j}<p_{i}\rbrace,
+\qquad 0\le c_{i}\le n-1-i.
+```
 
 These digits form the **Lehmer code**. Their factorial-weighted sum gives the
 zero-based permutation rank:
 
-$$
-R(p)=\sum\sb{i=0}\sp{n-1}c\sb{i}(n-1-i)!,
+```math
+R(p)=\sum_{i=0}^{n-1}c_{i}(n-1-i)!,
 \qquad 0\le R(p)<n!.
-$$
+```
 
 This is a mixed-radix representation: unlike decimal digits, the allowed digit
 range shrinks at each position. Remember $0!=1$; the last digit is always zero.
@@ -412,9 +412,9 @@ For $p=(2,0,3,1)$:
 | 2 | 3 | 1 | 1 | $1!=1$ | 1 |
 | 3 | 1 | None | 0 | $0!=1$ | 0 |
 
-$$
+```math
 R(2,0,3,1)=2\cdot3!+0\cdot2!+1\cdot1!+0\cdot0!=13.
-$$
+```
 
 There are 12 permutations beginning with 0 or 1, plus one earlier permutation
 within the chosen prefix: $(2,0,1,3)$. Thus $(2,0,3,1)$ has rank 13.
@@ -441,17 +441,17 @@ only needs the ranking direction, not decoding.
 The same permutation with a different split represents different stacks.
 Reserve a block of $n!$ IDs for each split:
 
-$$
+```math
 \operatorname{ID}(p,s)=s\,n!+R(p),
 \qquad s\in\{0,\ldots,n\}.
-$$
+```
 
 For our example:
 
-$$
+```math
 n=4,\quad s=2,\quad R=13,
 \qquad \operatorname{ID}=2\cdot24+13=\boxed{61}.
-$$
+```
 
 | Split | Meaning | ID range for $n=4$ |
 | ---: | --- | --- |
@@ -463,18 +463,18 @@ $$
 
 There are $n+1$ possible splits, so the number of encodable states is:
 
-$$
+```math
 N=(n+1)n!=(n+1)!,
 \qquad 0\le\operatorname{ID}<N.
-$$
+```
 
 Equivalently, choose which $s$ elements go into A, then order both stacks:
 
-$$
-N=\sum\sb{s=0}\sp{n}\binom{n}{s}s!(n-s)!
- =\sum\sb{s=0}\sp{n}n!
+```math
+N=\sum_{s=0}^{n}\binom{n}{s}s!(n-s)!
+ =\sum_{s=0}^{n}n!
  =(n+1)!.
-$$
+```
 
 This counts all encodable states; the restricted BFS need not visit them all.
 
@@ -482,11 +482,11 @@ This counts all encodable states; the restricted BFS need not visit them all.
 
 The BFS stores one visited bit per ID:
 
-$$
+```math
 \text{byte index}=\left\lfloor\frac{\operatorname{ID}}8\right\rfloor,
 \qquad
 \text{bit offset}=\operatorname{ID}\bmod8.
-$$
+```
 
 For ID 61, that is byte 7, bit 5 (both zero-based).
 
@@ -525,9 +525,9 @@ The old duplicate check scanned previously discovered nodes and compared their
 arrays. With $V$ stored states and $n$ values, this takes up to $O(Vn)$ work per
 candidate. The current nested-loop ranking performs exactly
 
-$$
+```math
 \frac{n(n-1)}2
-$$
+```
 
 value comparisons, then one bit lookup.
 
@@ -549,9 +549,9 @@ pruning, which skips branches based on cost.
 
 The visited bitset requires
 
-$$
+```math
 \left\lceil\frac{(n+1)!}{8}\right\rceil
-$$
+```
 
 bytes. With the configured maximum of 10 elements, $11!=39,916,800$ states need
 4,989,600 bytes (about 4.76 MiB) for visited bits alone. The node array containing
@@ -910,9 +910,9 @@ At DEBUG 2–4, `covered=X/Y remaining=Z` counts evaluated or safely skipped can
 all levels of this one search. For B length $b$ and effective depth $d$, the
 unpruned tree contains
 
-$$
+```math
 T(b,d)=\sum_{k=1}^{d}\frac{b!}{(b-k)!}.
-$$
+```
 
 For example, $T(5,3)=5+20+60=85$. The count resets after each real insertion,
 when we begin a fresh search. It is not the number of unique ranks, emitted
@@ -930,9 +930,9 @@ search at a time.
 
 For DEBUG 1, the total is instead the sum over all future B lengths:
 
-$$
+```math
 T_{\text{pass}}(b,d)=\sum_{m=1}^{b}T(m,\min(d,m)).
-$$
+```
 
 Every real insertion removes exactly one B element, so this total can be
 calculated once before reinsertion. Percentage and completed-trial counters
@@ -982,9 +982,9 @@ An inherited allowance can also prune a subtree before it finds its own path.
 
 Before simulating an insertion, `greedy_branch_cost` checks:
 
-$$
+```math
 \text{candidate cost} + \min(d-1, |B|-1) \geq \text{budget}.
-$$
+```
 
 Every remaining insertion costs at least one `pa`. If this lower bound reaches
 the budget, the branch cannot improve it, including under the first-minimum tie
