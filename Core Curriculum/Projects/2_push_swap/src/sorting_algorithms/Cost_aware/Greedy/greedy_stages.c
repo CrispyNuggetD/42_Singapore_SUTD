@@ -38,6 +38,7 @@ int	greedy_insert_all(soln *x, circle_buf *a, circle_buf *b, int depth)
 		debug_greedy_execute(&best);
 		if (greedy_execute_plan(x, a, b, &best) == ERROR)
 			return (ERROR);
+		debug_insertion_done();
 	}
 	return (SUCCESS);
 }

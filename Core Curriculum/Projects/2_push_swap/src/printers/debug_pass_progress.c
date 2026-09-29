@@ -44,6 +44,7 @@ void	debug_pass_start(int b_len, int depth, int algo)
 	s = debug_search_state();
 	ft_memset(s, 0, sizeof(*s));
 	s->algo_id = algo + 1;
+	s->pass_initial_b = b_len;
 	s->printed_tenths = -1;
 	s->algo_label = " (Greedy reinsertion)";
 	config = algorithm_config(algo);
@@ -82,10 +83,23 @@ int	debug_status_ready(t_search_debug *s, int complete)
 	while (!s->pass_capped && s->pass_total && s->percent_tenths < 1000
 		&& s->pass_done >= s->threshold[s->percent_tenths + 1])
 		s->percent_tenths++;
-	if (complete && s->initial_b == 1)
+	if (complete == 2 || (complete && s->initial_b == 1))
 		return (1);
 	if (s->printed_tenths == s->percent_tenths)
 		return (0);
 	s->printed_tenths = s->percent_tenths;
 	return (1);
+}
+
+/* Called only after a successful insertion on the real stacks. */
+void	debug_insertion_done(void)
+{
+	t_search_debug	*s;
+
+	if (!DEBUG)
+		return ;
+	s = debug_search_state();
+	s->inserted++;
+	s->status_level = 0;
+	debug_status_draw(2);
 }

@@ -25,6 +25,8 @@ typedef struct s_search_debug
 	int					root_depth;
 	int					depth_limit;
 	int					initial_b;
+	int					pass_initial_b;
+	int					inserted;
 	int					candidate[501];
 	int					capped;
 	int					active;
@@ -53,8 +55,10 @@ void			debug_count_trials(t_search_debug *s);
 void			debug_search_prefix(const char *event, int depth);
 void			debug_search_progress(void);
 void			debug_status_end(int moves);
+void			debug_insertion_done(void);
 void			debug_lookahead_pruned(int depth, int b_len);
 void			debug_status_prepare(t_search_debug *s);
+/* complete: 0 = progress, 1 = search complete, 2 = real insertion complete. */
 void			debug_status_draw(int complete);
 int				debug_status_ready(t_search_debug *s, int complete);
 

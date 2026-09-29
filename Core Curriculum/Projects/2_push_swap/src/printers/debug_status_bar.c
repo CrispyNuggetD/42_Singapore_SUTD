@@ -64,6 +64,8 @@ static void	status_bar(t_status_line *line, t_search_debug *s)
 		append_field(line, ".", s->percent_tenths % 10);
 	}
 	append_text(line, "%");
+	append_field(line, " inserted=", s->inserted);
+	append_field(line, "/", s->pass_initial_b);
 }
 
 /* One bounded stack buffer and one stderr write per actual redraw. */

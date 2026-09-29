@@ -760,8 +760,8 @@ Lookahead algorithms retain the whole-pass recursive trial count described above
 
 DEBUG 1 redraws are throttled by whole-pass percentage in 0.1% steps: best-cost events and
 root completion can request a redraw, but repeated percentages are suppressed.
-A final DONE update is always allowed. This limits output to at most 1002 redraws
-per algorithm pass, without timers; counters and the retained winner still
+A final DONE update is always allowed. This limits output to at most 1002 search redraws
+per algorithm pass, plus one refresh per completed real insertion, without timers; counters and the retained winner still
 update on every relevant event. No line formatting or write occurs when a
 redraw is suppressed. Levels 2–4 retain their detailed event logs.
 
@@ -805,3 +805,61 @@ unvisited descendants count as skipped. Skipping a subtree advances progress in
 one jump. `skipped` accumulates across all searches in an algorithm pass, and
 `covered - skipped` gives the actual candidate evaluations (unless counters
 saturate). Completion still reports final recorded moves after alignment.
+
+
+## Discussion / discoveries
+
+### Depth 3 can lose to local greedy — on the same input
+
+On this [saved 500-rank input](debug/results/2026-09-29_lookahead_horizon_input.txt),
+I got these results with the same circular LIS preparation:
+
+| Insertion strategy | Total moves, including preparation and final alignment |
+| --- | ---: |
+| Local greedy throughout | 4,979 |
+| Depth-3 lookahead throughout, searching again after each insertion | 5,363 |
+| Execute lookahead's first insertion, then use local greedy for the rest | **4,716** |
+
+That last row surprised me. Lookahead's first choice actually helped: it saved
+263 moves compared with local greedy throughout. But continuing to use lookahead
+ended up costing 647 more moves than switching to local after that first choice.
+The mixed strategy was a diagnostic experiment, not another configured algorithm.
+
+At the first insertion, both choices immediately cost 5 moves. Local chose rank
+451; lookahead chose rank 460. The best three-insertion total starting with the
+local choice was 10, while the lookahead choice scored 9. So lookahead preferred
+the cheaper short path, as intended.
+
+The catch is that my depth cutoff returns zero for the unexamined continuation.
+That means "ignore the rest", not "the rest is free". Every real insertion starts
+a fresh depth-3 search. These results show that a useful first choice does not
+make repeated short-horizon decisions produce a better complete solution. They
+do not prove that deeper lookahead always loses, or rule out every possible bug.
+
+Branch-and-bound pruning reproduced all three existing algorithms' original
+move sequences exactly on this input. The pruned run took about 2.13 seconds on
+this machine; the earlier unpruned run was reported to take about 30 minutes.
+For LIS lookahead, it skipped 11,077,063,485 of 11,080,556,820 potential candidate
+evaluations. That improves search runtime without changing what the score favours.
+
+The input was recovered from the terminal's complete move logs by reversing each
+solution from sorted ranks. All three recorded solutions recovered the same
+input. To rerun the currently configured algorithms:
+
+```bash
+make
+ARG=$(cat debug/results/2026-09-29_lookahead_horizon_input.txt)
+./push_swap $ARG
+```
+
+A possible next experiment is a local-greedy rollout at the cutoff: estimate the
+remaining cost by finishing a copied state with local greedy instead of returning
+zero. That is not implemented here; it would trade extra computation for a score
+that considers a complete solution.
+
+The status also shows `inserted=X/Y`, where Y is B's length immediately after
+seed preparation and X counts successful real B-to-A insertions. Simulated
+pushes and skipped branches never increment it. Each real insertion forces a
+refresh even when the search-space percentage has not changed, so the counter
+keeps moving near 99.9%. An empty initial B finishes at `inserted=0/0`; the final
+summary reports `inserted=Y/Y` after alignment.

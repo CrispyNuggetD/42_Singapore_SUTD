@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 22:05:38 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 23:21:02 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 # define MAX_MOVES_CONSIDERED				30000
 # define BRUTE_MAX_N						10
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
-# define LOOKAHEAD							3
+# define LOOKAHEAD							7
 
 // Level 0-4 for STDERR progress bar + info printing (Does not affect checker)
 # define DEBUG 								1

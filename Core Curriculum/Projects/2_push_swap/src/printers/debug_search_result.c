@@ -117,6 +117,7 @@ void	debug_status_end(int moves)
 		ryker_ft_printf_fd(2, "\r\033[2K");
 	ryker_ft_printf_fd(2, "covered=%llu/%llu skipped=%llu [##########] 100.0%%",
 		s->pass_done, s->pass_total, s->pass_skipped);
+	ryker_ft_printf_fd(2, " inserted=%d/%d", s->inserted, s->pass_initial_b);
 	ryker_ft_printf_fd(2, " algo=%d/%d%s final_moves=%d DONE\n",
 		s->algo_id, ALGO_COUNT, s->algo_label, moves);
 	s->pass_active = 0;
