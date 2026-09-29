@@ -396,7 +396,7 @@ c_{i}=\#\lbrace j:i\lt j\lt n,\ p_{j}\lt p_{i}\rbrace \\
 \end{gathered}
 ```
 
-Here, $\#$ means the number of elements in the set (its cardinality).
+Here, `#` means the number of elements in the set (its cardinality).
 
 These digits form the **Lehmer code**. Their factorial-weighted sum gives the
 zero-based permutation rank:
