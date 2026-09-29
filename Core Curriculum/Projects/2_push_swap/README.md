@@ -769,12 +769,20 @@ Each algorithm finishes with a `final_moves=N DONE` diagnostic after final
 alignment, including preparation moves. DEBUG 1 replaces the active status line;
 algorithms with no reinsertion trials still print a completion summary.
 
-### Passing a branch-and-bound budget down the recursion
+### Optimization technique: branch-and-bound pruning
 
 `greedy_choose_plan_lookahead` starts an exclusive budget of `INT_MAX`.
 `t_greedy_search` groups depth, budget and the output-plan pointer so helpers
 stay within four arguments. The struct is passed by value: siblings never
 share a mutable budget. Only the output pointer refers to the caller's plan.
+
+The search is depth-first. With no initial incumbent, it first prices a path to
+the depth limit (or completion). As calls return, actual continuation costs
+establish local budgets; alternative branches can then tighten them. The first
+root candidate returns its best continuation score before the next root
+candidate is compared against it. Budgets are not arbitrary constants: each
+child receives the parent's remaining allowance after the current insertion.
+An inherited allowance can also prune a subtree before it finds its own path.
 
 Before simulating an insertion, `greedy_branch_cost` checks:
 
@@ -807,6 +815,47 @@ one jump. `skipped` accumulates across all searches in an algorithm pass, and
 saturate). Completion still reports final recorded moves after alignment.
 
 
+
+### Discarded experiment: execute multiple insertions per search
+
+I tested saving the best multi-depth insertion sequence and executing several
+insertions before searching again, instead of executing only its first insertion.
+Here, one insertion includes its rotations and final `pa`; it is not one
+individual push_swap operation. All variants used the same circular LIS seed,
+candidate costs, branch-and-bound pruning and first-minimum tie rule.
+
+On the same five shuffled 100-element inputs:
+
+| Input | Depth 7, execute 1 | Depth 7, execute 3 | Depth 7, execute 7 | Depth 8, execute 3 |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 396 | 464 | 480 | 455 |
+| 2 | 414 | 415 | 376 | 410 |
+| 3 | 389 | 437 | 410 | 412 |
+| 4 | 438 | 478 | 442 | 388 |
+| 5 | 454 | 464 | 480 | 436 |
+| **Average** | **418.2** | **451.6** | **437.6** | **420.2** |
+
+Counts include reinsertion and final alignment, but exclude the identical LIS
+preparation cost. Every completed run sorted correctly. These were isolated
+experiments, not changes to the configured solver.
+
+At depth seven, executing three was about 2.5x faster than executing one in
+their paired test, but used 8.0% more moves on average. Executing all seven was
+about 6.8x faster in its paired test, but also had a worse average move count.
+The depth-eight/execute-three variant averaged two more moves than the
+depth-seven/execute-one baseline. Timing ratios are experiment-specific.
+
+**Decision: retain execution of one insertion after multi-depth evaluation.**
+It produced the lowest average move count in this small sample. Batching was
+discarded as the default strategy, although it sometimes won on individual
+inputs and reduced search time; these results do not prove one-at-a-time
+execution is universally better.
+
+Replanning after each insertion moves the horizon one insertion further into
+the future. Committing a whole batch saves searches, but delays reconsideration
+using that additional information. Both approaches still ignore unfinished
+work beyond the depth cutoff, so neither guarantees the best complete sort.
+
 ## Discussion / discoveries
 
 ### Depth 3 can lose to local greedy — on the same input
@@ -838,7 +887,10 @@ do not prove that deeper lookahead always loses, or rule out every possible bug.
 
 Branch-and-bound pruning reproduced all three existing algorithms' original
 move sequences exactly on this input. The pruned run took about 2.13 seconds on
-this machine; the earlier unpruned run was reported to take about 30 minutes.
+this machine. The latest author-reported depth-3 comparison was approximately
+**20 minutes without pruning versus 2 seconds with pruning** (roughly 600x).
+These are approximate observations for that test, not a controlled benchmark
+or a guaranteed speedup on other inputs or machines.
 For LIS lookahead, it skipped 11,077,063,485 of 11,080,556,820 potential candidate
 evaluations. That improves search runtime without changing what the score favours.
 
