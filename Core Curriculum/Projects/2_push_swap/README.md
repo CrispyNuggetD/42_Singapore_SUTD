@@ -265,9 +265,10 @@ Taking equal thresholds gives the square-root guarantee:
 For my 500-number input:
 
 ```math
-(23 - 1)^2 + 1 = 485 \leq 500,
-\qquad
-\left\lceil\sqrt{500}\right\rceil = 23.
+\begin{gathered}
+(23 - 1)^2 + 1 = 485 \leq 500 \\
+\left\lceil\sqrt{500}\right\rceil = 23. 
+\end{gathered}
 ```
 
 So yes, there must be an LIS **or** LDS of at least 23 elements. The catch is
@@ -275,9 +276,10 @@ that I don't get to choose which one the theorem guarantees. A completely
 descending input has
 
 ```math
-\mathrm{LIS}(A) = 1,
-\qquad
-\mathrm{LDS}(A) = 500.
+\begin{gathered}
+\mathrm{LIS}(A) = 1 \\
+\mathrm{LDS}(A) = 500. 
+\end{gathered}
 ```
 
 For my planned LIS preparation, I'll keep an increasing subsequence in A and
@@ -374,7 +376,7 @@ $0,\ldots,n-1$.
 | A, top first | 2, 0 |
 | B, top first | 3, 1 |
 | Combined permutation $p$ | $(2,0,3,1)$ |
-| Split $s=|A|$ | 2 |
+| Split (number of elements in A) | 2 |
 
 ### Why factorials appear
 
@@ -388,16 +390,22 @@ does not generate every permutation.
 For each position $i$, count the smaller values to its right:
 
 ```math
-c_{i}=\#\lbrace j:i<j<n,\ p_{j}<p_{i}\rbrace,
-\qquad 0\le c_{i}\le n-1-i.
+\begin{gathered}
+c_{i}=\#\lbrace j:i\lt j\lt n,\ p_{j}\lt p_{i}\rbrace \\
+0\le c_{i}\le n-1-i. 
+\end{gathered}
 ```
+
+Here, $\#$ means the number of elements in the set (its cardinality).
 
 These digits form the **Lehmer code**. Their factorial-weighted sum gives the
 zero-based permutation rank:
 
 ```math
-R(p)=\sum_{i=0}^{n-1}c_{i}(n-1-i)!,
-\qquad 0\le R(p)<n!.
+\begin{gathered}
+R(p)=\sum_{i=0}^{n-1}c_{i}(n-1-i)! \\
+0\le R(p)\lt n!. 
+\end{gathered}
 ```
 
 This is a mixed-radix representation: unlike decimal digits, the allowed digit
@@ -413,7 +421,11 @@ For $p=(2,0,3,1)$:
 | 3 | 1 | None | 0 | $0!=1$ | 0 |
 
 ```math
-R(2,0,3,1)=2\cdot3!+0\cdot2!+1\cdot1!+0\cdot0!=13.
+\begin{aligned}
+R(2,0,3,1)&=2\cdot3!+0\cdot2! \\
+&\quad+1\cdot1!+0\cdot0! \\
+&=13.
+\end{aligned}
 ```
 
 There are 12 permutations beginning with 0 or 1, plus one earlier permutation
@@ -442,15 +454,19 @@ The same permutation with a different split represents different stacks.
 Reserve a block of $n!$ IDs for each split:
 
 ```math
-\mathrm{ID}(p,s)=s\,n!+R(p),
-\qquad s\in\{0,\ldots,n\}.
+\begin{gathered}
+\mathrm{ID}(p,s)=s\,n!+R(p) \\
+s\in\{0,\ldots,n\}. 
+\end{gathered}
 ```
 
 For our example:
 
 ```math
-n=4,\quad s=2,\quad R=13,
-\qquad \mathrm{ID}=2\cdot24+13=\boxed{61}.
+\begin{gathered}
+n=4,\quad s=2,\quad R=13 \\
+\mathrm{ID}=2\cdot24+13=\boxed{61}. 
+\end{gathered}
 ```
 
 | Split | Meaning | ID range for $n=4$ |
@@ -464,16 +480,20 @@ n=4,\quad s=2,\quad R=13,
 There are $n+1$ possible splits, so the number of encodable states is:
 
 ```math
-N=(n+1)n!=(n+1)!,
-\qquad 0\le\mathrm{ID}<N.
+\begin{gathered}
+N=(n+1)n!=(n+1)! \\
+0\le\mathrm{ID}\lt N. 
+\end{gathered}
 ```
 
 Equivalently, choose which $s$ elements go into A, then order both stacks:
 
 ```math
-N=\sum_{s=0}^{n}\binom{n}{s}s!(n-s)!
- =\sum_{s=0}^{n}n!
- =(n+1)!.
+\begin{aligned}
+N&=\sum_{s=0}^{n}\binom{n}{s}s!(n-s)! \\
+ &=\sum_{s=0}^{n}n! \\
+ &=(n+1)!.
+\end{aligned}
 ```
 
 This counts all encodable states; the restricted BFS need not visit them all.
@@ -483,9 +503,10 @@ This counts all encodable states; the restricted BFS need not visit them all.
 The BFS stores one visited bit per ID:
 
 ```math
-\text{byte index}=\left\lfloor\frac{\mathrm{ID}}8\right\rfloor,
-\qquad
-\text{bit offset}=\mathrm{ID}\bmod8.
+\begin{gathered}
+\text{byte index}=\left\lfloor\frac{\mathrm{ID}}8\right\rfloor \\
+\text{bit offset}=\mathrm{ID}\bmod8. 
+\end{gathered}
 ```
 
 For ID 61, that is byte 7, bit 5 (both zero-based).
