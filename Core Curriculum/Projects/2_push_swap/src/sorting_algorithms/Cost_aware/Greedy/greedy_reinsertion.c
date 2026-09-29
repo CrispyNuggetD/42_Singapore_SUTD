@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 18:03:22 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/28 16:02:25 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 17:56:34 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,30 +110,5 @@ int	greedy_plan_candidate(circle_buf *a, circle_buf *b, int b_index,
 	candidate_costs[3] = ryker_ft_max(rev_cost[0], rev_cost[1]) + 1;
 	plan->cost = candidate_costs[0];
 	greedy_update_best_cost(candidate_costs, rev_cost, plan);
-	return (SUCCESS);
-}
-
-/*
-** Evaluate each candidate in B, retaining the cheapest complete plan.
-** First minimum wins ties for now. Empty B returns ERROR: no candidate.
-*/
-int	greedy_choose_plan(circle_buf *a, circle_buf *b, t_greedy_plan *best)
-{
-	t_greedy_plan	candidate_plan;
-	int				b_index;
-	int				b_len;
-
-	b_len = cbuf_len(b);
-	if (b_len == 0)
-		return (ERROR);
-	b_index = 0;
-	while (b_index < b_len)
-	{
-		if (greedy_plan_candidate(a, b, b_index, &candidate_plan) == ERROR)
-			return (ERROR);
-		if (b_index == 0 || candidate_plan.cost < best->cost)
-			*best = candidate_plan;
-		b_index++;
-	}
 	return (SUCCESS);
 }

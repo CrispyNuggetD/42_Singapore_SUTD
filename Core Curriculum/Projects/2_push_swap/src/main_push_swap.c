@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 03:47:41 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 15:38:35 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ int	main(int argc, char **argv)
 	if (rank_values(count, b.buf, a.buf) == ERROR)
 		return (free_and_error(NULL));
 	cbuf_init_ab(&a, &b, count);
-	if (soln_init(&x, ALGO_COUNT, BUBBLE_SORT_MAX_500) == ERROR)
+	if (soln_init(&x, ALGO_COUNT, MAX_MOVES_CONSIDERED) == ERROR)
 		return (free_and_error(&x));
 	if (solve(&x, &a, &b, count) == ERROR)
 		return (free_and_error(&x));

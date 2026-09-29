@@ -24,6 +24,7 @@ CBUF_DIR = data_structures/circular_buffer
 BFS_DIR = sorting_algorithms/Brute_force/BFS
 
 SRCS		= main_push_swap.c \
+			  algorithm_config.c \
 			  parse_sort_input.c \
 			  stack_operation_swap_push.c \
 			  stack_operation_rotate.c \
@@ -32,7 +33,16 @@ SRCS		= main_push_swap.c \
 			  $(CBUF_DIR)/circular_buffer_get_info.c \
 			  $(CBUF_DIR)/circular_buffer_move_element.c \
 			  $(CBUF_DIR)/circular_buffer_insert_remove.c \
-			  debug_tools.c \
+			  printers/debug_tools.c \
+			  printers/debug_solutions.c \
+			  printers/debug_lookahead.c \
+			  printers/debug_search_progress.c \
+			  printers/debug_pass_progress.c \
+			  printers/debug_search_result.c \
+			  printers/debug_status_bar.c \
+			  printers/debug_bfs.c \
+			  printers/debug_chunks.c \
+			  printers/solution_printers.c \
 			  rank_values.c \
 			  stack_utils.c \
 			  solve.c \
@@ -45,6 +55,8 @@ SRCS		= main_push_swap.c \
 			  $(BFS_DIR)/bfs_operations_reverse_rotate.c \
 			  $(BFS_DIR)/bfs_optimiser_lehmer_rank.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_lookahead_utils.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_choose_plan.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c \

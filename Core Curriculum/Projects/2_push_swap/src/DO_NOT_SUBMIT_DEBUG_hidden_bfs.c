@@ -107,7 +107,7 @@ static int	solve_active_chunk(soln *real, circle_buf *a, circle_buf *b, int coun
 	fake_b.capacity = b->capacity;
 	if (copy_active_b(&fake_b, b, count) == ERROR)
 		return (ERROR);
-	if (soln_init(&fake, 1, BUBBLE_SORT_MAX_500) == ERROR)
+	if (soln_init(&fake, 1, MAX_MOVES_CONSIDERED) == ERROR)
 		return (ERROR);
 	if (brute_solve(&fake, &fake_a, &fake_b) == ERROR)
 	{
@@ -154,18 +154,14 @@ int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b)
 			return (ERROR);
 		extract_moves = real->ans_len[real->cur] - before;
 		bfs_run++;
-		printf("BFS RUN: %d/%d, remaining after this=%d, chunk=%d..%d\n",
-			bfs_run, total_bfs_runs, total_bfs_runs - bfs_run,
-			g_start, g_end);
-		fflush(stdout);
+		debug_bfs_run(bfs_run, total_bfs_runs, g_start, g_end);
 		before = real->ans_len[real->cur];
 		if (solve_active_chunk(real, a, b, chunk) == ERROR)
 			return (ERROR);
 		bfs_moves = real->ans_len[real->cur] - before;
-		printf("CHUNK %d..%d extraction=%d bfs=%d total=%d\n", g_start,
-			g_end, extract_moves, bfs_moves, extract_moves + bfs_moves);
+		debug_chunk_result(g_start, g_end, extract_moves, bfs_moves);
 		g_start += chunk;
 	}
-	printf("TOTAL MOVES: %d\n", real->ans_len[real->cur]);
+	debug_total_moves(real->ans_len[real->cur]);
 	return (SUCCESS);
 }

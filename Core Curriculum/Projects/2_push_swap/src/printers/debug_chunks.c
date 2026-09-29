@@ -1,31 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   stack_operation_rotate.c                           :+:      :+:    :+:   */
+/*   debug_chunks.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/27 11:10:33 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 17:56:32 by hnah             ###   ########.fr       */
+/*   Created: 2026/07/23 06:01:57 by hnah              #+#    #+#             */
+/*   Updated: 2026/09/29 18:18:03 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-int	ra(soln *x, circle_buf *a)
+void	debug_chunk_route(int start, int end, int cost, const char *direction)
 {
-	append_move_to_soln(x, RA);
-	return (cbuf_rotate(a));
+	if (DEBUG < 2)
+		return ;
+	ryker_ft_printf_fd(2, "CHUNK %d..%d ROUTE cost=%d start=%s ",
+		start, end, cost, direction);
 }
 
-int	rb(soln *x, circle_buf *b)
+void	debug_chunk_turn(int turn)
 {
-	append_move_to_soln(x, RB);
-	return (cbuf_rotate(b));
+	if (DEBUG < 2)
+		return ;
+	ryker_ft_printf_fd(2, "turn_after=%d\n", turn);
 }
 
-int	rr(soln *x, circle_buf *a, circle_buf *b)
+void	debug_total_moves(int total)
 {
-	append_move_to_soln(x, RR);
-	return (cbuf_rotate(a) | cbuf_rotate(b));
+	if (DEBUG < 2)
+		return ;
+	ryker_ft_printf_fd(2, "TOTAL MOVES: %d\n", total);
 }

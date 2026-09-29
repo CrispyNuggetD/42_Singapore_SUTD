@@ -33,7 +33,7 @@ seconds. It has no configurable node/depth budget.
 Do not add the entire WIP directory to the build automatically. Choose an approach
 first. To restore the restricted version, explicitly add its three C files to the
 Makefile, make this directory's `bfs_seed.h` available to callers, restore a BFS
-seed enum entry before `ALGO_COUNT`, and add the preparation branch that pushes
+seed enum entry before `SEED_COUNT` and an algorithm configuration before `ALGO_COUNT`, and add the preparation branch that pushes
 until A has at most `BRUTE_MAX_N` values before calling `bfs_seed_sort()`.
 It needs an initialised current solution and stack capacity for the whole input.
 Update candidate-count assertions in `tests/test_seed_candidates.py` and rerun

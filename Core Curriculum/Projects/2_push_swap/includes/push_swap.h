@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 02:00:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 19:33:38 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,15 @@
 # include "../libft/ryker_libft.h"
 # include <stdio.h>
 # include <unistd.h>
+# include "algorithm.h"
 
-# define BUBBLE_SORT_MAX_500	249500
-# define BRUTE_MAX_N			10
-# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL	39916800
+# define MAX_MOVES_CONSIDERED				30000
+# define BRUTE_MAX_N						10
+# define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
+# define LOOKAHEAD							2
 
-typedef enum e_seed_mode
-{
-	SEED_THREE,
-	SEED_LIS,
-	ALGO_COUNT
-}	t_seed_mode;
+// Level 0-4 for STDERR progress bar + info printing (Does not affect checker)
+# define DEBUG 								1
 
 typedef struct s_circle_buf
 {
@@ -95,6 +93,17 @@ void	debug_print_int_array(const int *array, int size);
 void	cbuf_print(circle_buf *stack, char name);
 void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
 void	debug_print_soln(const soln *x, circle_buf *a_ori);
+void	debug_lis_length(int length);
+void	debug_bfs_progress(int expanded, int discovered);
+void	debug_bfs_alloc(size_t bytes);
+void	debug_print_message(const char *message);
+void	debug_bfs_run(int run, int total, int start, int end);
+void	debug_chunk_result(int start, int end, int extraction, int bfs);
+void	debug_chunk_route(int start, int end, int cost, const char *direction);
+void	debug_chunk_turn(int turn);
+void	debug_total_moves(int total);
+
+/* Solution output: stdout, independent of DEBUG. */
 int		print_best_soln(const soln *x);
 
 /* do not submit*/
@@ -112,12 +121,13 @@ int	new_soln_init(soln *x, circle_buf stacks[2], circle_buf *a_ori,
 		circle_buf *b_ori);
 int	get_order_top_three(circle_buf *a);
 int	hardcode_three(soln *x, circle_buf *a);
+int	rot_a_min_plan(circle_buf *a, int *rotations);
 int	rot_a_min_to_top(soln *x, circle_buf *a);
 
 /* Solver entry points; callers do not need algorithm-specific headers. */
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
 int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b,
-		t_seed_mode mode);
+		t_algorithm algo);
 int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
 
 /* bfs solver */

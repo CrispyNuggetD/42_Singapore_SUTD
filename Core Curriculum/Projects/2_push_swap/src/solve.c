@@ -16,18 +16,18 @@
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
 {
 	circle_buf	stacks[2];
-	t_seed_mode	mode;
+	t_algorithm	algo;
 
 	if (count != cbuf_len(a) || cbuf_len(b) != 0)
 		return (ERROR);
-	mode = SEED_THREE;
-	while (mode < ALGO_COUNT)
+	algo = ALGO_THREE_LOCAL;
+	while (algo < ALGO_COUNT)
 	{
 		if (new_soln_init(x, stacks, a, b) == ERROR)
 			return (ERROR);
-		if (greedy_reinsertion(x, &stacks[A], &stacks[B], mode) == ERROR)
+		if (greedy_reinsertion(x, &stacks[A], &stacks[B], algo) == ERROR)
 			return (ERROR);
-		mode++;
+		algo++;
 	}
 	return (SUCCESS);
 }

@@ -16,6 +16,8 @@
 
 void	append_move_to_soln(soln *x, char move)
 {
+	if (x == NULL)
+		return ;
 	x->ans[x->cur][x->step] = move;
 	x->step++;
 	x->ans_len[x->cur] = x->step;
@@ -92,32 +94,51 @@ int	get_order_top_three(circle_buf *a)
 }
 
 /*
-** Bring A's minimum to its top by the cheaper rotation direction.
-** After update_min, top_rank represents remaining moves
-** Requires circularly ascending A + All ranks present. Empty/singleton/already aligned: SUCCESS.
+** O(1) alignment plan: A must be circularly ascending with all ranks 0..n-1.
+** Empty A gives zero. Positive means ra, negative means rra; ties use rra.
+** Return SUCCESS/ERROR; write the signed count without changing A.
 */
-int	rot_a_min_to_top(soln *x, circle_buf *a)
+int	rot_a_min_plan(circle_buf *a, int *rotations)
 {
 	int	top_rank;
-	int	outcome;
-	int	direction;
+	int	forward;
 
-	direction = 1;
+	if (!a || !rotations)
+		return (ERROR);
+	*rotations = 0;
 	if (cbuf_len(a) == 0)
 		return (SUCCESS);
 	if (cbuf_read_at(a, 0, &top_rank) != SUCCESS)
 		return (ERROR);
-	if (ryker_ft_update_min(&top_rank, cbuf_opp_moves(a, top_rank)) == 0)
-		direction = -1;
+	forward = cbuf_opp_moves(a, top_rank);
+	if (forward < top_rank)
+		*rotations = forward;
+	else
+		*rotations = -top_rank;
+	return (SUCCESS);
+}
+
+/*
+** Bring A's minimum to its top by the cheaper rotation direction.
+** The shared plan supplies the signed number of remaining moves.
+** Requires circularly ascending A + All ranks present. Empty/singleton/already aligned: SUCCESS.
+*/
+int	rot_a_min_to_top(soln *x, circle_buf *a)
+{
+	int	rotations;
+	int	outcome;
+
+	if (rot_a_min_plan(a, &rotations) == ERROR)
+		return (ERROR);
 	outcome = SUCCESS;
-	while (top_rank != 0 && outcome == SUCCESS)
+	while (rotations != 0 && outcome == SUCCESS)
 	{
-		if (direction == -1)
+		if (rotations < 0)
 			outcome = rra(x, a);
 		else
 			outcome = ra(x, a);
 		if (outcome == SUCCESS)
-			top_rank--;
+			rotations -= ryker_ft_sign(rotations);
 	}
 	return (outcome);
 }

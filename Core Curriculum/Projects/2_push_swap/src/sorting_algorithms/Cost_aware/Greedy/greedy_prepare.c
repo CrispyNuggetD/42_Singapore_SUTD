@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/23 17:11:30 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 01:23:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 17:18:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,11 @@ static int	prepare_three(soln *x, circle_buf *a)
 	return (hardcode_three(x, a));
 }
 
-/* B must start empty. BFS seed experiments are parked in Brute_force/WIP. */
+/* B must start empty. */
 int	greedy_prepare(soln *x, circle_buf *a, circle_buf *b,
 	t_seed_mode mode)
 {
-	if (cbuf_len(b) != 0 || mode < SEED_THREE || mode >= ALGO_COUNT)
+	if (cbuf_len(b) != 0 || mode < SEED_THREE || mode >= SEED_COUNT)
 		return (ERROR);
 	if (mode == SEED_LIS)
 		return (prepare_lis(x, a, b));

@@ -126,8 +126,8 @@ int	extract_chunk_optimal(soln *x, circle_buf *a, circle_buf *b, int min, int ma
 		else
 			break ;
 	}
-	printf("CHUNK %d..%d ROUTE cost=%d start=%s turn_after=%d\n", min, max,
-		best_cost, direction_name(best_direction), best_turn_after);
+	debug_chunk_route(min, max, best_cost, direction_name(best_direction));
+	debug_chunk_turn(best_turn_after);
 	return (execute_route(x, a, b, min, max, best_direction,
 			best_turn_after));
 }

@@ -1,6 +1,6 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
-> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares three-value and circular-LIS seeds; BFS experiments are parked under `Brute_force/WIP`. Both active candidates run through the same greedy insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
+> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares four seed/strategy combinations; BFS experiments are parked under `Brute_force/WIP`. All four candidates share preparation, insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
 
 > Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
@@ -28,7 +28,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 | ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
 | ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
 | 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This remains an experimental path. |
-| ✅ | Seed comparison | Three-value and circular-LIS seeds feed greedy reinsertion; BFS experiments are parked in WIP. The first shortest active candidate is printed. |
+| ✅ | Seed comparison | Three-value and circular-LIS seeds each run with local greedy and lookahead; the first shortest of four candidates is printed. BFS experiments remain in WIP. |
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
@@ -66,6 +66,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Why radix as my basic algo?](#why-radix)
 - [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
 - [Circular-buffer stacks](#circular-buffer-stacks)
+- [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
 - [BFS and state indexing](#bfs-and-state-indexing)
 - [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
 - [Analysis tools and study data](#analysis-tools-and-study-data)
@@ -505,11 +506,27 @@ that the solver is correct or ready for evaluation.
 
 ## Seed candidate flow
 
-`solve()` loops over `t_seed_mode`; `ALGO_COUNT` is the enum's final value, so
-allocation and iteration use the same candidate count. The active choices are
-three-value and circular-LIS seeds. Each run starts from fresh copies of the
-original stacks and records its own solution. Preparation never calls
-`new_soln_init()`. The first shortest completed solution wins ties.
+`solve()` loops over `t_algorithm`; `ALGO_COUNT` controls allocation, iteration
+and the total shown by diagnostics. The configuration table in
+`src/algorithm_config.c` defines each algorithm's seed, insertion depth and name:
+
+| ID | Algorithm | Seed | Insertion |
+| --- | --- | --- | --- |
+| 1/4 | `ALGO_THREE_LOCAL` | Three elements | Local greedy |
+| 2/4 | `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
+| 3/4 | `ALGO_THREE_LOOKAHEAD` | Three elements | Lookahead at `LOOKAHEAD` depth |
+| 4/4 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD` depth |
+
+`t_seed_mode` now belongs only to preparation, with `SEED_COUNT` as its boundary.
+`t_algorithm` selects a whole candidate; `t_algo_config` maps it to the seed and
+insertion policy. Depth zero means local greedy internally. Set `LOOKAHEAD >= 1`
+for the two explicitly named lookahead algorithms; it no longer switches all
+algorithms between local and lookahead.
+
+Each candidate starts from fresh copies of the original stacks and records its
+own solution. Preparation never resets a solution. The first shortest completed
+candidate wins ties. Exactly one selector runs per insertion; successful
+lookahead must not fall through into local greedy and overwrite its plan.
 
 | Stage | File | Responsibility |
 | --- | --- | --- |
@@ -523,9 +540,209 @@ search are both parked under [Brute_force/WIP](src/sorting_algorithms/Brute_forc
 That README explains the file roles, differences, unfinished work, and how to
 reconnect an implementation later. Neither is included in the active build.
 
-Build with `make`, then run `python3 tests/test_seed_candidates.py`. The regression
-replays both active candidates, verifies sorted A and empty B, and checks that
+Set `DEBUG` to at least 2, build with `make`, then run
+`python3 tests/test_seed_candidates.py` (it reads the candidate dump). The regression
+replays all four active candidates, verifies sorted A and empty B, and checks that
 stdout matches the first shortest candidate. It covers every permutation of sizes
 2–5 and sorted, reversed, and deterministic shuffled inputs through 500 values.
 The refactored seed-flow C files pass Norminette; the repository still has
 pre-existing violations elsewhere, including the shared header and LIS code.
+
+
+## Greedy lookahead: who owns each plan?
+
+At depth 3, I score three insertions ahead, but only execute the first insertion
+on my real stacks. The next loop iteration looks three insertions ahead again.
+This is a **receding horizon**: the predicted second and third choices can change
+when another insertion becomes visible beyond the previous search horizon.
+Depth counts complete B-to-A insertions, including their rotations and `pa`.
+It does not count individual push_swap instructions.
+
+Algorithms 1–2 always use local greedy; algorithms 3–4 use `LOOKAHEAD` as
+the search depth passed by `greedy_insert_all`. All candidates are explored at each level;
+depth 3 or 4 can be very expensive with a large B. This is not beam search yet.
+
+### Same variable name, different storage
+
+Every function call gets its own ordinary local variables, including recursive
+calls. A child's `candidate` is a different struct from its parent's `candidate`.
+The parent call pauses while the child runs; its variables stay alive.
+
+| Variable | Where it lives | What it holds |
+|---|---|---|
+| `best` | `greedy_insert_all` | The one plan to execute on the real stacks. |
+| `candidate` | Each `greedy_choose_plan_lookahead` call | One possible insertion at that level. |
+| `best_first_plan` pointer parameter | Each selector call | The caller's output address, not a shared global plan. |
+| `copies[2]` | Each `branch_cost` call | Independent A/B buffers for that hypothetical branch. |
+| `unused_plan` | Each `greedy_lookahead_cost` call | The child's winning first plan; only its score is needed by the parent. |
+
+The crucial assignment is `*best_first_plan = candidate`. This copies the struct's fields
+into the caller's output storage. It does not save a pointer to the temporary
+`candidate`, and it does not copy an entire chain of plans.
+
+At the root, `best_first_plan` points to `best` in `greedy_insert_all`. Deeper down,
+the selector receives `&unused_plan` from that particular cost-helper call.
+**The child is never given the address of the root's winning plan**, so it
+cannot overwrite it through that output parameter.
+
+### Follow one depth-three branch
+
+```text
+greedy_insert_all: owns real best
+  choose(depth 3, &best): try candidate X
+    branch_cost: copy stacks, simulate X
+      cost(depth 2): owns unused_plan #1
+        choose(depth 2, &unused_plan #1): try candidate Y
+          branch_cost: copy X's state, simulate Y
+            cost(depth 1): owns unused_plan #2
+              choose(depth 1, &unused_plan #2): try candidate Z
+                branch_cost: copy Y's state, simulate Z
+                  cost(depth 0): return 0 if B is still nonempty
+```
+
+Each level explores its siblings too. The cheapest continuation cost comes back
+as an integer: Z's cost, then Y plus its best continuation, then X plus its best
+continuation. If X gives the best total at the root, the root copies **X's plan**
+into the real `best`. Its `.cost` still describes X alone; the function's returned
+score describes the whole searched horizon. Search errors return `-1`, so callers
+check `< 0`, not `== ERROR`.
+
+The simulations call `greedy_execute_plan(NULL, copies, ...)`: they change only
+the copied stacks and record nothing. After the search returns,
+`greedy_insert_all` calls `greedy_execute_plan(x, a, b, &best)` exactly once on the
+real stacks. That's why only the first insertion actually happens.
+
+If B becomes empty, the cost helper returns final alignment cost, even at depth
+zero. Otherwise depth zero returns zero: it means "stop looking", not "sorted".
+The alignment calculation assumes all distinct ranks `0..n-1` are now in
+circularly ascending A.
+
+No linked list or allocated search tree is needed. Each branch's local copies
+stop being needed when its call returns, and the next sibling gets fresh copies
+of the same parent state. Storage grows with the active recursion depth, while
+the number of branches grows much faster. A lower finite-horizon score still
+does not guarantee the shortest complete solution.
+
+
+### Debug printers and the DEBUG flag
+
+Set `DEBUG` to `0`, `1`, `2`, `3` or `4` in `includes/push_swap.h`, then run `make`.
+The header is the source of truth for these printers; `make debug` does not
+force this flag on. Each debug printer checks it before printing to stderr.
+With `DEBUG=1`, stderr displays an updating status bar. For plain log files,
+use `DEBUG=2` or higher and `./push_swap 5 2 0 4 1 3 2> trace.log`.
+The chosen solution still goes to stdout with either flag value.
+
+All printers live under `src/printers`, with at most five functions per file:
+
+- `solution_printers.c`: actual best-solution output, independent of DEBUG.
+- `debug_tools.c`: integer arrays, circular buffers and BFS memory estimates.
+- `debug_solutions.c`: original ranks and recorded solution details.
+- `debug_lookahead.c`: TRY, RETURN, STOP, EXECUTE and LIS-length diagnostics.
+- `debug_search_progress.c`: per-search depth, candidate and trial counters.
+- `debug_pass_progress.c`: cumulative work across all insertions in a seed pass.
+- `debug_search_result.c`: result events and cached percentage thresholds.
+- `debug_status_bar.c`: bounded status-line construction and one write per redraw.
+- `debug_bfs.c`: BFS progress, allocation and chunk-result diagnostics.
+- `debug_chunks.c`: extraction-route and total-move diagnostics.
+
+Debug printing does not choose plans or execute moves. Algorithm functions call
+these printers, which return immediately when DEBUG is zero. Required input
+errors still print `Error` to stderr regardless of DEBUG.
+
+
+### Lookahead progress levels
+
+The lookahead printers follow the header's DEBUG level:
+
+- `0`: no diagnostics.
+- `1`: one updating stderr status bar; redraw only when a candidate establishes
+  or improves a branch cost, plus root-search completion; keep the root winner
+  displayed separately once the first root candidate has been scored.
+- `2`: root-candidate start/completion logs and the chosen insertion.
+- `3`: candidates and return/stop events at every recursive level.
+- `4`: the above plus rank, immediate cost, continuation cost and combined cost.
+
+Level 1 retains the winning first plan for the entire current search. Child
+branch winners cannot replace it. For example:
+
+```text
+trials=172/410 [####------] 42% algo=1/4 (3-element seed + local greedy) depth=2/3 done=4/8 best_item=2 best_total=7
+```
+
+`done=4/8` means four of the eight candidates in this particular depth-two
+call have been fully evaluated. At depth one, the denominator would be nine.
+This local counter can restart when the parent changes; the overall percentage
+still cannot go backwards within a pass. `best_item` always identifies the
+retained root winner, even when the displayed progress comes from a child.
+`best_total` includes that candidate's insertion cost and its best continuation
+within the lookahead horizon. The percentage measures search work completed,
+not how close the cost is to an unknown optimal solution. Child improvements
+can refresh the depth-local progress after a root winner exists, but never
+overwrite the displayed root winner.
+
+Within one search, the winning cost only decreases (ties keep the earlier plan).
+The percentage, however, covers the entire reinsertion pass: it does not reset
+when we execute the winning insertion and begin the next search. The bar shows
+the algorithm ID out of `ALGO_COUNT` and its configured seed/strategy name. Trial counts appear at the far left
+so changing lengths in the depth, candidate and score fields cannot shift them.
+A new seed pass legitimately starts its own percentage. Completion of each root
+search refreshes the bar, but DONE/100% is reached only when all the pass's
+simulated trials have finished. A newline follows the final insertion into A.
+Other diagnostic dumps require level 2 or higher. Use levels 3–4 for child decisions.
+
+The bar uses `\r` and ANSI clear-line output in one buffered stderr write;
+no timers, sleeps, terminal queries or new system calls are needed. Redirecting
+level 1 captures those control characters, so use levels 2–4 for plain logs.
+
+A line such as `depth=2/3 candidate=4/9` means the fourth candidate at the
+second insertion level of a three-insertion horizon. Candidate numbers are
+one-based logical B positions, not ranks. START prints both the requested depth
+and the effective depth, capped by how many elements remain in B.
+
+At DEBUG 2–4, `completed=X/Y remaining=Z` counts fully evaluated simulated insertions across
+all levels of this one search. For B length $b$ and effective depth $d$, the
+unpruned tree contains
+
+$$
+T(b,d)=\sum_{k=1}^{d}\frac{b!}{(b-k)!}.
+$$
+
+For example, $T(5,3)=5+20+60=85$. The count resets after each real insertion,
+when we begin a fresh search. It is not the number of unique ranks, emitted
+moves, or the work remaining for the entire sort. A parent trial is marked
+complete only after its children return. Level 2 updates at root-candidate
+boundaries; level 3 shows progress inside those branches.
+
+Totals beyond the unsigned counter's capacity are labelled with `+` rather
+than wrapping into a misleading small number. The counters describe the current
+exhaustive search; pruning would require revisiting this total calculation.
+`debug_search_progress.c` owns the diagnostic state only; it never affects which
+plan wins. As with the current solver, this tracing assumes one synchronous
+search at a time.
+
+
+For DEBUG 1, the total is instead the sum over all future B lengths:
+
+$$
+T_{\text{pass}}(b,d)=\sum_{m=1}^{b}T(m,\min(d,m)).
+$$
+
+Every real insertion removes exactly one B element, so this total can be
+calculated once before reinsertion. Percentage and completed-trial counters
+remain monotonic across the pass. Refreshes still happen only on branch best-cost
+updates (after a root winner exists) or root completion, so visible percentages can skip ahead.
+
+Status rendering uses a 256-byte stack buffer with no allocations or variadic
+format parsing. Percentage thresholds are calculated once per pass using
+integer division/remainder by 100; each redraw advances a cached percentage
+using comparisons. The bar itself uses no division. Decimal number formatting
+still uses division/remainder by 10. A redraw issues one `write` to stderr;
+non-improving results continue to update counters without formatting a line,
+except that root completion always refreshes the status.
+
+
+For local greedy, progress counts candidate evaluations rather than simulated
+insertions: with $b$ initial elements in B, the total is $b(b+1)/2$. The debug
+counter uses a one-level horizon for this count; it does not enable lookahead.
+Lookahead algorithms retain the whole-pass recursive trial count described above.

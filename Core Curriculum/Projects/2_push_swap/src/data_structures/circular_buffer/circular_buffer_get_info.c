@@ -85,6 +85,6 @@ int cbuf_lis(circle_buf *stack, char keep_flags[500])
 		}
 		start++;
 	}
-	ryker_ft_printf_fd(2, "best_circular_lis_len: %i\n", best_circular_lis_len);
+	debug_lis_length(best_circular_lis_len);
 	return (SUCCESS);
 }

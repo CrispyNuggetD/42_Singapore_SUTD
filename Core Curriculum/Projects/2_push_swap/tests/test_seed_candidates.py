@@ -1,7 +1,8 @@
 """Replay every candidate, then verify stdout is the first shortest candidate.
 
 Run after make: python3 tests/test_seed_candidates.py
-Active candidates are the three-value seed and circular LIS; BFS is in WIP.
+Four candidates combine three-value/circular-LIS seeds with local/lookahead
+insertion. Build with DEBUG >= 2 for the recorded candidate dump. BFS is in WIP.
 """
 import itertools
 import random
@@ -42,7 +43,7 @@ def check(values):
         capture_output=True, text=True, timeout=120, check=True,
     )
     matches = re.findall(r"Stored length: (\d+)\nEncoded      : ([1-9AB]*)\n", run.stderr)
-    assert len(matches) == 2, run.stderr[-1000:]
+    assert len(matches) == 4, run.stderr[-1000:]
     candidates = []
     for length, encoded in matches:
         assert int(length) == len(encoded)
@@ -64,7 +65,7 @@ def main():
         for arrangement in (values, list(reversed(values)), rng.sample(values, size)):
             check(arrangement)
             count += 1
-        print(f"size {size}: both active candidates sort correctly", flush=True)
+        print(f"size {size}: all four candidates sort correctly", flush=True)
     print(f"PASS: {count} inputs; every candidate and winner verified")
 
 
