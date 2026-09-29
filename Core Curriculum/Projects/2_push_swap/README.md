@@ -258,7 +258,7 @@ See [the theorem statement in this research paper](https://www.sciencedirect.com
 Taking equal thresholds gives the square-root guarantee:
 
 ```math
-\max\bigl(\operatorname{LIS}(A),\operatorname{LDS}(A)\bigr)
+\max\bigl(\mathrm{LIS}(A),\mathrm{LDS}(A)\bigr)
 \geq \left\lceil\sqrt{n}\right\rceil.
 ```
 
@@ -275,9 +275,9 @@ that I don't get to choose which one the theorem guarantees. A completely
 descending input has
 
 ```math
-\operatorname{LIS}(A) = 1,
+\mathrm{LIS}(A) = 1,
 \qquad
-\operatorname{LDS}(A) = 500.
+\mathrm{LDS}(A) = 500.
 ```
 
 For my planned LIS preparation, I'll keep an increasing subsequence in A and
@@ -442,7 +442,7 @@ The same permutation with a different split represents different stacks.
 Reserve a block of $n!$ IDs for each split:
 
 ```math
-\operatorname{ID}(p,s)=s\,n!+R(p),
+\mathrm{ID}(p,s)=s\,n!+R(p),
 \qquad s\in\{0,\ldots,n\}.
 ```
 
@@ -450,7 +450,7 @@ For our example:
 
 ```math
 n=4,\quad s=2,\quad R=13,
-\qquad \operatorname{ID}=2\cdot24+13=\boxed{61}.
+\qquad \mathrm{ID}=2\cdot24+13=\boxed{61}.
 ```
 
 | Split | Meaning | ID range for $n=4$ |
@@ -465,7 +465,7 @@ There are $n+1$ possible splits, so the number of encodable states is:
 
 ```math
 N=(n+1)n!=(n+1)!,
-\qquad 0\le\operatorname{ID}<N.
+\qquad 0\le\mathrm{ID}<N.
 ```
 
 Equivalently, choose which $s$ elements go into A, then order both stacks:
@@ -483,9 +483,9 @@ This counts all encodable states; the restricted BFS need not visit them all.
 The BFS stores one visited bit per ID:
 
 ```math
-\text{byte index}=\left\lfloor\frac{\operatorname{ID}}8\right\rfloor,
+\text{byte index}=\left\lfloor\frac{\mathrm{ID}}8\right\rfloor,
 \qquad
-\text{bit offset}=\operatorname{ID}\bmod8.
+\text{bit offset}=\mathrm{ID}\bmod8.
 ```
 
 For ID 61, that is byte 7, bit 5 (both zero-based).
