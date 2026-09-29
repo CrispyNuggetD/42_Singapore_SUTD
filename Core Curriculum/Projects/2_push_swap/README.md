@@ -357,28 +357,210 @@ what currently prevent the complete output from being instruction-only.
 
 ## BFS and state indexing
 
-A BFS state stores one permutation and a split position. The prefix represents
-A and the suffix represents B. For `n` distinct ranks, there are `n!`
-permutations and `n + 1` possible splits:
+### Lehmer ranking: give every state an exact address
 
-```text
-possible states = (n + 1) × n! = (n + 1)!
-state ID        = split × n! + Lehmer rank(permutation)
+**Lehmer ranking replaces searching through previously discovered states with
+calculating a unique integer ID and checking one bit.** It identifies a
+permutation exactly; it does not estimate its distance from sorted order.
+
+The implementation is
+[bfs_optimiser_lehmer_rank.c](src/sorting_algorithms/Brute_force/BFS/bfs_optimiser_lehmer_rank.c).
+A state stores A followed by B, both top to bottom, with a split recording the
+number of elements in A. The BFS representation uses distinct small local ranks
+$0,\ldots,n-1$.
+
+| Component | Example |
+| --- | --- |
+| A, top first | 2, 0 |
+| B, top first | 3, 1 |
+| Combined permutation $p$ | $(2,0,3,1)$ |
+| Split $s=|A|$ | 2 |
+
+### Why factorials appear
+
+There are $n!$ permutations of $n$ distinct values. In lexicographic order, each
+possible first value heads a block of $(n-1)!$ permutations. After fixing it,
+each possible second value heads a block of $(n-2)!$, and so on.
+
+Factorials are **block sizes used to calculate an address**. The calculation
+does not generate every permutation.
+
+For each position $i$, count the smaller values to its right:
+
+$$
+c_i=\left|\left\{j:i<j<n,\ p_j<p_i\right\}\right|,
+\qquad 0\le c_i\le n-1-i.
+$$
+
+These digits form the **Lehmer code**. Their factorial-weighted sum gives the
+zero-based permutation rank:
+
+$$
+R(p)=\sum_{i=0}^{n-1}c_i(n-1-i)!,
+\qquad 0\le R(p)<n!.
+$$
+
+This is a mixed-radix representation: unlike decimal digits, the allowed digit
+range shrinks at each position. Remember $0!=1$; the last digit is always zero.
+
+For $p=(2,0,3,1)$:
+
+| Position | Value | Smaller values to the right | Digit | Weight | Contribution |
+| ---: | ---: | --- | ---: | ---: | ---: |
+| 0 | 2 | 0, 1 | 2 | $3!=6$ | 12 |
+| 1 | 0 | None | 0 | $2!=2$ | 0 |
+| 2 | 3 | 1 | 1 | $1!=1$ | 1 |
+| 3 | 1 | None | 0 | $0!=1$ | 0 |
+
+$$
+R(2,0,3,1)=2\cdot3!+0\cdot2!+1\cdot1!+0\cdot0!=13.
+$$
+
+There are 12 permutations beginning with 0 or 1, plus one earlier permutation
+within the chosen prefix: $(2,0,1,3)$. Thus $(2,0,3,1)$ has rank 13.
+
+### Why permutations cannot collide
+
+The factorial blocks do not overlap. To recover the permutation from its code,
+start with the sorted unused values, select the value at zero-based index $c_i$,
+and remove it:
+
+| Digit | Unused values before selection | Selected value |
+| ---: | --- | ---: |
+| 2 | 0, 1, 2, 3 | 2 |
+| 0 | 0, 1, 3 | 0 |
+| 1 | 1, 3 | 3 |
+| 0 | 1 | 1 |
+
+This uniquely recovers $(2,0,3,1)$. Ranking is reversible and collision-free for
+valid permutations. It is not a hash with possible collisions. The implementation
+only needs the ranking direction, not decoding.
+
+### Include the stack split
+
+The same permutation with a different split represents different stacks.
+Reserve a block of $n!$ IDs for each split:
+
+$$
+\operatorname{ID}(p,s)=s\,n!+R(p),
+\qquad s\in\{0,\ldots,n\}.
+$$
+
+For our example:
+
+$$
+n=4,\quad s=2,\quad R=13,
+\qquad \operatorname{ID}=2\cdot24+13=\boxed{61}.
+$$
+
+| Split | Meaning | ID range for $n=4$ |
+| ---: | --- | --- |
+| 0 | A empty | 0–23 |
+| 1 | One element in A | 24–47 |
+| 2 | Two elements in A | 48–71 |
+| 3 | Three elements in A | 72–95 |
+| 4 | B empty | 96–119 |
+
+There are $n+1$ possible splits, so the number of encodable states is:
+
+$$
+N=(n+1)n!=(n+1)!,
+\qquad 0\le\operatorname{ID}<N.
+$$
+
+Equivalently, choose which $s$ elements go into A, then order both stacks:
+
+$$
+N=\sum_{s=0}^{n}\binom{n}{s}s!(n-s)!
+ =\sum_{s=0}^{n}n!
+ =(n+1)!.
+$$
+
+This counts all encodable states; the restricted BFS need not visit them all.
+
+### From an ID to a visited bit
+
+The BFS stores one visited bit per ID:
+
+$$
+\text{byte index}=\left\lfloor\frac{\operatorname{ID}}8\right\rfloor,
+\qquad
+\text{bit offset}=\operatorname{ID}\bmod8.
+$$
+
+For ID 61, that is byte 7, bit 5 (both zero-based).
+
+```mermaid
+flowchart TD
+    S["Candidate: A = [2, 0], B = [3, 1]"] --> P["Permutation [2, 0, 3, 1]: rank 13"]
+    S --> T["Split = 2"]
+    P --> I["ID = 2 × 24 + 13 = 61"]
+    T --> I
+    I --> V{"Visited byte 7, bit 5 set?"}
+    V -->|"Yes"| X["Skip duplicate"]
+    V -->|"No"| Q["Set bit and enqueue with parent and move"]
 ```
 
-[`bfs_optimiser_lehmer_rank.c`](src/bfs_optimiser_lehmer_rank.c) computes that ID.
-The solver uses it to look up one visited bit per state. Each discovered node
-also records its parent and the move used to reach it, allowing the final path
-to be reconstructed backwards.
+The bit operations used in the BFS are:
 
-BFS finds a shortest path within the graph it actually explores. The active
-solver tries only `sa`, `sb`, `pa`, `pb`, `ra` and `rra`, with additional
-restrictions to protect hidden values in A. Its result must not be described as
-the globally shortest solution over all eleven operations.
+```c
+/* Check whether this state was already discovered. */
+visited[state_id / 8] & (1 << (state_id % 8))
 
-With `BRUTE_MAX_N` set to 10, the configured maximum is `11! = 39,916,800`
-states. The main BFS allocates that many nodes for every call. Compact state
-encoding helps, but does not remove factorial growth or the current allocation cost.
+/* Mark it as discovered. */
+visited[state_id / 8] |= (1 << (state_id % 8));
+```
+
+With unit-cost moves, BFS first discovers a state at minimum depth within its
+explored graph. Later routes to the identical state need not enqueue it again:
+the available continuations depend on that state, not the route taken to it.
+Each discovered node records its parent and incoming move so the final path
+can be reconstructed backwards.
+
+### What the optimization saves
+
+The old duplicate check scanned previously discovered nodes and compared their
+arrays. With $V$ stored states and $n$ values, this takes up to $O(Vn)$ work per
+candidate. The current nested-loop ranking performs exactly
+
+$$
+\frac{n(n-1)}2
+$$
+
+value comparisons, then one bit lookup.
+
+| Method | Worst-case duplicate-check work per candidate |
+| --- | --- |
+| Scan previously discovered states | $O(Vn)$ |
+| Current Lehmer ranking plus visited bit | $O(n^2)+O(1)$ |
+
+For $n=10$, ranking makes 45 value comparisons regardless of whether BFS has
+discovered 100 states or one million. Only the bit lookup is $O(1)$; the complete
+rank-and-check operation is $O(n^2)$.
+
+The implementation precomputes factorials in its lookup table. It does not
+enumerate $n!$ permutations to compute a rank. The speedup comes from eliminating
+the growing scan of stored states. This is separate from greedy branch-and-bound
+pruning, which skips branches based on cost.
+
+### Limits: indexing does not remove factorial growth
+
+The visited bitset requires
+
+$$
+\left\lceil\frac{(n+1)!}{8}\right\rceil
+$$
+
+bytes. With the configured maximum of 10 elements, $11!=39,916,800$ states need
+4,989,600 bytes (about 4.76 MiB) for visited bits alone. The node array containing
+states, parents and moves needs additional, much larger storage. The current
+BFS allocates its configured maximum tables even for smaller calls. Increasing
+the limit also requires checking integer ranges and representation limits.
+
+The BFS implementation tries only sa, sb, pa, pb, ra and rra, with additional
+restrictions protecting hidden values in A. Its shortest-path guarantee applies
+to that restricted graph, not all eleven push_swap operations. Lehmer ranking
+preserves state identity without changing those search rules.
 
 [↑ Back to top](#top)
 
