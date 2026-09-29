@@ -24,10 +24,10 @@ typedef enum e_seed_mode
 /* Complete candidates: seed plus insertion strategy. */
 typedef enum e_algorithm
 {
-	ALGO_THREE_LOCAL,
 	ALGO_LIS_LOCAL,
-	ALGO_THREE_LOOKAHEAD,
+	ALGO_THREE_LOCAL,
 	ALGO_LIS_LOOKAHEAD,
+	/* ALGO_THREE_LOOKAHEAD, */
 	ALGO_COUNT
 }	t_algorithm;
 

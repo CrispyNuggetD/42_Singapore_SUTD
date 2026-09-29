@@ -19,12 +19,13 @@
 /* Internal greedy planning API; the solver entry point is in push_swap.h. */
 /* Logical positions count from the top, never from buf[0]. */
 # define GREEDY_NO_TARGET -1
+# define GREEDY_PRUNED -2
 
 /*
 ** One B -> A transfer, valid only for the state used to calculate it.
 ** Positive rotations mean forward; negative mean reverse; zero means none.
 ** cost counts printed operations, including the final pa.
-** Only use an output plan when its producer returns SUCCESS.
+** Plan builders return SUCCESS; search selectors return a nonnegative cost.
 */
 typedef struct s_greedy_plan
 {
@@ -33,6 +34,14 @@ typedef struct s_greedy_plan
 	int	rot_b;
 	int	cost;
 }	t_greedy_plan;
+
+/* Passed by value: each call owns its depth and exclusive cost budget. */
+typedef struct s_greedy_search
+{
+	int				depth;
+	int				budget;
+	t_greedy_plan	*best_first_plan;
+}	t_greedy_search;
 
 /* Debug printers return immediately when the header's DEBUG flag is zero. */
 void	debug_lookahead_try(int depth, int b_len,
@@ -53,13 +62,19 @@ int		greedy_choose_plan_local(circle_buf *a, circle_buf *b,
 /*
 ** Requires valid stacks, circularly ascending A, and all ranks 0..n-1
 ** distributed across A and B, each exactly once.
-** Both functions return a nonnegative search cost, or -1 on error.
-** Inputs are unchanged. Every B candidate is explored: use small depths.
+** Searches return cost >= 0, -1 on error, or GREEDY_PRUNED if over budget.
+** Inputs are unchanged. Pruning preserves the first minimum in this horizon.
 ** Empty B costs final alignment; otherwise depth zero costs zero.
 ** choose requires depth >= 1 and nonempty B. First minimum wins ties.
 ** best_first_plan->cost is immediate; the return value is the search cost.
 */
-int		greedy_lookahead_cost(circle_buf *a, circle_buf *b, int depth);
+/* A pruned search leaves the output plan untouched. Budget is exclusive. */
+int		greedy_lookahead_cost(circle_buf *a, circle_buf *b, int depth,
+			int budget);
+int		greedy_choose_bounded(circle_buf *a, circle_buf *b,
+			t_greedy_search search);
+int		greedy_branch_cost(circle_buf *a, circle_buf *b,
+			t_greedy_search search, const t_greedy_plan *plan);
 int		greedy_choose_plan_lookahead(circle_buf *a, circle_buf *b, int depth,
 			t_greedy_plan *best_first_plan);
 int		greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,

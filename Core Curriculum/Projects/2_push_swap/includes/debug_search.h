@@ -28,7 +28,8 @@ typedef struct s_search_debug
 	int					candidate[501];
 	int					capped;
 	int					active;
-	int					percent;
+	int					percent_tenths;
+	int					printed_tenths;
 	int					best_index;
 	int					best_total;
 	int					status_level;
@@ -38,7 +39,8 @@ typedef struct s_search_debug
 	int					pass_capped;
 	unsigned long long	pass_total;
 	unsigned long long	pass_done;
-	unsigned long long	threshold[101];
+	unsigned long long	pass_skipped;
+	unsigned long long	threshold[1001];
 	unsigned long long	total;
 	unsigned long long	done;
 }	t_search_debug;
@@ -50,8 +52,10 @@ void			debug_search_reset(t_search_debug *s, int b_len, int depth);
 void			debug_count_trials(t_search_debug *s);
 void			debug_search_prefix(const char *event, int depth);
 void			debug_search_progress(void);
-void			debug_status_end(void);
+void			debug_status_end(int moves);
+void			debug_lookahead_pruned(int depth, int b_len);
 void			debug_status_prepare(t_search_debug *s);
 void			debug_status_draw(int complete);
+int				debug_status_ready(t_search_debug *s, int complete);
 
 #endif

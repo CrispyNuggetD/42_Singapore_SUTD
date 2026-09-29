@@ -20,7 +20,7 @@ int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
 
 	if (count != cbuf_len(a) || cbuf_len(b) != 0)
 		return (ERROR);
-	algo = ALGO_THREE_LOCAL;
+	algo = ALGO_LIS_LOCAL;
 	while (algo < ALGO_COUNT)
 	{
 		if (new_soln_init(x, stacks, a, b) == ERROR)

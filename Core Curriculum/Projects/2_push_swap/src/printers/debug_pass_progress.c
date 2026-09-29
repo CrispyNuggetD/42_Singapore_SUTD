@@ -44,6 +44,7 @@ void	debug_pass_start(int b_len, int depth, int algo)
 	s = debug_search_state();
 	ft_memset(s, 0, sizeof(*s));
 	s->algo_id = algo + 1;
+	s->printed_tenths = -1;
 	s->algo_label = " (Greedy reinsertion)";
 	config = algorithm_config(algo);
 	if (config)
@@ -71,4 +72,20 @@ void	debug_search_reset(t_search_debug *s, int b_len, int depth)
 	s->best_index = 0;
 	s->best_total = 0;
 	debug_count_trials(s);
+}
+
+/* Work-based throttling: never format repeated percentages within a pass. */
+int	debug_status_ready(t_search_debug *s, int complete)
+{
+	if (DEBUG != 1)
+		return (0);
+	while (!s->pass_capped && s->pass_total && s->percent_tenths < 1000
+		&& s->pass_done >= s->threshold[s->percent_tenths + 1])
+		s->percent_tenths++;
+	if (complete && s->initial_b == 1)
+		return (1);
+	if (s->printed_tenths == s->percent_tenths)
+		return (0);
+	s->printed_tenths = s->percent_tenths;
+	return (1);
 }

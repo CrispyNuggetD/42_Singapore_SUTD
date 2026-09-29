@@ -23,9 +23,13 @@ static int	alignment_cost(circle_buf *a)
 }
 
 /* A leaf returns a cost without executing another insertion. */
-static int	leaf_cost(int depth, int cost, char *reason)
+static int	leaf_cost(int depth, int cost, char *reason, int budget)
 {
 	debug_lookahead_stop(depth, cost, reason);
+	if (cost < 0)
+		return (-1);
+	if (cost >= budget)
+		return (GREEDY_PRUNED);
 	return (cost);
 }
 
@@ -34,15 +38,21 @@ static int	leaf_cost(int depth, int cost, char *reason)
 ** Check completion first: even at depth zero, finishing alignment has a cost.
 ** At an unfinished depth-zero leaf we stop looking, so return zero.
 */
-int	greedy_lookahead_cost(circle_buf *a, circle_buf *b, int depth)
+int	greedy_lookahead_cost(circle_buf *a, circle_buf *b, int depth,
+	int budget)
 {
 	t_greedy_plan	unused_plan;
+	t_greedy_search	search;
 
 	if (!a || !b || depth < 0)
 		return (-1);
 	if (cbuf_len(b) == 0)
-		return (leaf_cost(depth, alignment_cost(a), "B empty: alignment"));
+		return (leaf_cost(depth, alignment_cost(a), "B empty: alignment",
+				budget));
 	if (depth == 0)
-		return (leaf_cost(depth, 0, "depth limit"));
-	return (greedy_choose_plan_lookahead(a, b, depth, &unused_plan));
+		return (leaf_cost(depth, 0, "depth limit", budget));
+	search.depth = depth;
+	search.budget = budget;
+	search.best_first_plan = &unused_plan;
+	return (greedy_choose_bounded(a, b, search));
 }

@@ -1,8 +1,7 @@
 """Replay every candidate, then verify stdout is the first shortest candidate.
 
 Run after make: python3 tests/test_seed_candidates.py
-Four candidates combine three-value/circular-LIS seeds with local/lookahead
-insertion. Build with DEBUG >= 2 for the recorded candidate dump. BFS is in WIP.
+Three active candidates: LIS local, three-value local, and LIS lookahead. Build with DEBUG >= 2 for the recorded candidate dump. BFS is in WIP.
 """
 import itertools
 import random
@@ -43,7 +42,17 @@ def check(values):
         capture_output=True, text=True, timeout=120, check=True,
     )
     matches = re.findall(r"Stored length: (\d+)\nEncoded      : ([1-9AB]*)\n", run.stderr)
-    assert len(matches) == 4, run.stderr[-1000:]
+    assert len(matches) == 3, run.stderr[-1000:]
+    summaries = re.findall(r"algo=(\d+)/3[^\n]*final_moves=(\d+) DONE", run.stderr)
+    assert summaries == [(str(i + 1), length)
+                         for i, (length, _) in enumerate(matches)], summaries
+    progress = re.findall(
+        r"covered=(\d+)/(\d+) skipped=(\d+) [^\r\n]*final_moves=\d+ DONE",
+        run.stderr,
+    )
+    assert len(progress) == 3, progress
+    for covered, total, skipped in progress:
+        assert int(covered) == int(total) and 0 <= int(skipped) <= int(total)
     candidates = []
     for length, encoded in matches:
         assert int(length) == len(encoded)
@@ -65,7 +74,7 @@ def main():
         for arrangement in (values, list(reversed(values)), rng.sample(values, size)):
             check(arrangement)
             count += 1
-        print(f"size {size}: all four candidates sort correctly", flush=True)
+        print(f"size {size}: all three candidates sort correctly", flush=True)
     print(f"PASS: {count} inputs; every candidate and winner verified")
 
 

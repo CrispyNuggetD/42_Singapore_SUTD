@@ -16,14 +16,15 @@
 const t_algo_config	*algorithm_config(t_algorithm algo)
 {
 	static const t_algo_config	configs[ALGO_COUNT] = {
-	{SEED_THREE, 0, " (3-element seed + local greedy)"},
 	{SEED_LIS, 0, " (Circular LIS + local greedy)"},
-	{SEED_THREE, LOOKAHEAD, " (3-element seed + lookahead)"},
-	{SEED_LIS, LOOKAHEAD, " (Circular LIS + lookahead)"}};
+	{SEED_THREE, 0, " (3-element seed + local greedy)"},
+	{SEED_LIS, LOOKAHEAD, " (Circular LIS + lookahead)"},
+		/* {SEED_THREE, LOOKAHEAD, " (3-element seed + lookahead)"}, */
+	};
 
-	if (algo < ALGO_THREE_LOCAL || algo >= ALGO_COUNT)
+	if (algo < ALGO_LIS_LOCAL || algo >= ALGO_COUNT)
 		return (NULL);
-	if (algo >= ALGO_THREE_LOOKAHEAD && LOOKAHEAD < 1)
+	if (algo >= ALGO_LIS_LOOKAHEAD && LOOKAHEAD < 1)
 		return (NULL);
 	return (&configs[algo]);
 }

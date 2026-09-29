@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "greedy_reinsertion.h"
+#include <limits.h>
 
 /*
 ** Evaluate each candidate in B, retaining the cheapest complete plan.
@@ -43,57 +44,60 @@ int	greedy_choose_plan_local(circle_buf *a, circle_buf *b,
 	return (SUCCESS);
 }
 
-/*
-** One branch owns these copies. The parent stacks never change.
-** The child call finishes and returns a cost before this call continues.
-** NULL disables recording, but executes the real rotation/push operations.
-*/
-static int	branch_cost(circle_buf *a, circle_buf *b, int depth,
-	const t_greedy_plan *plan)
+/* The public selector starts with no incumbent: INT_MAX is only a bound. */
+int	greedy_choose_plan_lookahead(circle_buf *a, circle_buf *b, int depth,
+	t_greedy_plan *best_first_plan)
 {
-	circle_buf	copies[2];
-	int			remaining;
+	t_greedy_search	search;
 
-	debug_lookahead_try(depth, cbuf_len(b), plan);
-	copies[A] = *a;
-	copies[B] = *b;
-	if (greedy_execute_plan(NULL, &copies[A], &copies[B], plan) == ERROR)
+	if (!a || !b || !best_first_plan || depth < 1 || cbuf_len(b) == 0)
 		return (-1);
-	remaining = greedy_lookahead_cost(&copies[A], &copies[B], depth - 1);
-	if (remaining < 0)
-		return (-1);
-	return (plan->cost + remaining);
+	search.depth = depth;
+	search.budget = INT_MAX;
+	search.best_first_plan = best_first_plan;
+	return (greedy_choose_bounded(a, b, search));
+}
+
+/* Plan, evaluate and report one candidate; pruned is not an error. */
+static int	evaluate_candidate(circle_buf *a, circle_buf *b,
+	t_greedy_search search, t_greedy_plan *candidate)
+{
+	int	score;
+
+	score = greedy_branch_cost(a, b, search, candidate);
+	if (score != -1)
+		debug_lookahead_result(search.depth, candidate, score, search.budget);
+	return (score);
 }
 
 /*
 ** Try siblings one at a time; retain only their best cost and first plan.
 ** Each branch starts from the same parent state. No search tree is allocated.
 ** The caller executes only *best_first_plan on real stacks, then searches again.
+** A child receives its parent's budget minus the immediate insertion cost.
 */
-int	greedy_choose_plan_lookahead(circle_buf *a, circle_buf *b, int depth,
-	t_greedy_plan *best_first_plan)
+int	greedy_choose_bounded(circle_buf *a, circle_buf *b,
+	t_greedy_search search)
 {
 	t_greedy_plan	candidate;
 	int				index;
 	int				score;
 	int				best_score;
 
-	if (!a || !b || !best_first_plan || depth < 1 || cbuf_len(b) == 0)
-		return (-1);
-	best_score = -1;
+	best_score = GREEDY_PRUNED;
 	index = -1;
 	while (++index < cbuf_len(b))
 	{
 		if (greedy_plan_candidate(a, b, index, &candidate) == ERROR)
 			return (-1);
-		score = branch_cost(a, b, depth, &candidate);
-		if (score < 0)
+		score = evaluate_candidate(a, b, search, &candidate);
+		if (score == -1)
 			return (-1);
-		debug_lookahead_result(depth, &candidate, score, best_score);
-		if (best_score < 0 || score < best_score)
+		if (score >= 0)
 		{
+			search.budget = score;
 			best_score = score;
-			*best_first_plan = candidate;
+			*search.best_first_plan = candidate;
 		}
 	}
 	return (best_score);

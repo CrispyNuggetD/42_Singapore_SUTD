@@ -57,10 +57,7 @@ void	debug_greedy_execute(const t_greedy_plan *plan)
 	int				index;
 
 	if (DEBUG < 2)
-	{
-		debug_status_end();
 		return ;
-	}
 	s = debug_search_state();
 	index = plan->rot_b;
 	if (index < 0)

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/23 06:01:57 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 18:43:55 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/29 22:07:04 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,14 +46,11 @@ static void	status_bar(t_status_line *line, t_search_debug *s)
 {
 	int	i;
 
-	while (!s->pass_capped && s->pass_total && s->percent < 100
-		&& s->pass_done >= s->threshold[s->percent + 1])
-		s->percent++;
 	append_text(line, " [");
 	i = 0;
 	while (++i <= 10)
 	{
-		if (i * 10 <= s->percent)
+		if (i * 100 <= s->percent_tenths)
 			append_text(line, "#");
 		else
 			append_text(line, "-");
@@ -62,7 +59,10 @@ static void	status_bar(t_status_line *line, t_search_debug *s)
 	if (s->pass_capped)
 		append_text(line, "?");
 	else
-		append_number(line, s->percent);
+	{
+		append_number(line, s->percent_tenths / 10);
+		append_field(line, ".", s->percent_tenths % 10);
+	}
 	append_text(line, "%");
 }
 
@@ -72,14 +72,15 @@ void	debug_status_draw(int complete)
 	t_status_line	line;
 	t_search_debug	*s;
 
-	if (DEBUG != 1)
-		return ;
 	s = debug_search_state();
+	if (DEBUG != 1 || !debug_status_ready(s, complete))
+		return ;
 	line.length = 0;
-	append_field(&line, "\r\033[2Ktrials=", s->pass_done);
+	append_field(&line, "\r\033[2Kcovered=", s->pass_done);
 	append_field(&line, "/", s->pass_total);
 	if (s->pass_capped)
 		append_text(&line, "+");
+	append_field(&line, " skipped=", s->pass_skipped);
 	status_bar(&line, s);
 	append_field(&line, " algo=", s->algo_id);
 	append_field(&line, "/", ALGO_COUNT);
@@ -90,7 +91,5 @@ void	debug_status_draw(int complete)
 	append_field(&line, "/", s->initial_b - s->status_level);
 	append_field(&line, " best_item=", s->best_index);
 	append_field(&line, " best_total=", s->best_total);
-	if (complete && s->initial_b == 1)
-		append_text(&line, " DONE");
 	write(STDERR_FILENO, line.text, line.length);
 }

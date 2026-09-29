@@ -86,8 +86,8 @@ void	debug_search_progress(void)
 		return ;
 	s = debug_search_state();
 	if (s->capped)
-		ryker_ft_printf_fd(2, " completed=%llu total=%llu+", s->done, s->total);
+		ryker_ft_printf_fd(2, " covered=%llu total=%llu+", s->done, s->total);
 	else
-		ryker_ft_printf_fd(2, " completed=%llu/%llu remaining=%llu",
+		ryker_ft_printf_fd(2, " covered=%llu/%llu remaining=%llu",
 			s->done, s->total, s->total - s->done);
 }

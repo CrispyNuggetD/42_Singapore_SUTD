@@ -53,5 +53,8 @@ int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b,
 	debug_pass_start(cbuf_len(b), ryker_ft_max(1, config->depth), algo);
 	if (greedy_insert_all(x, a, b, config->depth) == ERROR)
 		return (ERROR);
-	return (rot_a_min_to_top(x, a));
+	if (rot_a_min_to_top(x, a) == ERROR)
+		return (ERROR);
+	debug_status_end(x->step);
+	return (SUCCESS);
 }

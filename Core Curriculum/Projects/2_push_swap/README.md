@@ -512,15 +512,17 @@ and the total shown by diagnostics. The configuration table in
 
 | ID | Algorithm | Seed | Insertion |
 | --- | --- | --- | --- |
-| 1/4 | `ALGO_THREE_LOCAL` | Three elements | Local greedy |
-| 2/4 | `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
-| 3/4 | `ALGO_THREE_LOOKAHEAD` | Three elements | Lookahead at `LOOKAHEAD` depth |
-| 4/4 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD` depth |
+| 1/3 | `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
+| 2/3 | `ALGO_THREE_LOCAL` | Three elements | Local greedy |
+| 3/3 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD` depth |
+
+The fourth entry, three-element seed + lookahead, is commented out in both
+the enum and configuration table. Uncomment both entries to restore it.
 
 `t_seed_mode` now belongs only to preparation, with `SEED_COUNT` as its boundary.
 `t_algorithm` selects a whole candidate; `t_algo_config` maps it to the seed and
 insertion policy. Depth zero means local greedy internally. Set `LOOKAHEAD >= 1`
-for the two explicitly named lookahead algorithms; it no longer switches all
+for the active lookahead algorithm; it no longer switches all
 algorithms between local and lookahead.
 
 Each candidate starts from fresh copies of the original stacks and records its
@@ -542,7 +544,7 @@ reconnect an implementation later. Neither is included in the active build.
 
 Set `DEBUG` to at least 2, build with `make`, then run
 `python3 tests/test_seed_candidates.py` (it reads the candidate dump). The regression
-replays all four active candidates, verifies sorted A and empty B, and checks that
+replays all three active candidates, verifies sorted A and empty B, and checks that
 stdout matches the first shortest candidate. It covers every permutation of sizes
 2–5 and sorted, reversed, and deterministic shuffled inputs through 500 values.
 The refactored seed-flow C files pass Norminette; the repository still has
@@ -573,7 +575,7 @@ The parent call pauses while the child runs; its variables stay alive.
 | `best` | `greedy_insert_all` | The one plan to execute on the real stacks. |
 | `candidate` | Each `greedy_choose_plan_lookahead` call | One possible insertion at that level. |
 | `best_first_plan` pointer parameter | Each selector call | The caller's output address, not a shared global plan. |
-| `copies[2]` | Each `branch_cost` call | Independent A/B buffers for that hypothetical branch. |
+| `copies[2]` | Each simulated branch | Independent A/B buffers for that hypothetical branch. |
 | `unused_plan` | Each `greedy_lookahead_cost` call | The child's winning first plan; only its score is needed by the parent. |
 
 The crucial assignment is `*best_first_plan = candidate`. This copies the struct's fields
@@ -590,22 +592,23 @@ cannot overwrite it through that output parameter.
 ```text
 greedy_insert_all: owns real best
   choose(depth 3, &best): try candidate X
-    branch_cost: copy stacks, simulate X
+    greedy_branch_cost: copy stacks, simulate X
       cost(depth 2): owns unused_plan #1
         choose(depth 2, &unused_plan #1): try candidate Y
-          branch_cost: copy X's state, simulate Y
+          greedy_branch_cost: copy X's state, simulate Y
             cost(depth 1): owns unused_plan #2
               choose(depth 1, &unused_plan #2): try candidate Z
-                branch_cost: copy Y's state, simulate Z
-                  cost(depth 0): return 0 if B is still nonempty
+                greedy_branch_cost: return Z's known cost if B has > 1 element
+                  otherwise simulate Z and include final alignment
 ```
 
 Each level explores its siblings too. The cheapest continuation cost comes back
 as an integer: Z's cost, then Y plus its best continuation, then X plus its best
 continuation. If X gives the best total at the root, the root copies **X's plan**
 into the real `best`. Its `.cost` still describes X alone; the function's returned
-score describes the whole searched horizon. Search errors return `-1`, so callers
-check `< 0`, not `== ERROR`.
+score describes the whole searched horizon. Search errors return `-1`. Bounded internal calls return `GREEDY_PRUNED`
+(`-2`) when no continuation beats the budget; that is not an error and does
+not produce an output plan. The public selector starts with `INT_MAX`.
 
 The simulations call `greedy_execute_plan(NULL, copies, ...)`: they change only
 the copied stacks and record nothing. After the search returns,
@@ -616,6 +619,13 @@ If B becomes empty, the cost helper returns final alignment cost, even at depth
 zero. Otherwise depth zero returns zero: it means "stop looking", not "sorted".
 The alignment calculation assumes all distinct ranks `0..n-1` are now in
 circularly ascending A.
+
+At the last lookahead layer (`depth == 1`), if B has more than one element,
+the push cannot finish sorting. Its continuation cost would be zero, so we
+return the plan's known cost without copying or simulating the stacks. If B
+has one element, we still simulate the push to calculate final alignment.
+This preserves scores, tie-breaking and trial counts: a trial counts a candidate
+evaluation, even when it needs no simulation.
 
 No linked list or allocated search tree is needed. Each branch's local copies
 stop being needed when its call returns, and the next sibling gets fresh copies
@@ -667,7 +677,7 @@ Level 1 retains the winning first plan for the entire current search. Child
 branch winners cannot replace it. For example:
 
 ```text
-trials=172/410 [####------] 42% algo=1/4 (3-element seed + local greedy) depth=2/3 done=4/8 best_item=2 best_total=7
+covered=172/410 skipped=80 [####------] 42.0% algo=1/3 (Circular LIS + local greedy) depth=2/3 done=4/8 best_item=2 best_total=7
 ```
 
 `done=4/8` means four of the eight candidates in this particular depth-two
@@ -688,7 +698,7 @@ the algorithm ID out of `ALGO_COUNT` and its configured seed/strategy name. Tria
 so changing lengths in the depth, candidate and score fields cannot shift them.
 A new seed pass legitimately starts its own percentage. Completion of each root
 search refreshes the bar, but DONE/100% is reached only when all the pass's
-simulated trials have finished. A newline follows the final insertion into A.
+potential trials have been evaluated or safely skipped. A newline follows the final insertion into A.
 Other diagnostic dumps require level 2 or higher. Use levels 3–4 for child decisions.
 
 The bar uses `\r` and ANSI clear-line output in one buffered stderr write;
@@ -700,7 +710,7 @@ second insertion level of a three-insertion horizon. Candidate numbers are
 one-based logical B positions, not ranks. START prints both the requested depth
 and the effective depth, capped by how many elements remain in B.
 
-At DEBUG 2–4, `completed=X/Y remaining=Z` counts fully evaluated simulated insertions across
+At DEBUG 2–4, `covered=X/Y remaining=Z` counts evaluated or safely skipped candidate insertions across
 all levels of this one search. For B length $b$ and effective depth $d$, the
 unpruned tree contains
 
@@ -735,7 +745,7 @@ updates (after a root winner exists) or root completion, so visible percentages 
 
 Status rendering uses a 256-byte stack buffer with no allocations or variadic
 format parsing. Percentage thresholds are calculated once per pass using
-integer division/remainder by 100; each redraw advances a cached percentage
+integer division/remainder by 1000; each redraw advances a cached percentage
 using comparisons. The bar itself uses no division. Decimal number formatting
 still uses division/remainder by 10. A redraw issues one `write` to stderr;
 non-improving results continue to update counters without formatting a line,
@@ -746,3 +756,52 @@ For local greedy, progress counts candidate evaluations rather than simulated
 insertions: with $b$ initial elements in B, the total is $b(b+1)/2$. The debug
 counter uses a one-level horizon for this count; it does not enable lookahead.
 Lookahead algorithms retain the whole-pass recursive trial count described above.
+
+
+DEBUG 1 redraws are throttled by whole-pass percentage in 0.1% steps: best-cost events and
+root completion can request a redraw, but repeated percentages are suppressed.
+A final DONE update is always allowed. This limits output to at most 1002 redraws
+per algorithm pass, without timers; counters and the retained winner still
+update on every relevant event. No line formatting or write occurs when a
+redraw is suppressed. Levels 2–4 retain their detailed event logs.
+
+Each algorithm finishes with a `final_moves=N DONE` diagnostic after final
+alignment, including preparation moves. DEBUG 1 replaces the active status line;
+algorithms with no reinsertion trials still print a completion summary.
+
+### Passing a branch-and-bound budget down the recursion
+
+`greedy_choose_plan_lookahead` starts an exclusive budget of `INT_MAX`.
+`t_greedy_search` groups depth, budget and the output-plan pointer so helpers
+stay within four arguments. The struct is passed by value: siblings never
+share a mutable budget. Only the output pointer refers to the caller's plan.
+
+Before simulating an insertion, `greedy_branch_cost` checks:
+
+$$
+\text{candidate cost} + \min(d-1, |B|-1) \geq \text{budget}.
+$$
+
+Every remaining insertion costs at least one `pa`. If this lower bound reaches
+the budget, the branch cannot improve it, including under the first-minimum tie
+rule. Otherwise its child receives `budget - candidate.cost`. A completed path
+below the bound updates the local budget and output plan. An inherited budget
+is a threshold, not proof that a plan with that cost exists.
+
+For example, with a known total of 10, an insertion costing 3 gives its child
+budget 7. If that child considers a move costing 6 with one insertion still
+required, it skips that branch: even 6 + 1 cannot beat 7. Final alignment remains
+part of completed-state costs; a horizon cutoff has cost zero.
+
+Return contracts: nonnegative means a real cost below the budget, `-1` means
+error, and `GREEDY_PRUNED` (`-2`) means no path beat the bound. A wholly pruned
+search leaves its output plan untouched. Pruning preserves the exhaustive
+search's selected first move and score for the same horizon; it does not make
+that horizon globally optimal.
+
+Diagnostics show `covered = evaluated + skipped` against the original exhaustive
+trial total. The candidate whose bound is checked counts as evaluated; only its
+unvisited descendants count as skipped. Skipping a subtree advances progress in
+one jump. `skipped` accumulates across all searches in an algorithm pass, and
+`covered - skipped` gives the actual candidate evaluations (unless counters
+saturate). Completion still reports final recorded moves after alignment.

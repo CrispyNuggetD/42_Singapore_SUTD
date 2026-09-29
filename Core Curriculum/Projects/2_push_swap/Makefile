@@ -37,6 +37,7 @@ SRCS		= main_push_swap.c \
 			  printers/debug_solutions.c \
 			  printers/debug_lookahead.c \
 			  printers/debug_search_progress.c \
+			  printers/debug_search_pruned.c \
 			  printers/debug_pass_progress.c \
 			  printers/debug_search_result.c \
 			  printers/debug_status_bar.c \
@@ -57,6 +58,7 @@ SRCS		= main_push_swap.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_lookahead_utils.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_choose_plan.c \
+			  sorting_algorithms/Cost_aware/Greedy/greedy_branch.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c \
