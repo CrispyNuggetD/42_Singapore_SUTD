@@ -23,6 +23,14 @@ as much as I could about why an approach works, where it fails, and how to
 improve it within real computational limits. That is why this README is long:
 it is both project documentation and a record of an extended investigation.
 
+The roughly four months associated with this project included an absence from
+school of more than a month for health and personal reasons. Much of that
+period was spent reading, watching algorithm explanations and working through
+ideas away from school, with limited access to coding tools. The implementation
+work was concentrated into a shorter period. This timeline reflects both my
+circumstances and the breadth of the learning process, rather than four months
+of continuous coding.
+
 What interested me was the difference between sorting an ordinary array and
 minimising instructions under push_swap's restricted operations. Rotating a
 stack changes its orientation; reaching and moving an element has a cost in
@@ -39,6 +47,29 @@ sorting algorithms. That sense of unfamiliar territory encouraged me to
 experiment. It is not a claim that no relevant papers exist, that the problem
 forms a new branch of computer science, or that related stack-sorting and
 permutation problems are unstudied.
+
+An early starting point was
+[Jamie Dawson's *Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a),
+which helped me understand hard-coded small cases. For five elements, the
+article describes moving the top two to B, sorting the remaining three, and
+reinserting the two. The related article
+[Ulysse Gerkens's *Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0)
+links readers to Dawson for these fundamentals; they are by different authors.
+
+I initially read the five-element construction as an optimal solution.
+Discussion with AI helped me distinguish an optimal three-element subroutine
+from an optimal complete five-element route: choosing which elements to push
+and how to return them also matters. Sorting three takes zero moves when
+already sorted and at most two otherwise, but that fact alone proves no
+five-element optimum. This was a question raised by my reading, not an
+optimality theorem claimed or proved by the article.
+
+My original plan was to compare that five-element strategy against exhaustive
+BFS across all 120 permutations, then use the exact answers to develop a
+stronger hard-coded five-element solver. That ambition helped lead me to BFS
+and the wider optimality questions below. It is not a claim that I completed
+that specific comparative study: the current precomputed table covers 1–4
+elements, while five elements use runtime BFS.
 
 The question that connected these explorations was simple:
 
@@ -1197,6 +1228,9 @@ small-input dispatch. Remaining implementation and validation work includes:
 <a id="resources"></a>
 
 ## Resources
+
+- Jamie Dawson. [*Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a), 11 May 2019. An early foundation for my understanding of hard-coded small cases and the five-element optimality question described in the preface.
+- Ulysse Gerkens. [*Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0), 1 August 2023. A related implementation article that links to Dawson's small-case explanation; its reported performance belongs to that author's implementation.
 
 - [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. This is an acknowledgement of influence, not a claim that I implemented its beam search or Iterated Greedy methods.
 
