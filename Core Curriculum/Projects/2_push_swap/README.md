@@ -1137,6 +1137,8 @@ measured move-count improvements. Outstanding work includes:
 
 ## Resources
 
+- [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. This is an acknowledgement of influence, not a claim that I implemented its beam search or Iterated Greedy methods.
+
 - Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein. [*Introduction to Algorithms*, third edition](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/). MIT Press, 2009. ISBN 978-0-262-03384-8. A major reading reference during my time at 42 and a substantial help to this project; see the [preface](#preface).
 
 - [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
@@ -1220,6 +1222,23 @@ pre-existing violations elsewhere, including the shared header and LIS code.
 
 
 ## Greedy lookahead: who owns each plan?
+
+**Inspiration and implementation boundary.** One of the later references I
+encountered, through Slack in September 2026, was
+[aaax8's push_swap report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd).
+Reading its beam-search and solution-improvement discussion encouraged me to
+explore alternative candidates rather than remain committed to a single plan,
+and informed my thinking about lookahead and reducing search work.
+
+My implementation here is recursive lookahead with **branch-and-bound pruning**,
+not beam search. Beam search retains a limited set of candidates according to
+a score; the pruning described below discards a branch when a valid lower bound
+cannot improve the current budget. The shared motivation is to spend search
+effort usefully, but the mechanisms and guarantees differ. I did not implement
+the referenced solver's beam search or Iterated Greedy destruction/reconstruction.
+This attribution records conceptual influence, not a direct implementation of
+that author's method.
+
 
 At depth 3, I score three insertions ahead, but only execute the first insertion
 on my real stacks. The next loop iteration looks three insertions ahead again.
