@@ -1555,7 +1555,7 @@ effects and costs of the real moves; deleting elements changes which positions
 a swap or rotation acts on. This is a possible research direction, not part of
 the current solver.
 
-### Discarded experiment: execute multiple insertions per search
+### Earlier batching experiment: initial decision on five inputs
 
 I tested saving the best multi-depth insertion sequence and executing several
 insertions before searching again, instead of executing only its first insertion.
@@ -1584,9 +1584,9 @@ about 6.8x faster in its paired test, but also had a worse average move count.
 The depth-eight/execute-three variant averaged two more moves than the
 depth-seven/execute-one baseline. Timing ratios are experiment-specific.
 
-**Decision: retain execution of one insertion after multi-depth evaluation.**
+**Decision at the time: retain execution of one insertion after multi-depth evaluation.**
 It produced the lowest average move count in this small sample. Batching was
-discarded as the default strategy, although it sometimes won on individual
+initially discarded as the default strategy, although it sometimes won on individual
 inputs and reduced search time; these results do not prove one-at-a-time
 execution is universally better.
 
@@ -1596,6 +1596,128 @@ using that additional information. Both approaches still ignore unfinished
 work beyond the depth cutoff, so neither guarantees the best complete sort.
 
 ## Discussion / discoveries
+
+### More lookahead, plan switching and partial commitment (1 October 2026)
+
+The following exchange is preserved verbatim as supplied by me. "Yesterday"
+and "Today" are the original chat labels, not independently verified timestamps.
+
+```text
+Yesterday:
+
+Me>(lookahead depth more, execute 1)
+WHAT THE FUCKKKKK. How is this mathematically possible; more info = worst performance. I’m not scoring the future properly.
+
+Friend>
+
+oh i think its definitely possible
+
+your new information might be adding more irrelevance no?
+
+Today:
+
+Me>
+
+^ apparently:
+1. the new info wasn’t enough layers; went bad path globally + 
+2. doing just one move causes thrashing to different plans/ paths (I think, plausibly) when the next later cost is considered after executing next lookup + 
+3. committing to the new info fully doesn’t allow “oops, bad path! Need change of plans”. 
+
+Current best algo looks forward for 8 moves, actually execute 6, then recurse.
+
+EOF
+```
+
+In this exchange, "moves" means **candidate insertions**, each including its
+rotations and final `pa`, rather than individual push_swap instructions.
+"Then recurse" means search again from the resulting real state; the search
+itself uses recursion. Depth 8 / execute 6 is my current reported best setting
+in these trials, not a demonstrated universal optimum. No new benchmark logs,
+sample size or runtime measurements accompany this exchange. The earlier
+five-input batching experiment remains evidence about that earlier sample,
+not a permanent decision against batching.
+
+#### Assessment of the explanations
+
+| Idea | Assessment | Limitation |
+| --- | --- | --- |
+| More lookahead can produce a worse complete solution | Correct for a truncated score with an unscored tail | It is not evidence that accurate information is intrinsically harmful |
+| The horizon was still too short | Plausible mechanism: costs beyond the cutoff can reverse the preference | Increasing depth again need not fix it; no useful depth threshold has been established |
+| Executing one insertion causes harmful plan switching | Plausible hypothesis worth logging | A changed plan is not itself wasted work or proof of harm |
+| Full commitment prevents correction | Correct that it delays replanning beyond the old horizon | It might preserve a good sequence instead; neither policy always wins |
+| Depth 8 / execute 6 is a useful compromise | Supported as an author-reported observation | Needs paired, repeatable tests before generalising |
+
+My friend's "irrelevance" suggestion is better interpreted here as a mismatch
+between the score and the goal. The extra simulated costs are real, relevant
+operation costs. However, they cover only a prefix and can change which path
+looks best while omitting the expensive consequence just beyond the cutoff.
+There is no contradiction in having more simulated information but choosing a
+worse complete route with that incomplete decision rule.
+
+For illustration only, suppose two hypothetical paths have these costs:
+
+| Path | First insertion | First two insertions, total | Unscored tail after two | Complete total |
+| --- | ---: | ---: | ---: | ---: |
+| X | 2 | 10 | 1 | 11 |
+| Y | 3 | 4 | 20 | 24 |
+
+A one-insertion comparison prefers X, whereas a two-insertion comparison prefers
+Y. Both comparisons correctly minimise the cost they actually measure. The
+complete totals favour X. These numbers illustrate the mechanism; they are not
+a measured push_swap trace, and do not establish the cause of my observed run.
+
+#### What "thrashing" would need to mean here
+
+After executing one insertion of an eight-insertion plan, the old plan has
+seven unexecuted insertions left. A fresh depth-eight search sees one insertion
+further ahead. Its winner may therefore differ from the old suffix.
+
+That is a moving-horizon decision, not necessarily a malfunction. No operations
+from the discarded hypothetical suffix were emitted, so discarding it incurs
+no direct move cost. Moreover, during reinsertion every executed `pa` reduces
+B's length; the solver cannot literally cycle back to the same complete A/B
+state while using only these rotation-and-`pa` insertion plans.
+
+Harmful switching would mean the changed insertion order produces more rotation
+work or a worse eventual continuation. Alternating rotation directions alone
+does not prove waste: different targets can legitimately need opposite routes.
+To support this theory, I need to compare the old suffix with the replacement
+from the **same post-insertion state**, then measure complete continuations.
+
+There is a useful control experiment. Under identical deterministic transition
+rules and candidate choices, the suffix of an optimal depth-eight path remains
+optimal for the remaining **seven-step objective**. A strictly better seven-step
+suffix would also improve the original eight-step path. Searching eight steps
+again changes the objective by extending the horizon; searching seven does not.
+Equal-cost alternatives may still differ because of tie-breaking.
+
+#### Why execute six of eight might help
+
+Executing six insertions preserves most of the evaluated sequence and avoids
+five intervening searches compared with replanning after every insertion.
+It then replans before committing the last two saved insertions. This may
+balance computation and responsiveness, but the move-count effect can go either
+way. The two unexecuted insertions influenced selection of the six-step prefix;
+they were not irrelevant simply because they were not immediately executed.
+
+The simulated dynamics are deterministic: replanning is not correcting random
+changes to the stacks. Its advantage is looking beyond the previous horizon;
+its risk is another short-horizon decision with an incomplete tail score.
+Full-batch execution similarly does not mean "never correct": it corrects later,
+after the batch, and cannot undo operations already emitted.
+
+A focused test would hold input permutations, seed preparation, tie rules and
+binary version fixed, then compare depth 8 with execution limits 1, 6 and 8.
+Record checker success, complete move count including preparation/alignment,
+runtime and search work. Log old-suffix versus new-plan choices at replans.
+Use separate inputs to validate whichever setting wins, rather than treating
+the tuning sample as proof. A greedy rollout tail is another experiment, but
+its achievable cost is an upper bound, not a safe pruning lower bound.
+
+This discussion is an interpretation of observations and hypotheses. It does
+not change the solver, establish a universal best execution fraction, or exclude
+implementation bugs without targeted validation.
+
 
 ### Opening lookahead versus continuing to look ahead (30 September 2026)
 
