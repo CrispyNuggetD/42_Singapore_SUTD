@@ -1396,10 +1396,24 @@ lower-bound pruning test.
 
 ### Why sortedness or entropy does not identify the best insertion
 
-Here, my use of "entropy" refers to the disorder terminology in 42's separate
-group-project subject, not a claim that value-frequency entropy measures order.
-This README concerns my individual project; the group's precise required metric
-and whether it permits a LIS-based substitute have not been verified here.
+My question about "entropy" referred to the separate two-person 42 subject.
+The publicly available [group subject, version 1.0](https://github.com/Mourey/pushswap/blob/main/en.subject.pdf)
+calls it **disorder**. Section VI.3.2 (printed pages 10-11) prescribes the
+fraction of inverted pairs in initial A, measured before any moves:
+
+```math
+D(A)=\frac{\#\{(i,j):0\le i<j<n,\ A_i>A_j\}}{n(n-1)/2},
+\qquad n\ge 2.
+```
+
+Sorted input has D=0; reverse-sorted input has D=1. For fewer than two
+elements, an implementation needs a zero-pair guard (returning zero is the
+natural convention); the subject's displayed pseudocode leaves that edge case
+implicit. This is a prescribed inversion-based measure, not a free choice of
+entropy formula. Circular LIS can be an additional experimental feature but
+does not replace this required metric. These group requirements are background
+for the discussion, not requirements of my individual project.
+
 A disorder metric and a remaining-operation-cost estimate serve different
 purposes. Inversion count is order-sensitive but is not an operation-distance
 bound here:
@@ -1423,8 +1437,8 @@ D_{\mathrm{cLIS}}(A)=1-\frac{L_{\mathrm{cLIS}}(A)}{|A|}.
 
 Here L_cLIS is the maximum ordinary increasing-subsequence length over all
 rotations of A. This proposed score is zero for a circularly ascending stack.
-It is not a verified substitute for the group subject's required entropy
-function, nor an admissible move-count bound. In my reinsertion phase it stays
+It is a different measure from the group subject's required disorder
+function and cannot replace it; it is not an admissible move-count bound. In my reinsertion phase it stays
 zero before and after every valid insertion, so it cannot by itself rank the
 candidates. It also ignores B and the final orientation of A.
 
