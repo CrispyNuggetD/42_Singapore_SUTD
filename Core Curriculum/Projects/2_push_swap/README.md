@@ -1,12 +1,71 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+<a id="top"></a>
+
+# push_swap — studying sorting through stack operations and shortest paths
+
+
+<a id="preface"></a>
+
+## Preface — why I spent so much time on push_swap
+
+I spent a substantial part of my time at 42 reading **Introduction to Algorithms,
+Third Edition**, by Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and
+Clifford Stein (CLRS). It was a great help throughout this project and an
+important companion to my study of algorithms.
+[Book reference: MIT Press, 2009](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/).
+
+Some peers described push_swap as one of the simplest projects in their
+curriculum. For me, its small problem statement opened up a much larger set of
+questions. I enjoy problems where a few precise rules leave room for many
+different solutions. I wanted to build a strong algorithm, but also to learn
+as much as I could about why an approach works, where it fails, and how to
+improve it within real computational limits. That is why this README is long:
+it is both project documentation and a record of an extended investigation.
+
+What interested me was the difference between sorting an ordinary array and
+minimising instructions under push_swap's restricted operations. Rotating a
+stack changes its orientation; reaching and moving an element has a cost in
+the permitted instruction set. This does not invalidate ordinary sorting
+theory, but it changes the cost model and the strategies worth considering.
+The move-minimisation task can be viewed as **combinatorial optimisation**, or
+as finding a shortest path through a graph of stack configurations.
+
+In discussions with AI, I explored questions about search, lower bounds and
+even NP-completeness. These were questions to investigate, not complexity
+classifications I established. I had not found a standard treatment of this
+exact eleven-operation problem comparable to the textbook treatment of familiar
+sorting algorithms. That sense of unfamiliar territory encouraged me to
+experiment. It is not a claim that no relevant papers exist, that the problem
+forms a new branch of computer science, or that related stack-sorting and
+permutation problems are unstudied.
+
+My aim is to connect practical performance with careful reasoning: measure
+complete solutions, understand time and memory costs, and establish guarantees
+where the assumptions permit them. Exact small-state search and safe pruning
+offer particular guarantees; a promising heuristic or a good benchmark result
+answers a different question. Throughout this README, I try to distinguish
+those forms of evidence rather than imply that every mathematical expression
+proves an improvement.
+
+This reflects my broader interest in low-level programming, interfaces,
+high-performance systems and systems where correctness matters. Areas I would
+like to explore include security-critical software, low-latency market-data
+processing, and digital signal-processing pipelines close to hardware.
+Push_swap is a learning exercise rather than evidence of readiness for those
+domains, but it gives me a concrete setting in which to practise making costs,
+invariants and trade-offs explicit.
+
+The result is not a claim to the best push_swap implementation. It is a record
+of what I built, tested, reconsidered and still want to understand. Readers
+looking for the current implementation can begin with [At a glance](#at-a-glance);
+readers interested in the investigation can use the [Contents](#contents) and
+the [guide to mathematical claims and evidence](#reading-the-mathematics).
+
 > Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares four seed/strategy combinations; BFS experiments are parked under `Brute_force/backup`. All four candidates share preparation, insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
 
 > Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
-<a id="top"></a>
-
-# push_swap — studying sorting through stack operations and shortest paths
 
 <a id="at-a-glance"></a>
 
@@ -58,6 +117,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 
 ## Contents
 
+- [Preface](#preface)
 - [At a glance](#at-a-glance)
 - [Design choices and edge cases](#design-choices-and-edge-cases)
 - [How to read the mathematics and evidence](#reading-the-mathematics)
@@ -1076,6 +1136,8 @@ measured move-count improvements. Outstanding work includes:
 <a id="resources"></a>
 
 ## Resources
+
+- Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein. [*Introduction to Algorithms*, third edition](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/). MIT Press, 2009. ISBN 978-0-262-03384-8. A major reading reference during my time at 42 and a substantial help to this project; see the [preface](#preface).
 
 - [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
 - [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. Related reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
