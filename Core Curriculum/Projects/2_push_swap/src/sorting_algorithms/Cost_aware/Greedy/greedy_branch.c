@@ -12,16 +12,34 @@
 
 #include "greedy_reinsertion.h"
 
+/* Keep the current insertion at [0]; append the child's winning plans. */
+static void	append_child_path(t_greedy_path *candidate_path,
+	const t_greedy_path *child_path)
+{
+	int	i;
+
+	candidate_path->length = 1 + child_path->length;
+	i = 0;
+	while (i < child_path->length)
+	{
+		candidate_path->plans[i + 1] = child_path->plans[i];
+		i++;
+	}
+}
+
 /*
 ** One branch owns these copies. The parent stacks never change.
 ** The child call finishes and returns a cost before this call continues.
 ** NULL disables recording, but executes the real rotation/push operations.
 ** At depth one, skip simulation unless the push empties B: alignment matters.
+** A successful child search supplies the continuation to append after [0].
 */
 static int	continuation_cost(circle_buf *a, circle_buf *b,
-	t_greedy_search search, const t_greedy_plan *plan)
+	t_greedy_search search, t_greedy_path *candidate_path)
 {
-	circle_buf	copies[2];
+	circle_buf		copies[2];
+	t_greedy_path	child_path;
+	int				remaining;
 
 	if (search.depth == 1 && cbuf_len(b) > 1)
 	{
@@ -30,29 +48,35 @@ static int	continuation_cost(circle_buf *a, circle_buf *b,
 	}
 	copies[A] = *a;
 	copies[B] = *b;
-	if (greedy_execute_plan(NULL, &copies[A], &copies[B], plan) == ERROR)
+	if (greedy_execute_plan(NULL, &copies[A], &copies[B],
+			&candidate_path->plans[0]) == ERROR)
 		return (-1);
-	return (greedy_lookahead_cost(&copies[A], &copies[B], search.depth - 1,
-			search.budget - plan->cost));
+	search.depth--;
+	search.budget -= candidate_path->plans[0].cost;
+	search.best_path = &child_path;
+	remaining = greedy_lookahead_cost(&copies[A], &copies[B], search);
+	if (remaining >= 0)
+		append_child_path(candidate_path, &child_path);
+	return (remaining);
 }
 
 /* Each remaining insertion needs at least one pa. Equality cannot win ties. */
 int	greedy_branch_cost(circle_buf *a, circle_buf *b,
-	t_greedy_search search, const t_greedy_plan *plan)
+	t_greedy_search search, t_greedy_path *candidate_path)
 {
 	int	min_remaining;
 	int	remaining;
 
-	debug_lookahead_try(search.depth, cbuf_len(b), plan);
+	debug_lookahead_try(search.depth, cbuf_len(b), &candidate_path->plans[0]);
 	min_remaining = search.depth - 1;
 	ryker_ft_update_min(&min_remaining, cbuf_len(b) - 1);
-	if (plan->cost + min_remaining >= search.budget)
+	if (candidate_path->plans[0].cost + min_remaining >= search.budget)
 	{
 		debug_lookahead_pruned(search.depth, cbuf_len(b));
 		return (GREEDY_PRUNED);
 	}
-	remaining = continuation_cost(a, b, search, plan);
+	remaining = continuation_cost(a, b, search, candidate_path);
 	if (remaining < 0)
 		return (remaining);
-	return (plan->cost + remaining);
+	return (candidate_path->plans[0].cost + remaining);
 }

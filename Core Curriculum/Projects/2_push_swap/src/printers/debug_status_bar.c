@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/23 06:01:57 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 22:07:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 14:51:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,13 +56,8 @@ static void	status_bar(t_status_line *line, t_search_debug *s)
 			append_text(line, "-");
 	}
 	append_text(line, "] ");
-	if (s->pass_capped)
-		append_text(line, "?");
-	else
-	{
-		append_number(line, s->percent_tenths / 10);
-		append_field(line, ".", s->percent_tenths % 10);
-	}
+	append_number(line, s->percent_tenths / 10);
+	append_field(line, ".", s->percent_tenths % 10);
 	append_text(line, "%");
 	append_field(line, " inserted=", s->inserted);
 	append_field(line, "/", s->pass_initial_b);
@@ -78,11 +73,11 @@ void	debug_status_draw(int complete)
 	if (DEBUG != 1 || !debug_status_ready(s, complete))
 		return ;
 	line.length = 0;
-	append_field(&line, "\r\033[2Kcovered=", s->pass_done);
-	append_field(&line, "/", s->pass_total);
-	if (s->pass_capped)
+	append_field(&line, "\r\033[2Ksearch=", s->done);
+	append_field(&line, "/", s->total);
+	if (s->capped)
 		append_text(&line, "+");
-	append_field(&line, " skipped=", s->pass_skipped);
+	append_field(&line, " skipped=", s->skipped);
 	status_bar(&line, s);
 	append_field(&line, " algo=", s->algo_id);
 	append_field(&line, "/", ALGO_COUNT);

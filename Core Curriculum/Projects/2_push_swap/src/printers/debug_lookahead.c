@@ -55,15 +55,17 @@ void	debug_greedy_execute(const t_greedy_plan *plan)
 {
 	t_search_debug	*s;
 	int				index;
+	int				b_len;
 
 	if (DEBUG < 2)
 		return ;
 	s = debug_search_state();
+	b_len = s->pass_initial_b - s->inserted;
 	index = plan->rot_b;
 	if (index < 0)
-		index += s->initial_b;
+		index += b_len;
 	ryker_ft_printf_fd(2, "[greedy] EXECUTE candidate=%d/%d B_remaining=%d",
-		index + 1, s->initial_b, s->initial_b - 1);
+		index + 1, b_len, b_len - 1);
 	if (DEBUG >= 4)
 		ryker_ft_printf_fd(2, " rank=%d cost=%d",
 			plan->candidate_rank, plan->cost);

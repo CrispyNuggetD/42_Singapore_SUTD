@@ -35,12 +35,19 @@ typedef struct s_greedy_plan
 	int	cost;
 }	t_greedy_plan;
 
+/* Only plans[0..length-1] are valid. Currently only the first plan is saved. */
+typedef struct s_greedy_path
+{
+	t_greedy_plan	plans[LOOKAHEAD_DEPTH];
+	int				length;
+}	t_greedy_path;
+
 /* Passed by value: each call owns its depth and exclusive cost budget. */
 typedef struct s_greedy_search
 {
 	int				depth;
 	int				budget;
-	t_greedy_plan	*best_first_plan;
+	t_greedy_path	*best_path;
 }	t_greedy_search;
 
 /* Debug printers return immediately when the header's DEBUG flag is zero. */
@@ -66,19 +73,30 @@ int		greedy_choose_plan_local(circle_buf *a, circle_buf *b,
 ** Inputs are unchanged. Pruning preserves the first minimum in this horizon.
 ** Empty B costs final alignment; otherwise depth zero costs zero.
 ** choose requires depth >= 1 and nonempty B. First minimum wins ties.
-** best_first_plan->cost is immediate; the return value is the search cost.
+** best_path->plans[0].cost is immediate; return value is the search cost.
+** Current scaffold saves only plans[0], with length 1; no continuation yet.
 */
-/* A pruned search leaves the output plan untouched. Budget is exclusive. */
-int		greedy_lookahead_cost(circle_buf *a, circle_buf *b, int depth,
-			int budget);
+/* A pruned search leaves the output path untouched. Budget is exclusive. */
+int		greedy_lookahead_cost(circle_buf *a, circle_buf *b,
+			t_greedy_search search);
 int		greedy_choose_bounded(circle_buf *a, circle_buf *b,
 			t_greedy_search search);
 int		greedy_branch_cost(circle_buf *a, circle_buf *b,
-			t_greedy_search search, const t_greedy_plan *plan);
+			t_greedy_search search, t_greedy_path *candidate_path);
 int		greedy_choose_plan_lookahead(circle_buf *a, circle_buf *b, int depth,
-			t_greedy_plan *best_first_plan);
+			t_greedy_path *best_path);
 int		greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
 			const t_greedy_plan *plan);
+
+/*
+** Opening-retry scaffold: not linked until greedy_opening.c is implemented.
+** Requires circularly ascending A, nonempty B, depth in 0..LOOKAHEAD_DEPTH.
+** Try each first insertion and finish with the same strategy on copies.
+** Inputs stay unchanged; SUCCESS writes best_first, ERROR leaves it unusable.
+** Compare complete costs including alignment. First minimum wins ties.
+*/
+int		greedy_choose_opening(circle_buf *a, circle_buf *b, int depth,
+			t_greedy_plan *best_first);
 
 /* Requires empty or circularly ascending A; accepts arbitrary B. */
 int		greedy_insert_all(soln *x, circle_buf *a, circle_buf *b, int depth);

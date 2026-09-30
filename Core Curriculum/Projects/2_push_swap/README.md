@@ -731,14 +731,14 @@ and the total shown by diagnostics. The configuration table in
 | --- | --- | --- | --- |
 | 1/3 | `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
 | 2/3 | `ALGO_THREE_LOCAL` | Three elements | Local greedy |
-| 3/3 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD` depth |
+| 3/3 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD_DEPTH` depth |
 
 The fourth entry, three-element seed + lookahead, is commented out in both
 the enum and configuration table. Uncomment both entries to restore it.
 
 `t_seed_mode` now belongs only to preparation, with `SEED_COUNT` as its boundary.
 `t_algorithm` selects a whole candidate; `t_algo_config` maps it to the seed and
-insertion policy. Depth zero means local greedy internally. Set `LOOKAHEAD >= 1`
+insertion policy. Depth zero means local greedy internally. Set `LOOKAHEAD_DEPTH >= 1`
 for the active lookahead algorithm; it no longer switches all
 algorithms between local and lookahead.
 
@@ -777,7 +777,7 @@ when another insertion becomes visible beyond the previous search horizon.
 Depth counts complete B-to-A insertions, including their rotations and `pa`.
 It does not count individual push_swap instructions.
 
-Algorithms 1–2 always use local greedy; algorithms 3–4 use `LOOKAHEAD` as
+Algorithms 1–2 always use local greedy; algorithms 3–4 use `LOOKAHEAD_DEPTH` as
 the search depth passed by `greedy_insert_all`. All candidates are explored at each level;
 depth 3 or 4 can be very expensive with a large B. This is not beam search yet.
 
@@ -894,13 +894,13 @@ Level 1 retains the winning first plan for the entire current search. Child
 branch winners cannot replace it. For example:
 
 ```text
-covered=172/410 skipped=80 [####------] 42.0% algo=1/3 (Circular LIS + local greedy) depth=2/3 done=4/8 best_item=2 best_total=7
+search=172/410 skipped=80 [----------] 2.6% inserted=12/459 algo=3/3 (Circular LIS + lookahead) depth=2/3 done=4/8 best_item=2 best_total=7
 ```
 
 `done=4/8` means four of the eight candidates in this particular depth-two
 call have been fully evaluated. At depth one, the denominator would be nine.
-This local counter can restart when the parent changes; the overall percentage
-still cannot go backwards within a pass. `best_item` always identifies the
+This local counter can restart when the parent changes. The percentage counts
+real insertions and stays monotonic across the whole algorithm pass. `best_item` always identifies the
 retained root winner, even when the displayed progress comes from a child.
 `best_total` includes that candidate's insertion cost and its best continuation
 within the lookahead horizon. The percentage measures search work completed,
@@ -909,13 +909,12 @@ can refresh the depth-local progress after a root winner exists, but never
 overwrite the displayed root winner.
 
 Within one search, the winning cost only decreases (ties keep the earlier plan).
-The percentage, however, covers the entire reinsertion pass: it does not reset
-when we execute the winning insertion and begin the next search. The bar shows
-the algorithm ID out of `ALGO_COUNT` and its configured seed/strategy name. Trial counts appear at the far left
-so changing lengths in the depth, candidate and score fields cannot shift them.
-A new seed pass legitimately starts its own percentage. Completion of each root
-search refreshes the bar, but DONE/100% is reached only when all the pass's
-potential trials have been evaluated or safely skipped. A newline follows the final insertion into A.
+The percentage is `100 * inserted / initial_B`, displayed to one decimal place.
+It advances only after a successful real insertion, regardless of simulated or
+skipped trials. `inserted=X/Y` never resets between searches.
+The bar shows the algorithm ID and configured name; trial counts stay at the
+far left. Completing a search does not advance the insertion percentage.
+The final DONE line appears after all real insertions and alignment finish.
 Other diagnostic dumps require level 2 or higher. Use levels 3–4 for child decisions.
 
 The bar uses `\r` and ANSI clear-line output in one buffered stderr write;
@@ -943,25 +942,21 @@ boundaries; level 3 shows progress inside those branches.
 
 Totals beyond the unsigned counter's capacity are labelled with `+` rather
 than wrapping into a misleading small number. The counters describe the current
-exhaustive search; pruning would require revisiting this total calculation.
+exhaustive search space; pruned descendants count as skipped coverage.
 `debug_search_progress.c` owns the diagnostic state only; it never affects which
 plan wins. As with the current solver, this tracing assumes one synchronous
 search at a time.
 
 
-For DEBUG 1, the total is instead the sum over all future B lengths:
-
-```math
-T_{\text{pass}}(b,d)=\sum_{m=1}^{b}T(m,\min(d,m)).
-```
-
-Every real insertion removes exactly one B element, so this total can be
-calculated once before reinsertion. Percentage and completed-trial counters
-remain monotonic across the pass. Refreshes still happen only on branch best-cost
-updates (after a root winner exists) or root completion, so visible percentages can skip ahead.
+For DEBUG 1, the displayed search total is T(b,d) for the current B length.
+`count_pass()` adds that total only when the search actually starts. It never
+assumes a fixed execution batch size or predicts future searches. Executing one,
+all, or a changing number of saved plans therefore needs no counter adjustment.
+Cumulative `pass_total` and `pass_done` cover searches started so far; the final
+summary reports these accumulated totals. The final total is unknown upfront.
 
 Status rendering uses a 256-byte stack buffer with no allocations or variadic
-format parsing. Percentage thresholds are calculated once per pass using
+format parsing. Percentage thresholds are calculated once per algorithm pass from its initial B length using
 integer division/remainder by 1000; each redraw advances a cached percentage
 using comparisons. The bar itself uses no division. Decimal number formatting
 still uses division/remainder by 10. A redraw issues one `write` to stderr;
@@ -972,13 +967,13 @@ except that root completion always refreshes the status.
 For local greedy, progress counts candidate evaluations rather than simulated
 insertions: with $b$ initial elements in B, the total is $b(b+1)/2$. The debug
 counter uses a one-level horizon for this count; it does not enable lookahead.
-Lookahead algorithms retain the whole-pass recursive trial count described above.
+Lookahead totals accumulate only the searches actually performed.
 
 
-DEBUG 1 redraws are throttled by whole-pass percentage in 0.1% steps: best-cost events and
+DEBUG 1 redraws are throttled by insertion percentage in 0.1% steps: best-cost events and
 root completion can request a redraw, but repeated percentages are suppressed.
 A final DONE update is always allowed. This limits output to at most 1002 search redraws
-per algorithm pass, plus one refresh per completed real insertion, without timers; counters and the retained winner still
+per algorithm pass, plus search-completion and real-insertion refreshes, without timers; counters and the retained winner still
 update on every relevant event. No line formatting or write occurs when a
 redraw is suppressed. Levels 2–4 retain their detailed event logs.
 
@@ -1027,8 +1022,9 @@ that horizon globally optimal.
 Diagnostics show `covered = evaluated + skipped` against the original exhaustive
 trial total. The candidate whose bound is checked counts as evaluated; only its
 unvisited descendants count as skipped. Skipping a subtree advances progress in
-one jump. `skipped` accumulates across all searches in an algorithm pass, and
-`covered - skipped` gives the actual candidate evaluations (unless counters
+one jump. The live `search` and `skipped` counters reset at each search.
+The final `covered` and `skipped` totals accumulate across the algorithm pass;
+subtract skipped from coverage to get actual evaluations (unless counters
 saturate). Completion still reports final recorded moves after alignment.
 
 
@@ -1132,3 +1128,70 @@ pushes and skipped branches never increment it. Each real insertion forces a
 refresh even when the search-space percentage has not changed, so the counter
 keeps moving near 99.9%. An empty initial B finishes at `inserted=0/0`; the final
 summary reports `inserted=Y/Y` after alignment.
+
+
+## Repeated random tests
+
+The Bash entry point uses `tests/run_random_tests.py` (Python 3 standard library)
+for seeded generation, checking, logs and resume. It builds once with `make`.
+No C solver changes or generator executable are required by this runner.
+
+```bash
+# 100 successful tests, 100 numbers each (the default size).
+./run_command.sh -n 100
+
+# Run until Ctrl-C, using 500 numbers per input.
+./run_command.sh --size 500
+
+# Also show the full solution debug dump on stderr; it is still saved.
+./run_command.sh -n 100 --show-solutions
+
+# Reproducible master seed; every attempt has its own generation ID.
+./run_command.sh -n 100 --size 100 --seed 42
+```
+
+The runner prints its session directory and summary path. Resume using either:
+
+```bash
+# Replace this example directory with the session path printed by your run.
+./run_command.sh --resume debug/results/random_tests/YYYYMMDD_HHMMSS_output -n 100
+```
+
+On resume, `-n 100` means **100 additional successful tests**; omitting `-n`
+continues until Ctrl-C. Seed and input size come from the saved session.
+The generation ID advances for duplicate attempts too. Inputs are permutations
+of `0..size-1`; SHA-256 hashes use normalised ranks, so different integer values
+with identical relative order would deduplicate. Rotations remain distinct.
+Small input sizes stop when every unique permutation has been tested.
+
+Files live in the git-ignored `debug/results/random_tests/` directory:
+
+- `YYYYMMDD_HHMMSS_output_summary.md`: Markdown summary with averages/minimum/maximum tables, atomically replaced
+  after every successful run. Includes master seed, next generation ID, move and
+  runtime averages/min/max, per-algorithm move statistics and detail filenames.
+- `YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
+  Each section includes the ranked input,
+  seed, generation ID, rank hash, binary hash, depth settings, checker result,
+  complete winning moves and full solution-debug dump in collapsible details.
+  The current ten-run file is atomically refreshed after each success.
+
+Thus 100 successful tests produce **one summary plus ten detail files**.
+FD 1 is captured and passed to `tests/checker_linux`; FD 2 remains visible for
+progress; FD 3 captures the solution dump. `--show-solutions` also prints that
+saved dump to stderr after the solver finishes. It does not change the C printer.
+
+Only a zero-exit solver producing valid moves and a checker result of `OK` is
+committed to the success log or averages. On failure the runner saves a separate
+`*_failed.md` with the input and diagnostics, then stops. Ctrl-C terminates the
+active solver/checker process group; completed records remain saved, and resume
+retries the uncommitted input. Saved Markdown reports recover a stale summary after an interruption; atomic
+replacement keeps the current batch intact. A session lock prevents concurrent writers.
+
+Exact inputs remain replayable even if a Python version changes shuffle details.
+Each run records the executable hash and settings; resuming after rebuilding is
+allowed, so summary averages may span multiple binaries (listed in the summary).
+
+New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
+The seed, hash and resume metadata are ordinary readable table rows; no hidden
+JSON state file is needed. `--resume` also accepts older TXT/JSON sessions. Their
+existing files are preserved, while new or updated reports use Markdown.

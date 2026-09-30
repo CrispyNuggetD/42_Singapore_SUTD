@@ -13,25 +13,17 @@
 #include "greedy_reinsertion.h"
 #include <limits.h>
 
-/* All future searches: B shrinks by exactly one after each real insertion. */
-static void	count_pass(t_search_debug *s, int b_len, int depth)
+/* Add only a search that actually starts; future batch lengths are unknown. */
+static void	count_pass(t_search_debug *s)
 {
-	while (b_len > 0)
+	if (s->capped || s->pass_total > ULLONG_MAX - s->total)
 	{
-		s->initial_b = b_len;
-		s->depth_limit = depth;
-		ryker_ft_update_min(&s->depth_limit, b_len);
-		s->total = 0;
-		debug_count_trials(s);
-		if (s->capped || s->pass_total > ULLONG_MAX - s->total)
-		{
-			s->pass_capped = 1;
-			s->pass_total = ULLONG_MAX;
-			return ;
-		}
-		s->pass_total += s->total;
-		b_len--;
+		s->pass_capped = 1;
+		s->pass_total = ULLONG_MAX;
 	}
+	else
+		s->pass_total += s->total;
+	s->skipped = 0;
 }
 
 void	debug_pass_start(int b_len, int depth, int algo)
@@ -51,11 +43,11 @@ void	debug_pass_start(int b_len, int depth, int algo)
 	if (config)
 		s->algo_label = config->name;
 	s->pass_active = 1;
-	count_pass(s, b_len, depth);
+	s->root_depth = depth;
 	debug_status_prepare(s);
 }
 
-/* Only the per-insertion counters reset; pass progress stays monotonic. */
+/* Search counts reset; the insertion percentage spans the whole pass. */
 void	debug_search_reset(t_search_debug *s, int b_len, int depth)
 {
 	if (!DEBUG)
@@ -73,17 +65,19 @@ void	debug_search_reset(t_search_debug *s, int b_len, int depth)
 	s->best_index = 0;
 	s->best_total = 0;
 	debug_count_trials(s);
+	count_pass(s);
 }
 
-/* Work-based throttling: never format repeated percentages within a pass. */
+/* Insertion-based throttling; trial counts never advance the percentage. */
 int	debug_status_ready(t_search_debug *s, int complete)
 {
 	if (DEBUG != 1)
 		return (0);
-	while (!s->pass_capped && s->pass_total && s->percent_tenths < 1000
-		&& s->pass_done >= s->threshold[s->percent_tenths + 1])
+	while (s->pass_initial_b > 0 && s->percent_tenths < 1000
+		&& (unsigned long long)s->inserted
+		>= s->threshold[s->percent_tenths + 1])
 		s->percent_tenths++;
-	if (complete == 2 || (complete && s->initial_b == 1))
+	if (complete)
 		return (1);
 	if (s->printed_tenths == s->percent_tenths)
 		return (0);

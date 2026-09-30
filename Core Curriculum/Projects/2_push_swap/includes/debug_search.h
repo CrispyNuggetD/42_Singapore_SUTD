@@ -45,6 +45,7 @@ typedef struct s_search_debug
 	unsigned long long	threshold[1001];
 	unsigned long long	total;
 	unsigned long long	done;
+	unsigned long long	skipped;
 }	t_search_debug;
 
 t_search_debug	*debug_search_state(void);

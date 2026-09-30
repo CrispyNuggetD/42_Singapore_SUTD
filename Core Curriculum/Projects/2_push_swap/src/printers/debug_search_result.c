@@ -13,7 +13,7 @@
 #include "greedy_reinsertion.h"
 #include <limits.h>
 
-/* Integer thresholds for 0.1% steps, without overflowing total * step. */
+/* Real-insertion thresholds for 0.1% steps; prepared once per pass. */
 void	debug_status_prepare(t_search_debug *s)
 {
 	unsigned long long	base;
@@ -22,10 +22,10 @@ void	debug_status_prepare(t_search_debug *s)
 	int					carry;
 	int					i;
 
-	if (DEBUG != 1 || s->pass_capped)
+	if (DEBUG != 1)
 		return ;
-	base = s->pass_total / 1000;
-	remainder = s->pass_total % 1000;
+	base = s->pass_initial_b / 1000;
+	remainder = s->pass_initial_b % 1000;
 	whole = 0;
 	carry = 0;
 	i = 0;

@@ -5,3 +5,6 @@
 *.o
 *.a
 *.d
+
+# Resumable local random-test sessions.
+/debug/results/random_tests/

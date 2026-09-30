@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/29 23:21:02 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 14:39:06 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,15 @@
 # define MAX_MOVES_CONSIDERED				30000
 # define BRUTE_MAX_N						10
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
-# define LOOKAHEAD							7
+/*
+** Number of insertions searched, including the current candidate; must be >= 1.
+** 1 = current insertion only; 3 = current plus two future insertions.
+** Recursion stops at depth 0. Config depth 0 separately selects local greedy.
+*/
+# define LOOKAHEAD_DEPTH					12
+
+// must be >= 1.
+# define EXECUTE_DEPTH						10
 
 // Level 0-4 for STDERR progress bar + info printing (Does not affect checker)
 # define DEBUG 								1

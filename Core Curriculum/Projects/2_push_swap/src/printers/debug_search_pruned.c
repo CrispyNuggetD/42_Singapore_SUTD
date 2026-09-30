@@ -53,4 +53,5 @@ void	debug_lookahead_pruned(int depth, int b_len)
 	add_saturated(&s->done, skipped);
 	add_saturated(&s->pass_done, skipped);
 	add_saturated(&s->pass_skipped, skipped);
+	add_saturated(&s->skipped, skipped);
 }
