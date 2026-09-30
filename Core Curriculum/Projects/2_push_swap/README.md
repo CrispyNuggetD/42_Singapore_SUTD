@@ -1,6 +1,6 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
-> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares four seed/strategy combinations; BFS experiments are parked under `Brute_force/WIP`. All four candidates share preparation, insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
+> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares four seed/strategy combinations; BFS experiments are parked under `Brute_force/backup`. All four candidates share preparation, insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
 
 > Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
@@ -28,7 +28,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 | ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
 | ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
 | 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This remains an experimental path. |
-| ✅ | Seed comparison | Three-value and circular-LIS seeds each run with local greedy and lookahead; the first shortest of four candidates is printed. BFS experiments remain in WIP. |
+| ✅ | Seed comparison | Three-value and circular-LIS seeds each run with local greedy and lookahead; the first shortest of four candidates is printed. BFS experiments remain in backup. |
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
@@ -68,6 +68,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
 - [BFS and state indexing](#bfs-and-state-indexing)
+- [Precomputed BFS tables, pages, heap and stack](#precomputed-bfs-tables)
 - [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
 - [Analysis tools and study data](#analysis-tools-and-study-data)
 - [Checks and current limitations](#checks-and-current-limitations)
@@ -287,6 +288,31 @@ push the rest to B before greedy reinsertion. This theorem alone doesn't
 guarantee that I can keep 23 elements in A: the long subsequence might be
 decreasing. It also doesn't promise a particular push_swap move count.
 
+### What LIS length should I expect from random inputs?
+
+For a uniformly random permutation of $n$ distinct ranks, the expected ordinary
+LIS length $L_n$ has the asymptotic estimate
+
+```math
+\mathbb{E}[L_n] \sim 2\sqrt{n}
+\qquad (n \to \infty).
+```
+
+| Input size | Leading-order estimate $2\sqrt{n}$ |
+| --- | ---: |
+| 100 | 20 |
+| 500 | 44.7 |
+
+So this gives me a baseline for random testing, not a minimum seed size or an
+exact average at 100 or 500 elements. A reverse-sorted input still has ordinary
+LIS length 1. See this [research paper discussing the expected-length result](https://math-faculty.net.technion.ac.il/files/2021/05/Law-of-large-numbers-for-increasing-subsequences-of-random-permutations.pdf).
+
+My circular LIS searches all rotations, so its length is at least the ordinary
+LIS length for the same input. It may keep more elements, but this formula is
+for ordinary LIS; I should measure circular seed lengths rather than treat
+$2\sqrt{n}$ as their expected value. Neither estimate guarantees the final move
+count, since rotations and reinsertion choices still matter.
+
 ### Why keep the longest seed?
 
 What makes a useful seed for my reinsertion algo? Once I've pushed the other
@@ -314,6 +340,33 @@ That's my mathematical reason for starting with LIS: among ordinary increasing
 subsequence seeds, choosing the longest one minimises this push count. It is
 not a lower bound for every possible push_swap algorithm; other strategies
 can use swaps or different transfers.
+
+**Preliminary saving prediction versus a 3-element seed.** Before measuring
+results, I can predict the push component. Assuming each non-seed element is
+pushed out and back exactly once, keeping $k$ elements instead of 3 saves
+
+```math
+\Delta P = 2(n-3)-2(n-k)=2(k-3).
+```
+
+Using the ordinary random-LIS estimate $\mathbb{E}[L_n]\sim2\sqrt{n}$ gives a
+rough leading-order prediction:
+
+```math
+\mathbb{E}[\Delta P] \approx 4\sqrt{n}-6.
+```
+
+| Input size | Estimated ordinary LIS length | Predicted pushes saved versus keeping 3 |
+| --- | ---: | ---: |
+| 100 | 20 | 34 |
+| 500 | 44.7 | 83.4 (about 84 if the seed has 45 elements) |
+
+These are preliminary estimates for uniformly random permutations, not test
+results or a prediction of the complete solution's move count. Circular LIS may
+retain more elements; once I measure its actual length $k$, $2(k-3)$ gives the
+exact push difference under the assumptions above. Preparation, rotations and
+swaps can increase or decrease the total saving. I'll append measured comparisons
+later rather than assume those other costs stay unchanged.
 
 For example, both seeds below have length 9 and require just two pushes:
 
@@ -580,6 +633,21 @@ states, parents and moves needs additional, much larger storage. The current
 BFS allocates its configured maximum tables even for smaller calls. Increasing
 the limit also requires checking integer ranges and representation limits.
 
+**Simplified BFS direction (30 September 2026):** archive the separate seed
+experiments and focus on a small, complete input: initially empty B, all $N$
+values in A, and $N \leq 10$. Empty B is an entry precondition for the planned
+variant, not a restriction during search: `pb` and `pa` remain allowed. The
+variant should explore all eleven operations with no hidden-stack guard and
+finish with ascending A and empty B. This is planned work, not the behavior of
+the existing chunk BFS below. The active solver does not currently dispatch to
+BFS for small inputs. Ten elements still have factorial search/memory costs.
+
+A ten-element A above a nonempty B in a larger problem does not meet this
+contract. BFS seed preparation for Turk/greedy is deferred; it needs a safe
+model of the remaining elements or explicit move restrictions. Reuse the
+original BFS queue, state indexing and parent reconstruction for the small-input
+variant rather than maintain another seed-search implementation now.
+
 The BFS implementation tries only sa, sb, pa, pb, ra and rra, with additional
 restrictions protecting hidden values in A. Its shortest-path guarantee applies
 to that restricted graph, not all eleven push_swap operations. Lehmer ranking
@@ -587,9 +655,254 @@ preserves state identity without changing those search rules.
 
 [↑ Back to top](#top)
 
+<a id="precomputed-bfs-tables"></a>
+
+## Precomputed BFS tables, pages, heap and stack
+
+Study idea, now demonstrated by the n=1..4 sample below: generate shortest
+solutions offline with reverse BFS, then use Lehmer ranks to look them up at runtime.
+The runtime solver would no longer need the BFS queue and visited table, but
+generating the data still needs search time and memory.
+
+### Three ways to store the answers
+
+Let `n` be the number of values, `m` the solution length, and `L` the average
+stored solution length. My current nested-loop Lehmer ranking takes O(n²).
+The times below cover table indexing and traversal, excluding input parsing,
+initial value normalisation, executing stack operations and printing output.
+
+| Technique | Runtime traversal | Approximate table storage for fixed n |
+| --- | --- | --- |
+| Full packed solution per initial permutation | Rank once, locate the sequence, read m moves: O(n² + m) | n! × L / 2 bytes, plus offsets/lengths or padding |
+| Next move only per state | Read a move, apply it, recompute the state ID: O(m × n²) | (n + 1)! / 2 bytes |
+| Next move plus next-state ID | Rank once, follow stored indices: O(n² + m) | 4.5 × (n + 1)! bytes with 32-bit IDs and separately packed moves |
+
+The full-solution table only needs the `n!` initial permutations with B empty.
+The other two dense tables cover all A/B splits: `(n + 1) × n!` states. After
+`pb`, a table covering only initial states would no longer be enough. Reverse
+BFS must store a move towards the goal, reducing the remaining distance by one;
+reaching the goal ends traversal.
+
+Index hopping is O(1) per move, but recomputing my Lehmer rank is not. Full
+solutions can also have better cache locality because their moves are adjacent.
+Saving only the next move trades repeated ranking work for compact storage;
+adding next-state IDs can cost more memory than storing complete initial-state
+solutions. The 4.5-byte estimate assumes IDs fit in 32 bits and separate arrays;
+a C struct may add padding. Packing the move and ID together is another option
+when their combined bit widths fit the chosen integer type.
+
+For example, at `n = 8`, **assuming** an average full solution of 20 moves:
+
+| Representation | Approximate size |
+| --- | ---: |
+| Full solutions | 394 KiB, before offsets/lengths or padding |
+| Next move only, all splits | 177 KiB |
+| Next move + 32-bit next-state ID, all splits | 1.56 MiB |
+
+That average is illustrative, not a measured BFS result.
+
+### Two moves per byte, no homemade WinRAR needed
+
+There are 11 operations, so four bits are enough for one operation. Assigning
+codes `1..11` leaves `0` available as an end marker. With the first move in the
+low nibble, moves `1, 2, 3, 4, 5, END` become bytes `0x21, 0x43, 0x05`.
+Extract move `i` with `(data[i / 2] >> ((i % 2) * 4)) & 15`.
+Terminator codes and per-entry alignment add overhead to full-solution storage;
+alternatively store lengths. Packed bytes can contain zero, so `strlen` cannot
+measure this data.
+
+Even at half a byte per state, factorial growth catches up quickly:
+
+| n | Next-move-only table, all A/B splits |
+| ---: | ---: |
+| 8 | 177 KiB |
+| 9 | 1.73 MiB |
+| 10 | 19.0 MiB |
+| 11 | 228 MiB |
+| 12 | 2.90 GiB |
+
+These are packed data sizes, not C source sizes or total process memory.
+
+### What I learnt about pages, heap and stack
+
+Calling this table "ROM" was misleading. On a typical Linux build, a
+`static const` array can live in the executable's read-only data section
+(`.rodata`). That is ordinary memory with write protection, not hardware ROM.
+`const` alone does not determine placement: a function-local static table has
+static storage duration; a normal automatic local array typically uses the
+stack, and a `malloc` allocation uses the heap. The C language does not require
+these exact OS-level placements.
+
+| Resource | What a hypothetical 10 GB read-only table means |
+| --- | --- |
+| Disk | The executable contains roughly that much table data |
+| Virtual address space | The loader maps an address range for the table |
+| Physical RAM | Accessed pages become resident on demand; the entire table need not be resident |
+| Stack / heap | No separate full-table copy is needed unless the program explicitly makes one |
+
+If a mapped page is not resident, accessing it causes a page fault. Linux can
+bring it in from the executable, or use an already cached copy, then resume the
+program. Pages are commonly 4 KiB, though this depends on the system. Linux may
+also read ahead. Under memory pressure, unchanged file-backed pages can be
+discarded and reloaded from the executable instead of being written to swap.
+
+For a **full-solution** lookup, one short sequence might fit in one page. That
+does not mean the whole program needs only 4 KiB: the offset lookup may touch
+another page, a sequence can cross a boundary, and code, stacks, buffers and
+other data also need memory. The **next-move** techniques can touch a different
+page after every move. Scattered uncached accesses can make disk latency matter
+far more than the few instructions needed to decode a move.
+
+So a 10 GB executable does not automatically need 10 GB of RAM on a 64-bit
+system. Practical obstacles include compiler memory/time for huge initializers,
+toolchain addressing and object-size limits, virtual address space, disk and
+repository limits, and generating the BFS data in the first place. C does not
+universally guarantee support for an object that large. A 32-bit process would
+not have enough address space to map the entire 10 GB table at once.
+
+### Working sample using my solution template
+
+[`precomputed_ranks_bfs.c`](src/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c)
+implements the **full-solution** technique for every permutation of 1–4 values.
+It follows my original `encoded_bfs_data` / `decode_bfs_data` /
+`get_precomputed_bfs` template. The filename was changed to lowercase for Norm.
+These are actual generated shortest answers, not placeholder bytes.
+
+There are `1! + 2! + 3! + 4! = 33` entries, each occupying three bytes.
+Reverse BFS found a maximum of five moves for these initial states, leaving a
+sixth nibble for the zero terminator. The data occupies 99 bytes plus the C
+string literal's final NUL byte. Embedded zero bytes are intentional; this is
+binary data, not a string to pass to `strlen`.
+
+`starts = {0, 0, 1, 3, 9}` locates each input size's first entry. For example,
+the 24 four-value permutations start after the first nine entries. The address is:
+
+```c
+data + (starts[count] + lehmer_rank) * 3
+```
+
+This needs a `const unsigned char *`, not `int **`: the pointer identifies the
+first packed byte of one contiguous solution. A single `int` cannot hold an
+arbitrarily long solution. `x->ans` remains my existing `char **`, with one
+allocated answer buffer per algorithm candidate. Do not replace one of those
+owned buffers with a pointer into static data: the representations differ, and
+the cleanup code frees those buffers.
+
+The caller uses the existing `new_soln_init` (the initializer I meant by
+"new_algo_init"), then calls:
+
+```c
+get_precomputed_bfs(x, &stacks[A], count);
+```
+
+Its contract is a fresh answer slot, B empty, and distinct normalised ranks
+`0..count-1` in A. It records into `x->ans[x->cur]` using
+`append_move_to_soln`, which updates both `x->step` and `x->ans_len[x->cur]`.
+It does not mutate the stacks. `solve()` now uses it in the existing BFS
+candidate slot for 1–4 values; larger inputs retain the previous search path.
+No extra candidate allocation is necessary.
+
+The decoder deliberately uses ordinary numbers rather than bit-mask macros:
+
+```c
+move = (packed[i / 2] >> ((i % 2) * 4)) & 15;
+```
+
+- `i / 2` selects the byte, since each byte contains two moves.
+- `i % 2` selects the first or second move.
+- Multiplying by `4` shifts by zero or four bits.
+- `15` is binary `1111`, keeping the low four bits after shifting.
+- Zero ends the sequence; values `1..11` select my existing move characters
+  through `"0123456789AB"`, including `'A'` and `'B'` for `rrb` and `rrr`.
+
+The lookup is O(1) **after** calculating the rank. Calculating the rank is O(n²),
+and decoding/storing m moves is O(m), so the complete call is O(n² + m).
+Saving m decoded characters into `x` cannot be an O(1) operation.
+
+Reproduce the bytes and run exhaustive sample checks with:
+
+```sh
+python3 debug/generate_precomputed_sample.py
+python3 tests/test_precomputed_sample.py
+norminette src/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c
+```
+
+The Python generator is an offline study tool, not part of the C build. Tests
+compare the C bytes against reverse BFS, check all 33 permutations and optimal
+lengths using the supplied checker, exercise wrapped circular buffers through
+the direct API, and check a five-value input still uses the fallback correctly.
+
+### How much fits in a 500 MB executable budget?
+
+Here I mean **500,000,000 bytes**, not 500 MiB or 500 MB of resident RAM.
+Other executable contents also need some space. For full solutions, the exact
+answer depends on their lengths and the chosen table layout. The 19 MiB figure
+for n=10 above belongs to the next-move-only technique, not this sample's layout.
+
+**n=10 is safely within the data budget. n=11 needs measurements before I can
+claim it fits.** A conservative bound gives a concrete reason: repeatedly
+rotate the smallest remaining value to A's top, push it to B, then push all
+values back. At size k, reaching any position needs at most `floor(k / 2)`
+rotations. This constructs a valid solution in at most
+`floor(n² / 4) + 2n` moves, so shortest solutions cannot be longer.
+
+| n | Conservative move bound | Bytes per entry, including zero terminator | Fixed-width full table |
+| ---: | ---: | ---: | ---: |
+| 10 | 45 | 23 | 83,462,400 bytes |
+| 11 | 52 | 27 | 1,077,753,600 bytes |
+| 12 | 60 | 31 | 14,849,049,600 bytes |
+
+These are upper-bound layouts, not measured shortest-path maxima. Using a
+separate width for each size, all tables from n=1 through n=10 together fit
+within 91,485,206 data bytes under this same bound. The sample does **not**
+generate these larger tables.
+
+For n=11, even spending the whole 500 MB on that size permits only 12 whole
+bytes per fixed-width entry: at most 23 moves plus the terminator. We would
+need to establish that every shortest answer fits, or measure the total size
+of a variable-length layout including its offsets. The conservative bound
+alone cannot decide that. For n=12, a fixed-width table permits only one byte
+per entry, which plainly cannot encode every answer with this format.
+
+Increasing the sample's limit is not enough: the data must be regenerated,
+entry widths and offsets updated, and ranking/index types checked. My current
+BFS state and factorial helpers also have explicit size limits. Generating and
+compiling a large table may need far more memory than looking up one answer.
+Keeping a huge initializer within the Norm is a separate unresolved design
+constraint; this small sample fitting the Norm does not establish that a giant
+generated version would.
+
+### Submission considerations
+
+The local push_swap subject forbids global variables. A file-scope `static const`
+array is still a file-scope object; neither `const` nor putting it in a `.h`
+automatically makes it acceptable. A function-local `static const` table avoids
+global scope, but its initializer still has to fit the Norm's formatting and
+function-length rules. Multiline macros or obfuscation are not a workaround.
+Passing norminette alone does not establish compliance with every review rule.
+The documents checked did not explicitly ban precomputed solutions or specify
+a table-size limit; that is not a guarantee that any generated table is suitable
+for submission.
+
+**I won't submit a 10 GB file lah.** This was just how a BFS lookup-table idea
+turned into me learning about pages, virtual memory, the heap and the stack.
+The evaluator should be checking my sorting, not downloading my homemade WinRAR
+replacement.
+
+[↑ Back to top](#top)
+
 <a id="chunk-extraction-and-the-hidden-stack"></a>
 
 ## Chunk extraction and the hidden stack
+
+**Experiment outcome:** this chunking approach did not work out for my move-count
+goal. In my earlier trials, 500 elements took roughly **10,000–12,000 moves**.
+My observation was that most moves went into selecting and extracting elements
+in increasing order to form the chunks. Finding short BFS routes for the small
+chunks did not make up for that selection cost. These are my reported results
+for this implementation, not a claim that every chunking algorithm performs
+poorly. I am shelving this approach and focusing on full-input BFS for small
+inputs and LIS/greedy strategies for larger ones.
 
 The active development path processes successive rank intervals of up to ten
 values. It first moves the selected interval from A to B, then creates temporary
@@ -755,7 +1068,7 @@ lookahead must not fall through into local greedy and overwrite its plan.
 | Execution | `greedy_execute.c` | Share compatible rotations, finish separate rotations, then push. |
 
 The restricted BFS seed implementation and proposed bounded all-eleven-move
-search are both parked under [Brute_force/WIP](src/sorting_algorithms/Brute_force/WIP/README.md).
+search are both parked under [Brute_force/backup](src/sorting_algorithms/Brute_force/backup/README.md).
 That README explains the file roles, differences, unfinished work, and how to
 reconnect an implementation later. Neither is included in the active build.
 
@@ -1070,6 +1383,60 @@ using that additional information. Both approaches still ignore unfinished
 work beyond the depth cutoff, so neither guarantees the best complete sort.
 
 ## Discussion / discoveries
+
+### Opening lookahead versus continuing to look ahead (30 September 2026)
+
+The latest completed sample, session `20260930_175350`, contains 11 checked
+100-element inputs from master seed `10666114425917339200`, using one executable
+version. The session was interrupted; these figures include completed runs only.
+
+| Strategy | Average moves | Best of the four on how many inputs? |
+| --- | ---: | ---: |
+| Circular LIS + local greedy | 539.273 | 2 |
+| 3-element seed + local greedy | 575.091 | 0 |
+| Circular LIS + repeated lookahead | **516.727** | **7** |
+| Circular LIS + opening lookahead + local greedy | 543.273 | 2 |
+
+So opening lookahead followed by local greedy was inferior **on average in this
+sample**, as I expected when abandoning future information after the opening.
+But it is not useless: it beat LIS local on 6 of 11 inputs, lost on 5, and won
+against all four strategies on 2 inputs. Its losses outweighed its gains. This
+also fits the earlier saved example below where a single lookahead choice helped.
+
+My working explanation / things to test next:
+
+1. Future information helps when the score predicts the remaining sorting cost
+   well enough to avoid a bad continuation. A deeper horizon exposes more moves,
+   but does not guarantee a better complete solution: the unsearched tail still
+   matters, and my cutoff currently scores that tail as zero.
+2. I do not have to execute the entire saved path before looking again. Executing
+   a prefix and replanning lets the next search see beyond the previous cutoff.
+   Here I mean executing fewer **insertions from the winning path**, not executing
+   competing branches on the real stacks. This may reveal a poor continuation,
+   but does not undo insertions already executed or guarantee fewer total moves.
+3. Circular LIS seems useful as expected: its local variant averaged 35.818 fewer
+   moves than the 3-element seed with local reinsertion in this sample. Keeping
+   more elements avoids push pairs, although rotations still affect the total.
+4. Across my trials, the 3-element seed can sometimes outperform LIS. In this
+   latest sample it beat LIS local twice, but never won overall. Circular LIS +
+   repeated lookahead currently has the best average here; that is an observation,
+   not a claim that it wins every input or every input size.
+
+Keeping alternatives still pays: selecting the best recorded solution averaged
+508.727 moves, versus 516.727 for always choosing repeated LIS lookahead. The
+whole solver averaged 82.045 seconds per input (43.364–132.692 seconds); the logs
+do not split runtime by algorithm, so they cannot tell me which variant consumed
+how much of that time. Saturated trial counters are not exact search-work totals.
+
+I am now comparing algorithm 3's repeated lookahead against two opening variants:
+algorithm 4 searches deeper once, executes one insertion, then continues with
+repeated lookahead; algorithm 5 executes an opening batch before that same
+continuation. Both currently use `use_lookahead = 1`. The older opening-then-local
+results above do **not** benchmark these new variants. Current opening settings
+are depth 14 / batch limit 12; normal lookahead uses depth 12 / limit 10 when
+remaining B has at most 100 elements, and depth 8 / limit 6 otherwise. These are
+experiment settings, not fixed properties of the algorithms.
+
 
 ### Depth 3 can lose to local greedy — on the same input
 

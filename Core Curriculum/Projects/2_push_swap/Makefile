@@ -42,12 +42,14 @@ SRCS		= main_push_swap.c \
 			  printers/debug_search_result.c \
 			  printers/debug_status_bar.c \
 			  printers/debug_bfs.c \
+			  printers/debug_bfs_status.c \
 			  printers/debug_chunks.c \
 			  printers/solution_printers.c \
 			  rank_values.c \
 			  stack_utils.c \
 			  solve.c \
 			  sorting_algorithms/Exact_hardcoded/hardcode.c \
+			  sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c \
 			  $(BFS_DIR)/bfs.c \
 			  $(BFS_DIR)/bfs_utils.c \
 			  $(BFS_DIR)/bfs_verify_node.c \
@@ -61,9 +63,7 @@ SRCS		= main_push_swap.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_branch.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
 			  sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c \
-			  chunk_extract_optimal.c \
-			  DO_NOT_SUBMIT_DEBUG_hidden_bfs.c
+			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c
 
 OBJ_DIR		= obj
 OBJS		= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))

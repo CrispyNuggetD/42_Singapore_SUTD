@@ -103,7 +103,7 @@ static int	solve_permutation(t_analysis_result *result,
 	x.ans_len = &answer_len;
 	x.cur = 0;
 	x.step = 0;
-	if (brute_solve(&x, &a, &b) == ERROR
+	if (brute_solve(&x, &a, &b, n) == ERROR
 		|| answer_len >= DEBUG_SOLUTION_MAX)
 		return (ERROR);
 	result->n = n;

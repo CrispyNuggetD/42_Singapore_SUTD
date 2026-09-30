@@ -214,14 +214,15 @@ def stop_process(process):
             process.wait()
 
 
-def run_case(values, show_solutions=False):
+def run_case(values, show_solutions=False, executable=None):
     """FD 1 = moves, FD 2 = live progress, FD 3 = saved solution dump."""
     args = list(map(str, values))
+    executable = executable or ROOT / 'push_swap'
     with tempfile.TemporaryDirectory(prefix='push_swap_test_') as temporary:
         dump = Path(temporary) / 'solutions.txt'
         with tempfile.TemporaryFile() as moves, tempfile.TemporaryFile() as diagnostic:
             command = ['bash', '-c', 'exec 3>"$1"; shift; exec "$@"',
-                       'push-swap-runner', str(dump), str(ROOT / 'push_swap'), *args]
+                       'push-swap-runner', str(dump), str(executable), *args]
             start = time.monotonic()
             process = subprocess.Popen(command, stdout=moves, stderr=subprocess.PIPE,
                                        start_new_session=True)
@@ -320,15 +321,24 @@ def main():
         config = {'prefix': prefix, 'seed': args.seed if args.seed is not None else secrets.randbits(64),
                   'size': args.size or 100, 'generator': GENERATOR,
                   'python_version': sys.version.split()[0]}
+    snapshot_dir = tempfile.TemporaryDirectory(prefix='push_swap_session_')
     lock = os.open(folder, os.O_RDONLY)
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         records = load_records(folder, config['prefix'])
         save_summary(summary, config, records, 'building')
-        subprocess.run(['make', '-s'], cwd=ROOT, check=True)
-        if not os.access(ROOT / 'tests/checker_linux', os.X_OK):
-            raise ValueError('tests/checker_linux must be executable')
-        binary_hash = hashlib.sha256((ROOT / 'push_swap').read_bytes()).hexdigest()
+        # Serialize runner builds through snapshot creation across sessions.
+        build_key = hashlib.sha256(str(ROOT).encode()).hexdigest()[:16]
+        build_lock = Path(tempfile.gettempdir()) / f'push_swap_build_{os.getuid()}_{build_key}.lock'
+        with build_lock.open('a') as build_guard:
+            fcntl.flock(build_guard, fcntl.LOCK_EX)
+            subprocess.run(['make', '-s'], cwd=ROOT, check=True)
+            if not os.access(ROOT / 'tests/checker_linux', os.X_OK):
+                raise ValueError('tests/checker_linux must be executable')
+            executable = Path(snapshot_dir.name) / 'push_swap'
+            executable.write_bytes((ROOT / 'push_swap').read_bytes())
+            executable.chmod(0o700)
+            binary_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
         settings = {name: int(value) for name, value in re.findall(
             r'#\s*define\s+(LOOKAHEAD_DEPTH|EXECUTE_DEPTH|DEBUG)\s+(\d+)',
             (ROOT / 'includes/push_swap.h').read_text())}
@@ -354,7 +364,7 @@ def main():
                 record = {'run_id': len(records)+1, 'generation_id': generation-1,
                           'seed': config['seed'], 'rank_sha256': digest, 'input_ranks': values,
                           'binary_sha256': binary_hash, 'settings': settings}
-                record.update(run_case(values, args.show_solutions))
+                record.update(run_case(values, args.show_solutions, executable))
                 if 'error' in record:
                     atomic_text(folder / f"{config['prefix']}_failed.md", "# Failed test\n" + render_record(record))
                     status = 'failed'
@@ -375,6 +385,7 @@ def main():
         return 1 if status == 'failed' else 0
     finally:
         os.close(lock)
+        snapshot_dir.cleanup()
 
 
 if __name__ == '__main__':

@@ -12,14 +12,6 @@
 
 #include "push_swap.h"
 
-void	debug_bfs_progress(int expanded, int discovered)
-{
-	if (DEBUG < 2)
-		return ;
-	ryker_ft_printf_fd(2, "BFS PROGRESS: expanded=%d discovered=%d\n",
-		expanded, discovered);
-}
-
 void	debug_bfs_alloc(size_t bytes)
 {
 	if (DEBUG < 2)

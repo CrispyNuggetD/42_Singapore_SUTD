@@ -1,4 +1,7 @@
-# BFS seed experiments — WIP
+# BFS seed experiments — archived
+
+**2026-09-30: archived to reduce active scope; these are reference files only.**
+The current plan is a small-input BFS variant starting with empty B.
 
 **2026-09-29: all files here are excluded from the active build and solver.**
 The active program compares only the three-value and circular-LIS seeds.
@@ -30,7 +33,7 @@ seconds. It has no configurable node/depth budget.
 
 ## Reconnecting later
 
-Do not add the entire WIP directory to the build automatically. Choose an approach
+Do not add the entire backup directory to the build automatically. Choose an approach
 first. To restore the restricted version, explicitly add its three C files to the
 Makefile, make this directory's `bfs_seed.h` available to callers, restore a BFS
 seed enum entry before `SEED_COUNT` and an algorithm configuration before `ALGO_COUNT`, and add the preparation branch that pushes
@@ -44,7 +47,7 @@ For a syntax-only check without integrating either experiment:
 
 ```sh
 cc -Wall -Wextra -Werror -Iincludes -fsyntax-only \
-  src/sorting_algorithms/Brute_force/WIP/*.c
+  src/sorting_algorithms/Brute_force/backup/*.c
 ```
 
 ---

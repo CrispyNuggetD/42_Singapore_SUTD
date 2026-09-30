@@ -63,6 +63,9 @@ void	debug_search_reset(t_search_debug *s, int b_len, int depth)
 	s->total = 0;
 	s->capped = 0;
 	s->best_index = 0;
+	s->roots_done = 0;
+	s->evaluated = 0;
+	s->status_level = 0;
 	s->best_total = 0;
 	debug_count_trials(s);
 	count_pass(s);

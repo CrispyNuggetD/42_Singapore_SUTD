@@ -15,7 +15,7 @@
 
 typedef struct s_status_line
 {
-	char	text[256];
+	char	text[512];
 	int		length;
 }	t_status_line;
 
@@ -33,6 +33,9 @@ typedef struct s_search_debug
 	int					percent_tenths;
 	int					printed_tenths;
 	int					best_index;
+	int					roots_done;
+	unsigned int		heartbeat;
+	unsigned long long	evaluated;
 	int					best_total;
 	int					status_level;
 	const char			*algo_label;
@@ -59,7 +62,7 @@ void			debug_status_end(int moves);
 void			debug_insertion_done(void);
 void			debug_lookahead_pruned(int depth, int b_len);
 void			debug_status_prepare(t_search_debug *s);
-/* complete: 0 = progress, 1 = search complete, 2 = real insertion complete. */
+/* Draw reason: 0 = progress, 1 = done, 2 = insertion, 3 = heartbeat/start. */
 void			debug_status_draw(int complete);
 int				debug_status_ready(t_search_debug *s, int complete);
 

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/19 19:47:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 19:18:47 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static void	brute_apply_rotate(t_brutestate *state, char move, int n);
 
 /*
 ** Simulate one encoded move on a compact state; do not record or print it.
-** Supports all eleven operations, although the current search tries only six.
+** Supports all eleven operations used by the full-input BFS search.
 */
 void	brute_apply_move(t_brutestate *state, char move, int n)
 {
@@ -85,19 +85,19 @@ int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes, int total, int n)
 } */
 
 /*
-** Accept only split == 0 and values n-1 down to 0: empty A, descending B.
-** This chunk-search goal differs from the final project goal of sorted A.
+** Accept only split == n: all modelled elements are in A and B is empty.
+** Values must be ranks 0 through n-1 in ascending order.
 */
 int	is_brute_goal(t_brutestate *state, int n)
 {
 	int	i;
 
-	if (state->split != 0)
+	if (state->split != n)
 		return (0);
 	i = 0;
 	while (i < n)
 	{
-		if (state->value[i] != n - 1 - i)
+		if (state->value[i] != i)
 			return (0);
 		i++;
 	}

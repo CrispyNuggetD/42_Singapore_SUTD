@@ -54,6 +54,8 @@ void	debug_search_start(int b_len, int depth)
 		return ;
 	s = debug_search_state();
 	debug_search_reset(s, b_len, depth);
+	if (DEBUG == 1 && s->inserted == 0)
+		debug_status_draw(3);
 	if (depth == 0 || DEBUG == 1)
 		return ;
 	ryker_ft_printf_fd(2, "[lookahead] START candidates=%d depth=%d",

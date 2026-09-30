@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/10 20:28:42 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/24 17:10:40 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 19:51:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,32 +53,6 @@ static void	gen_brute_state(t_brutestate *state, circle_buf *a, circle_buf *b)
 //
 
 /*
-** Reject moves that would involve the unmodelled tail of real A.
-** Block sa with fewer than two visible values and A rotations when A is visible.
-** This guard covers the six moves currently tried by bfs_find_goal.
-*/
-static int	move_hits_hidden_a(t_brutestate *state, char move)
-{
-	if (state->split < 2 && move == SA)
-		return (1);
-	if (state->split > 0 && (move == RA || move == RRA))
-		return (1);
-	return (0);
-}
-
-/*
-** Apply a move to a search-state copy only if the hidden-A guard permits it.
-** Return 1 when permitted, 0 when blocked; a permitted move may still be a no-op.
-*/
-static int	brute_apply_wall_move(t_brutestate *state, char move, int n)
-{
-	if (move_hits_hidden_a(state, move))
-		return (0);
-	brute_apply_move(state, move, n);
-	return (1);
-}
-
-/*
 ** Read the visited bit for this encoded state; nonzero means already discovered.
 */
 static int	state_was_visited(unsigned char *visited, int state_id)
@@ -96,34 +70,31 @@ static void	mark_state_visited(unsigned char *visited, int state_id)
 
 //
 
-/* later: check duplicate upgrade to Lehmer */
-/* A no-op such as sb when B is empty is handled automatically: 
-temp remains identical to nodes[i].state, so brute_state_exists() finds it and it isn't appended. */
 /*
-** Explore states breadth first using sa, sb, pa, pb, ra and rra plus the A guard.
-** Save each new state with its parent and move; visited bits also discard no-ops.
-** Return the goal node index, or -1 if exhausted. Current early errors return
-** ERROR (1), which overlaps a valid node index; the caller only checks negatives.
-** Shortest paths here are only within this restricted move graph.
+** Explore all eleven moves in FIFO order, with every input element modelled.
+** Lehmer state IDs index visited bits; repeated states and no-ops are skipped.
+** Each discovered node stores its parent and the encoded move used to reach it.
+** Return the first goal's node index (a shortest route), or -1 on failure.
+** The goal is ascending A and empty B; a sorted initial state returns index 0.
 */
 static int	bfs_find_goal(t_brutenode *nodes, circle_buf *a, circle_buf *b)
 {
 	t_brutestate	temp;
-	int			n;
-	int			i;
-	int			total;
-	int			move_to_try;
-	int			state_id;
+	int				n;
+	int				i;
+	int				total;
+	int				move_to_try;
+	int				state_id;
 	unsigned char	*visited;
-	char	moves[6] = {SA, SB, PA, PB, RA, RRA};
+	char			moves[12] = "123456789AB";
 
-	n = cbuf_len(a) + cbuf_len(b);
+	n = cbuf_len(a);
 	if (n > BRUTE_MAX_N)
-		return (ERROR);
-	visited = ft_calloc((BRUTE_TOTAL_N_PLUS_1_FACTORIAL + 7) / 8,
+		return (-1);
+	visited = ft_calloc((bfs_possible_states(n) + 7) / 8,
 			sizeof(unsigned char));
 	if (!visited)
-		return (ERROR);
+		return (-1);
 	gen_brute_state(&nodes[0].state, a, b);
 	mark_state_visited(visited, calculate_state_id(&nodes[0].state, n));
 	nodes[0].parent = -1;
@@ -137,20 +108,13 @@ static int	bfs_find_goal(t_brutenode *nodes, circle_buf *a, circle_buf *b)
 	total = 1;
 	while (i < total)
 	{
-		if (i > 0 && i % 1000000 == 0)
-		{
-			debug_bfs_progress(i, total);
-
-		}
+		if ((i & 32767) == 0)
+			debug_bfs_progress(i, total, bfs_possible_states(n));
 		move_to_try = 0;
-		while (move_to_try < 6)
+		while (move_to_try < 11)
 		{
 			temp = nodes[i].state;
-			if (!brute_apply_wall_move(&temp, moves[move_to_try], n))
-			{
-				move_to_try++;
-				continue ;
-			}
+			brute_apply_move(&temp, moves[move_to_try], n);
 			state_id = calculate_state_id(&temp, n);
 			if (!state_was_visited(visited, state_id))
 			{
@@ -205,21 +169,24 @@ static void	reconstruct_brute_path(soln *x, t_brutenode *nodes, int goal)
 /*
 ** Allocate the configured maximum node table, search, and reconstruct a route.
 ** Leave the input stacks unchanged; callers must replay the route themselves.
-** Current goal: empty A and descending B. Progress diagnostics go to stdout.
+** Goal: ascending A and empty B. Diagnostics follow DEBUG and use stderr.
+** Intended entry: B empty, at most BRUTE_MAX_N normalised ranks in A.
+** The empty-B entry check is not yet enforced here.
 */
-int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
+int	brute_solve(soln *x, circle_buf *a, circle_buf *b, int count)
 {
 	t_brutenode	*nodes;
 	int			goal;
 
-	debug_print_bfs_memory(BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+	debug_bfs_start(count, bfs_possible_states(count));
+	debug_print_bfs_memory(bfs_possible_states(count));
 	debug_bfs_alloc(
-		sizeof(t_brutenode) * (size_t)BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+		sizeof(t_brutenode) * (size_t)bfs_possible_states(count));
 
-	nodes = malloc(sizeof(t_brutenode) * BRUTE_TOTAL_N_PLUS_1_FACTORIAL);
+	nodes = malloc(sizeof(t_brutenode) * bfs_possible_states(count));
 	if (!nodes)
 	{
-		debug_print_message("BFS ALLOCATION FAILED");
+		debug_bfs_end(-1);
 
 		return (ERROR);
 	}
@@ -229,10 +196,12 @@ int	brute_solve(soln *x, circle_buf *a, circle_buf *b)
 	goal = bfs_find_goal(nodes, a, b);
 	if (goal < 0)
 	{
+		debug_bfs_end(-1);
 		free(nodes);
 		return (ERROR);
 	}
 	reconstruct_brute_path(x, nodes, goal);
+	debug_bfs_end(x->step);
 	free(nodes);
 	return (SUCCESS);
 }

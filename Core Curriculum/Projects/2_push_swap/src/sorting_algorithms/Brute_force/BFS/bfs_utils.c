@@ -6,11 +6,32 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/12 21:35:38 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/12 21:36:45 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 19:51:34 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
+
+
+
+int	factorial_max_11(int n)
+{
+	static const int	factorial_table[12] = {
+	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
+	};
+	
+	if (n < 0 || n > 11)
+		return (-1);
+	return (factorial_table[n]);
+}
+
+int	bfs_possible_states(int n)
+{
+	if (n < 0 || n > BRUTE_MAX_N)
+		return (-1);
+	return (factorial_max_11(n + 1));
+}
+
 
 // swaps two elements inside the array during BFS
 /*

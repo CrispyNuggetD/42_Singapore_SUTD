@@ -6,15 +6,11 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 19:14:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/08/24 18:51:42 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 19:45:45 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
-
-static const int	g_factorial[12] = {
-	1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
-};
 
 /*
 ** Encode the permutation by counting smaller values to the right of each entry.
@@ -39,7 +35,7 @@ static int	calculate_lehmer_rank(t_brutestate *state, int n)
 				smaller_right_count++;
 			temp_right++;
 		}
-		rank += smaller_right_count * g_factorial[n - 1 - i];
+		rank += smaller_right_count * factorial_max_11(n - 1 - i);
 		i++;
 	}
 	return (rank);
@@ -50,5 +46,5 @@ static int	calculate_lehmer_rank(t_brutestate *state, int n)
 */
 int	calculate_state_id(t_brutestate *a, int n)
 {
-	return (a->split * g_factorial[n] + calculate_lehmer_rank(a, n));
+	return (a->split * factorial_max_11(n) + calculate_lehmer_rank(a, n));
 }

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/30 14:39:06 by hnah             ###   ########.fr       */
+/*   Updated: 2026/09/30 22:39:45 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,27 @@
 # include <unistd.h>
 # include "algorithm.h"
 
-# define MAX_MOVES_CONSIDERED				30000
+# define MAX_MOVES_CONSIDERED				10000
 # define BRUTE_MAX_N						10
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
+# define SKIP_OTHER_ALGO_AFTER_BFS			0
+
 /*
 ** Number of insertions searched, including the current candidate; must be >= 1.
 ** 1 = current insertion only; 3 = current plus two future insertions.
 ** Recursion stops at depth 0. Config depth 0 separately selects local greedy.
 */
-# define LOOKAHEAD_DEPTH					12
+# define LOOKAHEAD_DEPTH_100					12
+# define LOOKAHEAD_DEPTH_500					8
+# define LOOKAHEAD_DEPTH_FIRST_MOVE				12
 
-// must be >= 1.
-# define EXECUTE_DEPTH						10
+/* Execution limits count insertions, must be >= 1, and cap at path length. */
+# define EXECUTE_LIMIT_100						10
+# define EXECUTE_LIMIT_500						6
+# define EXECUTE_LIMIT_FIRST_MOVE				10
+
+/* Capacity must cover every configured lookahead depth. */
+# define GREEDY_PATH_CAPACITY 14
 
 // Level 0-4 for STDERR progress bar + info printing (Does not affect checker)
 # define DEBUG 								1
@@ -77,6 +86,7 @@ typedef struct s_brutenode
 # define SKIP				0
 # define ERROR				1
 # define ERR_INVALID_INPUT	2
+# define ERR_INVALID_PARAM	2
 # define ERR_PARSE_INPUT		3
 # define ERR_SORT_INPUT		4
 
@@ -102,7 +112,9 @@ void	cbuf_print(circle_buf *stack, char name);
 void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
 void	debug_print_soln(const soln *x, circle_buf *a_ori);
 void	debug_lis_length(int length);
-void	debug_bfs_progress(int expanded, int discovered);
+void	debug_bfs_progress(int expanded, int discovered, int capacity);
+void	debug_bfs_start(int n, int capacity);
+void	debug_bfs_end(int moves);
 void	debug_bfs_alloc(size_t bytes);
 void	debug_print_message(const char *message);
 void	debug_bfs_run(int run, int total, int start, int end);
@@ -115,8 +127,6 @@ void	debug_total_moves(int total);
 int		print_best_soln(const soln *x);
 
 /* do not submit*/
-int	debug_hidden_bfs(soln *real, circle_buf *a, circle_buf *b);
-int	extract_chunk_optimal(soln *x, circle_buf *a, circle_buf *b, int min, int max);
 
 /* parser */
 int	count_int_in_str(char *str, int *count, int *values);
@@ -134,9 +144,10 @@ int	rot_a_min_to_top(soln *x, circle_buf *a);
 
 /* Solver entry points; callers do not need algorithm-specific headers. */
 int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
-int	greedy_reinsertion(soln *x, circle_buf *a, circle_buf *b,
+int	greedy_reinsertion(soln *x, circle_buf stacks[2],
 		t_algorithm algo);
-int	brute_solve(soln *x, circle_buf *a, circle_buf *b);
+int	brute_solve(soln *x, circle_buf *a, circle_buf *b, int count);
+int	get_precomputed_bfs(soln *x, circle_buf *a, int count);
 
 /* bfs solver */
 int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
@@ -158,6 +169,9 @@ void	brute_rrb(t_brutestate *state, int n);
 void	brute_rrr(t_brutestate *state, int n);
 
 /* bfs helpers */
+/* Return -1 outside factorial range 0..11 or BFS input size 0..10. */
+int		factorial_max_11(int n);
+int		bfs_possible_states(int n);
 void	brute_swap_at(t_brutestate *state, int a, int b);
 void	brute_rotate_left(t_brutestate *state, int start, int end);
 void	brute_rotate_right(t_brutestate *state, int start, int end);

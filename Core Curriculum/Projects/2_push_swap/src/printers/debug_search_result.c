@@ -77,10 +77,15 @@ static void	root_status(int depth, int score, int best_score, int complete)
 		s->best_index = s->candidate[0];
 		s->best_total = score;
 	}
-	if (s->best_index > 0 && (improved || complete))
+	if (depth == s->root_depth)
+		s->roots_done = s->candidate[0];
+	s->evaluated++;
+	s->heartbeat++;
+	if (s->heartbeat >= 1048576 || complete)
 	{
+		s->heartbeat = 0;
 		s->status_level = s->root_depth - depth;
-		debug_status_draw(complete);
+		debug_status_draw(3);
 	}
 }
 
