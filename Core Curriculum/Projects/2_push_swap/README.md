@@ -76,6 +76,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Analysis tools and study data](#analysis-tools-and-study-data)
 - [Checks and current limitations](#checks-and-current-limitations)
 - [Resources and use of AI](#resources)
+- [Future research — ideas not implemented](#future-research)
 
 [↑ Back to top](#top)
 
@@ -1076,7 +1077,7 @@ measured move-count improvements. Outstanding work includes:
 
 ## Resources
 
-- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **Further research TODO list** proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
+- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
 - [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. Related reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
 - [Working notes](notes.md) and [saved study reports](debug/results/) document the investigation and examples.
 - [Bundled libft documentation](libft/README.md) describes the shared library.
@@ -2105,6 +2106,146 @@ refresh even when the search-space percentage has not changed, so the counter
 keeps moving near 99.9%. An empty initial B finishes at `inserted=0/0`; the final
 summary reports `inserted=Y/Y` after alignment.
 
+
+
+<a id="future-research"></a>
+
+## Future research — ideas not implemented
+
+**Status: proposed experiments, not completed work or performance guarantees.**
+These directions record my design ideas and discussions with AI, including my
+earlier interest in weighted heuristics from machine learning. AI helped explain
+related techniques and edit this discussion. No Optuna study, learned scoring
+model, beam-search solver, or recursive multiple-run representation described
+below has been implemented here. Existing BFS, exact tables and chunk experiments
+are separate work.
+
+### Tune planning depth, execution count and heuristic weights
+
+I originally considered **Optuna** for tuning a floating-point weighted cost
+function. The same tool could tune integer lookahead depth d and execution count
+e, subject to 1 <= e <= d. Here depth counts insertions, not emitted instructions.
+
+Optuna would call an objective function wrapping my existing Python benchmark
+runner. A trial chooses one configuration, runs it on a fixed input suite,
+checks correctness and returns a numerical result. A sampler such as TPE uses
+previous trial results to suggest subsequent configurations; grid and random
+search are alternatives. Trials can run sequentially or in parallel. Parallel
+workers do not make the underlying single-threaded solver parallel.
+
+The distinction from launching several Python runners is the coordination:
+parameter selection, a persistent trial history and comparison against an
+explicit objective. The runner still performs the actual measurements. Optional
+early stopping of unpromising trials requires meaningful intermediate results;
+it is not the solver's mathematically safe branch-and-bound pruning.
+
+**Proposed benchmark specification, not a theorem:** for configuration theta and
+fixed tuning inputs x_i, one possible objective is mean complete emitted moves:
+
+```math
+\theta=(d,e,\mathbf{w}),\qquad 1\le e\le d,
+\qquad
+J(\theta)=\frac{1}{N}\sum_{i=1}^{N}M(x_i;\theta).
+```
+
+Here M includes preparation, reinsertion and final alignment; weights are relevant
+only if the proposed weighted score is implemented. Correctness is mandatory,
+and runtime needs a stated budget. Invalid runs and timeouts must be recorded
+rather than silently omitted. Different input sizes should be reported
+separately, or their contribution to a combined objective chosen explicitly.
+
+A fair study would freeze the code, inputs, seeds and tie rules; compare depth
+and execution count separately as well as jointly; then evaluate selected
+settings on held-out inputs. Record move-count spread, worst observed count and
+runtime alongside the mean. Parallel trials need isolated builds if parameters
+are compiled in, and CPU contention must not distort timing comparisons.
+
+Optuna does not derive the universally best depth or prove eight/six superior.
+It finds promising configurations empirically within the supplied search space,
+data and compute budget. A small exhaustive grid is already useful for d and e;
+adaptive tuning becomes more attractive when adding many weights.
+See the official [Optuna sampler documentation](https://optuna.readthedocs.io/en/stable/reference/samplers/index.html)
+and [sampling and trial-pruning explanation](https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html).
+
+### A weighted score and adaptive decisions
+
+My proposed linear-algebra formulation combines features of a state or candidate
+continuation using floating-point weights:
+
+```math
+H_{\mathbf{w}}(S)=\mathbf{w}^{\mathsf T}\boldsymbol{\phi}(S)
+=\sum_{j=1}^{k}w_j\phi_j(S).
+```
+
+**Definition of a proposed score:** features could describe rotation work,
+shared-rotation opportunities, disorder in B, increasing-run structure, or
+estimated remaining insertion work. Feature scales must be made comparable.
+Because A is already circularly increasing during current reinsertion,
+circular-LIS disorder of A alone provides little discrimination there.
+A lower disorder score is not necessarily a shorter route: useful operations
+can temporarily make a state appear less sorted.
+
+This score could order candidates or estimate the unsearched tail. It is not
+automatically an admissible lower bound and must not replace the current safe
+pruning bound without a separate justification. Hand-chosen weights are a
+heuristic; fitting them from data would add a learning or tuning step.
+
+Another unimplemented idea is **online adaptive weighting or strategy
+switching**, using observed progress to change weights, depth or execution
+length. Offline Optuna tuning and online adaptation are different mechanisms.
+PID appeared in earlier AI discussions, but PID is feedback control, not itself
+machine learning. Applying it would require a defined feedback signal, target
+and adjustable quantity; no suitable controller or benefit has been established
+for this solver. A simple explicit switching rule is a more concrete experiment
+than claiming PID already explains the design.
+
+### Alternative representations and search strategies
+
+| Proposed direction | Motivation | Limitation to investigate |
+| --- | --- | --- |
+| Beam search | Retain a bounded number of promising partial plans at each layer, potentially permitting greater depth | Discarded paths may contain the best complete solution; quality depends on scoring and beam width |
+| Recursive logical sub-stacks | Represent multiple increasing sequences in recursive structs instead of requiring one circularly increasing A | These are logical groups within the actual two stacks, not extra legal stacks; boundaries, rotations and eventual merging need new invariants and cost accounting |
+| Bidirectional search / meet in the middle | Search from both endpoints for exact small-state solving or local replacement problems | Memory, predecessor generation and a correct meeting/stopping rule still matter |
+| A* or pattern-database guidance | Use an estimate of remaining moves to guide exact search | Optimality requires the relevant admissibility and graph-search conditions; a plausible disorder score alone does not supply them |
+
+BFS is **already implemented** in this project; extending its reach or combining
+it with these techniques is the future direction. The credited
+[aleksify research](https://github.com/aleksify/pushswap-research) discusses A*,
+meet-in-the-middle and heuristic lookahead. Its current README also describes
+implemented bidirectional local re-optimisation, so these are not uniformly
+unimplemented in that author's work. They remain unimplemented extensions here.
+
+### Learn from exact small-state patterns
+
+Our exact-search studies motivated questions about repeated move patterns and
+relationships between search layers. The credited aleksify project also studies
+reductions, equal-length paths reaching the same state, and growth between BFS
+layers. Similar observations motivate investigation; they do not establish a
+universal recurrence or justify extrapolating small-state behaviour to 500
+elements.
+
+A possible next step is to extract recurring subpatterns and verify their
+equivalence under explicit stack-size and state conditions. Verified reductions,
+duplicate-state handling or a sound canonicalisation could eliminate redundant
+search. A correlation or common pattern alone cannot justify safe pruning.
+Exact solutions for particular small states are not automatically universal
+replacement rules for arbitrary larger stacks.
+
+I also wanted to use **observed move frequencies** in exact solutions to guide
+which paths to explore first, possibly through a queue mixing bounded deeper
+exploration with broader exploration. This would be a frequency-guided,
+potentially randomised search policy, not a completed BFS or DFS improvement.
+The counting convention matters: one selected shortest path per state and all
+shortest paths can produce different frequencies because of ties.
+
+Ordering candidates within each BFS depth preserves its layer order; exploring
+deeper states early changes that policy. Permanently dropping uncommon moves
+can lose completeness or optimality. Small-state move frequencies may also
+transfer poorly to large inputs or to insertion-level decisions. These ideas
+therefore need controlled comparisons against the existing search, rather than
+being presented as established improvements.
+
+[↑ Back to top](#top)
 
 ## Repeated random tests
 
