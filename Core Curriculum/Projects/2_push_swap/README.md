@@ -326,6 +326,59 @@ stderr carries progress, and descriptor 3 can capture the solution dump:
 The supplied checker is a Linux executable. These commands illustrate validation,
 not a claim that every input or submission requirement has passed.
 
+### Accepted input formats
+
+My parser (`src/parse_sort_input.c`) reads arguments from left to right and
+can read several space-separated integers from each argument. These forms
+therefore describe the same initial stack, with 3 at the top:
+
+| Form | Example |
+| --- | --- |
+| Separate arguments | `./push_swap 3 1 2` |
+| One double-quoted list | `./push_swap "3 1 2"` |
+| One single-quoted list | `./push_swap '3 1 2'` |
+| Mixed grouped and separate arguments | `./push_swap "3 1" 2` |
+| Leading, repeated and trailing spaces inside a group | `./push_swap "  3   1  2  "` |
+
+The shell removes the surrounding quotes before my program receives the
+argument. Quotes group the input; they are not characters that my parser needs
+to strip. I also accept an optional `+` or `-` directly before the digits,
+and leading zeroes within the parser's digit limit:
+
+```sh
+./push_swap +3 -1 02
+```
+
+Values must be distinct after conversion: `2`, `+2` and `02` represent the
+same integer, so using more than one of them is a duplicate. My intended range
+is signed 32-bit integers, with at most 500 values in total across all groups.
+The current parser also limits each number to ten digits, excluding its sign;
+arbitrarily long strings of leading zeroes are not supported.
+
+Inside a quoted argument, the supported separator is an ordinary ASCII space,
+not general whitespace. Do not use commas, tabs, newlines, decimal points or
+bracketed list notation. Empty arguments, space-only arguments and signs
+without digits are not valid input. The parser still has the malformed-input
+and integer-boundary issues recorded under [current limitations](#current-limitations);
+these examples are not a claim of complete parser validation.
+
+The bundled Linux checker accepted the grouped and mixed forms in my
+AI-assisted checks as well. For a quoted list, pass the same input to both
+programs:
+
+```sh
+./push_swap "3 1 2" > moves.txt 2> progress.log 3> solutions.log
+./tests/checker_linux "3 1 2" < moves.txt
+```
+
+For shell-variable input, quoting preserves the whole list as one argument:
+
+```sh
+ARG="3 1 2"
+./push_swap "$ARG" > moves.txt 2> progress.log 3> solutions.log
+./tests/checker_linux "$ARG" < moves.txt
+```
+
 ### Project layout
 
 | Path | Purpose |
@@ -1164,7 +1217,7 @@ operations; unlike the reverse analyser, it searches forward from one input.
 The permutation analyser can be run with
 `(cd debug/results && ../../bin/bfs_analyser 3)` after `make analyse_bfs`.
 Its source calls `brute_solve`; historical reports can reflect earlier search
-restrictions. In the current README audit, `analyse_bfs_all_paths` built, but
+restrictions. During my AI-assisted README review, `analyse_bfs_all_paths` built, but
 `analyse_bfs` failed to link because its target omits required debug-printer
 symbols. Its command above requires fixing that development target first.
 
@@ -1201,8 +1254,8 @@ that time, not sorting correctness or a subject score.
 | ✅ | All targets rebuild after cleanup. |
 | ✅ | Deleted main and analyser executables are recreated. |
 
-The current README audit rebuilt the main executable and reverse all-path
-analyser successfully. Four small smoke cases (one value, sorted three,
+As part of my AI-assisted README review, I had the main executable and reverse
+all-path analyser rebuilt successfully. Four small smoke cases (one value, sorted three,
 unsorted three and unsorted five) returned `OK` from the supplied checker.
 The forward analyser currently fails to link against required debug printers.
 This limited check is not a final benchmark, Norm audit or full validation.
@@ -1225,7 +1278,7 @@ small-input dispatch. Remaining implementation and validation work includes:
 - Add or verify bounds handling for the fixed `MAX_MOVES_CONSIDERED` answer
   buffers: `append_move_to_soln` currently writes without checking capacity.
 - Validate allocation-failure cleanup and memory behaviour; normal solution
-  buffers are freed, but this documentation pass is not a leak audit.
+  buffers are freed, but I have not established leak-free behaviour in this documentation review.
 - Account for factorial BFS memory at the upper limit and costly lookahead.
 - Update development harnesses to match current candidate counts and descriptor-3
   dumps; see the seed-test note below and random-runner metadata limitation.
@@ -1270,6 +1323,16 @@ harnesses and experimental comparisons, mechanical editing, file organisation,
 build checks, and documentation. These supporting tools help me inspect behaviour
 and test ideas; their output is not proof that the solver is correct or ready
 for evaluation.
+
+I also use AI as an editorial assistant for this README. I bring my questions,
+scattered notes, conversations, experiments and sometimes rather tangled
+explanations; AI helps collate and paraphrase them into a coherent, readable
+account. This write-up grew through those discussions and revisions, rather
+than from a single request to generate a README. I remain responsible for
+checking that it reflects what I meant and what I actually implemented.
+Where AI contributed explanations, mathematical derivations, diagrams or
+generated tools, I identify that assistance separately; editorial help does
+not make every technical contribution solely mine.
 
 My aim is to understand and explain the implementation, rather than present an
 unexplained generated solution as my own. This follows the distinction described
@@ -1779,11 +1842,10 @@ variant produces the fewest complete sorting operations. See the
 
 ### More lookahead, plan switching and partial commitment (1 October 2026)
 
-*Editorial note: The dialogue below is an AI-assisted paraphrase of a real
-conversation supplied by the author. Profanity has been removed and wording
-edited for a school-appropriate presentation. It is not a verbatim transcript.
-The observations and hypotheses originated in the conversation; the analysis
-and diagram below were drafted with AI assistance.*
+*I shared this real conversation with AI and used its help to paraphrase it,
+remove profanity and make the wording suitable for school. This is not a
+verbatim transcript. The observations and hypotheses come from my conversation
+with my friend; AI helped draft the analysis and diagram below.*
 
 **Earlier conversation**
 
@@ -1817,8 +1879,8 @@ logs, sample size or runtime measurements accompany this exchange. The earlier
 five-input batching experiment remains evidence about that earlier sample,
 not a permanent decision against batching.
 
-*AI-generated conceptual diagram: this illustrates the planning choices,
-not measured outcomes or a reproduction of the chat.*
+*I used AI to generate this conceptual diagram of the planning choices.
+It does not show measured outcomes or reproduce the chat.*
 
 ```mermaid
 flowchart TD
@@ -1842,7 +1904,7 @@ flowchart TD
 | The horizon was still too short | Plausible mechanism: costs beyond the cutoff can reverse the preference | Increasing depth again need not fix it; no useful depth threshold has been established |
 | Executing one insertion causes harmful plan switching | Plausible hypothesis worth logging | A changed plan is not itself wasted work or proof of harm |
 | Full commitment prevents correction | Correct that it delays replanning beyond the old horizon | It might preserve a good sequence instead; neither policy always wins |
-| Depth 8 / execute 6 is a useful compromise | Supported as an author-reported observation | Needs paired, repeatable tests before generalising |
+| Depth 8 / execute 6 is a useful compromise | Supported by my reported observations | Needs paired, repeatable tests before generalising |
 
 My friend's "irrelevance" suggestion is better interpreted here as a mismatch
 between the score and the goal. The extra simulated costs are real, relevant
@@ -1888,11 +1950,11 @@ suffix would also improve the original eight-step path. Searching eight steps
 again changes the objective by extending the horizon; searching seven does not.
 Equal-cost alternatives may still differ because of tie-breaking.
 
-#### Author's follow-up: why depth eight and execute six?
+#### My follow-up: why depth eight and execute six?
 
-This is my author-reported rationale from repeated live testing, computational
-limits and intuition, rather than a conclusion from one isolated input. The
-runs described here have not been supplied as a controlled benchmark dataset.
+This is my rationale from repeated live testing, computational limits and
+intuition, rather than a conclusion from one isolated input. I have not
+provided a controlled benchmark dataset for the runs described here.
 I changed both lookahead depth and execution count, so I cannot yet separate
 their individual effects or their interaction.
 
@@ -2113,7 +2175,7 @@ remain empirical questions. This rationale changes no solver code.
 
 My reason to pursue eight/six is therefore practical and experimental: depth
 eight was affordable on my tested workload, partial commitment had promising
-author-reported results, and leaving two planned insertions uncommitted was an
+results I observed, and leaving two planned insertions uncommitted was an
 intentional design choice. The mathematics makes that choice precise and
 exposes its assumptions. It does not supply missing benchmark evidence,
 establish the best margin, or turn the intuition into a new theorem.
@@ -2201,7 +2263,7 @@ do not prove that deeper lookahead always loses, or rule out every possible bug.
 
 Branch-and-bound pruning reproduced all three existing algorithms' original
 move sequences exactly on this input. The pruned run took about 2.13 seconds on
-this machine. The latest author-reported depth-3 comparison was approximately
+this machine. The latest depth-3 comparison I reported was approximately
 **20 minutes without pruning versus 2 seconds with pruning** (roughly 600x).
 These are approximate observations for that test, not a controlled benchmark
 or a guaranteed speedup on other inputs or machines.
@@ -2343,10 +2405,10 @@ trained model would need separate analysis; learning does not itself establish
 a useful complexity bound or compliance with the project's requirements.
 This remained an exploratory idea rather than part of my current implementation.
 
-*Source scope and authorship: this brief AI-assisted edit summarises the
-creator's accessible description and records my stated idea. No transcript was
-available during this check, so it specifies no fitness formula, neural-network
-architecture or training procedure beyond that description.*
+*I used AI to help summarise the creator's accessible description and explain
+my proposed connection. I did not have a transcript for this check, so I have
+not described a fitness formula, neural-network architecture or training
+procedure beyond what that description supplies.*
 
 ### Alternative representations and search strategies
 
@@ -2407,12 +2469,13 @@ I did not have time to implement that visualisation. The existing exact-search
 code and saved reports are separate from this proposed graphical exploration;
 I am not claiming that I found such patterns or derived a pruning rule from
 them. The video supplies the inspiration; applying it to push_swap records my
-own proposed direction. This attribution is based on the supplied opening
-transcript excerpt, not a claimed review of the full transcript.
+own proposed direction. I supplied the opening transcript screenshot for this
+AI-assisted write-up; I am citing that excerpt here, not claiming to have
+reviewed the full transcript for this explanation.
 
 ### Learn from exact small-state patterns
 
-Our exact-search studies motivated questions about repeated move patterns and
+My exact-search studies and discussions with AI motivated questions about repeated move patterns and
 relationships between search layers. The credited aleksify project also studies
 reductions, equal-length paths reaching the same state, and growth between BFS
 layers. Similar observations motivate investigation; they do not establish a
