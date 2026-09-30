@@ -71,6 +71,15 @@ and the wider optimality questions below. It is not a claim that I completed
 that specific comparative study: the current precomputed table covers 1–4
 elements, while five elements use runtime BFS.
 
+Gerkens jokes that push_swap began intruding into his dreams. I recognised
+that rather literally: after long days of coding, I also found myself dreaming
+about sorting strategies during sleep and naps. I remember dreaming of four
+ideas, although only two stayed clear enough to revisit at school. As I recall,
+these involved recursive Turk-style planning and an LDS-based alternative,
+including changing which stack carried the ordered sequence. I experimented
+with the remembered ideas, but they did not become final solver strategies.
+Apparently, even my sleeping brain wanted another candidate algorithm.
+
 The question that connected these explorations was simple:
 
 > Given an initial stack A and an empty B, does a sequence of at most K permitted
@@ -2354,6 +2363,29 @@ it with these techniques is the future direction. The credited
 meet-in-the-middle and heuristic lookahead. Its current README also describes
 implemented bidirectional local re-optimisation, so these are not uniformly
 unimplemented in that author's work. They remain unimplemented extensions here.
+
+### Two-way Turk-style planning
+
+Another idea I seriously considered, but did not implement, was a two-way
+Turk-style planner. Instead of restricting the reinsertion phase to B-to-A
+transfers, it would consider candidates in both directions: elements of A
+moving to B and elements of B moving to A. I envisaged retaining increasing
+and decreasing sequences across the stacks, possibly using LIS/LDS ideas,
+and recursively comparing transfer plans before eventually returning B to A.
+
+The intended question was which ranks should temporarily belong in each stack,
+and when a transfer in either direction would help the eventual sort. This
+remains a design sketch: the ordering rules, scoring and termination conditions
+were not fully worked out. Allowing both `pa` and `pb` removes the current
+reinsertion phase's simple guarantee that every insertion reduces B, so a
+future implementation would need to prevent unproductive back-and-forth
+transfers. Considering both directions means comparing alternative next actions,
+not executing two pushes simultaneously.
+
+This is different from bidirectional BFS: that searches from start and goal
+towards a meeting point. My proposed two-way Turk variant would plan transfers
+between the two stacks within one evolving sorting state. Neither this proposal
+nor the dream anecdote establishes correctness or improved move counts.
 
 ### Visualise the exact state graph
 
