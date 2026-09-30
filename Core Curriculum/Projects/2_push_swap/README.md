@@ -1724,14 +1724,14 @@ to change which execution batch works best. This is a plausible interaction,
 not proof that insufficient depth caused the earlier outcome or that deeper
 search necessarily makes batching better.
 
-**Historical evidence needs a distinction.** I recall some AI-assisted trials
-being restricted to shallow depth and small inputs. However, the recorded
-batching table above compares depths 7 and 8 on five 100-element inputs, and the
-separate depth-3 example below uses 500 elements. Therefore, the documented
-anti-batching observation cannot be attributed solely to depth-3 searches on
-roughly ten elements. My recollection may concern other trials; it should not
-overwrite the conditions attached to the saved results. The earlier conclusion
-was valid for its sample, but was too narrow to support a universal policy.
+**Historical evidence needs a distinction.** Opening-only lookahead followed
+by local greedy is different from repeatedly replanning and executing one
+insertion. The separate school AI conversation is not available here, so this
+README cannot establish which early experiment prompted my decision. The
+recorded batching table compares depths 7 and 8 on five 100-element inputs;
+the separate depth-3 example uses 500 elements. Neither tests depth-eight/
+execute-six. These records describe particular samples, not a contradiction of
+my newer observation or a universal argument against partial batching.
 
 **Input size and effective horizon.** Eight insertions are 8% of 100 initial
 elements but only 1.6% of 500. For the reinsertion search, the more relevant
@@ -1800,32 +1800,110 @@ optional and does not require a supercomputer. Any tuning still needs a
 separate validation set and an explicit runtime budget.
 
 
-#### Why execute six of eight might help
+#### Mathematical interpretation: planning depth and commitment length
 
-Executing six insertions preserves most of the evaluated sequence and avoids
-five intervening searches compared with replanning after every insertion.
-It then replans before committing the last two saved insertions. This may
-balance computation and responsiveness, but the move-count effect can go either
-way. The two unexecuted insertions influenced selection of the six-step prefix;
-they were not irrelevant simply because they were not immediately executed.
+In discussion with AI, I asked whether my intuition had a recognised connection
+to other fields. AI suggested **receding-horizon planning**, particularly
+multistep model predictive control (MPC), where planning depth and the number
+of actions applied before replanning are separate design choices.
+[Grune, Pannek, Seehafer and Worthmann (2010)](https://arxiv.org/abs/1006.2529)
+study the effects of these horizons on performance under explicit
+controllability assumptions. This provides a conceptual connection, not a
+theorem that proves my push_swap configuration optimal. Those assumptions and
+performance bounds have not been established for my solver.
 
-The simulated dynamics are deterministic: replanning is not correcting random
-changes to the stacks. Its advantage is looking beyond the previous horizon;
-its risk is another short-horizon decision with an incomplete tail score.
-Full-batch execution similarly does not mean "never correct": it corrects later,
-after the batch, and cannot undo operations already emitted.
+For a selected plan of d insertions, insertion j has d-j subsequent insertions
+included in its evaluation. If I execute its first e insertions, the minimum
+evaluated continuation among them is:
 
-A focused test would hold input permutations, seed preparation, tie rules and
-binary version fixed, then compare depth 8 with execution limits 1, 6 and 8.
-Record checker success, complete move count including preparation/alignment,
-runtime and search work. Log old-suffix versus new-plan choices at replans.
-Use separate inputs to validate whichever setting wins, rather than treating
-the tuning sample as proof. A greedy rollout tail is another experiment, but
-its achievable cost is an upper bound, not a safe pruning lower bound.
+```math
+\ell_j=d-j,\qquad
+\ell_{\min}=\min_{1\le j\le e}(d-j)=d-e.
+```
 
-This discussion is an interpretation of observations and hypotheses. It does
-not change the solver, establish a universal best execution fraction, or exclude
-implementation bugs without targeted validation.
+At depth eight, executing one, six, seven or eight gives minimum continuation
+lengths of seven, two, one or zero respectively. This counts insertions along
+the selected plan; it is not a count of all possible consequences or a guarantee
+of decision quality. Near completion, the actual remaining insertion count
+caps the horizon and final alignment is scored.
+
+If my heuristic design requirement is "include at least r subsequent insertions
+for every committed insertion", then:
+
+```math
+d-e\ge r
+\quad\Longleftrightarrow\quad
+e\le d-r.
+```
+
+Choosing the largest allowed batch gives e=d-r. Thus the practical depth limit
+d=8 and a chosen margin r=2 imply e=6. This justifies six **conditional on my
+chosen two-insertion margin**; it does not prove that two is best. Executing
+one satisfies a larger margin, but margin alone does not order complete-solution
+quality.
+
+#### Why frequent replanning can help or hurt
+
+After one insertion from a depth-eight plan, its old suffix contains seven
+insertions. Searching eight again extends the horizon. The effect is not
+"diluted by one-seventh": insertions have unequal costs and selecting the
+lowest-scoring path is a discrete decision. Even a small score change can
+switch the winner when two alternatives are close.
+
+For an illustration, consider two possible continuations from the same state:
+
+| Continuation | Best seven-insertion prefix cost | Added cost of an eighth insertion | Eight-insertion total |
+| --- | ---: | ---: | ---: |
+| X | 7 | 20 | 27 |
+| Y | 8 | 1 | 9 |
+
+The newly included insertion reverses the preference. These are hypothetical
+planning costs, not a measured push_swap trace. They demonstrate why the number
+of added layers does not bound their influence. Costs beyond those eight
+insertions remain unscored, so this reversal alone says nothing about which
+continuation has the cheaper complete finish.
+
+On a fixed continuation with insertion costs c_t, extending depth from d to
+d+k accounts for this additional cost:
+
+```math
+R_d=\sum_{t=d+1}^{b}c_t,\qquad
+R_d-R_{d+k}=\sum_{t=d+1}^{d+k}c_t.
+```
+
+Here b is the number of remaining insertions on that continuation; any final
+alignment cost is separate and cancels in this difference. There is no general
+inverse-depth or one-seventh law for remaining cost or estimation error.
+If deeper search chooses a different continuation, even the fixed-path
+comparison no longer describes the change in the final answer.
+
+Execute-one does optimise the freshly extended finite-horizon objective at
+every replan, but that is not the same as minimising the complete sort.
+Executing six may preserve a useful sequence that repeated short-horizon
+decisions would abandon; alternatively, execute-one may discover a better
+route sooner. Both are possible. Search runtime is therefore not the only
+reason to compare them: complete move count can also change in either direction.
+
+"Thrashing" remains a hypothesis about harmful repeated plan switching, not an
+established diagnosis. Discarded simulated moves were never emitted, and each
+real insertion reduces B, so the solver does not cycle through identical full
+states during reinsertion. A useful test logs plan changes and compares their
+complete continuations from the same state; switching alone is not evidence
+of harm. Nor does a smaller margin prove harm.
+
+With identical deterministic dynamics, permitted plans and terminal scoring,
+reoptimising the old **remaining seven-step objective** cannot strictly improve
+an exactly optimal seven-step suffix; otherwise the old eight-step plan was
+not optimal. Equal-score alternatives can still change under tie-breaking.
+The fresh **eight-step objective** is different. This distinction explains why
+the suffix argument does not prove that repeated execute-one must win.
+
+A focused test holds inputs, preparation, tie rules and code fixed while
+varying execution length at depth eight. Record correctness, complete move
+count, runtime and search work. My repeated live tests motivate partial
+commitment, but the best execution fraction and the cause of any improvement
+remain empirical questions. This rationale changes no solver code.
+
 
 
 ### Opening lookahead versus continuing to look ahead (30 September 2026)
