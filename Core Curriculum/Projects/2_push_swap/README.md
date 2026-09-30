@@ -2199,6 +2199,40 @@ and adjustable quantity; no suitable controller or benefit has been established
 for this solver. A simple explicit switching rule is a more concrete experiment
 than claiming PID already explains the design.
 
+### Learning to sort — an earlier joke and a possible experiment
+
+I originally joked with friends about using machine learning or deep learning
+to solve push_swap. [BrainTickle Experiments — *I evolved a sorting algorithm
+instead of writing one*](https://www.youtube.com/watch?v=5veWaFjDe6s)
+provides an illustrative proof of concept for evolving sorting behaviour,
+although it does **not** demonstrate a push_swap solver.
+
+**What the source reports:** the creator's video description says a small neural
+network learns through evolution using left, right and swap controls. It reports
+sorting by generation eight, with behaviour identified as gnome sort. Later
+experiments add stopping, returning and longer-distance swapping, ultimately
+producing behaviour identified as comb sort. These are the creator's reported
+demonstrations, not results independently reproduced by this project.
+
+**My proposed connection, not an implementation:** investigate whether a model
+could use a representation of the two stacks to choose the next permitted
+push_swap operation, with learning or evolutionary selection guided by a chosen
+performance objective. This records my earlier idea; the video's additional
+controls are not extra operations available in push_swap. Evolutionary search,
+reinforcement learning and deep learning were possibilities I considered, not
+interchangeable names for a method verified in this video.
+
+State encoding, model/weight storage, correctness, termination and emitted move
+counts would all need investigation. Training cost and the cost of running a
+trained model would need separate analysis; learning does not itself establish
+a useful complexity bound or compliance with the project's requirements.
+This remained an exploratory idea rather than part of my current implementation.
+
+*Source scope and authorship: this brief AI-assisted edit summarises the
+creator's accessible description and records my stated idea. No transcript was
+available during this check, so it specifies no fitness formula, neural-network
+architecture or training procedure beyond that description.*
+
 ### Alternative representations and search strategies
 
 | Proposed direction | Motivation | Limitation to investigate |
