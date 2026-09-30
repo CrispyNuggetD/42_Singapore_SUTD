@@ -1599,34 +1599,34 @@ work beyond the depth cutoff, so neither guarantees the best complete sort.
 
 ### More lookahead, plan switching and partial commitment (1 October 2026)
 
-The following exchange is preserved verbatim as supplied by me. "Yesterday"
-and "Today" are the original chat labels, not independently verified timestamps.
+*Editorial note: The dialogue below is an AI-assisted paraphrase of a real
+conversation supplied by the author. Profanity has been removed and wording
+edited for a school-appropriate presentation. It is not a verbatim transcript.
+The observations and hypotheses originated in the conversation; the analysis
+and diagram below were drafted with AI assistance.*
 
-```text
-Yesterday:
+**Earlier conversation**
 
-Me>(lookahead depth more, execute 1)
-WHAT THE FUCKKKKK. How is this mathematically possible; more info = worst performance. I’m not scoring the future properly.
+> **Me:** With deeper lookahead but only one insertion executed each time, the
+> final result got worse. How can more information lead to a worse outcome?
+> Perhaps my scoring does not capture the future well enough.
+>
+> **Friend:** That seems possible. Could the extra information be distracting
+> from what matters to the final result?
 
-Friend>
+**Follow-up**
 
-oh i think its definitely possible
-
-your new information might be adding more irrelevance no?
-
-Today:
-
-Me>
-
-^ apparently:
-1. the new info wasn’t enough layers; went bad path globally + 
-2. doing just one move causes thrashing to different plans/ paths (I think, plausibly) when the next later cost is considered after executing next lookup + 
-3. committing to the new info fully doesn’t allow “oops, bad path! Need change of plans”. 
-
-Current best algo looks forward for 8 moves, actually execute 6, then recurse.
-
-EOF
-```
+> **Me:** I have three possible explanations:
+>
+> 1. The search still did not look far enough ahead and chose a path that was
+>    worse overall.
+> 2. Replanning after every insertion may cause repeated changes of plan.
+>    Perhaps that hurts performance, although I have not established it.
+> 3. Executing an entire planned batch delays the opportunity to reconsider a
+>    poor path.
+>
+> My current best setting in these trials looks ahead eight insertions,
+> executes six, then searches again.
 
 In this exchange, "moves" means **candidate insertions**, each including its
 rotations and final `pa`, rather than individual push_swap instructions.
@@ -1636,6 +1636,23 @@ in these trials, not a demonstrated universal optimum. No new benchmark logs,
 sample size or runtime measurements accompany this exchange. The earlier
 five-input batching experiment remains evidence about that earlier sample,
 not a permanent decision against batching.
+
+*AI-generated conceptual diagram: this illustrates the planning choices,
+not measured outcomes or a reproduction of the chat.*
+
+```mermaid
+flowchart TD
+    P["Search eight insertions ahead"] --> E1["Execute one"]
+    P --> E6["Execute six"]
+    P --> E8["Execute eight"]
+    E1 --> R1["Replan sooner"]
+    E6 --> R6["Retain most of the plan"]
+    E8 --> R8["Retain the full plan"]
+    R1 --> T["Trade-off: search effort and when to reconsider"]
+    R6 --> T
+    R8 --> T
+    T --> M["Measure complete move counts and runtime"]
+```
 
 #### Assessment of the explanations
 
