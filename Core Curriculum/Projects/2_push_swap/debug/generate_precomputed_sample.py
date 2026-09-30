@@ -49,11 +49,11 @@ def packed_data():
         for path in solutions(n):
             assert len(path) <= 5
             codes = path + (0,) * (6 - len(path))
-            data.extend(codes[i] | (codes[i + 1] << 4) for i in (0, 2, 4))
+            data.extend((codes[i] << 4) | codes[i + 1] for i in (0, 2, 4))
     return data
 
 
 if __name__ == '__main__':
     data = packed_data()
-    for start in range(0, len(data), 12):
-        print('"' + ''.join(f'\\x{byte:02x}' for byte in data[start:start + 12]) + '"')
+    for start in range(0, len(data), 9):
+        print(', '.join(f'0x{byte:02X}' for byte in data[start:start + 9]) + ',')

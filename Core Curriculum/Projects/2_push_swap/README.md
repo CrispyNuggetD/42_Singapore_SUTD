@@ -705,8 +705,8 @@ That average is illustrative, not a measured BFS result.
 
 There are 11 operations, so four bits are enough for one operation. Assigning
 codes `1..11` leaves `0` available as an end marker. With the first move in the
-low nibble, moves `1, 2, 3, 4, 5, END` become bytes `0x21, 0x43, 0x05`.
-Extract move `i` with `(data[i / 2] >> ((i % 2) * 4)) & 15`.
+high nibble, moves `1, 2, 3, 4, 5, END` become bytes `0x12, 0x34, 0x50`.
+Extract move `i` with `(data[i / 2] >> ((1 - i % 2) * 4)) & 15`.
 Terminator codes and per-entry alignment add overhead to full-solution storage;
 alternatively store lengths. Packed bytes can contain zero, so `strlen` cannot
 measure this data.
@@ -770,8 +770,10 @@ These are actual generated shortest answers, not placeholder bytes.
 
 There are `1! + 2! + 3! + 4! = 33` entries, each occupying three bytes.
 Reverse BFS found a maximum of five moves for these initial states, leaving a
-sixth nibble for the zero terminator. The data occupies 99 bytes plus the C
-string literal's final NUL byte. Embedded zero bytes are intentional; this is
+sixth nibble for the zero terminator. The data occupies exactly 99 bytes in a brace-enclosed `unsigned char` array
+using `0xNN` integer constants, with no implicit string terminator. Each byte
+stores the first move in its high (left) hex digit and the next move in its low
+(right) digit. Embedded zero bytes are intentional; this is
 binary data, not a string to pass to `strlen`.
 
 `starts = {0, 0, 1, 3, 9}` locates each input size's first entry. For example,
@@ -805,12 +807,12 @@ No extra candidate allocation is necessary.
 The decoder deliberately uses ordinary numbers rather than bit-mask macros:
 
 ```c
-move = (packed[i / 2] >> ((i % 2) * 4)) & 15;
+move = (packed[i / 2] >> ((1 - i % 2) * 4)) & 15;
 ```
 
 - `i / 2` selects the byte, since each byte contains two moves.
 - `i % 2` selects the first or second move.
-- Multiplying by `4` shifts by zero or four bits.
+- `(1 - i % 2) * 4` shifts by four bits for the first move, then zero for the second.
 - `15` is binary `1111`, keeping the low four bits after shifting.
 - Zero ends the sequence; values `1..11` select my existing move characters
   through `"0123456789AB"`, including `'A'` and `'B'` for `rrb` and `rrr`.

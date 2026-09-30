@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 def main():
     subprocess.run(['make', '-s', '-j4'], cwd=ROOT, check=True)
     source = (ROOT / 'src/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c').read_text()
-    actual = bytes(int(h, 16) for h in re.findall(r'\\x([0-9a-f]{2})', source))
+    actual = bytes(int(h, 16) for h in re.findall(r'0x([0-9A-Fa-f]{2})', source))
     assert actual == packed_data(), 'C initializer differs from reverse BFS'
     total = 0
     with tempfile.TemporaryDirectory(prefix='push_swap_precomputed_') as folder:
@@ -67,6 +67,8 @@ def main():
                     moves = run.stdout.decode().splitlines()
                     assert len(moves) == len(expected[rank]), (values, moves)
                     assert all(move in MOVES for move in moves)
+                    if binary == path / 'harness':
+                        assert moves == [MOVES[code - 1] for code in expected[rank]], (values, moves)
                     checked = subprocess.run([str(ROOT / 'tests/checker_linux'), *args],
                                              input=run.stdout, capture_output=True,
                                              timeout=5, check=True)
