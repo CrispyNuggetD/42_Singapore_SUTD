@@ -95,7 +95,7 @@ looking for the current implementation can begin with [At a glance](#at-a-glance
 readers interested in the investigation can use the [Contents](#contents) and
 the [guide to mathematical claims and evidence](#reading-the-mathematics).
 
-> Update (2026-09-29): seed preparation and candidate management are now separate. `solve()` compares four seed/strategy combinations; BFS experiments are parked under `Brute_force/backup`. All four candidates share preparation, insertion and alignment stages. See [Seed candidate flow](#seed-candidate-flow).
+> Implementation snapshot (1 October 2026): small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates are also enabled. Archived chunk and seed experiments live in `backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
 
 > Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
@@ -107,10 +107,11 @@ the [guide to mathematical claims and evidence](#reading-the-mathematics).
 ✅ = implemented. 🚧 = partial or experimental. ❌ = not met or not implemented.
 These describe the current code and study tools; they are not evaluation scores.
 
-**Work in progress: this implementation does not yet meet the subject's move
-requirements.** The repository already contains stack operations, a BFS search,
-chunk-extraction experiments, and saved analysis data. Those are useful building
-blocks, but they do not establish a compliant or efficient final solver.
+**Submission readiness is not established by this README.** The active solver
+combines exact small-input answers with greedy candidate comparison. Saved
+experiments include promising move counts, but they are not a final evaluation
+of the current executable. See [current limitations](#current-limitations) for
+remaining checks; the old chunk solver's results do not describe current performance.
 
 | Status | Feature | Current behavior |
 |---|---|---|
@@ -119,13 +120,13 @@ blocks, but they do not establish a compliant or efficient final solver.
 | ✅ | Circular-buffer stacks | Stores A and B in fixed arrays with wrapping read/write indices. |
 | ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
 | ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
-| 🚧 | Chunk solver | Extracts rank intervals and replays a restricted BFS solution for each active chunk. This remains an experimental path. |
-| ✅ | Seed comparison | Three-value and circular-LIS seeds each run with local greedy and lookahead; the first shortest of four candidates is printed. BFS experiments remain in backup. |
+| 🚧 | Archived chunk solver | Rank-interval extraction and restricted BFS replay are preserved in `backups/`; they are not in the active build. |
+| ✅ | Candidate comparison | Five greedy strategies are enabled; inputs of at most 10 also receive an exact candidate. The first shortest generated solution is printed. |
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
-| ❌ | Subject move requirements | Not met yet; no passing 100/500-number benchmark is claimed. |
-| ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics go to stderr. |
+| 🚧 | Subject move requirements | Final current-version 100/500-number validation remains outstanding; historical experiments are labelled below. |
+| ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics use stderr and descriptor 3. |
 | ❌ | Bonus checker implementation | The supplied Linux checker is a reference binary, not a checker written for this project. |
 
 [↑ Back to top](#top)
@@ -142,7 +143,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 | 🚧 | [Protect the hidden part of A](#chunk-extraction-and-the-hidden-stack) | Restricts the active search so a chunk can be considered separately from the rest of the stack. |
 | 🚧 | [Compare extraction routes](#chunk-extraction-and-the-hidden-stack) | Tries both initial rotation directions and at most one direction change; this is not a global optimality proof. |
 | ✅ | [Reverse BFS for study](#analysis-tools-and-study-data) | Reuses distances from the goal to enumerate shortest solutions for small permutations. |
-| ❌ | [Submission edge cases](#current-limitations) | Output, trivial inputs, parser safety, memory handling and compliance still need work. |
+| 🚧 | [Submission edge cases](#current-limitations) | Parser safety, solution-buffer limits and compliance need review; stdout already contains only instructions. |
 
 [↑ Back to top](#top)
 
@@ -157,7 +158,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Description](#description)
 - [Instructions](#instructions)
 - [Rank normalisation](#rank-normalisation)
-- [Why radix as my basic algo?](#why-radix)
+- [Radix: considered, not implemented](#why-radix)
 - [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
@@ -225,9 +226,11 @@ recognise a state already visited, recover a path, and use small optimal solutio
 to investigate larger sorting strategies. The saved reports are reference material
 for that investigation, including cases with several equally short solutions.
 
-The main program currently runs the experimental chunk solver unconditionally.
-The small-case alternative in `solve.c` exists, but is bypassed by that early
-return. The sections below distinguish the active solver from the analysis tools.
+The main program dispatches inputs of 1–4 values to a precomputed exact table
+and 5–10 values to full-input BFS. With the current skip flag set to zero, it
+also runs the five greedy candidates; larger inputs use those greedy candidates
+alone. The first shortest generated solution wins. Archived chunk experiments
+and dated benchmarks are distinguished from this active path below.
 
 [↑ Back to top](#top)
 
@@ -254,11 +257,13 @@ make re
 
 `make debug` defines `BFS_DEBUG` and links the logging helper. The logging call
 in the old BFS implementation is currently commented out, so this target does
-not guarantee a separate report. The ordinary executable already prints diagnostics.
+not guarantee a separate report. The ordinary executable's progress diagnostics follow `DEBUG` and use stderr;
+the solution dump uses file descriptor 3.
 
 `make clean` removes project and libft objects. `make fclean` also removes built
 executables and the library archive. Both preserve study reports and the supplied
-checker. Repeated builds leave unchanged executables alone.
+checker. The current main link rule may relink through the forced libft prerequisite;
+the historical timestamp checks below are not a current incremental-build guarantee.
 
 ### Run the development solver
 
@@ -268,10 +273,18 @@ checker. Repeated builds leave unchanged executables alone.
 ./bin/generator 5
 ```
 
-Start with small inputs. The current BFS reserves space for the configured maximum
-state count even for a small problem; larger searches can be expensive.
-Output contains both instructions and diagnostics, so piping it directly to the
-checker or counting all stdout lines does not provide a valid subject benchmark.
+Start with small inputs. BFS allocation now scales with the input's state count,
+but factorial growth still makes the upper end expensive. Greedy lookahead can
+also be expensive on large inputs. Stdout contains the selected instructions;
+stderr carries progress, and descriptor 3 can capture the solution dump:
+
+```sh
+./push_swap 3 2 1 > moves.txt 2> progress.log 3> solutions.log
+./tests/checker_linux 3 2 1 < moves.txt
+```
+
+The supplied checker is a Linux executable. These commands illustrate validation,
+not a claim that every input or submission requirement has passed.
 
 ### Project layout
 
@@ -286,8 +299,8 @@ checker or counting all stdout lines does not provide a valid subject benchmark.
 | [`notes.md`](notes.md) | Working questions, ideas and unfinished plans. |
 | `obj/`, `bin/`, `push_swap` | Generated build products, ignored by Git. |
 
-The `DO_NOT_SUBMIT` name on `src/DO_NOT_SUBMIT_DEBUG_hidden_bfs.c` reflects its
-experimental role; it is still a dependency of the main build.
+The old `DO_NOT_SUBMIT_DEBUG_hidden_bfs.c` now lives in `backups/` and is not
+a dependency of the main build.
 
 [↑ Back to top](#top)
 
@@ -312,11 +325,14 @@ stacks still store integers.
 
 <a id="why-radix"></a>
 
-## Why radix as my basic algo?
+## Radix: considered, not implemented
 
-So the plan now is to implement radix as my **basic algo** first. I've already
-experimented with BFS, but taking those ideas further can come later. First I
-want a straightforward sort working and to understand why its moves work.
+I considered binary radix as a straightforward baseline, but did not implement
+it. After discussing the trade-off with AI, I chose to pursue exact small-state
+search and greedy move-cost strategies instead: my interest was in reducing
+emitted moves and exploring the search problem, beyond obtaining an easy
+baseline. This was a project-specific choice, not a claim that radix is a bad
+sorting algorithm. The explanation below records what I learnt while considering it.
 
 What confused me was: why radix? Why can't I just use insertion sort, merge
 sort, or another divide-and-conquer algo?
@@ -368,8 +384,8 @@ So ranks make the numbers convenient to work with, and radix gives me a
 repetitive process that fits the stack operations. It's a good basic algo
 because it's straightforward and predictable, with O(n log n) stack operations
 for the usual binary passes. That doesn't mean it gives the fewest moves.
-Getting this baseline working comes first; exploring greedy move costs and
-more BFS ideas comes later.
+That made it an understandable baseline to consider, but it was not the
+implementation direction I ultimately took.
 
 [↑ Back to top](#top)
 
@@ -419,8 +435,8 @@ descending input has
 \end{gathered}
 ```
 
-For my planned LIS preparation, I'll keep an increasing subsequence in A and
-push the rest to B before greedy reinsertion. This theorem alone doesn't
+My implemented circular-LIS preparation keeps an increasing subsequence in A
+and pushes the rest to B before greedy reinsertion. This theorem alone doesn't
 guarantee that I can keep 23 elements in A: the long subsequence might be
 decreasing. It also doesn't promise a particular push_swap move count.
 
@@ -501,8 +517,8 @@ These are preliminary estimates for uniformly random permutations, not test
 results or a prediction of the complete solution's move count. Circular LIS may
 retain more elements; once I measure its actual length $k$, $2(k-3)$ gives the
 exact push difference under the assumptions above. Preparation, rotations and
-swaps can increase or decrease the total saving. I'll append measured comparisons
-later rather than assume those other costs stay unchanged.
+swaps can increase or decrease the total saving. Measured seed comparisons appear in the dated discussion below; these push-only
+estimates do not assume that other costs stay unchanged.
 
 For example, both seeds below have length 9 and require just two pushes:
 
@@ -521,9 +537,8 @@ M(S)=2(n-|S|)+R(S).
 ```
 
 A longer seed reduces the first term, but can change the second. So LIS is a
-justified starting heuristic, not proof of the fewest total moves. For now,
-I'll keep the first longest seed I find; comparing rotation costs between
-seeds can come later. Circular seed selection can also retain more than an
+justified starting heuristic, not proof of the fewest total moves. The current implementation keeps the first longest seed it finds; comparing
+rotation costs between equally long seeds remains a possible extension. Circular seed selection can also retain more than an
 ordinary LIS: `8 9 0 1 2` is already circularly ascending as a whole.
 
 [↑ Back to top](#top)
@@ -539,8 +554,8 @@ from an empty one, so `n` input values use a capacity of `n + 1`.
 The circular-buffer helpers implement the underlying movements. The
 `stack_operation_*.c` wrappers also append an encoded move to the solution.
 The output helper translates those codes back to names such as `sa`, `pb` and
-`rra`, one instruction per line. The solver's additional diagnostic prints are
-what currently prevent the complete output from being instruction-only.
+`rra`, one instruction per line. Progress diagnostics use stderr; the detailed
+solution dump uses descriptor 3. Neither is part of stdout's instruction stream.
 
 [↑ Back to top](#top)
 
@@ -685,7 +700,8 @@ N&=\sum_{s=0}^{n}\binom{n}{s}s!(n-s)! \\
 \end{aligned}
 ```
 
-This counts all encodable states; the restricted BFS need not visit them all.
+This counts all encodable states; BFS stops when it finds the goal and need not
+visit them all.
 
 ### From an ID to a visited bit
 
@@ -766,28 +782,20 @@ The visited bitset requires
 bytes. With the configured maximum of 10 elements, $11!=39,916,800$ states need
 4,989,600 bytes (about 4.76 MiB) for visited bits alone. The node array containing
 states, parents and moves needs additional, much larger storage. The current
-BFS allocates its configured maximum tables even for smaller calls. Increasing
+BFS sizes its node array and visited table using `bfs_possible_states(n)` for
+the current input, rather than allocating the ten-element maximum on every call. Increasing
 the limit also requires checking integer ranges and representation limits.
 
-**Simplified BFS direction (30 September 2026):** archive the separate seed
-experiments and focus on a small, complete input: initially empty B, all $N$
-values in A, and $N \leq 10$. Empty B is an entry precondition for the planned
-variant, not a restriction during search: `pb` and `pa` remain allowed. The
-variant should explore all eleven operations with no hidden-stack guard and
-finish with ascending A and empty B. This is planned work, not the behavior of
-the existing chunk BFS below. The active solver does not currently dispatch to
-BFS for small inputs. Ten elements still have factorial search/memory costs.
+**Current full-input BFS:** `solve()` checks that B is empty at entry and that
+count matches A. For 5–10 values it invokes BFS over all eleven operations,
+without the archived hidden-stack restrictions. For 1–4 it uses the precomputed
+table. Both produce shortest answers under unit instruction costs; the first
+goal reached by FIFO BFS supplies the runtime path.
 
-A ten-element A above a nonempty B in a larger problem does not meet this
-contract. BFS seed preparation for Turk/greedy is deferred; it needs a safe
-model of the remaining elements or explicit move restrictions. Reuse the
-original BFS queue, state indexing and parent reconstruction for the small-input
-variant rather than maintain another seed-search implementation now.
-
-The BFS implementation tries only sa, sb, pa, pb, ra and rra, with additional
-restrictions protecting hidden values in A. Its shortest-path guarantee applies
-to that restricted graph, not all eleven push_swap operations. Lehmer ranking
-preserves state identity without changing those search rules.
+The BFS helper itself still relies on its caller's empty-B and normalised-rank
+contract. A ten-element A above nonempty B in a larger problem is not a supported
+entry. The old restricted chunk/seed experiments in `backups/` are separate
+from this active full-input implementation.
 
 [↑ Back to top](#top)
 
@@ -1073,12 +1081,12 @@ for this implementation, not a claim that every chunking algorithm performs
 poorly. I am shelving this approach and focusing on full-input BFS for small
 inputs and LIS/greedy strategies for larger ones.
 
-The active development path processes successive rank intervals of up to ten
-values. It first moves the selected interval from A to B, then creates temporary
-stacks containing the active chunk, searches for a solution and replays that
+The archived development path processed successive rank intervals of up to ten
+values. It first moved the selected interval from A to B, then created temporary
+stacks containing the active chunk, searched for a solution and replayed that
 solution on the real stacks.
 
-[`chunk_extract_optimal.c`](src/chunk_extract_optimal.c) simulates extraction
+[`chunk_optimal_BFS.c`](backups/chunk_optimal_BFS.c) simulates extraction
 routes before executing one. It tries each initial rotation direction and each
 point at which to reverse direction after collecting a target value. It chooses
 the lowest rotation-plus-push cost among those candidates.
@@ -1088,9 +1096,9 @@ does not compare arbitrary direction changes or the total future sorting cost.
 Likewise, a short BFS solution for one chunk does not prove that the full sequence
 meets the subject's move requirements.
 
-The search treats the unseen portion of A as a boundary: it disallows A rotations
-when the visible portion is nonempty and disallows `sa` when fewer than two visible
-values are available. This is the experiment behind “hidden BFS”. Its overall
+The archived hidden search treated the unseen portion of A as a boundary: it
+disallowed A rotations when the visible portion was nonempty and disallowed
+`sa` when fewer than two visible values were available. This is the experiment behind “hidden BFS”. Its overall
 correctness and efficiency still need broader validation.
 
 [↑ Back to top](#top)
@@ -1110,12 +1118,15 @@ mkdir -p debug/results
 
 The reverse analyser builds distances from the sorted goal, uses all eleven
 operations, and enumerates shortest paths by following moves that reduce the
-remaining distance. This differs from the restricted search in the main solver.
+remaining distance. The active full-input BFS now also uses all eleven
+operations; unlike the reverse analyser, it searches forward from one input.
 
 The permutation analyser can be run with
 `(cd debug/results && ../../bin/bfs_analyser 3)` after `make analyse_bfs`.
-It calls the current `brute_solve`, so its results depend on the current search
-restrictions. Historical reports can reflect an earlier version of the search.
+Its source calls `brute_solve`; historical reports can reflect earlier search
+restrictions. In the current README audit, `analyse_bfs_all_paths` built, but
+`analyse_bfs` failed to link because its target omits required debug-printer
+symbols. Its command above requires fixing that development target first.
 
 | Saved material | What to study |
 |---|---|
@@ -1137,8 +1148,9 @@ one starting permutation may have many equally short solutions.
 
 ### Build checks
 
-The following checks passed during the directory reorganisation. They establish
-build behavior, not sorting correctness or a subject score.
+The following are **historical** checks from the directory reorganisation,
+not guarantees about the current targets. They establish build behavior at
+that time, not sorting correctness or a subject score.
 
 | Result | Check |
 |---|---|
@@ -1149,20 +1161,36 @@ build behavior, not sorting correctness or a subject score.
 | ✅ | All targets rebuild after cleanup. |
 | ✅ | Deleted main and analyser executables are recreated. |
 
+The current README audit rebuilt the main executable and reverse all-path
+analyser successfully. Four small smoke cases (one value, sorted three,
+unsorted three and unsorted five) returned `OK` from the supplied checker.
+The forward analyser currently fails to link against required debug printers.
+This limited check is not a final benchmark, Norm audit or full validation.
+
 <a id="current-limitations"></a>
 
 ### Current limitations
 
-The next milestone is a correct, compliant instruction stream, followed by
-measured move-count improvements. Outstanding work includes:
+The active solver already separates instructions from diagnostics and has exact
+small-input dispatch. Remaining implementation and validation work includes:
 
-- Meeting the subject's move requirements and recording reproducible benchmarks.
-- Removing solver diagnostics from stdout and checking results with the supplied checker.
-- Correct handling of trivial inputs: one integer currently prints `Error`, and sorted input has no early exit before the chunk solver.
-- Hardening parsing. A non-space character immediately after digits can leave the count unchanged before an array write; long strings of leading zeroes also hit the digit-count limit.
-- Completing allocation-failure handling and solution cleanup; no leak-free result is claimed.
-- Reducing the fixed maximum-size BFS allocation and validating chunk replay across larger inputs.
-- Reviewing Norm, allowed functions and global variables before submission. A successful build is not a compliance check.
+- Record reproducible move-count and runtime benchmarks for the current settings.
+- Review parser safety: a non-space character after digits can leave the count
+  unchanged before an array write; long leading-zero strings hit a digit limit.
+- Check the no-argument/over-limit paths and integer-boundary conversion. A valid
+  single integer is no longer rejected by the old minimum-count check.
+- Review already-sorted inputs: there is no global early exit before all enabled
+  candidates run, although an exact candidate or the three-value-seed candidate
+  can provide a zero-move answer where applicable.
+- Add or verify bounds handling for the fixed `MAX_MOVES_CONSIDERED` answer
+  buffers: `append_move_to_soln` currently writes without checking capacity.
+- Validate allocation-failure cleanup and memory behaviour; normal solution
+  buffers are freed, but this documentation pass is not a leak audit.
+- Account for factorial BFS memory at the upper limit and costly lookahead.
+- Update development harnesses to match current candidate counts and descriptor-3
+  dumps; see the seed-test note below and random-runner metadata limitation.
+- Review Norm, allowed functions and global variables before submission. Build
+  success and saved successful examples are not a complete compliance check.
 
 [↑ Back to top](#top)
 
@@ -1209,49 +1237,59 @@ mechanical work, testing and documentation.
 
 ## Seed candidate flow
 
-`solve()` loops over `t_algorithm`; `ALGO_COUNT` controls allocation, iteration
-and the total shown by diagnostics. The configuration table in
-`src/algorithm_config.c` defines each algorithm's seed, insertion depth and name:
+`solve()` dispatches the exact candidate first when the input has at most
+`BRUTE_MAX_N` values (currently 10). It then loops from `ALGO_LIS_LOCAL` to
+`ALGO_COUNT`, unless `SKIP_OTHER_ALGO_AFTER_BFS` is enabled (currently 0).
+The enum and `src/algorithm_config.c` define six entries:
 
-| ID | Algorithm | Seed | Insertion |
-| --- | --- | --- | --- |
-| 1/3 | `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
-| 2/3 | `ALGO_THREE_LOCAL` | Three elements | Local greedy |
-| 3/3 | `ALGO_LIS_LOOKAHEAD` | Circular LIS | Lookahead at `LOOKAHEAD_DEPTH` depth |
+| Enum | Preparation | Search policy |
+| --- | --- | --- |
+| `ALGO_BFS` | None | Precomputed 1–4; full-input BFS 5–10; absent above 10 |
+| `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
+| `ALGO_THREE_LOCAL` | Three elements | Local greedy |
+| `ALGO_LIS_LOOKAHEAD` | Circular LIS | Repeated lookahead with partial execution |
+| `ALGO_LIS_OPENING_ONE` | Circular LIS | Special opening search, execute one, then repeated lookahead |
+| `ALGO_LIS_OPENING_BATCH` | Circular LIS | Special opening search, execute a batch, then repeated lookahead |
 
-The fourth entry, three-element seed + lookahead, is commented out in both
-the enum and configuration table. Uncomment both entries to restore it.
+There are six generated candidates for small inputs with the skip flag off,
+and five for larger inputs. Algorithm IDs and generated solution-slot indices
+are different when the exact candidate is absent. Three-element seed plus
+lookahead is not an active enum entry.
 
-`t_seed_mode` now belongs only to preparation, with `SEED_COUNT` as its boundary.
-`t_algorithm` selects a whole candidate; `t_algo_config` maps it to the seed and
-insertion policy. Depth zero means local greedy internally. Set `LOOKAHEAD_DEPTH >= 1`
-for the active lookahead algorithm; it no longer switches all
-algorithms between local and lookahead.
+Current settings in `includes/push_swap.h` are:
 
-Each candidate starts from fresh copies of the original stacks and records its
-own solution. Preparation never resets a solution. The first shortest completed
-candidate wins ties. Exactly one selector runs per insertion; successful
-lookahead must not fall through into local greedy and overwrite its plan.
+| Phase | Lookahead depth | Execution limit |
+| --- | ---: | ---: |
+| Normal continuation, total input size <= 100 | 12 | 10 |
+| Normal continuation, total input size > 100 | 8 | 6 |
+| Special opening | 12 | 1 for OPENING_ONE; 10 for OPENING_BATCH |
+
+The size threshold uses **A plus B**, not the shrinking length of B. Actual
+saved paths and executed batches are capped by the remaining work. The opening
+variants currently continue with lookahead because their `use_lookahead` field
+is 1; older opening-then-local benchmarks are historical experiments.
+
+Each candidate starts from fresh stack copies and its own answer slot. The first
+shortest generated answer wins ties. `t_seed_mode` chooses preparation;
+`t_algorithm` and `t_algo_config` choose the whole strategy. Internal depth zero
+selects local greedy; a positive depth searches candidate insertions.
 
 | Stage | File | Responsibility |
 | --- | --- | --- |
-| Candidate loop | `src/solve.c` | Reset stacks and solution once per seed mode. |
-| Preparation | `greedy_prepare.c` | Keep three values or a circular LIS. |
-| Composition | `greedy_stages.c` | Prepare, greedily insert B into A, then align A's minimum. |
-| Execution | `greedy_execute.c` | Share compatible rotations, finish separate rotations, then push. |
+| Candidate loop | `src/solve.c` | Reset stacks and solution for each generated candidate |
+| Preparation | `greedy_prepare.c` | Keep three values or a circular LIS |
+| Composition | `greedy_stages.c` | Prepare, search/execute batches, then align A |
+| Execution | `greedy_execute.c` | Share rotations, finish residual rotations, then push |
 
-The restricted BFS seed implementation and proposed bounded all-eleven-move
-search are both parked under [Brute_force/backup](src/sorting_algorithms/Brute_force/backup/README.md).
-That README explains the file roles, differences, unfinished work, and how to
-reconnect an implementation later. Neither is included in the active build.
+Archived seed-search prototypes are in
+[backups/BFS WIP backup](backups/BFS%20WIP%20backup/README.md).
+They are not built; the separate full-input BFS under `src/` is built.
 
-Set `DEBUG` to at least 2, build with `make`, then run
-`python3 tests/test_seed_candidates.py` (it reads the candidate dump). The regression
-replays all three active candidates, verifies sorted A and empty B, and checks that
-stdout matches the first shortest candidate. It covers every permutation of sizes
-2–5 and sorted, reversed, and deterministic shuffled inputs through 500 values.
-The refactored seed-flow C files pass Norminette; the repository still has
-pre-existing violations elsewhere, including the shared header and LIS code.
+**Historical regression harness:** `tests/test_seed_candidates.py` still expects
+three candidates and reads their dump from stderr. The current solver has more
+candidates and writes that dump to descriptor 3. Its old coverage (permutations
+2–5 and selected larger inputs) must not be presented as a passing regression
+of today's configuration until the harness is updated and rerun.
 
 
 ## Greedy lookahead: who owns each plan?
@@ -1273,95 +1311,66 @@ This attribution records conceptual influence, not a direct implementation of
 that author's method.
 
 
-At depth 3, I score three insertions ahead, but only execute the first insertion
-on my real stacks. The next loop iteration looks three insertions ahead again.
-This is a **receding horizon**: the predicted second and third choices can change
-when another insertion becomes visible beyond the previous search horizon.
-Depth counts complete B-to-A insertions, including their rotations and `pa`.
-It does not count individual push_swap instructions.
-
-Algorithms 1–2 always use local greedy; algorithms 3–4 use `LOOKAHEAD_DEPTH` as
-the search depth passed by `greedy_insert_all`. All candidates are explored at each level;
-depth 3 or 4 can be very expensive with a large B. This is not beam search yet.
+Depth counts complete B-to-A insertions, including rotations and `pa`, not
+individual instructions. The selector searches a horizon and saves its winning
+sequence; `greedy_insert_batch` executes a prefix up to the configured limit,
+then the next search starts from the resulting real state. See the settings
+above. Depth-three/execute-one examples below describe earlier experiments,
+not the current default.
 
 ### Same variable name, different storage
 
-Every function call gets its own ordinary local variables, including recursive
-calls. A child's `candidate` is a different struct from its parent's `candidate`.
-The parent call pauses while the child runs; its variables stay alive.
+Recursive calls own separate local variables. A parent pauses while its child
+runs; copying a winning path copies values, not pointers to expired child locals.
 
 | Variable | Where it lives | What it holds |
-|---|---|---|
-| `best` | `greedy_insert_all` | The one plan to execute on the real stacks. |
-| `candidate` | Each `greedy_choose_plan_lookahead` call | One possible insertion at that level. |
-| `best_first_plan` pointer parameter | Each selector call | The caller's output address, not a shared global plan. |
-| `copies[2]` | Each simulated branch | Independent A/B buffers for that hypothetical branch. |
-| `unused_plan` | Each `greedy_lookahead_cost` call | The child's winning first plan; only its score is needed by the parent. |
+| --- | --- | --- |
+| `best` | `greedy_insert_batch` | Winning `t_greedy_path` to execute |
+| `candidate_path` | Each bounded selector call | Current insertion followed by its winning continuation |
+| `search.best_path` | Search struct passed by value | Pointer to that caller's output path |
+| `copies[2]` | Each simulated continuation | Independent hypothetical A/B buffers |
+| `child_path` | Each continuation helper call | Child's saved winning continuation |
 
-The crucial assignment is `*best_first_plan = candidate`. This copies the struct's fields
-into the caller's output storage. It does not save a pointer to the temporary
-`candidate`, and it does not copy an entire chain of plans.
-
-At the root, `best_first_plan` points to `best` in `greedy_insert_all`. Deeper down,
-the selector receives `&unused_plan` from that particular cost-helper call.
-**The child is never given the address of the root's winning plan**, so it
-cannot overwrite it through that output parameter.
+`append_child_path` copies the child plans after `plans[0]`. When a candidate
+wins, `*search.best_path = candidate_path` copies the entire path struct to the
+caller's storage. The child receives `&child_path`, not the root's output
+address, so it cannot overwrite the root winner through that parameter.
 
 ### Follow one depth-three branch
 
-```text
-greedy_insert_all: owns real best
-  choose(depth 3, &best): try candidate X
-    greedy_branch_cost: copy stacks, simulate X
-      cost(depth 2): owns unused_plan #1
-        choose(depth 2, &unused_plan #1): try candidate Y
-          greedy_branch_cost: copy X's state, simulate Y
-            cost(depth 1): owns unused_plan #2
-              choose(depth 1, &unused_plan #2): try candidate Z
-                greedy_branch_cost: return Z's known cost if B has > 1 element
-                  otherwise simulate Z and include final alignment
-```
+A root candidate X is simulated on copied stacks. The depth-two child selects
+Y and its depth-one continuation Z. The child returns its score and saved path
+[Y, Z]; the parent forms [X, Y, Z]. Siblings start from the same parent state.
+The selected path's individual `.cost` fields remain immediate insertion costs;
+the returned integer scores the entire searched horizon.
 
-Each level explores its siblings too. The cheapest continuation cost comes back
-as an integer: Z's cost, then Y plus its best continuation, then X plus its best
-continuation. If X gives the best total at the root, the root copies **X's plan**
-into the real `best`. Its `.cost` still describes X alone; the function's returned
-score describes the whole searched horizon. Search errors return `-1`. Bounded internal calls return `GREEDY_PRUNED`
-(`-2`) when no continuation beats the budget; that is not an error and does
-not produce an output plan. The public selector starts with `INT_MAX`.
+Simulations call `greedy_execute_plan(NULL, ...)`, changing only copies and
+recording no real moves. After selection, the executor applies the first
+`min(execute_limit, best.length)` saved plans on the real stacks. Execute-one
+is a supported policy, but the current normal limits are 10 or 6.
 
-The simulations call `greedy_execute_plan(NULL, copies, ...)`: they change only
-the copied stacks and record nothing. After the search returns,
-`greedy_insert_all` calls `greedy_execute_plan(x, a, b, &best)` exactly once on the
-real stacks. That's why only the first insertion actually happens.
+If B empties, the leaf returns final alignment cost, even at depth zero.
+Otherwise depth zero returns zero: stop looking, not sorted. At depth one with
+more than one B element, the immediate cost suffices without simulation; with
+one element, simulation is needed to price final alignment.
 
-If B becomes empty, the cost helper returns final alignment cost, even at depth
-zero. Otherwise depth zero returns zero: it means "stop looking", not "sorted".
-The alignment calculation assumes all distinct ranks `0..n-1` are now in
-circularly ascending A.
-
-At the last lookahead layer (`depth == 1`), if B has more than one element,
-the push cannot finish sorting. Its continuation cost would be zero, so we
-return the plan's known cost without copying or simulating the stacks. If B
-has one element, we still simulate the push to calculate final alignment.
-This preserves scores, tie-breaking and trial counts: a trial counts a candidate
-evaluation, even when it needs no simulation.
-
-No linked list or allocated search tree is needed. Each branch's local copies
-stop being needed when its call returns, and the next sibling gets fresh copies
-of the same parent state. Storage grows with the active recursion depth, while
-the number of branches grows much faster. A lower finite-horizon score still
-does not guarantee the shortest complete solution.
+No allocated search tree is needed. Each branch's local copies and bounded path
+arrays are reused as recursion unwinds. Search storage follows active recursion
+depth rather than retaining every explored branch; the number of candidate
+branches can still be enormous. A lower horizon score does not guarantee a
+shorter complete sort. Error/pruning return contracts are described in the
+[branch-and-bound section](#optimization-technique-branch-and-bound-pruning).
 
 
 ### Debug printers and the DEBUG flag
 
 Set `DEBUG` to `0`, `1`, `2`, `3` or `4` in `includes/push_swap.h`, then run `make`.
 The header is the source of truth for these printers; `make debug` does not
-force this flag on. Each debug printer checks it before printing to stderr.
-With `DEBUG=1`, stderr displays an updating status bar. For plain log files,
-use `DEBUG=2` or higher and `./push_swap 5 2 0 4 1 3 2> trace.log`.
-The chosen solution still goes to stdout with either flag value.
+force this flag on. Progress and most diagnostics go to stderr; recorded solution dumps use FD 3.
+With `DEBUG=1`, stderr displays an updating status bar. For plain event logs,
+use `DEBUG=2` or higher and
+`./push_swap 5 2 0 4 1 3 2> trace.log 3> solutions.log`.
+The chosen solution goes to stdout independently of the debug level.
 
 All printers live under `src/printers`, with at most five functions per file:
 
@@ -1386,103 +1395,60 @@ errors still print `Error` to stderr regardless of DEBUG.
 The lookahead printers follow the header's DEBUG level:
 
 - `0`: no diagnostics.
-- `1`: one updating stderr status bar; redraw only when a candidate establishes
-  or improves a branch cost, plus root-search completion; keep the root winner
-  displayed separately once the first root candidate has been scored.
-- `2`: root-candidate start/completion logs and the chosen insertion.
+- `1`: an updating stderr status line and encoded solution dumps on FD 3.
+- `2`: root-candidate start/completion logs, executed insertions and decoded
+  solution dumps.
 - `3`: candidates and return/stop events at every recursive level.
 - `4`: the above plus rank, immediate cost, continuation cost and combined cost.
 
-Level 1 retains the winning first plan for the entire current search. Child
-branch winners cannot replace it. For example:
+The live level-1 line contains `A` (one-based algorithm slot / `ALGO_COUNT`),
+`D` (reported insertion level / effective horizon), `E` (root candidates
+completed in this search), `I` (real insertions completed in this pass), and
+`eval` (evaluated candidates in this search). Algorithm slots include the
+BFS slot even when that candidate does not run for a large input. The current
+line does not display the internally retained root winner or its score.
 
-```text
-search=172/410 skipped=80 [----------] 2.6% inserted=12/459 algo=3/3 (Circular LIS + lookahead) depth=2/3 done=4/8 best_item=2 best_total=7
-```
+The two percentages measure different work. E can restart at each search;
+I is monotonic within an algorithm pass and advances only after a successful
+real insertion. Simulated pushes and pruned descendants do not advance I.
+Neither percentage estimates proximity to an optimal sorting solution.
 
-`done=4/8` means four of the eight candidates in this particular depth-two
-call have been fully evaluated. At depth one, the denominator would be nine.
-This local counter can restart when the parent changes. The percentage counts
-real insertions and stays monotonic across the whole algorithm pass. `best_item` always identifies the
-retained root winner, even when the displayed progress comes from a child.
-`best_total` includes that candidate's insertion cost and its best continuation
-within the lookahead horizon. The percentage measures search work completed,
-not how close the cost is to an unknown optimal solution. Child improvements
-can refresh the depth-local progress after a root winner exists, but never
-overwrite the displayed root winner.
+Level 1 refreshes at each 1,048,576 candidate-result events, at root-search
+completion and after a real insertion. These forced refreshes can occur at
+the same insertion percentage. Rendering uses a bounded 512-byte stack buffer
+and one stderr write, with `\r` and ANSI clear-line characters; levels 2–4 are
+more suitable for plain event logs. No timer or extra thread is involved.
 
-Within one search, the winning cost only decreases (ties keep the earlier plan).
-The percentage is `100 * inserted / initial_B`, displayed to one decimal place.
-It advances only after a successful real insertion, regardless of simulated or
-skipped trials. `inserted=X/Y` never resets between searches.
-The bar shows the algorithm ID and configured name; trial counts stay at the
-far left. Completing a search does not advance the insertion percentage.
-The final DONE line appears after all real insertions and alignment finish.
-Other diagnostic dumps require level 2 or higher. Use levels 3–4 for child decisions.
+At DEBUG 2–4, a field such as `depth=2/3 candidate=4/9` means the fourth
+logical B candidate at insertion level two of a three-insertion horizon.
+Candidate positions are one-based indices, not ranks. START reports requested
+and effective depths; the latter is capped by the remaining B length.
 
-The bar uses `\r` and ANSI clear-line output in one buffered stderr write;
-no timers, sleeps, terminal queries or new system calls are needed. Redirecting
-level 1 captures those control characters, so use levels 2–4 for plain logs.
-
-A line such as `depth=2/3 candidate=4/9` means the fourth candidate at the
-second insertion level of a three-insertion horizon. Candidate numbers are
-one-based logical B positions, not ranks. START prints both the requested depth
-and the effective depth, capped by how many elements remain in B.
-
-At DEBUG 2–4, `covered=X/Y remaining=Z` counts evaluated or safely skipped candidate insertions across
-all levels of this one search. For B length $b$ and effective depth $d$, the
-unpruned tree contains
+The detailed `covered=X/Y remaining=Z` fields count evaluated or safely
+skipped candidate insertions across all levels of one search. For B length
+$b$ and effective depth $d$, the unpruned tree contains:
 
 ```math
 T(b,d)=\sum_{k=1}^{d}\frac{b!}{(b-k)!}.
 ```
 
-For example, $T(5,3)=5+20+60=85$. The count resets after each real insertion,
-when we begin a fresh search. It is not the number of unique ranks, emitted
-moves, or the work remaining for the entire sort. A parent trial is marked
-complete only after its children return. Level 2 updates at root-candidate
-boundaries; level 3 shows progress inside those branches.
+For example, $T(5,3)=5+20+60=85$. These counts reset when a new search starts,
+which may follow several real insertions. They do not count emitted moves or
+predict work for the whole sort. A parent trial completes after its children
+return; safely pruned descendants count as skipped coverage. Detailed search
+totals exceeding counter capacity are marked with `+`, rather than wrapped.
 
-Totals beyond the unsigned counter's capacity are labelled with `+` rather
-than wrapping into a misleading small number. The counters describe the current
-exhaustive search space; pruned descendants count as skipped coverage.
-`debug_search_progress.c` owns the diagnostic state only; it never affects which
-plan wins. As with the current solver, this tracing assumes one synchronous
-search at a time.
+`count_pass()` accumulates only searches actually started. It does not predict
+future batches, so the pass total is unknown upfront. For local greedy, the
+one-level diagnostic horizon counts candidate evaluations without enabling
+lookahead: with $b$ initial elements in B, the total is $b(b+1)/2$.
 
-
-For DEBUG 1, the displayed search total is T(b,d) for the current B length.
-`count_pass()` adds that total only when the search actually starts. It never
-assumes a fixed execution batch size or predicts future searches. Executing one,
-all, or a changing number of saved plans therefore needs no counter adjustment.
-Cumulative `pass_total` and `pass_done` cover searches started so far; the final
-summary reports these accumulated totals. The final total is unknown upfront.
-
-Status rendering uses a 256-byte stack buffer with no allocations or variadic
-format parsing. Percentage thresholds are calculated once per algorithm pass from its initial B length using
-integer division/remainder by 1000; each redraw advances a cached percentage
-using comparisons. The bar itself uses no division. Decimal number formatting
-still uses division/remainder by 10. A redraw issues one `write` to stderr;
-non-improving results continue to update counters without formatting a line,
-except that root completion always refreshes the status.
-
-
-For local greedy, progress counts candidate evaluations rather than simulated
-insertions: with $b$ initial elements in B, the total is $b(b+1)/2$. The debug
-counter uses a one-level horizon for this count; it does not enable lookahead.
-Lookahead totals accumulate only the searches actually performed.
-
-
-DEBUG 1 redraws are throttled by insertion percentage in 0.1% steps: best-cost events and
-root completion can request a redraw, but repeated percentages are suppressed.
-A final DONE update is always allowed. This limits output to at most 1002 search redraws
-per algorithm pass, plus search-completion and real-insertion refreshes, without timers; counters and the retained winner still
-update on every relevant event. No line formatting or write occurs when a
-redraw is suppressed. Levels 2–4 retain their detailed event logs.
-
-Each algorithm finishes with a `final_moves=N DONE` diagnostic after final
-alignment, including preparation moves. DEBUG 1 replaces the active status line;
-algorithms with no reinsertion trials still print a completion summary.
+After final alignment, the completion line reports cumulative `covered` and
+`skipped`, `inserted=X/Y`, and `final_moves=N DONE`. Here Y is B's length
+after seed preparation; N includes preparation and alignment moves. Empty B
+can finish at `inserted=0/0`. Saturated counters are not exact work totals.
+The diagnostic state assumes one synchronous search at a time and does not
+decide which path wins.
 
 <a id="greedy-heuristics"></a>
 
@@ -1611,9 +1577,9 @@ unless I explicitly preserve the original tie order.
 ### Optimization technique: branch-and-bound pruning
 
 `greedy_choose_plan_lookahead` starts an exclusive budget of `INT_MAX`.
-`t_greedy_search` groups depth, budget and the output-plan pointer so helpers
+`t_greedy_search` groups depth, budget and the output-path pointer so helpers
 stay within four arguments. The struct is passed by value: siblings never
-share a mutable budget. Only the output pointer refers to the caller's plan.
+share a mutable budget. Only the output pointer refers to the caller's saved path.
 
 The search is depth-first. With no initial incumbent, it first prices a path to
 the depth limit (or completion). As calls return, actual continuation costs
@@ -1643,13 +1609,13 @@ part of completed-state costs; a horizon cutoff has cost zero.
 Return contracts: nonnegative means a real cost below the budget, `-1` means
 error, and `GREEDY_PRUNED` (`-2`) means no path beat the bound. A wholly pruned
 search leaves its output plan untouched. Pruning preserves the exhaustive
-search's selected first move and score for the same horizon; it does not make
+search's selected path and score for the same horizon; it does not make
 that horizon globally optimal.
 
 Diagnostics show `covered = evaluated + skipped` against the original exhaustive
 trial total. The candidate whose bound is checked counts as evaluated; only its
 unvisited descendants count as skipped. Skipping a subtree advances progress in
-one jump. The live `search` and `skipped` counters reset at each search.
+one jump. The detailed search coverage and skipped counters reset at each search.
 The final `covered` and `skipped` totals accumulate across the algorithm pass;
 subtract skipped from coverage to get actual evaluations (unless counters
 saturate). Completion still reports final recorded moves after alignment.
@@ -2110,7 +2076,7 @@ establish the best margin, or turn the intuition into a new theorem.
 
 ### Opening lookahead versus continuing to look ahead (30 September 2026)
 
-The latest completed sample, session `20260930_175350`, contains 11 checked
+The historical sample recorded here, session `20260930_175350`, contains 11 checked
 100-element inputs from master seed `10666114425917339200`, using one executable
 version. The session was interrupted; these figures include completed runs only.
 
@@ -2156,10 +2122,10 @@ I am now comparing algorithm 3's repeated lookahead against two opening variants
 algorithm 4 searches deeper once, executes one insertion, then continues with
 repeated lookahead; algorithm 5 executes an opening batch before that same
 continuation. Both currently use `use_lookahead = 1`. The older opening-then-local
-results above do **not** benchmark these new variants. Current opening settings
-are depth 14 / batch limit 12; normal lookahead uses depth 12 / limit 10 when
-remaining B has at most 100 elements, and depth 8 / limit 6 otherwise. These are
-experiment settings, not fixed properties of the algorithms.
+results above do **not** benchmark these new variants. The current settings are
+listed in the seed-flow configuration table above; the normal size threshold
+uses total A+B length, not remaining B length. These are experiment settings,
+not fixed properties of the algorithms.
 
 
 ### Depth 3 can lose to local greedy — on the same input
@@ -2184,8 +2150,8 @@ local choice was 10, while the lookahead choice scored 9. So lookahead preferred
 the cheaper short path, as intended.
 
 The catch is that my depth cutoff returns zero for the unexamined continuation.
-That means "ignore the rest", not "the rest is free". Every real insertion starts
-a fresh depth-3 search. These results show that a useful first choice does not
+That means "ignore the rest", not "the rest is free". In that historical
+repeated-lookahead experiment, every real insertion started a fresh depth-3 search. These results show that a useful first choice does not
 make repeated short-horizon decisions produce a better complete solution. They
 do not prove that deeper lookahead always loses, or rule out every possible bug.
 
@@ -2212,15 +2178,6 @@ A possible next experiment is a local-greedy rollout at the cutoff: estimate the
 remaining cost by finishing a copied state with local greedy instead of returning
 zero. That is not implemented here; it would trade extra computation for a score
 that considers a complete solution.
-
-The status also shows `inserted=X/Y`, where Y is B's length immediately after
-seed preparation and X counts successful real B-to-A insertions. Simulated
-pushes and skipped branches never increment it. Each real insertion forces a
-refresh even when the search-space percentage has not changed, so the counter
-keeps moving near 99.9%. An empty initial B finishes at `inserted=0/0`; the final
-summary reports `inserted=Y/Y` after alignment.
-
-
 
 <a id="future-research"></a>
 
@@ -2436,7 +2393,7 @@ Files live in the git-ignored `debug/results/random_tests/` directory:
   runtime averages/min/max, per-algorithm move statistics and detail filenames.
 - `YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
   Each section includes the ranked input,
-  seed, generation ID, rank hash, binary hash, depth settings, checker result,
+  seed, generation ID, rank hash, binary hash, captured settings, checker result,
   complete winning moves and full solution-debug dump in collapsible details.
   The current ten-run file is atomically refreshed after each success.
 
@@ -2453,8 +2410,13 @@ retries the uncommitted input. Saved Markdown reports recover a stale summary af
 replacement keeps the current batch intact. A session lock prevents concurrent writers.
 
 Exact inputs remain replayable even if a Python version changes shuffle details.
-Each run records the executable hash and settings; resuming after rebuilding is
-allowed, so summary averages may span multiple binaries (listed in the summary).
+Each session builds and snapshots an executable; its runs use that snapshot
+and record its hash. Resuming after rebuilding is allowed, so summary averages
+may span multiple binaries (listed in the summary). The current metadata parser
+still recognises the old `LOOKAHEAD_DEPTH` / `EXECUTE_DEPTH` macro names and
+`DEBUG`; it does not capture today's per-size and opening depth/limit macros.
+Do not treat its settings table as a complete configuration record until that
+parser is updated.
 
 New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
 The seed, hash and resume metadata are ordinary readable table rows; no hidden
