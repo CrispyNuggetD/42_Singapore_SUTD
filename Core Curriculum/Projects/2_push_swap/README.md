@@ -760,6 +760,37 @@ repository limits, and generating the BFS data in the first place. C does not
 universally guarantee support for an object that large. A 32-bit process would
 not have enough address space to map the entire 10 GB table at once.
 
+### Authorship and AI assistance for precomputed solutions
+
+I (hnah) proposed the precomputed-solution design, the function prototypes and
+responsibilities for `encoded_bfs_data`, `decode_bfs_data` and
+`get_precomputed_bfs`, the encoding/decoding mechanism, and how the lookup
+would integrate with my existing solution storage and solver. I also proposed
+compressing two moves into one byte (`unsigned char`), using four bits per
+move. These design decisions and the original function template were mine.
+
+AI assistance supplied and ran the offline Python script
+[`generate_precomputed_sample.py`](debug/generate_precomputed_sample.py) to
+compute the BFS answers and emit the packed table bytes. AI also supplied the
+detailed arithmetic for packing and extracting the nibbles with bit shifts and
+masks, and recommended hexadecimal notation to make the two move codes visible
+in each byte. The script generates the table data; it does not generate the
+whole C implementation or originate its design.
+
+I asked why we could not simply store the actual character/byte values from
+the 256 possible values of an eight-bit byte. The explanation was about source
+readability: the compiled array already stores those actual byte values, while
+hexadecimal shows each four-bit move code as one hex digit. This makes the
+packed moves easier to inspect alongside my existing move-code decoding table.
+Raw characters can be invisible or require escaping; hexadecimal notation does
+not itself provide additional compression.
+
+I subsequently requested `0xNN` array entries instead of `\xNN` string
+escapes, and first-move-first ordering: the first move occupies the high (left)
+nibble and the next move occupies the low (right) nibble. AI implemented that
+change across the generator, table and decoder and ran the verification checks.
+For example, `0x91` now represents `rra` followed by `sa`.
+
 ### Working sample using my solution template
 
 [`precomputed_ranks_bfs.c`](src/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c)
