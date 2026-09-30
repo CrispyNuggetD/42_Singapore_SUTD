@@ -60,6 +60,7 @@ blocks, but they do not establish a compliant or efficient final solver.
 
 - [At a glance](#at-a-glance)
 - [Design choices and edge cases](#design-choices-and-edge-cases)
+- [How to read the mathematics and evidence](#reading-the-mathematics)
 - [Description](#description)
 - [Instructions](#instructions)
 - [Rank normalisation](#rank-normalisation)
@@ -77,6 +78,45 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [Resources and use of AI](#resources)
 
 [↑ Back to top](#top)
+
+<a id="reading-the-mathematics"></a>
+
+## How to read the mathematics and evidence
+
+Mathematical notation in this README serves several different purposes.
+**An equation is not automatically an optimality proof or a performance bound.**
+In particular, the lookahead/batching equations formalise the recursive
+algorithms and my design rationale; they do not establish that eight-lookahead/
+six-executed beats execute-one or full batching.
+
+| Label | What the reader can conclude | What the reader cannot conclude |
+| --- | --- | --- |
+| **Definition / specification** | This states a score, metric or algorithm precisely | That the specified score predicts complete sorting cost well |
+| **Structural identity / count** | The relationship follows from the stated mechanism and assumptions | That a larger or smaller value necessarily improves performance |
+| **Conditional guarantee / bound** | A conclusion holds under the stated assumptions and for the stated objective | That it extends to a different objective, horizon or algorithm |
+| **Empirical observation** | The reported inputs and settings produced the recorded result | That it generalises to other workloads |
+| **Design rationale / hypothesis** | This is a reason to explore a choice or a possible explanation to test | That its benefit or causal explanation has been demonstrated |
+
+For example, d-e counts the planned insertions left uncommitted; it is not a
+bound on sorting error or wasted moves. By contrast, the one-push-per-element
+lower bound genuinely supports safe pruning when compared against a budget
+for the same objective. The conditional optimal-suffix argument is a valid
+property of exact finite-horizon optimisation, but it does not rank policies
+that repeatedly search different, moving horizons.
+
+These are explanatory formulations of existing mechanisms and standard
+principles, developed in discussion with AI. The lookahead/batching notation
+is not presented as a newly discovered theorem or as proof of a superior
+algorithm. Formalising a choice after experimentation can clarify what it
+does and what must be tested; it does not retroactively prove why a trial won.
+
+**Why pursue a choice without a guarantee?** A plausible mechanism, an
+affordable computation budget and promising observations justify an experiment.
+Here, partial commitment preserves part of a jointly evaluated plan while
+allowing later reconsideration. That trade-off motivates testing it; correctness
+comes from valid stack operations and checking the result, while any claim of
+better move counts needs comparative evidence. The rationale is worth testing
+even if no setting can be shown to win universally.
 
 <a id="description"></a>
 
@@ -1333,6 +1373,10 @@ algorithms with no reinsertion trials still print a completion summary.
 
 ### Heuristics in my greedy solver do not require A*
 
+**Definitions / specifications:** The formulas below describe immediate costs,
+the current horizon score and a possible alternative tail score. They do not
+prove a complete-solution performance advantage.
+
 A heuristic is a way to guide a decision or estimate future work; A* is one
 particular search algorithm that can use one. My local greedy choice is a
 heuristic for the complete sort, even though its immediate insertion cost is
@@ -1501,6 +1545,11 @@ saturate). Completion still reports final recorded moves after alignment.
 
 ### What makes a pruning bound safe?
 
+**Conditional guarantees / bounds:** Unlike the batching identities, the bounds
+in this section justify eliminating branches. They require a lower bound and
+a budget for the same objective; the current horizon guarantee is not global
+optimality of the complete sort.
+
 A lower bound must not exceed the remaining cost of any feasible completion
 for the objective being searched. For a complete sort, every element currently
 in B needs a `pa`, so a simple valid bound is:
@@ -1596,6 +1645,12 @@ using that additional information. Both approaches still ignore unfinished
 work beyond the depth cutoff, so neither guarantees the best complete sort.
 
 ## Discussion / discoveries
+
+**Evidence status:** The discussion below separates reported experiments,
+possible explanations and structural properties of recursive planning. Its
+horizon equations specify how the variants differ; they do not prove which
+variant produces the fewest complete sorting operations. See the
+[mathematics reading guide](#reading-the-mathematics).
 
 ### More lookahead, plan switching and partial commitment (1 October 2026)
 
@@ -1742,7 +1797,7 @@ denominator is the number currently remaining in B, after seed preparation:
 \qquad |B|>0.
 ```
 
-Here d counts insertions, not individual emitted instructions. For example,
+**Structural coverage measure:** Here d counts insertions, not individual emitted instructions. For example,
 depth 8 covers 4% of the remaining insertions when B has 200 elements.
 This ratio describes horizon coverage, not predictive accuracy or the fraction
 of final operation cost known. More remaining candidates leave a longer
@@ -1762,7 +1817,8 @@ P(b,d)=\frac{b!}{(b-d)!},
 P(b,d+1)=P(b,d)(b-d).
 ```
 
-This explains why one more layer can be costly. Actual runtime depends on
+**Exact unpruned count, not a timing guarantee:** This explains why one more
+layer can be costly. Actual runtime depends on
 pruning, candidate ordering and per-node work; the unpruned count does not
 predict the measured slowdown.
 
@@ -1802,6 +1858,13 @@ separate validation set and an explicit runtime budget.
 
 #### Mathematical interpretation: planning depth and commitment length
 
+**Structural specification and design rationale, not a performance theorem.**
+The following notation describes my execute-one, partial-batch and full-batch
+variants from the recursive-planning point of view. The identities are exact
+under their stated indexing assumptions; their performance implications are
+hypotheses. Neither the formulas nor the research analogy prove a preferred
+execution fraction.
+
 In discussion with AI, I asked whether my intuition had a recognised connection
 to other fields. AI suggested **receding-horizon planning**, particularly
 multistep model predictive control (MPC), where planning depth and the number
@@ -1810,7 +1873,9 @@ of actions applied before replanning are separate design choices.
 study the effects of these horizons on performance under explicit
 controllability assumptions. This provides a conceptual connection, not a
 theorem that proves my push_swap configuration optimal. Those assumptions and
-performance bounds have not been established for my solver.
+performance bounds have not been established for my solver. The connection
+recognises the design question; it does not validate my preferred parameter
+values or explain the cause of my measured results.
 
 For a selected plan of d insertions, insertion j has d-j subsequent insertions
 included in its evaluation. If I execute its first e insertions, the minimum
@@ -1836,7 +1901,8 @@ d-e\ge r
 e\le d-r.
 ```
 
-Choosing the largest allowed batch gives e=d-r. Thus the practical depth limit
+**Conditional design constraint:** Choosing the largest batch satisfying my
+chosen minimum continuation margin gives e=d-r. Thus the practical depth limit
 d=8 and a chosen margin r=2 imply e=6. This justifies six **conditional on my
 chosen two-insertion margin**; it does not prove that two is best. Executing
 one satisfies a larger margin, but margin alone does not order complete-solution
@@ -1871,7 +1937,8 @@ R_d=\sum_{t=d+1}^{b}c_t,\qquad
 R_d-R_{d+k}=\sum_{t=d+1}^{d+k}c_t.
 ```
 
-Here b is the number of remaining insertions on that continuation; any final
+**Accounting identity on a fixed path:** Here b is the number of remaining
+insertions on that continuation; any final
 alignment cost is separate and cancels in this difference. There is no general
 inverse-depth or one-seventh law for remaining cost or estimation error.
 If deeper search chooses a different continuation, even the fixed-path
@@ -1891,8 +1958,8 @@ states during reinsertion. A useful test logs plan changes and compares their
 complete continuations from the same state; switching alone is not evidence
 of harm. Nor does a smaller margin prove harm.
 
-With identical deterministic dynamics, permitted plans and terminal scoring,
-reoptimising the old **remaining seven-step objective** cannot strictly improve
+**Conditional optimal-suffix property:** With identical deterministic dynamics,
+permitted plans and terminal scoring, reoptimising the old **remaining seven-step objective** cannot strictly improve
 an exactly optimal seven-step suffix; otherwise the old eight-step plan was
 not optimal. Equal-score alternatives can still change under tie-breaking.
 The fresh **eight-step objective** is different. This distinction explains why
@@ -1905,6 +1972,26 @@ commitment, but the best execution fraction and the cause of any improvement
 remain empirical questions. This rationale changes no solver code.
 
 
+
+#### What this discussion establishes, and what remains open
+
+| Statement | Status |
+| --- | --- |
+| Executing e insertions from a depth-d plan leaves d-e uncommitted | Structural identity, when the full horizon is available |
+| Replanning at depth d after e executions extends the old horizon by e insertion positions | Structural identity, while enough work remains; element choices may change |
+| Requiring at least r evaluated subsequent insertions gives e <= d-r | Consequence of a chosen design requirement, not proof that r is beneficial |
+| An exactly optimal plan has an optimal suffix for its unchanged remaining objective | Conditional guarantee; ties may choose a different equally good suffix |
+| A valid lower bound reaching the incumbent budget cannot improve that objective | Conditional pruning guarantee; does not establish complete-sort optimality |
+| Frequent replanning causes harmful plan switching in my runs | Unconfirmed causal hypothesis |
+| Eight/six beats eight/one or eight/eight in general | Not established |
+| The published MPC guarantees apply to this solver | Not established |
+
+My reason to pursue eight/six is therefore practical and experimental: depth
+eight was affordable on my tested workload, partial commitment had promising
+author-reported results, and leaving two planned insertions uncommitted was an
+intentional design choice. The mathematics makes that choice precise and
+exposes its assumptions. It does not supply missing benchmark evidence,
+establish the best margin, or turn the intuition into a new theorem.
 
 ### Opening lookahead versus continuing to look ahead (30 September 2026)
 
