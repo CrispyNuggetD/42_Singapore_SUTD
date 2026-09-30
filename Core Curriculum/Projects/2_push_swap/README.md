@@ -1229,6 +1229,7 @@ small-input dispatch. Remaining implementation and validation work includes:
 
 ## Resources
 
+- 2swap. [*I Solved Klotski*](https://www.youtube.com/watch?v=YGLNyHd2w10) (also circulated as *Adventures in State Space*). Inspiration for viewing a concrete puzzle as a graph of configurations and moves, and for my proposed exact push_swap state-graph visualisation described under future research.
 - Jamie Dawson. [*Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a), 11 May 2019. An early foundation for my understanding of hard-coded small cases and the five-element optimality question described in the preface.
 - Ulysse Gerkens. [*Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0), 1 August 2023. A related implementation article that links to Dawson's small-case explanation; its reported performance belongs to that author's implementation.
 
@@ -2353,6 +2354,29 @@ it with these techniques is the future direction. The credited
 meet-in-the-middle and heuristic lookahead. Its current README also describes
 implemented bidirectional local re-optimisation, so these are not uniformly
 unimplemented in that author's work. They remain unimplemented extensions here.
+
+### Visualise the exact state graph
+
+[2swap's Klotski video](https://www.youtube.com/watch?v=YGLNyHd2w10) helped me
+see how exhaustive exploration and graph representations can illuminate a
+concrete problem with simple movement rules. In the opening transcript
+(approximately 0:07–0:42), the creator describes the puzzle's graph structure,
+represents a configuration as a node, and explains that a move leads to another
+node. That connection between a playable puzzle and a mathematical state space
+was an inspiration for this project.
+
+I wanted to visualise the exact push_swap state graph for small inputs:
+each node would represent both stacks, and each edge a permitted operation.
+My question was whether the arrangement of shortest paths to the sorted state
+reveals recurring patterns worth investigating. This would visualise the
+search space itself, rather than animate just one sorting sequence.
+
+I did not have time to implement that visualisation. The existing exact-search
+code and saved reports are separate from this proposed graphical exploration;
+I am not claiming that I found such patterns or derived a pruning rule from
+them. The video supplies the inspiration; applying it to push_swap records my
+own proposed direction. This attribution is based on the supplied opening
+transcript excerpt, not a claimed review of the full transcript.
 
 ### Learn from exact small-state patterns
 
