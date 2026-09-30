@@ -40,6 +40,39 @@ experiment. It is not a claim that no relevant papers exist, that the problem
 forms a new branch of computer science, or that related stack-sorting and
 permutation problems are unstudied.
 
+The question that connected these explorations was simple:
+
+> Given an initial stack A and an empty B, does a sequence of at most K permitted
+> operations exist that leaves A ascending and B empty, counting each of the
+> eleven instructions as one operation?
+
+This is the **decision version** of finding a shortest solution. It captures a
+question I had already been asking; AI helped put it into this explicit form.
+It also identifies the exact problem for which I wanted to find a formal
+treatment, rather than just another practical sorting strategy. Our limited
+search did not identify an academic paper matching these precise rules and
+objective; that does not establish that none exists or that the formulation
+is original.
+
+A shortest solution does exist for every valid finite input: for example,
+repeatedly rotate the smallest remaining element of A to the top and push it
+to B, then push everything back to A. This gives a finite legal solution, and
+the nonempty set of attainable instruction counts has a minimum. The harder
+question is **how to find that minimum, or decide whether it is at most K,
+within an affordable amount of time and memory**.
+
+Wanting an optimal answer led me to breadth-first search. Its shortest-path
+guarantee under unit operation costs then led directly to the practical problem
+of state-space growth, and from there to heuristics, lookahead and pruning.
+Those experiments taught me to separate an exact answer, a safe bound and a
+useful estimate. A valid solution within K operations answers yes; failing to
+find one with a heuristic does not establish no.
+
+This is the thread running through the investigation below. I would find a
+careful study of this exact optimisation problem interesting, but this README
+is a student's record of pursuing the question, not a claim to a new research
+result or a settled complexity classification.
+
 My aim is to connect practical performance with careful reasoning: measure
 complete solutions, understand time and memory costs, and establish guarantees
 where the assumptions permit them. Exact small-state search and safe pruning
