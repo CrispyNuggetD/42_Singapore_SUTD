@@ -67,6 +67,8 @@ blocks, but they do not establish a compliant or efficient final solver.
 - [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
+- [Greedy heuristics and disorder measures](#greedy-heuristics)
+- [Safe pruning bounds](#safe-pruning-bounds)
 - [BFS and state indexing](#bfs-and-state-indexing)
 - [Precomputed BFS tables, pages, heap and stack](#precomputed-bfs-tables)
 - [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
@@ -1327,6 +1329,112 @@ Each algorithm finishes with a `final_moves=N DONE` diagnostic after final
 alignment, including preparation moves. DEBUG 1 replaces the active status line;
 algorithms with no reinsertion trials still print a completion summary.
 
+<a id="greedy-heuristics"></a>
+
+### Heuristics in my greedy solver do not require A*
+
+A heuristic is a way to guide a decision or estimate future work; A* is one
+particular search algorithm that can use one. My local greedy choice is a
+heuristic for the complete sort, even though its immediate insertion cost is
+calculated exactly for the rotation routes it considers. My lookahead searches
+insertion choices depth-first with branch-and-bound. It does not use A*'s
+priority queue.
+
+For a candidate at logical index j in B and its insertion target at index i
+in A, let a and b be the current stack lengths. Define forward and reverse
+rotation distances, with zero reverse distance when already at the top:
+
+```math
+r_A=i,\qquad r_B=j,\qquad
+q_A=(a-i)\bmod a,\qquad q_B=(b-j)\bmod b.
+```
+
+For nonempty stacks, the four-route insertion cost used by
+`greedy_plan_candidate` is:
+
+```math
+c(S,j)=1+\min\left\{
+\max(r_A,r_B),\;
+r_A+q_B,\;
+q_A+r_B,\;
+\max(q_A,q_B)
+\right\}.
+```
+
+The 1 pays for `pa`. Same-direction rotations overlap through `rr` or
+`rrr`, hence the maximum; opposite directions are performed separately,
+hence the sum. If A is empty, its rotation cost is zero instead of evaluating
+a modulo-zero expression. Local greedy chooses the first candidate attaining
+the smallest immediate cost. That does not prove the cheapest complete sort.
+
+For a searched path P containing k insertions, the current horizon score is:
+
+```math
+J(P)=\sum_{t=0}^{k-1} c(S_t,j_t)+
+\begin{cases}
+a_{\mathrm{final}}(S_k), & B_k=\varnothing,\\
+0, & \text{depth cutoff with }B_k\ne\varnothing.
+\end{cases}
+```
+
+Here S_t is the state before insertion t, and a_final is the rotation cost
+to bring A's minimum to the top after B empties. The zero at an unfinished
+cutoff means that future work is ignored, not that it is free. A possible
+extension is to replace that zero by an estimated remaining cost:
+
+```math
+J_{\mathrm{estimate}}(P)
+=\sum_{t=0}^{k-1}c(S_t,j_t)+\widehat h(S_k).
+```
+
+This tail estimate is a possible experiment, not an implemented feature.
+It can rank candidates without being safe for pruning. A greedy completion
+on copied stacks gives an achievable remaining cost (an upper bound on the
+best possible completion), not a lower bound. Such a rollout can provide a
+complete candidate solution, but must not be substituted into the existing
+lower-bound pruning test.
+
+### Why sortedness or entropy does not identify the best insertion
+
+Here, my use of "entropy" refers to the disorder terminology in 42's separate
+group-project subject, not a claim that value-frequency entropy measures order.
+This README concerns my individual project; the group's precise required metric
+and whether it permits a LIS-based substitute have not been verified here.
+A disorder metric and a remaining-operation-cost estimate serve different
+purposes. Inversion count is order-sensitive but is not an operation-distance
+bound here:
+`[1, 2, ..., 499, 0]` has 499 inversions and needs only one `rra`,
+whereas `[1, 0, 2, ..., 499]` has one inversion and needs one `sa`
+(with B empty in both examples).
+
+During reinsertion, A is already circularly ascending. Each candidate has one
+correct insertion gap preserving that invariant, rather than every A position
+being an alternative target. Every valid insertion increases A's size by one
+and decreases B's size by one. Those progress measures cannot distinguish
+candidates. What differs is the resulting stack orientation, B's remaining
+order, future shared-rotation opportunities and final alignment cost.
+
+For my own experiments, a possible circular-LIS disorder score for one
+nonempty stack is:
+
+```math
+D_{\mathrm{cLIS}}(A)=1-\frac{L_{\mathrm{cLIS}}(A)}{|A|}.
+```
+
+Here L_cLIS is the maximum ordinary increasing-subsequence length over all
+rotations of A. This proposed score is zero for a circularly ascending stack.
+It is not a verified substitute for the group subject's required entropy
+function, nor an admissible move-count bound. In my reinsertion phase it stays
+zero before and after every valid insertion, so it cannot by itself rank the
+candidates. It also ignores B and the final orientation of A.
+
+Candidate ordering and pruning serve different purposes. A promising score
+can tell me which branch to examine first; it cannot alone justify discarding
+the others. Keeping only the best few estimated candidates would change the
+search into a heuristic restriction and could discard the winning continuation.
+Reordering also changes which equal-cost path wins under first-minimum ties
+unless I explicitly preserve the original tie order.
+
 ### Optimization technique: branch-and-bound pruning
 
 `greedy_choose_plan_lookahead` starts an exclusive budget of `INT_MAX`.
@@ -1374,6 +1482,64 @@ subtract skipped from coverage to get actual evaluations (unless counters
 saturate). Completion still reports final recorded moves after alignment.
 
 
+
+<a id="safe-pruning-bounds"></a>
+
+### What makes a pruning bound safe?
+
+A lower bound must not exceed the remaining cost of any feasible completion
+for the objective being searched. For a complete sort, every element currently
+in B needs a `pa`, so a simple valid bound is:
+
+```math
+h_{\mathrm{push}}(S)=|B|.
+```
+
+If g moves have already been spent and U is the cost of a known complete
+solution from the same starting state, the branch cannot strictly improve it
+when:
+
+```math
+g+h_{\mathrm{push}}(S)\ge U.
+```
+
+Equality may be pruned when retaining the first minimum, but not when trying
+to enumerate all equally optimal answers. This can eliminate some candidates
+with a guarantee without identifying the best candidate in advance.
+
+My current lookahead budget measures only its finite horizon, plus alignment
+when B empties. It is not necessarily the cost of a complete sorting solution.
+Therefore its matching lower bound before executing a candidate of cost c is:
+
+```math
+L_d=c+\min(d-1,|B|-1).
+```
+
+This is the bound in the preceding implementation section: only insertions
+remaining inside the horizon are counted. Using the full remaining B count
+against the existing horizon budget would compare different objectives and
+could prune incorrectly. A new terminal score would also require reviewing
+the bounds and budget semantics.
+
+Safe pruning preserves the best score for the defined horizon and allowed
+insertion plans; it does not prove a globally shortest push_swap solution.
+For two proven lower bounds on the same remaining objective, taking their
+maximum is safe:
+
+```math
+h(S)=\max\{h_1(S),h_2(S)\}.
+```
+
+Adding bounds needs a separate proof that costs are not counted twice.
+Likewise, summing today's individual insertion costs is not automatically
+a lower bound: later rotations and pushes change all subsequent costs.
+
+Exact small-state tables can inspire pattern-database heuristics, but simply
+deleting most elements and consulting my precomputed sorting table is not
+automatically admissible. A valid abstraction must preserve or relax the
+effects and costs of the real moves; deleting elements changes which positions
+a swap or rotation acts on. This is a possible research direction, not part of
+the current solver.
 
 ### Discarded experiment: execute multiple insertions per search
 
