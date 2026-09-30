@@ -1632,8 +1632,8 @@ In this exchange, "moves" means **candidate insertions**, each including its
 rotations and final `pa`, rather than individual push_swap instructions.
 "Then recurse" means search again from the resulting real state; the search
 itself uses recursion. Depth 8 / execute 6 is my current reported best setting
-in these trials, not a demonstrated universal optimum. No new benchmark logs,
-sample size or runtime measurements accompany this exchange. The earlier
+in repeated live trials, not a demonstrated universal optimum. No new benchmark
+logs, sample size or runtime measurements accompany this exchange. The earlier
 five-input batching experiment remains evidence about that earlier sample,
 not a permanent decision against batching.
 
@@ -1707,6 +1707,98 @@ optimal for the remaining **seven-step objective**. A strictly better seven-step
 suffix would also improve the original eight-step path. Searching eight steps
 again changes the objective by extending the horizon; searching seven does not.
 Equal-cost alternatives may still differ because of tie-breaking.
+
+#### Author's follow-up: why depth eight and execute six?
+
+This is my author-reported rationale from repeated live testing, computational
+limits and intuition, rather than a conclusion from one isolated input. The
+runs described here have not been supplied as a controlled benchmark dataset.
+I changed both lookahead depth and execution count, so I cannot yet separate
+their individual effects or their interaction.
+
+My hypothesis is that the earlier preference for executing one insertion was
+conditional on the tested horizon, input distribution, preparation and code
+version. A shallow horizon can favour an apparently cheap prefix whose larger
+cost lies beyond the cutoff. Increasing depth may change that behaviour enough
+to change which execution batch works best. This is a plausible interaction,
+not proof that insufficient depth caused the earlier outcome or that deeper
+search necessarily makes batching better.
+
+**Historical evidence needs a distinction.** I recall some AI-assisted trials
+being restricted to shallow depth and small inputs. However, the recorded
+batching table above compares depths 7 and 8 on five 100-element inputs, and the
+separate depth-3 example below uses 500 elements. Therefore, the documented
+anti-batching observation cannot be attributed solely to depth-3 searches on
+roughly ten elements. My recollection may concern other trials; it should not
+overwrite the conditions attached to the saved results. The earlier conclusion
+was valid for its sample, but was too narrow to support a universal policy.
+
+**Input size and effective horizon.** Eight insertions are 8% of 100 initial
+elements but only 1.6% of 500. For the reinsertion search, the more relevant
+denominator is the number currently remaining in B, after seed preparation:
+
+```math
+\rho(S)=\frac{\min(d,|B|)}{|B|},
+\qquad |B|>0.
+```
+
+Here d counts insertions, not individual emitted instructions. For example,
+depth 8 covers 4% of the remaining insertions when B has 200 elements.
+This ratio describes horizon coverage, not predictive accuracy or the fraction
+of final operation cost known. More remaining candidates leave a longer
+unexamined continuation and more possible choices, but do not prove that each
+early decision has a larger effect. Input structure and stack orientation
+matter too; equal coverage ratios do not imply equal search quality.
+
+**Why eight?** On my school Intel i7 machine, reported as having 20 cores,
+depth 8 was a practical limit for the workloads I was testing. The search is
+single-threaded, so one logical CPU being fully busy does not use the whole
+machine's parallel capacity. Without pruning, with b candidates and depth d,
+the number of leaf paths for d no greater than b is:
+
+```math
+P(b,d)=\frac{b!}{(b-d)!},
+\qquad
+P(b,d+1)=P(b,d)(b-d).
+```
+
+This explains why one more layer can be costly. Actual runtime depends on
+pruning, candidate ordering and per-node work; the unpruned count does not
+predict the measured slowdown.
+
+**Why six?** I used execution count e = d - 2 as an intuitive compromise:
+keep most of the evaluated plan, then reconsider before executing its final
+two insertions. This leaves two already-evaluated insertions uncommitted:
+
+```math
+r=d-e,\qquad
+(d,e)=(8,6)\Rightarrow r=2,\qquad
+(d,e)=(8,7)\Rightarrow r=1.
+```
+
+Those uncommitted insertions influence selection of the prefix. They are not
+two guaranteed corrective moves, a reserve of computational bandwidth, or a
+proof that a costly path can be escaped. Replanning creates a fresh horizon
+from the new state; it does not undo the six insertions already emitted.
+Executing seven likewise has no special mathematical failure at the seventh
+insertion. A poor commitment could occur earlier, and the old eighth insertion
+has already contributed to the score used to select the seventh.
+
+I suspect execute-seven was less favourable, but cannot presently distinguish
+a remembered result from intuition. Treat this as a hypothesis to test, not a
+reported measurement. Depth-eight/execute-six was a reasonable configuration
+to try under my compute budget, not a derived optimum or a universal
+"d minus two" rule.
+
+The appropriate experiment varies depth and execution count separately on the
+same inputs and seed states, with a fixed code version and deterministic ties.
+For example, compare execution 1, 6, 7 and 8 at depth 8, and compare nearby
+depths at fixed execution 1 or 6. Repeat across input sizes and distributions,
+recording remaining B length, complete move counts, correctness and runtime.
+A small manual grid can answer this; automated hyperparameter tuning is
+optional and does not require a supercomputer. Any tuning still needs a
+separate validation set and an explicit runtime budget.
+
 
 #### Why execute six of eight might help
 
