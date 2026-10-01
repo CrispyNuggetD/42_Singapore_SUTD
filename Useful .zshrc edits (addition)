@@ -120,6 +120,48 @@ setupzshrc() {
   source "${ZDOTDIR:-$HOME}/.zshrc"
 }
 
+# Copy stdin: pwd | clipboard. Redirection (pwd > clipboard) writes a file.
+# Prefer the active desktop's backend; setupclipboard installs Ubuntu dependencies.
+clipboard() {
+  if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
+    command wl-copy "$@"
+  elif [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
+    command xclip -selection clipboard "$@"
+  elif [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
+    command xsel --clipboard --input "$@"
+  elif [[ "$OSTYPE" == darwin* ]] && command -v pbcopy >/dev/null 2>&1; then
+    command pbcopy "$@"
+  else
+    print -u2 -- 'No clipboard backend for this desktop. Run setupclipboard in a graphical terminal.'
+    return 1
+  fi
+}
+
+# Copy the current directory without a trailing newline.
+copypwd() { print -rn -- "$PWD" | clipboard; }
+
+# Explicit installation only; sourcing .zshrc never invokes sudo or apt.
+setupclipboard() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    print -- 'macOS provides pbcopy; no installation needed.'
+    return 0
+  fi
+  command -v apt-get >/dev/null 2>&1 || {
+    print -u2 -- 'Install wl-clipboard (Wayland) or xclip (X11) using your package manager.'
+    return 1
+  }
+  local package=xclip backend=xclip
+  if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+    package=wl-clipboard
+    backend=wl-copy
+  fi
+  if command -v "$backend" >/dev/null 2>&1; then
+    print -- "$backend is already installed. Use: pwd | clipboard"
+    return 0
+  fi
+  command sudo apt-get install "$package"
+}
+
 # Play Bad Apple; download its assets only on the first invocation.
 badapple() {
   if [[ ! -f "$HOME/joke/play.sh" ]]; then
