@@ -12,95 +12,71 @@
 
 #include "push_swap.h"
 
-static int	has_duplicates(const int *count, const int *values);
-static int	is_improper_int(char **str_move, int *count, int sign);
-static int	exceed_int_range(char **str_move, const char *int_limit);
+/* Accumulate negatively so INT_MIN never needs to be negated. */
+static int	read_integer(char **str, int *value)
+{
+	int	negative;
+	int	limit;
+	int	digit;
 
+	negative = (**str == '-');
+	if (**str == '-' || **str == '+')
+		(*str)++;
+	limit = -INT_MAX;
+	if (negative)
+		limit = INT_MIN;
+	*value = 0;
+	if (!ft_isdigit(**str))
+		return (ERROR);
+	while (ft_isdigit(**str))
+	{
+		digit = *(*str)++ - '0';
+		if (*value < limit / 10 || (*value == limit / 10
+				&& digit > -(limit % 10)))
+			return (ERROR);
+		*value = *value * 10 - digit;
+	}
+	if (!negative)
+		*value = -*value;
+	return (SUCCESS);
+}
+
+static int	store_integer(int *values, int count, int value)
+{
+	int	i;
+
+	if (!values)
+		return (SUCCESS);
+	i = 0;
+	while (i < count)
+	{
+		if (values[i++] == value)
+			return (ERROR);
+	}
+	values[count] = value;
+	return (SUCCESS);
+}
+
+/* NULL values validates/counts; otherwise caller provides enough capacity. */
 int	count_int_in_str(char *str, int *count, int *values)
 {
-	char	*str_move;
-	char	*number_start;
-	int		sign;
+	int	value;
 
 	while (*str == ' ')
 		str++;
-	number_start = str;
-	sign = 1;
-	if (*str == '-')
-		sign = -1;
-	if (*str == '+' || *str == '-')
-		str++;
-	if (!ft_isdigit(*str))
+	if (!*str)
 		return (ERROR);
-	str_move = str;
-	if (is_improper_int(&str_move, count, sign))
-		return (ERROR);
-	values[*count - 1] = ft_atoi(number_start);
-	if (has_duplicates(count, values))
-		return (ERROR);
-	if (*str_move && count_int_in_str(str_move, count, values))
-		return (ERROR);
-	return (SUCCESS);
-}
-
-static int	has_duplicates(const int *count, const int *values)
-{
-	int	cur_compare;
-	int	looping_index;
-
-	cur_compare = *count - 1;
-	looping_index = cur_compare - 1;
-	while (looping_index >= 0)
+	while (*str)
 	{
-		if (values[looping_index] == values[cur_compare])
+		if (*count == INT_MAX - 1 || read_integer(&str, &value))
 			return (ERROR);
-		looping_index--;
-	}
-	return (SUCCESS);
-}
-
-static int	is_improper_int(char **str_move, int *count, int sign)
-{
-	const char	*int_limit;
-
-	if (sign > 0)
-		int_limit = "2147483647";
-	else
-		int_limit = "2147483648";
-	if (exceed_int_range(str_move, int_limit))
-		return (ERROR);
-	if (**str_move && **str_move != ' ')
-		return (ERROR);
-	(*count)++;
-	while (**str_move == ' ')
-		(*str_move)++;
-	if (*count > 500)
-		return (ERROR);
-	return (SUCCESS);
-}
-
-static int	exceed_int_range(char **str_move, const char *int_limit)
-{
-	int	digits;
-
-	digits = 0;
-	while (**str_move && ft_isdigit(**str_move))
-	{
-		digits++;
-		if (digits > 10)
+		if (*str && *str != ' ')
 			return (ERROR);
-		(*str_move)++;
-	}
-	if (digits == 10)
-	{
-		while (digits)
-		{
-			if (*(*str_move - digits) < int_limit[10 - digits])
-				break ;
-			else if (*(*str_move - digits) > int_limit[10 - digits])
-				return (ERROR);
-			digits--;
-		}
+		if (store_integer(values, *count, value))
+			return (ERROR);
+		(*count)++;
+		while (*str == ' ')
+			str++;
 	}
 	return (SUCCESS);
 }

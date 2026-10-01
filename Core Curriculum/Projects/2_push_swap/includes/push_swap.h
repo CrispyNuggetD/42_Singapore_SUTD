@@ -15,6 +15,7 @@
 
 # include "../libft/ryker_libft.h"
 # include <stdio.h>
+# include <limits.h>
 # include <unistd.h>
 # include "algorithm.h"
 
@@ -42,6 +43,7 @@
 typedef struct s_circle_buf
 {
 	int	buf[501];
+	int	*large_buf;
 	int	capacity;
 	int	read_idx;
 	int	write_idx;
@@ -53,6 +55,8 @@ typedef struct s_soln
 	int		*ans_len;
 	int		cur;
 	int		step;
+	int		capacity;
+	int		initial_capacity;
 }	t_soln;
 
 /* Normalised ranks; split is the number of values in A. */
@@ -121,14 +125,15 @@ void	debug_total_moves(int total);
 int		print_best_soln(const t_soln *x);
 
 /* parser */
+int		parse_input(char **argv, t_circle_buf *a, t_circle_buf *b);
 int		count_int_in_str(char *str, int *count, int *values);
 int		rank_values(const int count, const int *values, int *ranks);
 
 /* Solution storage and shared sorting helpers. */
-/* Caller ensures answer capacity. NULL x skips recording. */
-void	append_move_to_soln(t_soln *x, char move);
+/* Grow the active answer when needed. NULL x skips recording. */
+int		append_move_to_soln(t_soln *x, char move);
 int		soln_init(t_soln *x, const int soln_num, const int steps_limit);
-/* Start an allocated answer slot and copy the original stacks. */
+/* Start an allocated answer slot; copy inline stacks only (up to 500). */
 int		new_soln_init(t_soln *x, t_circle_buf stacks[2], t_circle_buf *a_ori,
 			t_circle_buf *b_ori);
 int		get_order_top_three(t_circle_buf *a);
@@ -177,7 +182,9 @@ void	brute_swap_at(t_brutestate *state, int a, int b);
 void	brute_rotate_left(t_brutestate *state, int start, int end);
 void	brute_rotate_right(t_brutestate *state, int start, int end);
 
-/* Circular-buffer access. */
+/* Circular-buffer access. Heap storage belongs to the original stacks. */
+int		*cbuf_data(t_circle_buf *stack);
+int		cbuf_allocate_ab(t_circle_buf *a, t_circle_buf *b, int count);
 void	cbuf_init_ab(t_circle_buf *a, t_circle_buf *b, int count);
 int		cbuf_read_at(t_circle_buf *stack, int index, int *value);
 int		cbuf_is_empty(t_circle_buf *stack);

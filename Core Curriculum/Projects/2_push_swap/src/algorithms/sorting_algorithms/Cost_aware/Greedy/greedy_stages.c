@@ -85,8 +85,8 @@ int	greedy_reinsertion(t_soln *x, t_circle_buf stacks[2],
 	const t_algo_config	*config;
 
 	config = algorithm_config(algo);
-	if (!config || greedy_prepare(x, &stacks[A], &stacks[B], config->seed)
-		== ERROR)
+	if (!config || (stacks[A].capacity > 501 && algo != ALGO_THREE_LOCAL)
+		|| greedy_prepare(x, &stacks[A], &stacks[B], config->seed) == ERROR)
 		return (ERROR);
 	debug_pass_start(cbuf_len(&stacks[B]), 1, algo);
 	if (algo == ALGO_LIS_OPENING_ONE && cbuf_len(&stacks[B]) > 0)

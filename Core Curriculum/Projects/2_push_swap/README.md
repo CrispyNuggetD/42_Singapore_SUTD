@@ -135,7 +135,7 @@ looking for the current implementation can begin with [At a glance](#at-a-glance
 readers interested in the investigation can use the [Contents](#contents) and
 the [guide to mathematical claims and evidence](#reading-the-mathematics).
 
-> Implementation snapshot (1 October 2026): small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates are also enabled. Archived chunk and seed experiments live in `backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
+> Implementation snapshot (1 October 2026): small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates run through 500 values. Above 500, the existing nonrecursive three-element-seed greedy solver uses heap-backed circular buffers. Archived chunk and seed experiments live in `backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
 
 > Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
@@ -155,13 +155,13 @@ remaining checks; the old chunk solver's results do not describe current perform
 
 | Status | Feature | Current behavior |
 |---|---|---|
-| 🚧 | Integer input | Parses separate arguments and space-separated strings; includes sign, range, duplicate and 500-value checks. Edge cases still need correction and validation. |
+| ✅ | Integer input | Validates signs, integer range and duplicates; supports grouped arguments, long leading zeroes and more than 500 values. |
 | ✅ | Rank normalisation | Replaces each distinct value with its position in sorted order. |
-| ✅ | Circular-buffer stacks | Stores A and B in fixed arrays with wrapping read/write indices. |
+| ✅ | Circular-buffer stacks | Uses inline arrays through 500 values and allocated arrays above 500, with wrapping indices. |
 | ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
 | ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
 | 🚧 | Archived chunk solver | Rank-interval extraction and restricted BFS replay are preserved in `backups/`; they are not in the active build. |
-| ✅ | Candidate comparison | Five greedy strategies are enabled; inputs of at most 10 also receive an exact candidate. The first shortest generated solution is printed. |
+| ✅ | Candidate comparison | Five greedy strategies run through 500 values; inputs of at most 10 also receive an exact candidate. Above 500 uses the existing three-element-seed local candidate. The first shortest generated solution is printed. |
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`debug/results/`](debug/results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
@@ -198,7 +198,7 @@ remaining checks; the old chunk solver's results do not describe current perform
 - [Description](#description)
 - [Instructions](#instructions)
 - [Rank normalisation](#rank-normalisation)
-- [Radix: considered, not implemented](#why-radix)
+- [Hybrid storage and recursive malloc](#hybrid-storage-and-recursive-malloc)
 - [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
 - [Circular-buffer stacks](#circular-buffer-stacks)
 - [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
@@ -268,8 +268,8 @@ for that investigation, including cases with several equally short solutions.
 
 The main program dispatches inputs of 1–4 values to a precomputed exact table
 and 5–10 values to full-input BFS. With the current skip flag set to zero, it
-also runs the five greedy candidates; larger inputs use those greedy candidates
-alone. The first shortest generated solution wins. Archived chunk experiments
+also runs the five greedy candidates; 11–500 values use those greedy candidates
+alone. Above 500, it runs the existing three-element-seed local candidate. The first shortest generated solution wins. Archived chunk experiments
 and dated benchmarks are distinguished from this active path below.
 
 [↑ Back to top](#top)
@@ -344,7 +344,7 @@ therefore describe the same initial stack, with 3 at the top:
 The shell removes the surrounding quotes before my program receives the
 argument. Quotes group the input; they are not characters that my parser needs
 to strip. I also accept an optional `+` or `-` directly before the digits,
-and leading zeroes within the parser's digit limit:
+and leading zeroes:
 
 ```sh
 ./push_swap +3 -1 02
@@ -352,16 +352,17 @@ and leading zeroes within the parser's digit limit:
 
 Values must be distinct after conversion: `2`, `+2` and `02` represent the
 same integer, so using more than one of them is a duplicate. My intended range
-is signed 32-bit integers, with at most 500 values in total across all groups.
-The current parser also limits each number to ten digits, excluding its sign;
-arbitrarily long strings of leading zeroes are not supported.
+is signed 32-bit integers on my 42 machine. There is no arbitrary 500-value
+input cap. The parser counts tokens before allocating and checks numerical
+range rather than digit count, so long strings of leading zeroes are accepted.
+Input size is still constrained by available memory, the shell/OS argument
+limit, and the implementation's `int` indices (`count + 1` must fit).
 
 Inside a quoted argument, the supported separator is an ordinary ASCII space,
 not general whitespace. Do not use commas, tabs, newlines, decimal points or
 bracketed list notation. Empty arguments, space-only arguments and signs
-without digits are not valid input. The parser still has the malformed-input
-and integer-boundary issues recorded under [current limitations](#current-limitations);
-these examples are not a claim of complete parser validation.
+without digits are not valid input. Integer-boundary, malformed-input and allocation-failure cases are covered by
+the hybrid-storage checks below; those checks are not a complete submission audit.
 
 The bundled Linux checker accepted the grouped and mixed forms in my
 AI-assisted checks as well. For a quoted list, pass the same input to both
@@ -414,72 +415,6 @@ The ordering is preserved, so the same stack moves sort either representation.
 The current implementation compares every value with every other value, taking
 O(n²) time. Small BFS states store normalised ranks as unsigned bytes; the main
 stacks still store integers.
-
-[↑ Back to top](#top)
-
-<a id="why-radix"></a>
-
-## Radix: considered, not implemented
-
-I considered binary radix as a straightforward baseline, but did not implement
-it. After discussing the trade-off with AI, I chose to pursue exact small-state
-search and greedy move-cost strategies instead: my interest was in reducing
-emitted moves and exploring the search problem, beyond obtaining an easy
-baseline. This was a project-specific choice, not a claim that radix is a bad
-sorting algorithm. The explanation below records what I learnt while considering it.
-
-What confused me was: why radix? Why can't I just use insertion sort, merge
-sort, or another divide-and-conquer algo?
-
-Actually, I can. With a normal array, though, I can access whatever position I
-want. In `push_swap`, even if I know exactly where a number belongs, I still
-have to get it there using pushes, swaps and rotations. That movement is what
-costs me. Spending more time thinking about a move can be worth it if I end up
-printing fewer operations.
-
-Insertion sort can translate into rotating to the right position and pushing
-a number in. Merge sort is possible too. I initially wondered whether reverse
-rotation or access to the end of the array breaks it, but that's not really the
-issue: managing the sorted runs and reaching the next element of each run takes
-more work with stacks. Partitioning around a pivot is possible as well; I just
-have to manage those partitions through the allowed operations.
-
-Radix happens to fit these operations quite naturally. First, **ranks let me
-ignore how big the actual numbers are**:
-
-```text
-Values:  -40   900   7   120
-Ranks:     0     3   1     2
-```
-
-I'm basically saying: "I don't care that this number is 900. I care that it's
-the biggest of these four."
-
-Sorting the ranks gives the same order as sorting the original values. But now,
-instead of dealing with negatives and potentially huge numbers, I've got a tidy
-range from `0` to `n - 1`. That keeps the number of binary digits I need to
-process small.
-
-Then radix goes through those ranks **one bit at a time**, starting from the
-rightmost bit. Each pass splits them into two groups: current bit is `0`, or
-current bit is `1`.
-
-So my "two classes" aren't really small indices versus large indices. The groups
-change depending on which bit I'm looking at. On the first pass, for example,
-I'm separating evens from odds.
-
-That's where the two stacks come in handy: I can push one group to B and rotate
-the other group within A. Then I bring B back. Done properly, each group keeps
-its relative order, so the next bit's pass builds on the previous pass instead
-of undoing it. Pushing a group to B reverses its order, and pushing it all back
-reverses it again.
-
-So ranks make the numbers convenient to work with, and radix gives me a
-repetitive process that fits the stack operations. It's a good basic algo
-because it's straightforward and predictable, with O(n log n) stack operations
-for the usual binary passes. That doesn't mean it gives the fewest moves.
-That made it an understandable baseline to consider, but it was not the
-implementation direction I ultimately took.
 
 [↑ Back to top](#top)
 
@@ -706,7 +641,7 @@ R(p)=\sum_{i=0}^{n-1}c_{i}(n-1-i)! \\
 \end{gathered}
 ```
 
-This is a mixed-radix representation: unlike decimal digits, the allowed digit
+This is a variable-base representation: unlike decimal digits, the allowed digit
 range shrinks at each position. Remember $0!=1$; the last digit is always zero.
 
 For $p=(2,0,3,1)$:
@@ -1266,7 +1201,7 @@ that time, not sorting correctness or a subject score.
 As part of my AI-assisted README review, I had the main executable and reverse
 all-path analyser rebuilt successfully. Four small smoke cases (one value, sorted three,
 unsorted three and unsorted five) returned `OK` from the supplied checker.
-The forward analyser currently fails to link against required debug printers.
+The forward analyser was subsequently rebuilt successfully during the hybrid-storage update.
 This limited check is not a final benchmark, Norm audit or full validation.
 
 <a id="current-limitations"></a>
@@ -1277,17 +1212,9 @@ The active solver already separates instructions from diagnostics and has exact
 small-input dispatch. Remaining implementation and validation work includes:
 
 - Record reproducible move-count and runtime benchmarks for the current settings.
-- Review parser safety: a non-space character after digits can leave the count
-  unchanged before an array write; long leading-zero strings hit a digit limit.
-- Check the no-argument/over-limit paths and integer-boundary conversion. A valid
-  single integer is no longer rejected by the old minimum-count check.
-- Review already-sorted inputs: there is no global early exit before all enabled
+- Review already-sorted inputs through 500: there is no global early exit before all enabled
   candidates run, although an exact candidate or the three-value-seed candidate
   can provide a zero-move answer where applicable.
-- Add or verify bounds handling for the fixed `MAX_MOVES_CONSIDERED` answer
-  buffers: `append_move_to_soln` currently writes without checking capacity.
-- Validate allocation-failure cleanup and memory behaviour; normal solution
-  buffers are freed, but I have not established leak-free behaviour in this documentation review.
 - Account for factorial BFS memory at the upper limit and costly lookahead.
 - Update development harnesses to match current candidate counts and descriptor-3
   dumps; see the seed-test note below and random-runner metadata limitation.
@@ -1349,6 +1276,11 @@ new solution. In the direct BFS regression check, 159 inputs produced exactly
 the same move sequences before and after the refactor. That is evidence for
 those cases, not a proof covering every possible input.
 
+**Hybrid-storage update (2026-10-01):** I asked Codex to implement the agreed
+inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
+regression checks. This update includes new code, beyond the earlier mechanical
+BFS refactor; it remains for me to review and understand before submission.
+
 I also use AI as an editorial assistant for this README. I bring my questions,
 scattered notes, conversations, experiments and sometimes rather tangled
 explanations; AI helps collate and paraphrase them into a coherent, readable
@@ -1372,7 +1304,8 @@ mechanical work, testing and documentation.
 `solve()` dispatches the exact candidate first when the input has at most
 `BRUTE_MAX_N` values (currently 10). It then loops from `ALGO_LIS_LOCAL` to
 `ALGO_COUNT`, unless `SKIP_OTHER_ALGO_AFTER_BFS` is enabled (currently 0).
-The enum and `src/algorithm_config.c` define six entries:
+Above 500, it dispatches directly to the existing `ALGO_THREE_LOCAL` strategy before this candidate loop.
+The enum and `src/algorithms/algorithm_config.c` define six entries:
 
 | Enum | Preparation | Search policy |
 | --- | --- | --- |
@@ -1384,7 +1317,7 @@ The enum and `src/algorithm_config.c` define six entries:
 | `ALGO_LIS_OPENING_BATCH` | Circular LIS | Special opening search, execute a batch, then repeated lookahead |
 
 There are six generated candidates for small inputs with the skip flag off,
-and five for larger inputs. Algorithm IDs and generated solution-slot indices
+and five for 11–500 values. Above 500 has one local greedy answer. Algorithm IDs and generated solution-slot indices
 are different when the exact candidate is absent. Three-element seed plus
 lookahead is not an active enum entry.
 
@@ -1493,6 +1426,93 @@ branches can still be enormous. A lower horizon score does not guarantee a
 shorter complete sort. Error/pruning return contracts are described in the
 [branch-and-bound section](#optimization-technique-branch-and-bound-pruning).
 
+
+### Hybrid storage and recursive malloc
+
+**Update (2026-10-01):** 500 is now a solver/storage threshold, not a parser
+rejection limit. I kept the hybrid approach to preserve the current recursive
+search's cheap, independent struct copies:
+
+| Input size | A/B storage | Solver |
+| --- | --- | --- |
+| Up to 500 | Existing `int buf[501]` inside each cbuf | Existing exact/greedy candidates and lookahead |
+| Above 500 | Two `malloc` arrays, each `count + 1` integers | Existing three-element seed + local greedy |
+
+The spare element distinguishes an empty circular buffer from a full one.
+`cbuf_data()` chooses inline or allocated storage. It deliberately does not
+store a pointer to the struct's own inline array: after `copies[A] = *a`, such
+a pointer would still point at the parent's array! Inline copies remain
+independent. Heap buffers belong to the original stacks, and the large solver
+mutates them directly. The candidate-copy entry point rejects large buffers.
+The greedy entry point
+allows them only for `ALGO_THREE_LOCAL`, which does not recurse or use LIS.
+A temporary pair of cbuf structs borrows the two heap arrays for that one pass;
+it copies the final indices back and never frees the arrays.
+
+Wait, why not just malloc everything? Allocating the original stacks once is
+fine. **Allocating two fresh buffers at every simulated branch is the cursed
+implementation here.** A correct heap clone would still copy the values, then
+add two allocations and two frees, plus allocation-failure handling, for every
+branch it simulates. Replacing an embedded array with a pointer does not make
+a struct assignment deep-copy its contents.
+
+For 500 inputs, the configured normal horizon is **8 insertions**, and the
+special opening horizon is **12**, not 500 nested levels. With B still nonempty,
+the depth-one shortcut skips the last simulation, so these searches can have
+7 or 11 simultaneously active pairs of copied stacks. Each pair is roughly
+4 KB, plus path data and helper call frames. The arrays are still copied on
+the stack; there is no claim that this copying is free.
+
+The number of branches matters much more than those modest depths. As an
+illustration, suppose preparation leaves **450 elements in B** and nothing is
+pruned. A depth-d search has `P(450, d)` possible ordered insertion prefixes.
+Two mallocs at every simulated prefix would give approximately
+`2 * sum(P(450, k), k=1..d-1)` allocation calls for one search:
+
+| Horizon | Unpruned depth-d prefixes | Hypothetical allocation calls |
+| --- | ---: | ---: |
+| 8 | 1.58 × 10²¹ | 7.15 × 10¹⁸ |
+| 12 | 5.95 × 10³¹ | 2.72 × 10²⁹ |
+
+These are deliberately unpruned estimates, **not measured call counts**.
+Actual B size and branch-and-bound pruning change the work enormously, and
+searches repeat as batches are executed. More practically, one million
+simulated branches would mean two million mallocs and two million frees in
+that design. I cannot infer the actual branch count from elapsed time alone.
+
+My current full run comparing the enabled algorithms on 500 values already
+takes **about 10 minutes in my own observation**, with simulated stack copies
+on the stack, not heap clones. That is motivation to avoid adding allocator
+work, not a measured stack-versus-heap benchmark. Other parts of the existing
+program already use malloc. A reusable scratch pool per depth could also avoid
+per-branch allocation, but would require a different ownership design; keeping
+the inline path preserves the implementation I currently understand.
+
+The parser now makes two iterative passes: validate/count, then fill allocated
+or inline storage and check duplicates. It does not recurse once per input
+number. Recorded answers also grow with malloc/copy/free when needed;
+`MAX_MOVES_CONSIDERED` is their initial capacity, not a hard 10,000-move limit.
+This occasional output growth is separate from simulated search branches,
+which pass `NULL` for the answer and do not allocate move storage.
+
+Large inputs reuse `ALGO_THREE_LOCAL`: keep three values in A, sort that seed,
+then use the existing cheapest-insertion loop. This avoids the fixed-size LIS
+arrays and recursive lookahead without adding a sorting algorithm. Local
+candidate/target scans can still be expensive; this is not a promise of fast
+sorting for enormous inputs. Rank conversion and duplicate checks remain O(n²).
+Allocation failures report `Error` and clean up; this is not a
+promise to accept inputs beyond available resources.
+
+Validation commands for the current storage change are below. They cover
+small-input regressions, large grouped inputs, instruction replay, answer growth
+and allocation failures. The random-500 full recursive benchmark is separate;
+these tests use sorted 499/500-value cases to check the inline boundary quickly.
+
+```sh
+python3 tests/test_precomputed_sample.py
+python3 tests/test_hybrid_storage.py
+python3 tests/test_hybrid_allocations.py
+```
 
 ### Debug printers and the DEBUG flag
 

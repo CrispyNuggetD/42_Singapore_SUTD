@@ -53,7 +53,8 @@ static int	decode_bfs_data(t_soln *x, const unsigned char *packed)
 			return (SUCCESS);
 		if (move > 11 || x->step >= MAX_MOVES_CONSIDERED)
 			return (ERROR);
-		append_move_to_soln(x, moves[move]);
+		if (append_move_to_soln(x, moves[move]))
+			return (ERROR);
 		i++;
 	}
 	return (ERROR);

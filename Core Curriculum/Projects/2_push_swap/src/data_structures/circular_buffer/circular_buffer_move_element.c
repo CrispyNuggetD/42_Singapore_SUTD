@@ -17,13 +17,13 @@ int	cbuf_rotate(t_circle_buf *stack)
 	int	top_idx;
 	int	insert_idx;
 	int	cbuf_cap;
-	
+
 	if (cbuf_len(stack) < 2)
 		return (SUCCESS);
 	top_idx = stack->read_idx;
 	insert_idx = stack->write_idx;
 	cbuf_cap = stack->capacity;
-	stack->buf[insert_idx] = stack->buf[top_idx];
+	cbuf_data(stack)[insert_idx] = cbuf_data(stack)[top_idx];
 	stack->read_idx = (stack->read_idx + 1) % cbuf_cap;
 	stack->write_idx = (stack->write_idx + 1) % cbuf_cap;
 	return (SUCCESS);
@@ -38,9 +38,9 @@ int	cbuf_rev_rotate(t_circle_buf *stack)
 	if (cbuf_len(stack) < 2)
 		return (SUCCESS);
 	cbuf_cap = stack->capacity;
-	bottom_idx = (stack->write_idx - 1 + cbuf_cap) % cbuf_cap;
-	new_top_idx = (stack->read_idx - 1 + cbuf_cap) % cbuf_cap;
-	stack->buf[new_top_idx] = stack->buf[bottom_idx];
+	bottom_idx = ((size_t)stack->write_idx + cbuf_cap - 1) % cbuf_cap;
+	new_top_idx = ((size_t)stack->read_idx + cbuf_cap - 1) % cbuf_cap;
+	cbuf_data(stack)[new_top_idx] = cbuf_data(stack)[bottom_idx];
 	stack->read_idx = new_top_idx;
 	stack->write_idx = bottom_idx;
 	return (SUCCESS);
@@ -56,8 +56,8 @@ int	cbuf_swap_top(t_circle_buf *stack)
 		return (SKIP);
 	first_idx = stack->read_idx;
 	second_idx = (stack->read_idx + 1) % stack->capacity;
-	temp_storage = stack->buf[first_idx];
-	stack->buf[first_idx] = stack->buf[second_idx];
-	stack->buf[second_idx] = temp_storage;
+	temp_storage = cbuf_data(stack)[first_idx];
+	cbuf_data(stack)[first_idx] = cbuf_data(stack)[second_idx];
+	cbuf_data(stack)[second_idx] = temp_storage;
 	return (SUCCESS);
 }

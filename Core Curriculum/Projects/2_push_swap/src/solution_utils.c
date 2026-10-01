@@ -12,19 +12,44 @@
 
 #include "push_swap.h"
 
-void	append_move_to_soln(t_soln *x, char move)
+/* Only the active answer grows; old candidate buffers are never reused. */
+static int	grow_answer(t_soln *x)
+{
+	char	*answer;
+	int		capacity;
+
+	if (x->capacity == INT_MAX)
+		return (ERROR);
+	capacity = INT_MAX;
+	if (x->capacity <= INT_MAX / 2)
+		capacity = x->capacity * 2;
+	answer = malloc(capacity);
+	if (!answer)
+		return (ERROR);
+	ft_memcpy(answer, x->ans[x->cur], x->step);
+	free(x->ans[x->cur]);
+	x->ans[x->cur] = answer;
+	x->capacity = capacity;
+	return (SUCCESS);
+}
+
+int	append_move_to_soln(t_soln *x, char move)
 {
 	if (x == NULL)
-		return ;
-	x->ans[x->cur][x->step] = move;
-	x->step++;
+		return (SUCCESS);
+	if (x->step == x->capacity && grow_answer(x))
+		return (ERROR);
+	x->ans[x->cur][x->step++] = move;
 	x->ans_len[x->cur] = x->step;
+	return (SUCCESS);
 }
 
 int	soln_init(t_soln *x, const int soln_num, const int steps_limit)
 {
 	int	cur_soln;
 
+	x->initial_capacity = steps_limit;
+	x->capacity = steps_limit;
 	x->cur = -1;
 	x->step = -1;
 	x->ans_len = ft_calloc(soln_num, sizeof(int));
@@ -47,6 +72,9 @@ int	new_soln_init(t_soln *x, t_circle_buf stacks[2],
 {
 	if (!x || !stacks || !a_ori || !b_ori)
 		return (ERROR);
+	if (a_ori->capacity > 501 || b_ori->capacity > 501)
+		return (ERROR);
+	x->capacity = x->initial_capacity;
 	x->cur++;
 	x->ans_len[x->cur] = 0;
 	x->step = 0;

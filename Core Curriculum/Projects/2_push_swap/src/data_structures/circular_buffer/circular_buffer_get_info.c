@@ -23,20 +23,20 @@ int	get_order_top_three(t_circle_buf *a)
 	first_idx = a->read_idx;
 	second_idx = (a->read_idx + 1) % a->capacity;
 	third_idx = (a->read_idx + 2) % a->capacity;
-	if (a->buf[first_idx] > a->buf[second_idx])
+	if (cbuf_data(a)[first_idx] > cbuf_data(a)[second_idx])
 	{
-		if (a->buf[second_idx] > a->buf[third_idx])
+		if (cbuf_data(a)[second_idx] > cbuf_data(a)[third_idx])
 			return (321);
-		else if (a->buf[third_idx] > a->buf[first_idx])
+		else if (cbuf_data(a)[third_idx] > cbuf_data(a)[first_idx])
 			return (213);
 		else
 			return (312);
 	}
 	else
 	{
-		if (a->buf[third_idx] > a->buf[second_idx])
+		if (cbuf_data(a)[third_idx] > cbuf_data(a)[second_idx])
 			return (123);
-		else if (a->buf[first_idx] > a->buf[third_idx])
+		else if (cbuf_data(a)[first_idx] > cbuf_data(a)[third_idx])
 			return (231);
 	}
 	return (132);
@@ -117,6 +117,8 @@ int	get_cbuf_lis(t_circle_buf *stack, char keep_flags[500])
 	t_cbuf_lis	lis;
 
 	lis.count = cbuf_len(stack);
+	if (lis.count > 500)
+		return (ERROR);
 	if (lis.count == 0)
 		return (SUCCESS);
 	lis.start = 0;

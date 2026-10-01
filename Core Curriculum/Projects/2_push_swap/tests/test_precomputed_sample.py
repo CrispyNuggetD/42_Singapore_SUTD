@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 def main():
     subprocess.run(['make', '-s', '-j4'], cwd=ROOT, check=True)
-    source = (ROOT / 'src/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c').read_text()
+    source = (ROOT / 'src/algorithms/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c').read_text()
     actual = bytes(int(h, 16) for h in re.findall(r'0x([0-9A-Fa-f]{2})', source))
     assert actual == packed_data(), 'C initializer differs from reverse BFS'
     total = 0

@@ -14,18 +14,21 @@
 
 int	ra(t_soln *x, t_circle_buf *a)
 {
-	append_move_to_soln(x, RA);
+	if (append_move_to_soln(x, RA))
+		return (ERROR);
 	return (cbuf_rotate(a));
 }
 
 int	rb(t_soln *x, t_circle_buf *b)
 {
-	append_move_to_soln(x, RB);
+	if (append_move_to_soln(x, RB))
+		return (ERROR);
 	return (cbuf_rotate(b));
 }
 
 int	rr(t_soln *x, t_circle_buf *a, t_circle_buf *b)
 {
-	append_move_to_soln(x, RR);
+	if (append_move_to_soln(x, RR))
+		return (ERROR);
 	return (cbuf_rotate(a) | cbuf_rotate(b));
 }

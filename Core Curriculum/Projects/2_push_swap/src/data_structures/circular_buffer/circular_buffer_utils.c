@@ -14,20 +14,22 @@
 
 void	cbuf_init_ab(t_circle_buf *a, t_circle_buf *b, int count)
 {
+	a->large_buf = NULL;
+	b->large_buf = NULL;
 	a->capacity = count + 1;
 	a->read_idx = 0;
 	a->write_idx = count;
 	b->capacity = count + 1;
 	b->read_idx = 0;
-	b->write_idx = 0;	
+	b->write_idx = 0;
 	return ;
 }
 
 /* Read a logical position from the top without changing the stack. */
 int	cbuf_read_at(t_circle_buf *stack, int read_index, int *value)
 {
-	int len;
-	
+	int	len;
+
 	if (!stack || !value)
 		return (ERROR);
 	len = cbuf_len(stack);
@@ -35,14 +37,16 @@ int	cbuf_read_at(t_circle_buf *stack, int read_index, int *value)
 		return (ERROR);
 	if (read_index < 0)
 		read_index += len;
-	*value = stack->buf[(stack->read_idx + read_index) % stack->capacity];
+	read_index = ((size_t)stack->read_idx + read_index) % stack->capacity;
+	*value = cbuf_data(stack)[read_index];
 	return (SUCCESS);
 }
 
 int	cbuf_len(t_circle_buf *stack)
 {
-	return ((stack->write_idx - stack->read_idx + stack->capacity) \
-% stack->capacity);
+	if (stack->write_idx >= stack->read_idx)
+		return (stack->write_idx - stack->read_idx);
+	return (stack->capacity - (stack->read_idx - stack->write_idx));
 }
 
 int	cbuf_is_empty(t_circle_buf *stack)

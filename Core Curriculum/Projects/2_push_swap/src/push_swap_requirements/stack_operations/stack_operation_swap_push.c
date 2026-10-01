@@ -14,19 +14,22 @@
 
 int	sa(t_soln *x, t_circle_buf *a)
 {
-	append_move_to_soln(x, SA);
+	if (append_move_to_soln(x, SA))
+		return (ERROR);
 	return (cbuf_swap_top(a));
 }
 
 int	sb(t_soln *x, t_circle_buf *b)
 {
-	append_move_to_soln(x, SB);
+	if (append_move_to_soln(x, SB))
+		return (ERROR);
 	return (cbuf_swap_top(b));
 }
 
 int	ss(t_soln *x, t_circle_buf *a, t_circle_buf *b)
 {
-	append_move_to_soln(x, SS);
+	if (append_move_to_soln(x, SS))
+		return (ERROR);
 	return (cbuf_swap_top(a) | cbuf_swap_top(b));
 }
 
@@ -34,7 +37,8 @@ int	pa(t_soln *x, t_circle_buf *a, t_circle_buf *b)
 {
 	int	read_number;
 
-	append_move_to_soln(x, PA);
+	if (append_move_to_soln(x, PA))
+		return (ERROR);
 	if (cbuf_pop_top(b, &read_number) == ERROR)
 		return (ERROR);
 	return (cbuf_push_top(a, read_number));
@@ -44,7 +48,8 @@ int	pb(t_soln *x, t_circle_buf *a, t_circle_buf *b)
 {
 	int	read_number;
 
-	append_move_to_soln(x, PB);
+	if (append_move_to_soln(x, PB))
+		return (ERROR);
 	if (cbuf_pop_top(a, &read_number) == ERROR)
 		return (ERROR);
 	return (cbuf_push_top(b, read_number));

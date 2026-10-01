@@ -28,10 +28,12 @@ OPERATIONS_DIR = push_swap_requirements/stack_operations
 SRCS		= main_push_swap.c \
 			  algorithms/algorithm_config.c \
 			  $(PARSING_DIR)/parse_sort_input.c \
+			  $(PARSING_DIR)/input_storage.c \
 			  $(OPERATIONS_DIR)/stack_operation_swap_push.c \
 			  $(OPERATIONS_DIR)/stack_operation_rotate.c \
 			  $(OPERATIONS_DIR)/stack_operation_reverse_rotate.c \
 			  $(CBUF_DIR)/circular_buffer_utils.c \
+			  $(CBUF_DIR)/circular_buffer_storage.c \
 			  $(CBUF_DIR)/circular_buffer_alignment.c \
 			  $(CBUF_DIR)/circular_buffer_get_info.c \
 			  $(CBUF_DIR)/circular_buffer_move_element.c \
@@ -99,6 +101,7 @@ ANALYSIS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
 	$(SRC_DIR)/$(BFS_DIR)/bfs_search.c \
 	$(SRC_DIR)/$(BFS_DIR)/bfs_state_representation.c \
 	$(SRC_DIR)/$(CBUF_DIR)/circular_buffer_utils.c \
+	$(SRC_DIR)/$(CBUF_DIR)/circular_buffer_storage.c \
 	$(addprefix $(SRC_DIR)/$(BFS_DIR)/,$(BFS_SRCS))
 ALL_PATHS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \
 	$(addprefix $(SRC_DIR)/$(BFS_DIR)/,$(BFS_SRCS))
