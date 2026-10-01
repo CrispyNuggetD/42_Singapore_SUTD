@@ -44,7 +44,7 @@ even NP-completeness. These were questions to investigate, not complexity
 classifications I established. I had not found a standard treatment of this
 exact eleven-operation problem comparable to the textbook treatment of familiar
 sorting algorithms. That sense of unfamiliar territory encouraged me to
-experiment. It is not a claim that no relevant papers exist, that the problem
+experiment. I am not claiming that no relevant papers exist, that the problem
 forms a new branch of computer science, or that related stack-sorting and
 permutation problems are unstudied.
 
@@ -67,7 +67,7 @@ optimality theorem claimed or proved by the article.
 My original plan was to compare that five-element strategy against exhaustive
 BFS across all 120 permutations, then use the exact answers to develop a
 stronger hard-coded five-element solver. That ambition helped lead me to BFS
-and the wider optimality questions below. It is not a claim that I completed
+and the wider optimality questions below. I am not claiming that I completed
 that specific comparative study: the current precomputed table covers 1–4
 elements, while five elements use runtime BFS.
 
@@ -110,7 +110,7 @@ find one with a heuristic does not establish no.
 
 This is the thread running through the investigation below. I would find a
 careful study of this exact optimisation problem interesting, but this README
-is a student's record of pursuing the question, not a claim to a new research
+is my record of pursuing the question as a student, not a claim to a new research
 result or a settled complexity classification.
 
 My aim is to connect practical performance with careful reasoning: measure
@@ -239,16 +239,16 @@ for the same objective. The conditional optimal-suffix argument is a valid
 property of exact finite-horizon optimisation, but it does not rank policies
 that repeatedly search different, moving horizons.
 
-These are explanatory formulations of existing mechanisms and standard
-principles, developed in discussion with AI. The lookahead/batching notation
-is not presented as a newly discovered theorem or as proof of a superior
-algorithm. Formalising a choice after experimentation can clarify what it
+I worked through these explanatory formulations of existing mechanisms and standard
+principles in discussion with AI. I use the lookahead/batching notation
+to describe the algorithms, not to claim a newly discovered theorem or prove
+that one is superior. Formalising a choice after experimentation can clarify what it
 does and what must be tested; it does not retroactively prove why a trial won.
 
-**Why pursue a choice without a guarantee?** A plausible mechanism, an
-affordable computation budget and promising observations justify an experiment.
+**Why did I pursue a choice without a guarantee?** A plausible mechanism, an
+affordable computation budget and promising observations gave me a reason to experiment.
 Here, partial commitment preserves part of a jointly evaluated plan while
-allowing later reconsideration. That trade-off motivates testing it; correctness
+allowing later reconsideration. That trade-off motivated me to test it; correctness
 comes from valid stack operations and checking the result, while any claim of
 better move counts needs comparative evidence. The rationale is worth testing
 even if no setting can be shown to win universally.
@@ -453,7 +453,7 @@ For my 500-number input:
 \end{gathered}
 ```
 
-So yes, there must be an LIS **or** LDS of at least 23 elements. The catch is
+So there must be an LIS **or** LDS of at least 23 elements. The catch is
 that I don't get to choose which one the theorem guarantees. A completely
 descending input has
 
@@ -840,7 +840,7 @@ from this active full-input implementation.
 
 ## Precomputed BFS tables, pages, heap and stack
 
-Study idea, now demonstrated by the n=1..4 sample below: generate shortest
+My study idea, now demonstrated by the n=1..4 sample below, was to generate shortest
 solutions offline with reverse BFS, then use Lehmer ranks to look them up at runtime.
 The runtime solver would no longer need the BFS queue and visited table, but
 generating the data still needs search time and memory.
@@ -998,7 +998,7 @@ data + (starts[count] + lehmer_rank) * 3
 This needs a `const unsigned char *`, not `int **`: the pointer identifies the
 first packed byte of one contiguous solution. A single `int` cannot hold an
 arbitrarily long solution. `x->ans` remains my existing `char **`, with one
-allocated answer buffer per algorithm candidate. Do not replace one of those
+allocated answer buffer per algorithm candidate. I cannot replace one of those
 owned buffers with a pointer into static data: the representations differ, and
 the cleanup code frees those buffers.
 
@@ -1072,7 +1072,7 @@ within 91,485,206 data bytes under this same bound. The sample does **not**
 generate these larger tables.
 
 For n=11, even spending the whole 500 MB on that size permits only 12 whole
-bytes per fixed-width entry: at most 23 moves plus the terminator. We would
+bytes per fixed-width entry: at most 23 moves plus the terminator. I would
 need to establish that every shortest answer fits, or measure the total size
 of a variable-length layout including its offsets. The conservative bound
 alone cannot decide that. For n=12, a fixed-width table permits only one byte
@@ -1094,7 +1094,7 @@ automatically makes it acceptable. A function-local `static const` table avoids
 global scope, but its initializer still has to fit the Norm's formatting and
 function-length rules. Multiline macros or obfuscation are not a workaround.
 Passing norminette alone does not establish compliance with every review rule.
-The documents checked did not explicitly ban precomputed solutions or specify
+The documents I checked with AI did not explicitly ban precomputed solutions or specify
 a table-size limit; that is not a guarantee that any generated table is suitable
 for submission.
 
@@ -1209,7 +1209,7 @@ This limited check is not a final benchmark, Norm audit or full validation.
 ### Current limitations
 
 The active solver already separates instructions from diagnostics and has exact
-small-input dispatch. Remaining implementation and validation work includes:
+small-input dispatch. I still need to:
 
 - Record reproducible move-count and runtime benchmarks for the current settings.
 - Review already-sorted inputs through 500: there is no global early exit before all enabled
@@ -1231,15 +1231,15 @@ small-input dispatch. Remaining implementation and validation work includes:
 - Jamie Dawson. [*Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a), 11 May 2019. An early foundation for my understanding of hard-coded small cases and the five-element optimality question described in the preface.
 - Ulysse Gerkens. [*Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0), 1 August 2023. A related implementation article that links to Dawson's small-case explanation; its reported performance belongs to that author's implementation.
 
-- [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. This is an acknowledgement of influence, not a claim that I implemented its beam search or Iterated Greedy methods.
+- [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. It influenced my thinking, but I did not implement its beam search or Iterated Greedy methods.
 
 - Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein. [*Introduction to Algorithms*, third edition](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/). MIT Press, 2009. ISBN 978-0-262-03384-8. A major reading reference during my time at 42 and a substantial help to this project; see the [preface](#preface).
 
-- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. Useful inspiration for testing lookahead in greedy reinsertion; those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve this solver.
-- [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. Related reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
+- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. I found this useful inspiration for testing lookahead in greedy reinsertion, but those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve my solver.
+- [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. I used this as a reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
 - [Working notes](notes.md) and [saved study reports](debug/results/) document the investigation and examples.
 - [Bundled libft documentation](libft/README.md) describes the shared library.
-- [Pipex README](../2_pipex/README.md) provides the structure used here: feature status, design explanations, reproducible commands and explicit limitations.
+- I followed the structure of my [Pipex README](../2_pipex/README.md): feature status, design explanations, reproducible commands and explicit limitations.
 - Harvard CS50 lectures by David J. Malan, peer discussions and debugging references contributed to the broader learning process recorded in the previous README.
 
 ### Use of AI
@@ -1352,9 +1352,9 @@ They are not built; the separate full-input BFS under `src/` is built.
 
 **Historical regression harness:** `tests/test_seed_candidates.py` still expects
 three candidates and reads their dump from stderr. The current solver has more
-candidates and writes that dump to descriptor 3. Its old coverage (permutations
-2–5 and selected larger inputs) must not be presented as a passing regression
-of today's configuration until the harness is updated and rerun.
+candidates and writes that dump to descriptor 3. I cannot count its old coverage (permutations
+2–5 and selected larger inputs) as a passing regression
+of today's configuration until I update and rerun the harness.
 
 
 ## Greedy lookahead: who owns each plan?
@@ -1372,8 +1372,8 @@ a score; the pruning described below discards a branch when a valid lower bound
 cannot improve the current budget. The shared motivation is to spend search
 effort usefully, but the mechanisms and guarantees differ. I did not implement
 the referenced solver's beam search or Iterated Greedy destruction/reconstruction.
-This attribution records conceptual influence, not a direct implementation of
-that author's method.
+I am crediting the influence on my thinking, rather than claiming a direct
+implementation of that author's method.
 
 
 Depth counts complete B-to-A insertions, including rotations and `pa`, not
@@ -1449,7 +1449,7 @@ allows them only for `ALGO_THREE_LOCAL`, which does not recurse or use LIS.
 A temporary pair of cbuf structs borrows the two heap arrays for that one pass;
 it copies the final indices back and never frees the arrays.
 
-Wait, why not just malloc everything? Allocating the original stacks once is
+Why didn't I just malloc everything? Allocating the original stacks once is
 fine. **Allocating two fresh buffers at every simulated branch is the cursed
 implementation here.** A correct heap clone would still copy the values, then
 add two allocations and two frees, plus allocation-failure handling, for every
@@ -1461,7 +1461,7 @@ special opening horizon is **12**, not 500 nested levels. With B still nonempty,
 the depth-one shortcut skips the last simulation, so these searches can have
 7 or 11 simultaneously active pairs of copied stacks. Each pair is roughly
 4 KB, plus path data and helper call frames. The arrays are still copied on
-the stack; there is no claim that this copying is free.
+the stack; I am not claiming that this copying is free.
 
 The number of branches matters much more than those modest depths. As an
 illustration, suppose preparation leaves **450 elements in B** and nothing is
@@ -1503,7 +1503,7 @@ sorting for enormous inputs. Rank conversion and duplicate checks remain O(n²).
 Allocation failures report `Error` and clean up; this is not a
 promise to accept inputs beyond available resources.
 
-Validation commands for the current storage change are below. They cover
+I use the commands below to validate the current storage change. They cover
 small-input regressions, large grouped inputs, instruction replay, answer growth
 and allocation failures. The random-500 full recursive benchmark is separate;
 these tests use sorted 499/500-value cases to check the inline boundary quickly.
@@ -1866,7 +1866,7 @@ about 6.8x faster in its paired test, but also had a worse average move count.
 The depth-eight/execute-three variant averaged two more moves than the
 depth-seven/execute-one baseline. Timing ratios are experiment-specific.
 
-**Decision at the time: retain execution of one insertion after multi-depth evaluation.**
+**My decision at the time was to retain execution of one insertion after multi-depth evaluation.**
 It produced the lowest average move count in this small sample. Batching was
 initially discarded as the default strategy, although it sometimes won on individual
 inputs and reduced search time; these results do not prove one-at-a-time
@@ -1879,7 +1879,7 @@ work beyond the depth cutoff, so neither guarantees the best complete sort.
 
 ## Discussion / discoveries
 
-**Evidence status:** The discussion below separates reported experiments,
+**Evidence status:** In the discussion below, I separate recorded experiments,
 possible explanations and structural properties of recursive planning. Its
 horizon equations specify how the variants differ; they do not prove which
 variant produces the fewest complete sorting operations. See the
@@ -1918,10 +1918,10 @@ with my friend; AI helped draft the analysis and diagram below.*
 In this exchange, "moves" means **candidate insertions**, each including its
 rotations and final `pa`, rather than individual push_swap instructions.
 "Then recurse" means search again from the resulting real state; the search
-itself uses recursion. Depth 8 / execute 6 is my current reported best setting
-in repeated live trials, not a demonstrated universal optimum. No new benchmark
-logs, sample size or runtime measurements accompany this exchange. The earlier
-five-input batching experiment remains evidence about that earlier sample,
+itself uses recursion. Depth 8 / execute 6 is the best setting I currently report
+from my repeated live trials, not a demonstrated universal optimum.
+I did not include new benchmark logs, a sample size or runtime measurements
+with this exchange. The earlier five-input batching experiment remains evidence about that earlier sample,
 not a permanent decision against batching.
 
 *I used AI to generate this conceptual diagram of the planning choices.
@@ -1949,9 +1949,9 @@ flowchart TD
 | The horizon was still too short | Plausible mechanism: costs beyond the cutoff can reverse the preference | Increasing depth again need not fix it; no useful depth threshold has been established |
 | Executing one insertion causes harmful plan switching | Plausible hypothesis worth logging | A changed plan is not itself wasted work or proof of harm |
 | Full commitment prevents correction | Correct that it delays replanning beyond the old horizon | It might preserve a good sequence instead; neither policy always wins |
-| Depth 8 / execute 6 is a useful compromise | Supported by my reported observations | Needs paired, repeatable tests before generalising |
+| Depth 8 / execute 6 is a useful compromise | Supported by the observations I described | Needs paired, repeatable tests before generalising |
 
-My friend's "irrelevance" suggestion is better interpreted here as a mismatch
+I interpret my friend's "irrelevance" suggestion as a mismatch
 between the score and the goal. The extra simulated costs are real, relevant
 operation costs. However, they cover only a prefix and can change which path
 looks best while omitting the expensive consequence just beyond the cutoff.
@@ -2011,10 +2011,10 @@ to change which execution batch works best. This is a plausible interaction,
 not proof that insufficient depth caused the earlier outcome or that deeper
 search necessarily makes batching better.
 
-**Historical evidence needs a distinction.** Opening-only lookahead followed
+**I need to distinguish two earlier experiments.** Opening-only lookahead followed
 by local greedy is different from repeatedly replanning and executing one
-insertion. The separate school AI conversation is not available here, so this
-README cannot establish which early experiment prompted my decision. The
+insertion. I have not included the separate school AI conversation here, so I
+cannot establish from these records which early experiment prompted my decision. The
 recorded batching table compares depths 7 and 8 on five 100-element inputs;
 the separate depth-3 example uses 500 elements. Neither tests depth-eight/
 execute-six. These records describe particular samples, not a contradiction of
@@ -2037,7 +2037,7 @@ unexamined continuation and more possible choices, but do not prove that each
 early decision has a larger effect. Input structure and stack orientation
 matter too; equal coverage ratios do not imply equal search quality.
 
-**Why eight?** On my school Intel i7 machine, reported as having 20 cores,
+**Why eight?** On my school Intel i7 machine, which I described as having 20 cores,
 depth 8 was a practical limit for the workloads I was testing. The search is
 single-threaded, so one logical CPU being fully busy does not use the whole
 machine's parallel capacity. Without pruning, with b candidates and depth d,
@@ -2073,15 +2073,15 @@ insertion. A poor commitment could occur earlier, and the old eighth insertion
 has already contributed to the score used to select the seventh.
 
 I suspect execute-seven was less favourable, but cannot presently distinguish
-a remembered result from intuition. Treat this as a hypothesis to test, not a
-reported measurement. Depth-eight/execute-six was a reasonable configuration
+a remembered result from intuition. I therefore treat this as a hypothesis to test,
+not a measurement I can report. Depth-eight/execute-six was a reasonable configuration
 to try under my compute budget, not a derived optimum or a universal
 "d minus two" rule.
 
-The appropriate experiment varies depth and execution count separately on the
+To test this, I would vary depth and execution count separately on the
 same inputs and seed states, with a fixed code version and deterministic ties.
-For example, compare execution 1, 6, 7 and 8 at depth 8, and compare nearby
-depths at fixed execution 1 or 6. Repeat across input sizes and distributions,
+For example, I could compare execution 1, 6, 7 and 8 at depth 8, and compare nearby
+depths at fixed execution 1 or 6. I would repeat this across input sizes and distributions,
 recording remaining B length, complete move counts, correctness and runtime.
 A small manual grid can answer this; automated hyperparameter tuning is
 optional and does not require a supercomputer. Any tuning still needs a
@@ -2197,11 +2197,12 @@ not optimal. Equal-score alternatives can still change under tie-breaking.
 The fresh **eight-step objective** is different. This distinction explains why
 the suffix argument does not prove that repeated execute-one must win.
 
-A focused test holds inputs, preparation, tie rules and code fixed while
-varying execution length at depth eight. Record correctness, complete move
+For a focused test, I would hold inputs, preparation, tie rules and code fixed while
+varying execution length at depth eight, and record correctness, complete move
 count, runtime and search work. My repeated live tests motivate partial
 commitment, but the best execution fraction and the cause of any improvement
-remain empirical questions. This rationale changes no solver code.
+remain empirical questions. I am explaining the rationale here, not introducing
+a solver change.
 
 
 
@@ -2308,7 +2309,7 @@ do not prove that deeper lookahead always loses, or rule out every possible bug.
 
 Branch-and-bound pruning reproduced all three existing algorithms' original
 move sequences exactly on this input. The pruned run took about 2.13 seconds on
-this machine. The latest depth-3 comparison I reported was approximately
+the machine used for that test. The latest depth-3 comparison I reported was approximately
 **20 minutes without pruning versus 2 seconds with pruning** (roughly 600x).
 These are approximate observations for that test, not a controlled benchmark
 or a guaranteed speedup on other inputs or machines.
@@ -2376,9 +2377,9 @@ and runtime needs a stated budget. Invalid runs and timeouts must be recorded
 rather than silently omitted. Different input sizes should be reported
 separately, or their contribution to a combined objective chosen explicitly.
 
-A fair study would freeze the code, inputs, seeds and tie rules; compare depth
+For a fair study, I would freeze the code, inputs, seeds and tie rules; compare depth
 and execution count separately as well as jointly; then evaluate selected
-settings on held-out inputs. Record move-count spread, worst observed count and
+settings on held-out inputs. I would record move-count spread, worst observed count and
 runtime alongside the mean. Parallel trials need isolated builds if parameters
 are compiled in, and CPU contention must not distort timing comparisons.
 
@@ -2434,7 +2435,7 @@ network learns through evolution using left, right and swap controls. It reports
 sorting by generation eight, with behaviour identified as gnome sort. Later
 experiments add stopping, returning and longer-distance swapping, ultimately
 producing behaviour identified as comb sort. These are the creator's reported
-demonstrations, not results independently reproduced by this project.
+demonstrations; I have not independently reproduced them.
 
 **My proposed connection, not an implementation:** investigate whether a model
 could use a representation of the two stacks to choose the next permitted
@@ -2544,9 +2545,9 @@ shortest paths can produce different frequencies because of ties.
 Ordering candidates within each BFS depth preserves its layer order; exploring
 deeper states early changes that policy. Permanently dropping uncommon moves
 can lose completeness or optimality. Small-state move frequencies may also
-transfer poorly to large inputs or to insertion-level decisions. These ideas
-therefore need controlled comparisons against the existing search, rather than
-being presented as established improvements.
+transfer poorly to large inputs or to insertion-level decisions. I would
+therefore need to compare these ideas with the existing search under controlled
+conditions before claiming that they improve it.
 
 [↑ Back to top](#top)
 
@@ -2613,8 +2614,8 @@ and record its hash. Resuming after rebuilding is allowed, so summary averages
 may span multiple binaries (listed in the summary). The current metadata parser
 still recognises the old `LOOKAHEAD_DEPTH` / `EXECUTE_DEPTH` macro names and
 `DEBUG`; it does not capture today's per-size and opening depth/limit macros.
-Do not treat its settings table as a complete configuration record until that
-parser is updated.
+I cannot use its settings table as a complete configuration record until I
+update that parser.
 
 New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
 The seed, hash and resume metadata are ordinary readable table rows; no hidden
