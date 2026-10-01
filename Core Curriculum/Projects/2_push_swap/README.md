@@ -137,7 +137,7 @@ the [guide to mathematical claims and evidence](#reading-the-mathematics).
 
 > Current implementation: small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates run through 500 values. Above 500, the existing nonrecursive three-element-seed greedy solver uses heap-backed circular buffers. Archived chunk and seed experiments live in `../backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
 
-> Portability: I fixed the bundled formatter's shared `va_list` handling with AI assistance, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
+> Portability: With AI assistance, I fixed a bug in the bundled formatter's shared `va_list` handling that caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
 
 <a id="at-a-glance"></a>
@@ -362,7 +362,7 @@ no test tools or downloaded checker built both programs, did not relink on
 repeated `make`, preserved executables with `clean`, rebuilt with `re`, and
 removed them with `fclean`.
 
-These concrete inputs passed the checks below. For valid unsorted cases I
+The table below records the inputs I checked and their results. For valid unsorted cases I
 saved the solver's moves and replayed them with both my checker and the supplied
 Linux checker; stdout contained only moves and stderr was empty.
 
@@ -397,8 +397,9 @@ checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620
 
 The three counts average 4907.67 moves; the largest, 4969, is below the strict
 5500 boundary. These were sorting and move-count checks, not additional
-500-value Valgrind runs. The memory checks listed above remain the memory
-evidence. Generated benchmark reports stay local and are ignored by Git.
+500-value Valgrind runs. I rely on the separate memory checks listed above for
+evidence about memory safety. Generated benchmark reports stay local and are
+ignored by Git.
 
 #### Runtime and test-machine context
 
@@ -450,7 +451,7 @@ after the solver; parallel compilation is separate from sorting runtime.
 These details make the times useful as a rough replication reference, not a
 promise of identical runtime on another machine.
 
-The updated Python runner now records candidate wall and CPU times plus a
+My Python runner records candidate wall and CPU times plus a
 process-wide peak RSS sample at candidate completion, without changing the
 submission executable. This peak can include earlier candidates' memory usage;
 it is not memory owned by the named candidate. To collect new comparable
@@ -482,7 +483,7 @@ limit 10, and opening depth 12 with batch execution limit 5.
 | Circular LIS + opening-one lookahead | 510.88 | 34.277833 s | 34.275884 s | 5 |
 | Circular LIS + opening-batch lookahead | 521.21 | 36.103273 s | 36.101130 s | 5 |
 
-This makes the tradeoff much clearer than the earlier total-runtime measurements.
+This helped me see the tradeoff more clearly than the earlier total-runtime measurements.
 The plain LIS local candidate averaged about 40 more moves than the winning
 answer, but took roughly four milliseconds. Every candidate's move count stayed
 below 700 in this sample. Ordinary LIS lookahead had the lowest average move
@@ -556,7 +557,7 @@ one-stack calls. I pass `NULL` as the solution pointer because
 That small convention saved me from duplicating all eleven operations.
 
 I did need to handle one difference: my `pa()` and `pb()` wrappers report an
-error if they pop an empty source. For checker, those are valid no-ops. I check
+error if they pop an empty source. In my checker, those are valid no-ops. I check
 B before `pa` and A before `pb`, returning success immediately when the source
 is empty. Swaps and rotations already handle stacks with fewer than two values.
 
@@ -604,15 +605,14 @@ rank check into shared code. It also ran 107 functional checks, including 84
 random instruction-stream comparisons with the reference checker, plus four
 Valgrind checks covering valid execution, invalid moves, invalid arguments and
 heap storage. Those checks passed, as did the bonus build and Norm checks.
-They are evidence for this implementation, not a promise that every possible
-input has been tested. Bonus assessment still depends on the mandatory part
+These checks give me evidence about the cases tested; they do not mean I have
+tested every possible input. Bonus assessment still depends on the mandatory part
 meeting all required benchmarks at the highest score.
 
 ### Accepted input formats
 
-My parser (`src/parsing_and_ranking_input/parse_sort_input.c`)
-reads arguments from left to right and
-can read several space-separated integers from each argument. These forms
+My parser (`src/parsing_and_ranking_input/parse_sort_input.c`) reads arguments
+from left to right and can read several space-separated integers from each argument. These forms
 therefore describe the same initial stack, with 3 at the top:
 
 | Form | Example |
@@ -1486,8 +1486,8 @@ unsorted three and unsorted five) returned `OK` from the supplied checker.
 The forward analyser was subsequently rebuilt successfully during the hybrid-storage update.
 This limited check is not a final benchmark, Norm audit or full validation.
 
-I now check the ranks after parsing
-and validation, before allocating answer buffers or running any candidates.
+After parsing and validation, I check the ranks before allocating answer
+buffers or running any candidates.
 If each logical position `i` contains rank `i`, the input is already sorted.
 I just walk through A once: O(n), with the same check for inline and heap
 buffers. There is nothing to sort, so I print nothing and use the normal cleanup
@@ -1565,7 +1565,7 @@ those cases, not a proof covering every possible input.
 
 For hybrid storage, I asked Codex to implement the agreed
 inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
-regression checks. This update includes new code, beyond the earlier mechanical
+regression checks. This work includes new code, beyond the earlier mechanical
 BFS refactor; it remains for me to review and understand before submission.
 
 I also use AI as an editorial assistant for this README. I bring my questions,
@@ -1737,16 +1737,17 @@ store a pointer to the struct's own inline array: after `copies[A] = *a`, such
 a pointer would still point at the parent's array! Inline copies remain
 independent. Heap buffers belong to the original stacks, and the large solver
 mutates them directly. The candidate-copy entry point rejects large buffers.
-The greedy entry point
-allows them only for `ALGO_THREE_LOCAL`, which does not recurse or use LIS.
+The greedy entry point allows them only for `ALGO_THREE_LOCAL`, which does
+not recurse or use LIS.
 A temporary pair of cbuf structs borrows the two heap arrays for that one pass;
 it copies the final indices back and never frees the arrays.
 
 I considered using malloc for everything. Allocating the original stacks once is
 fine; what I wanted to avoid was allocating two fresh buffers at every simulated
 branch. A correct heap clone would still copy the values, then add two allocations
-and two frees, plus allocation-failure handling, for every branch it simulates. Replacing an embedded array with a pointer does not make
-a struct assignment deep-copy its contents.
+and two frees, plus allocation-failure handling, for every branch it simulates.
+Replacing an embedded array with a pointer does not make a struct assignment
+deep-copy its contents.
 
 For 500 inputs, the configured normal horizon is **7 insertions**, and the
 special opening horizon is **12**, not 500 nested levels. With B still nonempty,
@@ -1795,7 +1796,7 @@ sorting for enormous inputs. Rank conversion and duplicate checks remain O(n²).
 Allocation failures report `Error` and clean up; this is not a
 promise to accept inputs beyond available resources.
 
-I use the commands below to validate the current storage change. They cover
+I use the commands below to check my hybrid-storage implementation. They cover
 small-input regressions, large grouped inputs, instruction replay, answer growth
 and allocation failures. The random-500 full recursive benchmark is separate;
 these tests use sorted 499/500-value cases to check the inline boundary quickly.
@@ -2729,8 +2730,8 @@ experiments add stopping, returning and longer-distance swapping, ultimately
 producing behaviour identified as comb sort. These are the creator's reported
 demonstrations; I have not independently reproduced them.
 
-**My proposed connection, not an implementation:** investigate whether a model
-could use a representation of the two stacks to choose the next permitted
+**My proposed connection, not an implementation:** I would like to investigate
+whether a model could use a representation of the two stacks to choose the next permitted
 push_swap operation, with learning or evolutionary selection guided by a chosen
 performance objective. This records my earlier idea; the video's additional
 controls are not extra operations available in push_swap. Evolutionary search,
@@ -2807,8 +2808,8 @@ I did not have time to implement that visualisation. The existing exact-search
 code and saved reports are separate from this proposed graphical exploration;
 I am not claiming that I found such patterns or derived a pruning rule from
 them. The video supplies the inspiration; applying it to push_swap records my
-own proposed direction. I supplied the opening transcript screenshot for this
-AI-assisted write-up; I am citing that excerpt here, not claiming to have
+own proposed direction. I used a screenshot of the opening transcript when
+discussing this with AI. I am citing that excerpt, rather than claiming to have
 reviewed the full transcript for this explanation.
 
 ### Learn from exact small-state patterns
@@ -2863,7 +2864,7 @@ No C solver changes or generator executable are required by this runner.
 ./push_swap_tester.sh -n 100 --size 100 --seed 42
 ```
 
-The runner prints its session directory and summary path. Resume using either:
+The runner prints its session directory and summary path. To resume a session:
 
 ```bash
 # Replace this example directory with the session path printed by your run.
