@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/01 19:11:02 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/02 00:52:38 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,26 +19,31 @@
 # include <unistd.h>
 # include "algorithm.h"
 
-# define MAX_MOVES_CONSIDERED				10000
+# define INITIAL_SOLUTION_CAPACITY				10000
 # define BRUTE_MAX_N						10
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
 # define SKIP_OTHER_ALGO_AFTER_BFS			0
 
+/* 1 includes both opening-lookahead variants; 0 skips them. */
+# define ENABLE_OPENING_LOOKAHEAD 			1
+
 /* Search depth counts insertions and must be at least one. */
 # define LOOKAHEAD_DEPTH_100					12
-# define LOOKAHEAD_DEPTH_500					8
+# define LOOKAHEAD_DEPTH_500					7
 # define LOOKAHEAD_DEPTH_FIRST_MOVE				12
 
 /* Execution limits count insertions, must be >= 1, and cap at path length. */
 # define EXECUTE_LIMIT_100						10
-# define EXECUTE_LIMIT_500						6
-# define EXECUTE_LIMIT_FIRST_MOVE				10
+# define EXECUTE_LIMIT_500						5
+# define EXECUTE_LIMIT_FIRST_MOVE				5
 
 /* Capacity must cover every configured lookahead depth. */
-# define GREEDY_PATH_CAPACITY 14
+# define GREEDY_PATH_CAPACITY 12
 
 /* Zero disables diagnostics; positive levels enable debug output. */
-# define DEBUG 								1
+# ifndef DEBUG
+#  define DEBUG 0
+# endif
 
 typedef struct s_circle_buf
 {
@@ -113,6 +118,7 @@ void	debug_lis_length(int length);
 void	debug_bfs_progress(int expanded, int discovered, int capacity);
 void	debug_bfs_start(int n, int capacity);
 void	debug_bfs_end(int moves);
+void	debug_bfs_skipped(int count);
 void	debug_bfs_alloc(size_t bytes);
 void	debug_print_message(const char *message);
 void	debug_bfs_run(int run, int total, int start, int end);

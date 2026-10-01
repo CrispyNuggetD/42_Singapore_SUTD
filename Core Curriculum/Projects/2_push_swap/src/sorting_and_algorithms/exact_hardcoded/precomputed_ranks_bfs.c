@@ -51,7 +51,7 @@ static int	decode_bfs_data(t_soln *x, const unsigned char *packed)
 		move = (packed[i / 2] >> ((1 - i % 2) * 4)) & 15;
 		if (move == 0)
 			return (SUCCESS);
-		if (move > 11 || x->step >= MAX_MOVES_CONSIDERED)
+		if (move > 11 || x->step >= INITIAL_SOLUTION_CAPACITY)
 			return (ERROR);
 		if (append_move_to_soln(x, moves[move]))
 			return (ERROR);

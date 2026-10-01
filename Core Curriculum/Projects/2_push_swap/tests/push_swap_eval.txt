@@ -1,0 +1,227 @@
+# push_swap evaluation commands — 2 October 2026
+# Reference: https://wormav.github.io/42_eval/Cursus/Push_swap/index.html
+# Public mirror, not a guarantee of the current campus scale. Your assigned
+# subject/live sheet takes precedence. Its 500-value boundary is <5500;
+# the local subject says <=5500. These commands use the stricter boundary.
+#
+# Run from this project directory in BASH (type `bash` if your terminal is zsh).
+# Copy sections in order; setup and helpers below are needed by later sections.
+# Alternatively: bash tests/push_swap_eval.txt
+# This runs three 100-value and three 500-value trials, which may take a while.
+# Bonus checks run only when ./checker exists; checker_linux is the supplied
+# reference, NOT your own bonus implementation.
+#
+# Before the submission run: manually set DEBUG to 0 in includes/push_swap.h.
+# Choose your final lookahead settings, then rebuild. Do not change them between
+# benchmark trials. This file does not change your code or settings.
+
+# 0. SETUP / BUILD / NORM
+# Evaluate the exact submission checkout. Do not rely on uncommitted local edits.
+git status --short
+norminette src includes libft
+make fclean
+make -j4
+# Repeating make must not rebuild/relink unchanged outputs.
+stat -c '%y %n' push_swap libft/libft.a
+make
+stat -c '%y %n' push_swap libft/libft.a
+# clean removes objects but retains the program; re recreates the build.
+make clean
+test -x ./push_swap && printf 'Executable preserved by clean\n'
+make re
+
+EVAL_TMP=$(mktemp -d /tmp/push_swap_eval.XXXXXX)
+printf 'Saved inputs, moves and reports: %s\n' "$EVAL_TMP"
+CHECKER=./checker_linux
+if ! test -s "$CHECKER" || ! test -x "$CHECKER"; then
+    printf 'Reference checker is missing, empty or not executable. Restore it first.\n'
+    exit 1
+fi
+# All output redirects below target logs, never the checker executable.
+EVAL_RUN=0
+
+# Each run saves one answer, checks that exact answer and counts its moves.
+# No second solver invocation is needed just to count instructions.
+run_case()
+{
+    EVAL_RUN=$((EVAL_RUN + 1))
+    local prefix="$EVAL_TMP/run_$EVAL_RUN"
+    local started=$SECONDS solver_rc checker_rc count
+    printf '%s\n' "$@" > "$prefix.input"
+    ./push_swap "$@" > "$prefix.moves" 2> "$prefix.stderr" 3> "$prefix.debug"
+    solver_rc=$?
+    count=$(wc -l < "$prefix.moves")
+    printf 'Run %s: n=%s, moves=%s, seconds=%s, solver exit=%s\n' \
+        "$EVAL_RUN" "$#" "$count" "$((SECONDS - started))" "$solver_rc"
+    if test "$solver_rc" -ne 0; then
+        cat "$prefix.stderr"
+        return 1
+    fi
+    "$CHECKER" "$@" < "$prefix.moves" > "$prefix.verdict" 2> "$prefix.checker_stderr"
+    checker_rc=$?
+    cat "$prefix.verdict"
+    if test "$checker_rc" -ne 0 || test "$(cat "$prefix.verdict")" != OK; then
+        printf 'FAIL: reference checker did not accept the answer\n'
+        cat "$prefix.checker_stderr"
+        return 1
+    fi
+    if test -s "$prefix.stderr" || test -s "$prefix.debug"; then
+        printf 'Extra diagnostics found; check DEBUG before submission.\n'
+    fi
+    case $# in
+        1|2|3) test "$count" -le 3 ;;
+        5) test "$count" -le 12 ;;
+        100) test "$count" -lt 700 ;;
+        500) test "$count" -lt 5500 ;;
+        *) return 0 ;;
+    esac
+    if test "$?" -ne 0; then
+        printf 'FAIL: outside the maximum-score move band\n'
+        return 1
+    fi
+}
+
+expect_error()
+{
+    ./push_swap "$@" > "$EVAL_TMP/error.out" 2> "$EVAL_TMP/error.err"
+    printf 'Error\n' > "$EVAL_TMP/expected_error"
+    if test ! -s "$EVAL_TMP/error.out" && cmp -s "$EVAL_TMP/expected_error" "$EVAL_TMP/error.err"; then
+        printf 'PASS: Error on stderr only\n'
+    else
+        printf 'FAIL: expected only Error on stderr\n'
+        cat "$EVAL_TMP/error.out" "$EVAL_TMP/error.err"
+        return 1
+    fi
+}
+
+expect_silent()
+{
+    ./push_swap "$@" > "$EVAL_TMP/silent.out" 2> "$EVAL_TMP/silent.err" 3> "$EVAL_TMP/silent.debug"
+    local rc=$?
+    if test "$rc" -eq 0 && test ! -s "$EVAL_TMP/silent.out" \
+        && test ! -s "$EVAL_TMP/silent.err" && test ! -s "$EVAL_TMP/silent.debug"; then
+        printf 'PASS: silent success\n'
+    else
+        printf 'FAIL: expected silent success; exit=%s\n' "$rc"
+        return 1
+    fi
+}
+
+# 1. MEMORY / CRASH CHECKS
+# Inspect every report: no invalid accesses, uninitialised-value errors or leaks.
+# Exit 99 means Valgrind detected a memory error; invalid arguments may otherwise
+# return the program's ordinary error status. Keep memory checks separate from
+# performance timings. Apply the same Valgrind command to other inputs as needed.
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all \
+    --error-exitcode=99 --log-file="$EVAL_TMP/valgrind_valid.log" \
+    ./push_swap 1 5 2 4 3 > "$EVAL_TMP/valgrind.moves"
+printf 'Valgrind run exit: %s\n' "$?"
+"$CHECKER" 1 5 2 4 3 < "$EVAL_TMP/valgrind.moves"
+cat "$EVAL_TMP/valgrind_valid.log"
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all \
+    --error-exitcode=99 --log-file="$EVAL_TMP/valgrind_invalid.log" ./push_swap 1x
+printf 'Valgrind invalid-input run exit: %s\n' "$?"
+cat "$EVAL_TMP/valgrind_invalid.log"
+# Additional heap-path check (>500), beyond the mirror's benchmark sizes.
+mapfile -t ARG < <(seq 501 -1 1)
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all \
+    --error-exitcode=99 --log-file="$EVAL_TMP/valgrind_heap.log" \
+    ./push_swap "${ARG[@]}" > "$EVAL_TMP/heap.moves"
+printf 'Valgrind heap-path run exit: %s\n' "$?"
+"$CHECKER" "${ARG[@]}" < "$EVAL_TMP/heap.moves"
+cat "$EVAL_TMP/valgrind_heap.log"
+
+# 2. ERROR MANAGEMENT
+expect_error 0 one 2
+expect_error 1 2 1
+expect_error 2147483648
+expect_silent
+# Extra regression cases beyond the sheet's examples:
+expect_error -2147483649
+expect_error '1-2'
+expect_error ''
+expect_error --1
+expect_error -0 +0
+run_case -2147483648 0 2147483647
+
+# 3. IDENTITY: ALREADY SORTED => NO OUTPUT
+expect_silent 42
+expect_silent 2 3
+expect_silent 0 1 2 3
+expect_silent 0 1 2 3 4 5 6 7 8 9
+# Random distinct values, sorted first; includes lengths zero through nine.
+for n in {0..9}; do
+    mapfile -t ARG < <(shuf -i 0-999 -n "$n" | sort -n)
+    expect_silent "${ARG[@]}"
+done
+
+# 4. SIMPLE SORTS
+# Reverse three: checker OK, exactly two or three moves.
+run_case 2 1 0
+# Other sizes zero through three; zero is checked without the reference checker.
+expect_silent
+for n in 1 2 3; do
+    for trial in 1 2 3; do
+        mapfile -t ARG < <(shuf -i 0-999 -n "$n")
+        run_case "${ARG[@]}"
+    done
+done
+
+# 5. FIVE VALUES
+# Checker OK and no more than 12 moves for each case.
+run_case 1 5 2 4 3
+for trial in 1 2 3 4 5; do
+    mapfile -t ARG < <(shuf -i 0-999 -n 5)
+    run_case "${ARG[@]}"
+done
+
+# 6. HUNDRED VALUES
+# Mirror's points: <700:5, <900:4, <1100:3, <1300:2, <1500:1.
+# The helper checks the highest band; a failure there need not mean zero points.
+for trial in 1 2 3; do
+    mapfile -t ARG < <(shuf -i 0-99999 -n 100)
+    run_case "${ARG[@]}"
+done
+
+# 7. FIVE HUNDRED VALUES
+# Mirror's points: <5500:5, <7000:4, <8500:3, <10000:2, <11500:1.
+for trial in 1 2 3; do
+    mapfile -t ARG < <(shuf -i 0-99999 -n 500)
+    run_case "${ARG[@]}"
+done
+
+# 8. OPTIONAL BONUS — YOUR OWN ./checker ONLY
+# The student checker is built by make bonus.
+# Then run `make bonus` first. A bundled reference checker does not earn bonus.
+if test -x ./checker; then
+    # Error cases: Error on stderr; no arguments: silence.
+    ./checker 0 one 2 < /dev/null
+    ./checker 1 1 < /dev/null
+    ./checker 2147483648 < /dev/null
+    ./checker < /dev/null
+    printf 'invalid\n' | ./checker 2 1 0
+    printf ' sa\n' | ./checker 2 1 0
+    printf 'sa \n' | ./checker 2 1 0
+    # Valid instructions that do not sort: KO.
+    printf 'sa\npb\nrrr\n' | ./checker 0 9 1 8 2 7 3 6 4 5
+    printf 'sa\n' | ./checker 1 2 3
+    # Correct answers: OK. /dev/null supplies EOF without pressing Ctrl+D.
+    ./checker 0 1 2 < /dev/null
+    printf 'pb\nra\npb\nra\nsa\nra\npa\npa\n' | ./checker 0 9 1 8 2
+    for trial in 1 2 3; do
+        mapfile -t ARG < <(shuf -i 0-999 -n 5)
+        ./push_swap "${ARG[@]}" > "$EVAL_TMP/bonus.moves"
+        ./checker "${ARG[@]}" < "$EVAL_TMP/bonus.moves"
+    done
+    # Also check bonus cleanup on valid and invalid instruction streams.
+    printf 'sa\n' | valgrind --leak-check=full --show-leak-kinds=all \
+        --error-exitcode=99 ./checker 2 1
+    printf 'invalid\n' | valgrind --leak-check=full --show-leak-kinds=all \
+        --error-exitcode=99 ./checker 2 1
+else
+    printf 'Bonus skipped: no executable ./checker\n'
+fi
+
+# No combined pass/fail verdict: inspect each result and each Valgrind report.
+# Keep the saved input files to reproduce any unexpected result.
+printf 'Review reports in %s\n' "$EVAL_TMP"

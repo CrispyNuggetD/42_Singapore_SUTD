@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Inject malloc failures in a temporary ASan/UBSan build; preserve the main build."""
 from pathlib import Path
+import argparse
 import os
 import random
 import subprocess
@@ -24,6 +25,9 @@ void *__wrap_malloc(size_t size)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--max-size', type=int, default=2000)
+    options = parser.parse_args()
     subprocess.run(['make', '-s', '-j4'], cwd=ROOT, check=True)
     with tempfile.TemporaryDirectory(prefix='push_swap_allocations_') as folder:
         path = Path(folder)
@@ -33,10 +37,13 @@ def main():
         subprocess.run(['cc', '-Wall', '-Wextra', '-Werror', '-g',
                         '-fsanitize=address,undefined', '-fno-omit-frame-pointer',
                         '-Iincludes', '-Idebug',
-                        *map(str, (ROOT / 'src').rglob('*.c')), str(wrapper),
+                        *map(str, (p for p in (ROOT / 'src').rglob('*.c') if 'bonus' not in p.parts)), str(wrapper),
                         'libft/libft.a', '-Wl,--wrap=malloc', '-o', str(binary)],
                        cwd=ROOT, check=True)
+        checked = 0
         for n, allocations in [(3, 8), (5, 10), (2000, 7)]:
+            if n > options.max_size:
+                continue
             values = list(range(n, 0, -1))
             if n > 500:
                 random.Random(42).shuffle(values)
@@ -49,7 +56,8 @@ def main():
                 assert result.stderr.endswith(b'Error\n'), (n, fail, result.stderr)
                 assert b'Sanitizer' not in result.stderr, (n, fail, result.stderr)
                 assert b'runtime error:' not in result.stderr, (n, fail, result.stderr)
-    print('PASS: 25 injected malloc failures; ASan/UBSan/leak detection clean')
+                checked += 1
+    print(f'PASS: {checked} injected malloc failures; ASan/UBSan/leak detection clean')
 
 
 if __name__ == '__main__':

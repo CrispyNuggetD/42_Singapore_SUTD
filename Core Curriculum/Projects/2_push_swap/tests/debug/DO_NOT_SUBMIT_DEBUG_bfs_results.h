@@ -1,20 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ryker_ft_min.c                                     :+:      :+:    :+:   */
+/*   DO_NOT_SUBMIT_DEBUG_bfs_results.h                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/25 15:41:39 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/25 15:41:42 by hnah             ###   ########.fr       */
+/*   Created: 2026/08/20 20:25:10 by hnah              #+#    #+#             */
+/*   Updated: 2026/10/01 17:49:31 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ryker_ft.h"
+#ifndef DO_NOT_SUBMIT_DEBUG_BFS_RESULTS_H
+# define DO_NOT_SUBMIT_DEBUG_BFS_RESULTS_H
 
-int	ryker_ft_min(int one, int two)
-{
-	if (one < two)
-		return (one);
-	return (two);
-}
+void	debug_log_bfs_run(const int *values, int n,
+		const char *solution, int solution_len);
+
+#endif

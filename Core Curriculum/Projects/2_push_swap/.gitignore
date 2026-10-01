@@ -7,4 +7,11 @@
 *.d
 
 # Resumable local random-test sessions.
-/debug/results/random_tests/
+/tests/debug/results/random_tests/
+
+/checker
+**/__pycache__/
+/tests/debug/manual/
+
+/tests/debug/old_results/old_random_tests/
+/tests/debug/old_results/random_tests/

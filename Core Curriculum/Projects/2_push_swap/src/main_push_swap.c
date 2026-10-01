@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:41:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/30 17:35:47 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/02 02:19:39 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,9 @@ static int	run_solver(t_soln *x, t_circle_buf stacks[2])
 	slots = ALGO_COUNT;
 	if (count > 500)
 		slots = 1;
-	if (soln_init(x, slots, MAX_MOVES_CONSIDERED))
+	if (soln_init(x, slots, INITIAL_SOLUTION_CAPACITY))
 		return (ERROR);
+	debug_bfs_skipped(count);
 	if (solve(x, &stacks[A], &stacks[B], count) || print_best_soln(x))
 		return (ERROR);
 	if (count <= 500)
@@ -42,7 +43,7 @@ int	main(int argc, char **argv)
 	stacks[A].large_buf = NULL;
 	stacks[B].large_buf = NULL;
 	status = parse_input(argv + 1, &stacks[A], &stacks[B]);
-	if (status == SUCCESS)
+	if (status == SUCCESS && !ranks_are_sorted(&stacks[A]))
 		status = run_solver(&x, stacks);
 	ryker_ft_free_str_array(x.ans);
 	free(x.ans_len);

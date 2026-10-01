@@ -107,7 +107,7 @@ static int	solve_active_chunk(soln *real, circle_buf *a, circle_buf *b, int coun
 	fake_b.capacity = b->capacity;
 	if (copy_active_b(&fake_b, b, count) == ERROR)
 		return (ERROR);
-	if (soln_init(&fake, 1, MAX_MOVES_CONSIDERED) == ERROR)
+	if (soln_init(&fake, 1, INITIAL_SOLUTION_CAPACITY) == ERROR)
 		return (ERROR);
 	if (brute_solve(&fake, &fake_a, &fake_b) == ERROR)
 	{

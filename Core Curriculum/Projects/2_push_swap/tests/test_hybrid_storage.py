@@ -54,10 +54,14 @@ def main():
         result = run(options.binary, args)
         assert result.returncode == 0, (len(values), result.stderr)
         replay(values, result.stdout)
+        if values == sorted(values):
+            assert result.stdout == result.stderr == b'', 'Sorted input must be silent'
         longest = max(longest, len(result.stdout.splitlines()))
-        if options.baseline and len(values) <= 500:
+        if options.baseline and len(values) <= 500 and values != sorted(values):
             before = run(options.baseline, args)
-            assert before.returncode == 0 and before.stdout == result.stdout, len(values)
+            # Reordered candidates may select another equally short answer.
+            assert before.returncode == 0, len(values)
+            assert len(before.stdout.splitlines()) == len(result.stdout.splitlines()), len(values)
         if len(values) > 500:
             grouped = run(options.binary, [' '.join(args[:200]), *args[200:]])
             assert grouped.returncode == 0 and grouped.stdout == result.stdout

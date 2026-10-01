@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'debug'))
+sys.path.insert(0, str(ROOT / 'tests/debug'))
 from generate_precomputed_sample import MOVES, packed_data, solutions
 
 HARNESS = r'''
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     a.write_idx = (n + n) % a.capacity;
     for (int i = 0; i < n; ++i)
         a.buf[(a.read_idx + i) % a.capacity] = atoi(argv[i + 1]);
-    if (soln_init(&x, 1, MAX_MOVES_CONSIDERED)
+    if (soln_init(&x, 1, INITIAL_SOLUTION_CAPACITY)
         || new_soln_init(&x, stacks, &a, &b))
         return 1;
     before = stacks[A];
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 def main():
     subprocess.run(['make', '-s', '-j4'], cwd=ROOT, check=True)
-    source = (ROOT / 'src/algorithms/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c').read_text()
+    source = (ROOT / 'src/sorting_and_algorithms/exact_hardcoded/precomputed_ranks_bfs.c').read_text()
     actual = bytes(int(h, 16) for h in re.findall(r'0x([0-9A-Fa-f]{2})', source))
     assert actual == packed_data(), 'C initializer differs from reverse BFS'
     total = 0
@@ -53,7 +53,7 @@ def main():
         path = Path(folder)
         (path / 'harness.c').write_text(HARNESS)
         objects = [str(p) for p in (ROOT / 'obj').rglob('*.o')
-                   if p.name != 'main_push_swap.o']
+                   if p.name != 'main_push_swap.o' and 'bonus' not in p.parts]
         subprocess.run(['cc', '-Wall', '-Wextra', '-Werror', '-I', str(ROOT / 'includes'),
                         str(path / 'harness.c'), *objects, str(ROOT / 'libft/libft.a'),
                         '-o', str(path / 'harness')], check=True)
@@ -69,7 +69,7 @@ def main():
                     assert all(move in MOVES for move in moves)
                     if binary == path / 'harness':
                         assert moves == [MOVES[code - 1] for code in expected[rank]], (values, moves)
-                    checked = subprocess.run([str(ROOT / 'tests/checker_linux'), *args],
+                    checked = subprocess.run([str(ROOT / 'checker_linux'), *args],
                                              input=run.stdout, capture_output=True,
                                              timeout=5, check=True)
                     assert checked.stdout.strip() == b'OK', (values, checked.stdout)
@@ -78,7 +78,7 @@ def main():
             args = list(map(str, values))
             run = subprocess.run([str(ROOT / 'push_swap'), *args], capture_output=True,
                                  timeout=10, check=True)
-            checked = subprocess.run([str(ROOT / 'tests/checker_linux'), *args],
+            checked = subprocess.run([str(ROOT / 'checker_linux'), *args],
                                      input=run.stdout, capture_output=True, check=True)
             assert checked.stdout.strip() == b'OK', 'BFS fallback failed'
     print(f'PASS: {total} permutations, optimal lengths, checker, wrapped buffers, '

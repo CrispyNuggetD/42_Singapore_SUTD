@@ -31,11 +31,13 @@ const t_algo_config	*algorithm_config(t_algorithm algo)
 {
 	static const t_algo_config	configs[ALGO_COUNT] = {
 	{SEED_COUNT, 0, " (BFS Brute-Force Optimum Moves)"},
-	{SEED_LIS, 0, " (Circular LIS + local greedy)"},
 	{SEED_THREE, 0, " (3-element seed + local greedy)"},
+	{SEED_LIS, 0, " (Circular LIS + local greedy)"},
 	{SEED_LIS, 1, " (Circular LIS + lookahead greedy)"},
-	{SEED_LIS, 1, " (Circular LIS + opening only 1 insertion with extra lookahead greedy)"},
-	{SEED_LIS, 1, " (Circular LIS + opening batch moves from extra lookahead greedy)"},
+	{SEED_LIS, 1, " (Circular LIS + opening only 1 insertion "
+		"with extra lookahead greedy)"},
+	{SEED_LIS, 1, " (Circular LIS + opening batch moves "
+		"from extra lookahead greedy)"},
 		/* {SEED_THREE, 1, " (3-element seed + lookahead)"}, */
 	};
 

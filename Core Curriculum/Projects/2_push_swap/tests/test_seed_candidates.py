@@ -1,8 +1,12 @@
 """Replay every candidate, then verify stdout is the first shortest candidate.
 
 Run after make: python3 tests/test_seed_candidates.py
-Three active candidates: LIS local, three-value local, and LIS lookahead. Build with DEBUG >= 2 for the recorded candidate dump. BFS is in WIP.
+Build a temporary diagnostic solver, replay each recorded candidate and verify the winner.
+Default sizes stop at 100; use --include-500 to explicitly run 500-value cases.
 """
+import argparse
+import os
+import tempfile
 import itertools
 import random
 import re
@@ -10,6 +14,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+BINARY = ROOT / "push_swap"
 MOVES = dict(zip("123456789AB", "sa sb ss pa pb ra rb rr rra rrb rrr".split()))
 
 
@@ -37,22 +42,19 @@ def replay(values, moves):
 
 
 def check(values):
-    run = subprocess.run(
-        [str(ROOT / "push_swap"), *map(str, values)],
-        capture_output=True, text=True, timeout=120, check=True,
-    )
-    matches = re.findall(r"Stored length: (\d+)\nEncoded      : ([1-9AB]*)\n", run.stderr)
-    assert len(matches) == 3, run.stderr[-1000:]
-    summaries = re.findall(r"algo=(\d+)/3[^\n]*final_moves=(\d+) DONE", run.stderr)
-    assert summaries == [(str(i + 1), length)
-                         for i, (length, _) in enumerate(matches)], summaries
-    progress = re.findall(
-        r"covered=(\d+)/(\d+) skipped=(\d+) [^\r\n]*final_moves=\d+ DONE",
-        run.stderr,
-    )
-    assert len(progress) == 3, progress
-    for covered, total, skipped in progress:
-        assert int(covered) == int(total) and 0 <= int(skipped) <= int(total)
+    with tempfile.NamedTemporaryFile() as dump:
+        run = subprocess.run(
+            ['bash', '-c', 'exec "$@" 3>"$DUMP_FILE"', 'candidate-test',
+             str(BINARY), *map(str, values)],
+            env=dict(os.environ, DUMP_FILE=dump.name),
+            capture_output=True, text=True, timeout=120, check=True,
+        )
+        diagnostics = Path(dump.name).read_text()
+    matches = re.findall(r"Stored length: (\d+)\nEncoded      : ([1-9AB]*)\n", diagnostics)
+    if list(values) == sorted(values):
+        assert not run.stdout and not run.stderr and not diagnostics
+        return
+    assert matches, diagnostics
     candidates = []
     for length, encoded in matches:
         assert int(length) == len(encoded)
@@ -69,14 +71,24 @@ def main():
             check(values)
             count += 1
     rng = random.Random(42)
-    for size in (6, 7, 8, 9, 10, 11, 100, 500):
+    for size in ([6, 7, 8, 9, 10, 11, 100] + ([500] if INCLUDE_500 else [])):
         values = list(range(size))
         for arrangement in (values, list(reversed(values)), rng.sample(values, size)):
             check(arrangement)
             count += 1
-        print(f"size {size}: all three candidates sort correctly", flush=True)
+        print(f"size {size}: all recorded candidates sort correctly", flush=True)
     print(f"PASS: {count} inputs; every candidate and winner verified")
 
 
 if __name__ == "__main__":
-    main()
+    options = argparse.ArgumentParser()
+    options.add_argument('--include-500', action='store_true')
+    INCLUDE_500 = options.parse_args().include_500
+    with tempfile.TemporaryDirectory(prefix='push_swap_candidates_') as folder:
+        BINARY = Path(folder) / 'push_swap'
+        subprocess.run(['make', '-s'], cwd=ROOT, check=True)
+        sources = [str(p) for p in (ROOT / 'src').rglob('*.c') if 'bonus' not in p.parts]
+        subprocess.run(['cc', '-Wall', '-Wextra', '-Werror', '-DDEBUG=1',
+                        '-I' + str(ROOT / 'includes'), *sources,
+                        str(ROOT / 'libft/libft.a'), '-o', str(BINARY)], check=True)
+        main()

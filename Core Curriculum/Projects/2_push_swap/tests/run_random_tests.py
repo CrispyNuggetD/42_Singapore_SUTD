@@ -115,7 +115,7 @@ def parse_records(text):
                   'binary_sha256': metadata['Binary SHA-256'], 'checker': metadata['Checker'],
                   'move_count': int(metadata['Moves']), 'solver_seconds': float(metadata['Solver seconds']),
                   'solver_exit': int(metadata['Solver exit']),
-                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG') if k in metadata},
+                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG', 'LOOKAHEAD_DEPTH_100', 'LOOKAHEAD_DEPTH_500', 'LOOKAHEAD_DEPTH_FIRST_MOVE', 'EXECUTE_LIMIT_100', 'EXECUTE_LIMIT_500', 'EXECUTE_LIMIT_FIRST_MOVE', 'ENABLE_OPENING_LOOKAHEAD', 'SKIP_OTHER_ALGO_AFTER_BFS', 'GREEDY_PATH_CAPACITY', 'BRUTE_MAX_N') if k in metadata},
                   'input_ranks': list(map(int, read_section(body, 'Input ranks').split())),
                   'moves': read_section(body, 'Winning moves').splitlines(),
                   'solution_debug': read_section(body, 'Solution debug'),
@@ -260,7 +260,7 @@ def run_case(values, show_solutions=False, executable=None):
         result.update(checker='NOT RUN', error='Solver failed or printed invalid moves',
                       stderr_tail=debug[-8000:])
         return result
-    checker = subprocess.Popen([str(ROOT / 'tests/checker_linux'), *args],
+    checker = subprocess.Popen([str(ROOT / 'checker_linux'), *args],
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, start_new_session=True)
     try:
@@ -309,7 +309,7 @@ def main():
             raise ValueError('Unsupported saved generator version')
     else:
         prefix = dt.datetime.now().strftime('%Y%m%d_%H%M%S')
-        base = ROOT / 'debug/results/random_tests'
+        base = ROOT / 'tests/debug/results/random_tests'
         base.mkdir(parents=True, exist_ok=True)
         folder = base / f'{prefix}_output'
         suffix = 0
@@ -333,14 +333,14 @@ def main():
         with build_lock.open('a') as build_guard:
             fcntl.flock(build_guard, fcntl.LOCK_EX)
             subprocess.run(['make', '-s'], cwd=ROOT, check=True)
-            if not os.access(ROOT / 'tests/checker_linux', os.X_OK):
-                raise ValueError('tests/checker_linux must be executable')
+            if not os.access(ROOT / 'checker_linux', os.X_OK):
+                raise ValueError('checker_linux must be executable')
             executable = Path(snapshot_dir.name) / 'push_swap'
             executable.write_bytes((ROOT / 'push_swap').read_bytes())
             executable.chmod(0o700)
             binary_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
         settings = {name: int(value) for name, value in re.findall(
-            r'#\s*define\s+(LOOKAHEAD_DEPTH|EXECUTE_DEPTH|DEBUG)\s+(\d+)',
+            r'#\s*define\s+(LOOKAHEAD_DEPTH(?:_100|_500|_FIRST_MOVE)?|EXECUTE_(?:DEPTH|LIMIT_100|LIMIT_500|LIMIT_FIRST_MOVE)|DEBUG|ENABLE_OPENING_LOOKAHEAD|SKIP_OTHER_ALGO_AFTER_BFS|GREEDY_PATH_CAPACITY|BRUTE_MAX_N)\s+(\d+)',
             (ROOT / 'includes/push_swap.h').read_text())}
         seen = {r['rank_sha256'] for r in records}
         generation = records[-1]['generation_id'] + 1 if records else 0

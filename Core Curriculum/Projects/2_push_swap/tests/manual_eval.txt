@@ -1,0 +1,75 @@
+make fclean
+make -j4 all bonus
+norminette src includes libft
+make
+make bonus
+make clean
+ls -l push_swap checker
+make re
+make bonus
+mkdir -p tests/debug/manual
+./push_swap
+./push_swap 42
+./push_swap 0 1 2 3 4 5 6 7 8 9
+./push_swap 0 one 2
+./push_swap 1 2 1
+./push_swap 2147483648
+./push_swap -2147483649
+./push_swap ''
+./push_swap --1
+./push_swap -0 +0
+./push_swap '1-2'
+./push_swap -2147483648 0 2147483647 > tests/debug/manual/moves.txt
+./checker_linux -2147483648 0 2147483647 < tests/debug/manual/moves.txt
+./checker -2147483648 0 2147483647 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap 2147483647 0 -2147483648 > tests/debug/manual/moves.txt
+./checker_linux 2147483647 0 -2147483648 < tests/debug/manual/moves.txt
+./checker 2147483647 0 -2147483648 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap 2 1 > tests/debug/manual/moves.txt
+./checker_linux 2 1 < tests/debug/manual/moves.txt
+./checker 2 1 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap 2 1 0 > tests/debug/manual/moves.txt
+./checker_linux 2 1 0 < tests/debug/manual/moves.txt
+./checker 2 1 0 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap 1 5 2 4 3 > tests/debug/manual/moves.txt
+./checker_linux 1 5 2 4 3 < tests/debug/manual/moves.txt
+./checker 1 5 2 4 3 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap 4 3 2 1 0 > tests/debug/manual/moves.txt
+./checker_linux 4 3 2 1 0 < tests/debug/manual/moves.txt
+./checker 4 3 2 1 0 < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+./push_swap "3 1 2" > tests/debug/manual/moves.txt
+./checker_linux "3 1 2" < tests/debug/manual/moves.txt
+./checker "3 1 2" < tests/debug/manual/moves.txt
+wc -l < tests/debug/manual/moves.txt
+ARG=$(shuf -i 0-99999 -n 100 | tr "\n" " ")
+./push_swap "$ARG" > tests/debug/manual/moves_100.txt
+./checker_linux "$ARG" < tests/debug/manual/moves_100.txt
+./checker "$ARG" < tests/debug/manual/moves_100.txt
+wc -l < tests/debug/manual/moves_100.txt
+ARG=$(shuf -i 0-99999 -n 500 | tr "\n" " ")
+./push_swap "$ARG" > tests/debug/manual/moves_500.txt
+./checker_linux "$ARG" < tests/debug/manual/moves_500.txt
+./checker "$ARG" < tests/debug/manual/moves_500.txt
+wc -l < tests/debug/manual/moves_500.txt
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./push_swap 1 5 2 4 3 > tests/debug/manual/valgrind.moves
+./checker_linux 1 5 2 4 3 < tests/debug/manual/valgrind.moves
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./push_swap 1x
+./checker < /dev/null
+./checker 0 one 2 < /dev/null
+./checker 1 1 < /dev/null
+./checker 2147483648 < /dev/null
+printf 'invalid\n' | ./checker 2 1 0
+printf ' sa\n' | ./checker 2 1 0
+printf 'sa \n' | ./checker 2 1 0
+printf 'sa\npb\nrrr\n' | ./checker 0 9 1 8 2 7 3 6 4 5
+printf 'sa\n' | ./checker 1 2 3
+./checker 0 1 2 < /dev/null
+printf 'pb\nra\npb\nra\nsa\nra\npa\npa\n' | ./checker 0 9 1 8 2
+printf 'sa\n' | valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./checker 2 1
+printf 'invalid\n' | valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./checker 2 1

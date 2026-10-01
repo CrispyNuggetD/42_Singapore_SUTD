@@ -12,6 +12,20 @@
 
 #include "push_swap.h"
 
+/* Report the input-size limit without creating an answer candidate. */
+void	debug_bfs_skipped(int count)
+{
+	const t_algo_config	*config;
+
+	if (!DEBUG || count <= BRUTE_MAX_N)
+		return ;
+	config = algorithm_config(ALGO_BFS);
+	if (!config)
+		return ;
+	ryker_ft_printf_fd(2, "algo=%d/%d%s SKIPPED (n=%d exceeds limit=%d)\n",
+		ALGO_BFS + 1, ALGO_COUNT, config->name, count, BRUTE_MAX_N);
+}
+
 /* Search-space coverage is not an estimate of time until the goal is found. */
 void	debug_bfs_progress(int expanded, int discovered, int capacity)
 {

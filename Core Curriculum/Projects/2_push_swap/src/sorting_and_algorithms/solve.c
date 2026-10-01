@@ -16,7 +16,12 @@
 static int	solve_small_bfs(t_soln *x, t_circle_buf stacks[2], int count)
 {
 	if (count >= 1 && count <= 4)
-		return (get_precomputed_bfs(x, &stacks[A], count));
+	{
+		if (get_precomputed_bfs(x, &stacks[A], count))
+			return (ERROR);
+		debug_bfs_end(x->step);
+		return (SUCCESS);
+	}
 	return (brute_solve(x, &stacks[A], &stacks[B], count));
 }
 
@@ -54,12 +59,12 @@ int	solve(t_soln *x, t_circle_buf *a, t_circle_buf *b, int count)
 		if (SKIP_OTHER_ALGO_AFTER_BFS)
 			return (SUCCESS);
 	}
-	algo = ALGO_LIS_LOCAL;
-	while (algo < ALGO_COUNT)
+	algo = ALGO_THREE_LOCAL;
+	while (algo < ALGO_COUNT && (ENABLE_OPENING_LOOKAHEAD
+			|| algo < ALGO_LIS_OPENING_ONE))
 	{
-		if (new_soln_init(x, stacks, a, b))
-			return (ERROR);
-		if (greedy_reinsertion(x, stacks, algo))
+		if (new_soln_init(x, stacks, a, b)
+			|| greedy_reinsertion(x, stacks, algo))
 			return (ERROR);
 		algo++;
 	}

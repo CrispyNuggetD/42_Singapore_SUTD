@@ -21,12 +21,12 @@ typedef enum e_seed_mode
 	SEED_COUNT
 }	t_seed_mode;
 
-/* BFS is first; greedy candidates run from ALGO_LIS_LOCAL to ALGO_COUNT. */
+/* BFS is first; greedy candidates run from ALGO_THREE_LOCAL to ALGO_COUNT. */
 typedef enum e_algorithm
 {
 	ALGO_BFS,
-	ALGO_LIS_LOCAL,
 	ALGO_THREE_LOCAL,
+	ALGO_LIS_LOCAL,
 	ALGO_LIS_LOOKAHEAD,
 	ALGO_LIS_OPENING_ONE,
 	ALGO_LIS_OPENING_BATCH,
