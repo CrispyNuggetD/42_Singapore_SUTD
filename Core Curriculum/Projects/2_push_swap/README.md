@@ -135,9 +135,9 @@ looking for the current implementation can begin with [At a glance](#at-a-glance
 readers interested in the investigation can use the [Contents](#contents) and
 the [guide to mathematical claims and evidence](#reading-the-mathematics).
 
-> Implementation snapshot (1 October 2026): small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates run through 500 values. Above 500, the existing nonrecursive three-element-seed greedy solver uses heap-backed circular buffers. Archived chunk and seed experiments live in `backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
+> Current implementation: small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates run through 500 values. Above 500, the existing nonrecursive three-element-seed greedy solver uses heap-backed circular buffers. Archived chunk and seed experiments live in `backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
 
-> Update (2026-09-29): fixed the bundled formatter's shared `va_list` handling, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
+> Portability: I fixed the bundled formatter's shared `va_list` handling with AI assistance, which caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
 
 
 <a id="at-a-glance"></a>
@@ -1260,7 +1260,7 @@ build checks, and documentation. These supporting tools help me inspect behaviou
 and test ideas; their output is not proof that the solver is correct or ready
 for evaluation.
 
-**Norm refactoring (2026-10-01):** Codex helped refactor my existing BFS code
+For Norm compliance, Codex helped refactor my existing BFS code
 for the 25-line function limit, five-local-variable limit, typedef naming and
 formatting rules. This mainly meant splitting existing work into named functions,
 grouping search variables into a struct, moving helpers into focused files, and
@@ -1276,9 +1276,9 @@ new solution. In the direct BFS regression check, 159 inputs produced exactly
 the same move sequences before and after the refactor. That is evidence for
 those cases, not a proof covering every possible input.
 
-**Hybrid-storage update (2026-10-01):** I asked Codex to implement the agreed
+For hybrid storage, I asked Codex to implement the agreed
 inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
-regression checks. This update includes new code, beyond the earlier mechanical
+regression checks. This work includes new code, beyond the earlier mechanical
 BFS refactor; it remains for me to review and understand before submission.
 
 I also use AI as an editorial assistant for this README. I bring my questions,
@@ -1429,8 +1429,8 @@ shorter complete sort. Error/pruning return contracts are described in the
 
 ### Hybrid storage and recursive malloc
 
-**Update (2026-10-01):** 500 is now a solver/storage threshold, not a parser
-rejection limit. I kept the hybrid approach to preserve the current recursive
+I use 500 as the threshold for choosing storage and solver strategies, rather
+than as a parser rejection limit. I chose hybrid storage to preserve my recursive
 search's cheap, independent struct copies:
 
 | Input size | A/B storage | Solver |
@@ -1449,11 +1449,10 @@ allows them only for `ALGO_THREE_LOCAL`, which does not recurse or use LIS.
 A temporary pair of cbuf structs borrows the two heap arrays for that one pass;
 it copies the final indices back and never frees the arrays.
 
-Why didn't I just malloc everything? Allocating the original stacks once is
-fine. **Allocating two fresh buffers at every simulated branch is the cursed
-implementation here.** A correct heap clone would still copy the values, then
-add two allocations and two frees, plus allocation-failure handling, for every
-branch it simulates. Replacing an embedded array with a pointer does not make
+I considered using malloc for everything. Allocating the original stacks once is
+fine; what I wanted to avoid was allocating two fresh buffers at every simulated
+branch. A correct heap clone would still copy the values, then add two allocations
+and two frees, plus allocation-failure handling, for every branch it simulates. Replacing an embedded array with a pointer does not make
 a struct assignment deep-copy its contents.
 
 For 500 inputs, the configured normal horizon is **8 insertions**, and the
@@ -1885,7 +1884,7 @@ horizon equations specify how the variants differ; they do not prove which
 variant produces the fewest complete sorting operations. See the
 [mathematics reading guide](#reading-the-mathematics).
 
-### More lookahead, plan switching and partial commitment (1 October 2026)
+### More lookahead, plan switching and partial commitment
 
 *I shared this real conversation with AI and used its help to paraphrase it,
 remove profanity and make the wording suitable for school. This is not a
