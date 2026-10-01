@@ -15,3 +15,5 @@
 
 /tests/debug/old_results/old_random_tests/
 /tests/debug/old_results/random_tests/
+
+/tests/debug/results/benchmark_500.*/

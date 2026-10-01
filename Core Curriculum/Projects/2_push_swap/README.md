@@ -165,7 +165,7 @@ remaining checks; the old chunk solver's results do not describe current perform
 | ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
 | ✅ | Saved study data | Reports and trial logs are preserved in Git under [`tests/debug/old_results/`](tests/debug/old_results/). |
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
-| 🚧 | Subject move requirements | Final current-version 100/500-number validation remains outstanding; historical experiments are labelled below. |
+| ✅ | Subject move requirements | Three current 100-value and three current 500-value trials passed the highest move bands; exact counts and supporting checks are documented below. |
 | ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics use stderr and descriptor 3. |
 | ✅ | Bonus checker implementation | My two-file checker reuses the parser and stack operations; `make bonus` builds it. The supplied Linux checker remains a separate reference. |
 
@@ -348,8 +348,9 @@ older studies live in `tests/debug/old_results/`.
 
 [manual_eval.txt](tests/manual_eval.txt) is just one copy-pastable terminal
 command per line, with no helper functions or scripted verdicts. It includes
-100- and 500-value commands for my own manual evaluation. I did not run its
-500-value commands during this review. [push_swap_eval.txt](tests/push_swap_eval.txt)
+100- and 500-value commands for my own manual evaluation. I also ran
+[benchmark_500.sh](tests/benchmark_500.sh) as part of the checks below.
+[push_swap_eval.txt](tests/push_swap_eval.txt)
 is the separate, longer scripted checklist. Both use the current executable
 and directory names.
 
@@ -375,6 +376,7 @@ Linux checker; stdout contained only moves and stderr was empty.
 | `0 one 2`; `1 2 1`; `2147483648`; `-2147483649`; `""`; `--1`; `-0 +0`; `"1-2"` | Both programs printed only `Error` on stderr |
 | `1x`; `1 1` under Valgrind | Both programs rejected them without memory errors or leaks |
 | Three seeded random 100-value inputs, seed `42` through `push_swap_tester.sh` | Reference checker `OK`; 496, 507 and 511 moves, all below 700 |
+| Three random 500-value inputs through `tests/benchmark_500.sh` | Both checkers `OK`; 4811, 4943 and 4969 moves, all below 5500; successful solver exits and empty stderr |
 
 The valid-case suite covered 135 runs, including all three- and five-value
 permutations. The error suite covered 16 program/input combinations; eight
@@ -384,14 +386,137 @@ including wrapped buffers and a five-value BFS fallback. These results apply
 to the tested inputs; they do not imply that every permutation was checked
 for larger sizes.
 
-I have left the 500-value benchmarks for my own local run. If every required
-500-value trial sorts correctly within the highest band, and the remaining
-live evaluation checks pass, this meets the subject's conditions for 100%
-mandatory validation and bonus assessment. The local subject allows at most
+The 500-value script passed all three trials. I kept the exact inputs, moves
+and report in `tests/debug/results/benchmark_500.ulrwcP/`. The report identifies
+commit `9214973` and records the executable hashes:
+
+```text
+push_swap: 58a4c40fc5fbef76caa6322d898d96da8f7fdbe2a08fc37f59fb72fde6f0c939
+checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620
+```
+
+The three counts average 4907.67 moves; the largest, 4969, is below the strict
+5500 boundary. These were sorting and move-count checks, not additional
+500-value Valgrind runs. The memory checks listed above remain the memory
+evidence. Generated benchmark reports stay local and are ignored by Git.
+
+#### Runtime and test-machine context
+
+The 500-value shell script saved moves, not explicit timing fields. I estimated
+solver durations from each move file's creation time to its last modification:
+the file is created before launching the solver and receives the answer near
+completion. These are approximate wall times, not CPU-time measurements.
+
+| 500-value trial | Moves | Approximate solver seconds | Approximate duration |
+| --- | ---: | ---: | --- |
+| 1 | 4811 | 163.79 | 2 min 44 sec |
+| 2 | 4943 | 224.02 | 3 min 44 sec |
+| 3 | 4969 | 247.50 | 4 min 7 sec |
+| Mean | 4907.67 | 211.77 | 3 min 32 sec |
+
+From the benchmark directory's creation to the report's last update, the whole
+three-trial test took about 635.36 seconds (10 min 35 sec), including the small
+checker/report overhead after the directory was created. The build ran before
+that directory was created and is not included in this estimate.
+
+The earlier Python runner did record total solver wall time for the three
+100-value trials: 85.153702, 82.470882 and 80.064915 seconds, averaging
+82.563166 seconds (about 1 min 23 sec). Those records are in the local session
+`tests/debug/results/random_tests/20261002_033534_output/`. It did not record
+individual candidate timings. Older 10-value logs exist, including a historical
+56-run session averaging 48.015 seconds, but those belong to an earlier
+executable/configuration and are not current-version timing evidence. The
+candidate regression checks through size 10 did not save timing measurements.
+
+The test PC reports the following hardware and software:
+
+| Item | Test environment |
+| --- | --- |
+| CPU | Intel Core i7-12700, 12th generation; 12 cores and 20 logical CPUs |
+| Reported CPU frequency range | 800–4900 MHz; actual frequencies during the tests were not logged |
+| Memory | 15.31 GiB usable RAM reported by Linux; nominal 16 GB class |
+| OS | Ubuntu 22.04.5 LTS, x86_64; Linux 5.15.0-190-generic |
+| Compiler | Ubuntu Clang 12.0.1 (`cc`) |
+| Build flags | `-Wall -Wextra -Werror`; no explicit optimization flag |
+| Python | 3.10.12 |
+| Solver diagnostics | `DEBUG=0` for the documented benchmark runs |
+
+The solver creates no worker threads and runs its candidates sequentially.
+A solver run therefore uses one execution thread rather than all 20 logical
+CPUs. The OS may move that thread between cores; CPU affinity, background load,
+CPU frequencies and peak RAM usage were not recorded for these older runs.
+Installed RAM is capacity, not measured solver consumption. The checker runs
+after the solver; parallel compilation is separate from sorting runtime.
+These details make the times useful as a rough replication reference, not a
+promise of identical runtime on another machine.
+
+The updated Python runner now records candidate wall and CPU times plus a
+process-wide peak RSS sample at candidate completion, without changing the
+submission executable. This peak can include earlier candidates' memory usage;
+it is not memory owned by the named candidate. To collect new comparable
+measurements, run `bash push_swap_tester.sh -n 3 --size 100 --seed 42` or use
+`--size 500` for a new 500-value session. The original timing fields cannot be
+retroactively split into per-algorithm durations.
+
+Together, the tested 100- and 500-value inputs meet the highest move bands.
+Combined with the build, Norm, small-input, error and memory checks above,
+these results support 100% mandatory validation and bonus eligibility, subject
+to the remaining live evaluation checks. The local subject allows at most
 5500 moves; the evaluation mirror used by my checklist says fewer than 5500,
-so I use the stricter boundary when aiming for maximum marks. Passing 500
-alone does not replace the other mandatory checks. The final bonus total is
+and all three trials meet that stricter boundary. The final bonus total is
 awarded by the live evaluation scale.
+
+#### What the first profiled 100-value session showed
+
+I stopped the profiled session `20261002_043555_output` after 24 successful
+100-value runs. All winning streams passed the reference checker. Winners
+averaged 499.29 moves, ranging from 456 to 525. The saved seed was
+`2459232882432727273`, with `DEBUG=0`, continuation depth 12 and execution
+limit 10, and opening depth 12 with batch execution limit 5.
+
+| Candidate | Mean moves | Mean wall time | Mean CPU time | Chosen wins |
+| --- | ---: | ---: | ---: | ---: |
+| Three-element seed + local greedy | 573.88 | 0.000618 s | 0.000616 s | 0 |
+| Circular LIS + local greedy | 539.13 | 0.004047 s | 0.004044 s | 1 |
+| Circular LIS + lookahead | 509.42 | 29.737392 s | 29.735572 s | 13 |
+| Circular LIS + opening-one lookahead | 510.88 | 34.277833 s | 34.275884 s | 5 |
+| Circular LIS + opening-batch lookahead | 521.21 | 36.103273 s | 36.101130 s | 5 |
+
+This makes the tradeoff much clearer than the earlier total-runtime measurements.
+The plain LIS local candidate averaged about 40 more moves than the winning
+answer, but took roughly four milliseconds. Every candidate's move count stayed
+below 700 in this sample. Ordinary LIS lookahead had the lowest average move
+count among individual candidates and won most often. Opening-batch was worse
+on average than the other lookahead variants here, but still won five inputs,
+so its contribution cannot be judged from its mean alone. These observations
+do not establish the same ranking for 500 values, and I have not changed the
+algorithm settings based on them.
+
+Average total solver wall time was 100.125525 seconds. Subtracting the candidate
+wall times left about 0.002364 seconds per run for launch, parsing,
+initialization, instrumentation output and final output combined. CPU times
+closely matched wall times. Almost all measured solver runtime was therefore
+spent computing the lookahead candidates. This difference is not a measurement
+of all Python overhead: input generation, reference checking and report writing
+between solver invocations are outside the solver runtime field.
+
+The ordinary submission executable does not contain the FD 4 profiler; the
+Python runner separately links its temporary instrumented executable.
+With `DEBUG=0`, existing FD 3 solution diagnostics are suppressed, while the
+runner explicitly opens FD 4 for profiling records. These are local file
+descriptors, not network destinations. With `DEBUG=1`, FD 3 is normally closed
+unless I redirect it, so those writes fail and the dump is lost; stderr progress
+still appears. If the evaluator agrees to diagnostic output, I can use:
+
+```sh
+./push_swap 3 2 1 3>&2
+./push_swap 3 2 1 3>debug
+```
+
+The first sends the solution dump to stderr, normally the terminal; the second
+saves it to a file. The filename does not need a `.txt` extension. Both keep
+stdout reserved for instructions. Diagnostic output can affect runtime, so the
+measurements above use `DEBUG=0`.
 
 ### My bonus checker
 
@@ -2782,6 +2907,60 @@ may span multiple binaries (listed in the summary). The metadata parser records 
 `DEBUG`, the opening-lookahead switch, BFS skip switch and relevant capacities.
 Older reports retain the settings that were actually captured at the time.
 
+
+Variable-size sessions are available for comparing algorithms across input
+sizes. `-random` chooses each size from a separately domain-separated SHA-256
+seed derived from the master seed and generation ID; the existing deterministic
+permutation generator then shuffles that many ranks. `-loop` cycles through
+all sizes from `-min` to `-max`, inclusively, and wraps around. The default
+bounds are 2 and 500; a larger maximum such as 600 is supported by the solver's
+existing heap-backed path. Algorithms unavailable at a size produce no rows.
+
+```sh
+bash push_swap_tester.sh -random -max 500 --seed 42 -n 100
+bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
+```
+
+The size modes and bounds are saved for resume. Variable-size sessions retain
+repeated permutations, especially at small sizes, so the loop's size sequence
+is not disrupted by deduplication. Fixed-size sessions retain their existing
+unique-permutation behavior. The comparison table groups by input size as well
+as executable and settings, and the summary includes a winning-result table by
+size. Per-run rows support size-versus-time plots with separate algorithm lines.
+SD and SEM are sample summaries, not confidence guarantees; repeated inputs
+and changing machine load should be considered when interpreting them.
+`python3 tests/test_size_modes.py` tests generation and reporting without
+building or running a solver.
+
+The runner now links a temporary profiling executable from the current solver
+objects and `tests/profile_solver.c`. It wraps the three candidate entry points
+with monotonic wall and process CPU clocks, then saves their encoded moves on
+descriptor 4. This works with `DEBUG=0`; I do not need to change submission
+settings or parse the timing of progress messages. The regular `push_swap`
+executable is left alone. Sorted inputs have no algorithm rows, and skipped
+candidates are absent rather than assigned zero time.
+
+The summary includes an algorithm comparison table grouped by executable hash
+and settings, plus one row per candidate per run. I can use those rows as a
+later analysis dump without reopening the detailed batches. They include each
+instruction count (`rr` and `rrr` included), forward/reverse/shared rotations,
+wall and CPU time, process peak RSS, chosen wins, tied best results and the
+strict top-band result. The comparison includes mean, sample standard deviation,
+coefficient of variation, quartiles, median, P95, range and standard error,
+plus average extra moves versus the best candidate. A single sample has no
+sample SD or SEM. Missing measurements in older logs stay missing.
+
+These timings cover candidate execution, excluding candidate initialization and
+the wrapper's reporting. Total solver time includes process startup, parsing,
+initialization and output, so I do not expect the two totals to match exactly.
+The profiling build adds reporting overhead to total time. RSS is a process-wide
+high-water mark at candidate completion, not each algorithm's private memory;
+later algorithms inherit earlier peaks. The move counts describe emitted
+instructions and can include no-ops. SD and percentiles describe this sample's
+variability; they do not promise future results or establish asymptotic
+complexity from one input size. The reference checker validates the winning
+stream, not every candidate separately. `python3 tests/test_runner_profiles.py`
+checks the instrumentation, statistics, Markdown round-trip and old-log parsing.
 
 New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
 The seed, hash and resume metadata are ordinary readable table rows; no hidden

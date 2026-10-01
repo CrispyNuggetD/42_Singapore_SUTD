@@ -13,6 +13,8 @@ import random
 import re
 import secrets
 import signal
+import statistics
+from collections import Counter
 import subprocess
 import sys
 import tempfile
@@ -40,12 +42,141 @@ def generate(seed, generation, size):
     return values
 
 
+
+def trial_size(config, generation):
+    mode = config.get('size_mode', 'fixed')
+    if mode == 'fixed':
+        return config['size']
+    low, high = config['min_size'], config['max_size']
+    if mode == 'loop':
+        return low + generation % (high - low + 1)
+    material = f"size-v1:{config['seed']}:{generation}".encode()
+    derived = int.from_bytes(hashlib.sha256(material).digest(), 'big')
+    return random.Random(derived).randint(low, high)
+
 def stats(values):
     if not values:
         return {'count': 0, 'average': None, 'min': None, 'max': None}
     return {'count': len(values), 'average': sum(values) / len(values),
             'min': min(values), 'max': max(values)}
 
+
+
+def profile_build(destination):
+    """Link existing solver objects with development-only timing wrappers."""
+    recipe = "profile_objects:\n\t@printf '%s\\n' $(OBJS)\n"
+    objects = subprocess.check_output(
+        ['make', '-s', '-f', 'Makefile', '-f', '-', 'profile_objects'],
+        input=recipe.encode(), cwd=ROOT).decode().splitlines()
+    subprocess.run(['cc', '-Wall', '-Wextra', '-Werror', '-Iincludes',
+                    'tests/profile_solver.c', *objects, 'libft/libft.a',
+                    '-Wl,--wrap=greedy_reinsertion', '-Wl,--wrap=brute_solve',
+                    '-Wl,--wrap=get_precomputed_bfs', '-o', str(destination)],
+                   cwd=ROOT, check=True)
+
+
+def move_counts(moves):
+    return dict(sorted(Counter(moves).items()))
+
+
+def parse_profile(text):
+    algorithms = []
+    codes = dict(zip('123456789AB', 'sa sb ss pa pb ra rb rr rra rrb rrr'.split()))
+    for line in text.splitlines():
+        ident, name, status, wall, cpu, rss, encoded = line.split('\t')
+        moves = [codes[c] for c in encoded]
+        algorithms.append(dict(id=int(ident), name=name.strip(), status=int(status), moves=len(moves),
+                               seconds=float(wall), cpu_seconds=float(cpu),
+                               process_peak_rss_kib=int(rss), counts=move_counts(moves)))
+    return algorithms
+
+
+def quantile(values, fraction):
+    ordered = sorted(values)
+    offset = (len(ordered) - 1) * fraction
+    lo, hi = math.floor(offset), math.ceil(offset)
+    return ordered[lo] + (ordered[hi] - ordered[lo]) * (offset - lo)
+
+
+def distribution(values):
+    if not values:
+        return ['—'] * 10
+    mean = statistics.mean(values)
+    sd = statistics.stdev(values) if len(values) > 1 else None
+    return [mean, sd if sd is not None else '—',
+            sd / mean if sd is not None and mean else '—',
+            min(values), quantile(values, .25), statistics.median(values),
+            quantile(values, .75), quantile(values, .95), max(values),
+            sd / math.sqrt(len(values)) if sd is not None else '—']
+
+
+def analysis_tables(records, size):
+    groups = {}
+    raw = []
+    headers = ['Run', 'Generation', 'Input size', 'Rank SHA-256', 'Binary SHA-256',
+               'Algorithm ID', 'Algorithm', 'Moves', 'Wall seconds', 'CPU seconds',
+               'Process peak RSS KiB', 'Chosen', 'Tied best', 'Within top band',
+               *sorted(MOVES), 'Shared rotations', 'Forward rotations',
+               'Reverse rotations', 'Rotation actions', 'Rotation instructions']
+    for record in records:
+        size = len(record['input_ranks'])
+        candidates = record['algorithms']
+        best = min((a['moves'] for a in candidates), default=None)
+        chosen = next((a for a in candidates if a['moves'] == best), None)
+        for a in candidates:
+            key = (record['binary_sha256'], json.dumps(record['settings'], sort_keys=True), size, a['name'])
+            groups.setdefault(key, []).append((record, a, a is chosen, a['moves'] == best))
+            counts = a.get('counts', {})
+            rotations = sum(counts.get(m, 0) for m in ['ra', 'rb', 'rr', 'rra', 'rrb', 'rrr'])
+            shared = counts.get('rr', 0) + counts.get('rrr', 0)
+            band = a['moves'] < 700 if size == 100 else a['moves'] < 5500 if size == 500 else '—'
+            raw.append([record['run_id'], record['generation_id'], size, record['rank_sha256'],
+                        record['binary_sha256'], a.get('id', '—'), a['name'], a['moves'],
+                        a.get('seconds', '—'), a.get('cpu_seconds', '—'),
+                        a.get('process_peak_rss_kib', '—'), int(a is chosen), int(a['moves'] == best), band,
+                        *[counts.get(m, 0) if 'counts' in a else '—' for m in sorted(MOVES)],
+                        shared if counts else '—',
+                        sum(counts.get(m, 0) for m in ['ra', 'rb', 'rr']) if counts else '—',
+                        sum(counts.get(m, 0) for m in ['rra', 'rrb', 'rrr']) if counts else '—',
+                        rotations + shared if counts else '—', rotations if counts else '—'])
+    rows = []
+    for (digest, settings, size, name), entries in sorted(groups.items()):
+        moves = [a['moves'] for _, a, _, _ in entries]
+        timed = [a['seconds'] for _, a, _, _ in entries if 'seconds' in a]
+        cpu = [a['cpu_seconds'] for _, a, _, _ in entries if 'cpu_seconds' in a]
+        peak = [a['process_peak_rss_kib'] for _, a, _, _ in entries if 'process_peak_rss_kib' in a]
+        rows.append([digest, settings, size, name, len(entries), len(timed),
+                     sum(chosen for _, _, chosen, _ in entries),
+                     sum(tied for _, _, _, tied in entries), *distribution(moves),
+                     *distribution(timed), statistics.mean(cpu) if cpu else '—', max(peak) if peak else '—',
+                     statistics.mean([a['moves'] - min(c['moves'] for c in r['algorithms'])
+                                      for r, a, _, _ in entries]),
+                     sum(a['moves'] < (700 if size == 100 else 5500)
+                         for _, a, _, _ in entries) / len(entries) if size in (100, 500) else '—',
+                     *[statistics.mean([a['counts'].get(move, 0) for _, a, _, _ in entries
+                                        if 'counts' in a])
+                       if any('counts' in a for _, a, _, _ in entries) else '—'
+                       for move in sorted(MOVES)]])
+    labels = ['Mean', 'Sample SD', 'CV', 'Min', 'P25', 'Median', 'P75', 'P95', 'Max', 'SEM']
+    text = '\n## Algorithm comparison\n\n'
+    text += table(['Binary SHA-256', 'Settings JSON', 'Input size', 'Algorithm', 'Runs', 'Timed runs',
+                   'Chosen wins', 'Tied best', *['Moves ' + x for x in labels],
+                   *['Seconds ' + x for x in labels], 'Mean CPU seconds', 'Max process peak RSS KiB', 'Mean extra moves vs best',
+                   'Top-band fraction', *['Mean ' + move for move in sorted(MOVES)]], rows)
+    text += '\n## Per-run algorithm data\n\n' + table(headers, raw)
+    text += ('\nRows contain only algorithms that actually ran. Comparisons are grouped by binary, settings and input size. '
+             'Sample SD measures observed variability; CV is SD/mean; SEM is SD/sqrt(n), not a prediction interval. '
+             'Quantiles use linear interpolation. Missing historical measurements are marked —. '
+             'Chosen wins use the first minimum, matching solver tie-breaking. '
+             'rr and rrr are shared forward/reverse rotations; rotation actions count each shared move twice. '
+             'Counts describe emitted instructions, including possible no-ops. '
+             'Timing covers candidate execution, excluding instrumentation output and candidate initialization; '
+             'total solver time includes process launch, parsing, initialization, reporting and output. '
+             'RSS is Linux process-wide peak memory at candidate completion, not memory owned by that algorithm; '
+             'later rows inherit earlier peaks. Runtime is measured, asymptotic complexity is not. '
+             'All candidate rows belong to runs whose winning output passed the reference checker; '
+             'individual candidates are not independently checker-validated by this runner.\n')
+    return text
 
 def atomic_text(path, text):
     temporary = path.with_suffix('.tmp')
@@ -96,6 +227,7 @@ def render_record(record):
     text = f"\n## Run {record['run_id']}\n\n" + table(['Field', 'Value'], rows)
     text += '\n### Algorithm moves\n\n' + table(['Algorithm', 'Moves'],
              [(a['name'], a['moves']) for a in record['algorithms']])
+    text += code_section('Algorithm metrics JSON', json.dumps(record['algorithms'], sort_keys=True))
     text += code_section('Input ranks', ' '.join(map(str, record['input_ranks'])))
     text += code_section('Winning moves', '\n'.join(record['moves']))
     text += '\n<details>\n<summary>Solution debug and completed status</summary>\n'
@@ -122,6 +254,9 @@ def parse_records(text):
                   'completed_status': read_section(body, 'Completed status').splitlines(),
                   'algorithms': [{'name': k, 'moves': int(v)} for k, v in algorithms.items()
                                  if k not in ('Algorithm', '---')]}
+        metrics = read_section(body, 'Algorithm metrics JSON')
+        if metrics:
+            record['algorithms'] = json.loads(metrics)
         record.update({k: metadata[k] for k in ('error', 'stderr_tail', 'checker_stderr') if k in metadata})
         records.append(record)
     return records
@@ -166,7 +301,11 @@ def read_config(path):
         return json.loads(path.read_text())['config']
     metadata = fields(path.read_text().split('## Averages', 1)[0])
     return {'prefix': metadata['Session prefix'], 'seed': int(metadata['Master seed']),
-            'size': int(metadata['Input size']), 'generator': metadata['Generator'],
+            'size': int(metadata['Input size']) if metadata['Input size'] != 'variable' else None,
+            'size_mode': metadata.get('Size mode', 'fixed'),
+            'min_size': int(metadata.get('Minimum size', 2)),
+            'max_size': int(metadata.get('Maximum size', 500)),
+            'generator': metadata['Generator'],
             'python_version': metadata['Python version']}
 
 
@@ -178,7 +317,9 @@ def save_summary(path, config, records, status):
     text = '# Push_swap test summary\n\n'
     text += table(['Session', 'Value'], [
         ('Status', status), ('Successful runs', len(records)), ('Master seed', config['seed']),
-        ('Input size', config['size']), ('Next generation ID', records[-1]['generation_id']+1 if records else 0),
+        ('Input size', config['size'] if config.get('size_mode', 'fixed') == 'fixed' else 'variable'),
+        ('Size mode', config.get('size_mode', 'fixed')),
+        ('Minimum size', config.get('min_size', 2)), ('Maximum size', config.get('max_size', 500)), ('Next generation ID', records[-1]['generation_id']+1 if records else 0),
         ('Updated', dt.datetime.now().astimezone().isoformat()), ('Session prefix', config['prefix']),
         ('Generator', config['generator']), ('Python version', config['python_version'])])
     text += '\n## Averages\n\n'
@@ -191,6 +332,17 @@ def save_summary(path, config, records, status):
         rows.append((name, result['count'], f"{result['average']:.3f}" if values else '—',
                      result['min'] if values else '—', result['max'] if values else '—', unit))
     text += table(['Metric / algorithm', 'Runs', 'Average', 'Minimum', 'Maximum', 'Unit'], rows)
+    text += '\n## Winning result by input size\n\n'
+    size_rows = []
+    for size in sorted({len(r['input_ranks']) for r in records}):
+        selected = [r for r in records if len(r['input_ranks']) == size]
+        size_rows.append([size, len(selected),
+                          *distribution([r['move_count'] for r in selected]),
+                          *distribution([r['solver_seconds'] for r in selected])])
+    labels = ['Mean', 'Sample SD', 'CV', 'Min', 'P25', 'Median', 'P75', 'P95', 'Max', 'SEM']
+    text += table(['Input size', 'Runs', *['Moves ' + x for x in labels],
+                   *['Total seconds ' + x for x in labels]], size_rows)
+    text += analysis_tables(records, config['size'])
     text += '\n## Saved runs\n\n'
     for i in range(0, len(records), 10):
         name = f"{config['prefix']}_output_{i//10+1:06d}"
@@ -220,9 +372,10 @@ def run_case(values, show_solutions=False, executable=None):
     executable = executable or ROOT / 'push_swap'
     with tempfile.TemporaryDirectory(prefix='push_swap_test_') as temporary:
         dump = Path(temporary) / 'solutions.txt'
+        metrics_path = Path(temporary) / 'metrics.tsv'
         with tempfile.TemporaryFile() as moves, tempfile.TemporaryFile() as diagnostic:
-            command = ['bash', '-c', 'exec 3>"$1"; shift; exec "$@"',
-                       'push-swap-runner', str(dump), str(executable), *args]
+            command = ['bash', '-c', 'exec 3>"$1" 4>"$2"; shift 2; exec "$@"',
+                       'push-swap-runner', str(dump), str(metrics_path), str(executable), *args]
             start = time.monotonic()
             process = subprocess.Popen(command, stdout=moves, stderr=subprocess.PIPE,
                                        start_new_session=True)
@@ -245,6 +398,7 @@ def run_case(values, show_solutions=False, executable=None):
             output = moves.read()
             diagnostic.seek(0)
             debug = diagnostic.read().decode(errors='replace')
+        profiled = parse_profile(metrics_path.read_text()) if metrics_path.exists() else []
         solution_dump = dump.read_text(errors='replace') if dump.exists() else ''
     if show_solutions:
         sys.stderr.write(solution_dump)
@@ -256,6 +410,15 @@ def run_case(values, show_solutions=False, executable=None):
                              re.findall(r'algo=\d+/\d+\s*\(([^\r\n]*)\) final_moves=(\d+) DONE', debug)],
               'completed_status': [line for line in re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', debug).splitlines()
                                    if 'final_moves=' in line]}
+    if profiled:
+        result['algorithms'] = profiled
+        if code == 0 and (len({a['id'] for a in profiled}) != len(profiled)
+                          or min(a['moves'] for a in profiled) != len(decoded)):
+            result.update(checker='NOT RUN', error='Profiling events disagree with solver winner')
+            return result
+    elif values != sorted(values) and code == 0:
+        result.update(checker='NOT RUN', error='No algorithm profiling events received')
+        return result
     if code != 0 or any(move not in MOVES for move in decoded):
         result.update(checker='NOT RUN', error='Solver failed or printed invalid moves',
                       stderr_tail=debug[-8000:])
@@ -279,6 +442,11 @@ def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-n', type=int, help='successful runs to add; omit for Ctrl-C mode')
     parser.add_argument('--size', type=int, help='numbers per test (default: 100)')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('-random', '--random', action='store_true', help='deterministic random input size per trial')
+    modes.add_argument('-loop', '--loop', action='store_true', help='cycle through sizes from min to max')
+    parser.add_argument('-min', '--min', dest='min_size', type=int, help='minimum variable size (default: 2)')
+    parser.add_argument('-max', '--max', dest='max_size', type=int, help='maximum variable size (default: 500)')
     parser.add_argument('--seed', type=int, help='master seed (random by default)')
     parser.add_argument('--show-solutions', action='store_true',
                         help='also print the saved solution dump to stderr')
@@ -286,10 +454,19 @@ def arguments():
     args = parser.parse_args()
     if args.n is not None and args.n < 1:
         parser.error('-n must be positive')
-    if args.size is not None and not 2 <= args.size <= 500:
-        parser.error('--size must be between 2 and 500')
-    if args.resume and (args.seed is not None or args.size is not None):
-        parser.error('--resume reuses its saved seed and size')
+    if args.size is not None and args.size < 2:
+        parser.error('--size must be at least 2')
+    if (args.random or args.loop) and args.size is not None:
+        parser.error('--size cannot be combined with -random or -loop')
+    if not (args.random or args.loop) and (args.min_size is not None or args.max_size is not None):
+        parser.error('-min/-max require -random or -loop')
+    low = args.min_size if args.min_size is not None else 2
+    high = args.max_size if args.max_size is not None else 500
+    if low < 2 or high < low:
+        parser.error('sizes require 2 <= min <= max')
+    if args.resume and any([args.seed is not None, args.size is not None,
+                            args.random, args.loop, args.min_size is not None, args.max_size is not None]):
+        parser.error('--resume reuses its saved seed and size mode/bounds')
     return args
 
 
@@ -320,6 +497,9 @@ def main():
         summary = folder / f'{prefix}_output_summary.md'
         config = {'prefix': prefix, 'seed': args.seed if args.seed is not None else secrets.randbits(64),
                   'size': args.size or 100, 'generator': GENERATOR,
+                  'size_mode': 'random' if args.random else 'loop' if args.loop else 'fixed',
+                  'min_size': args.min_size if args.min_size is not None else 2,
+                  'max_size': args.max_size if args.max_size is not None else 500,
                   'python_version': sys.version.split()[0]}
     snapshot_dir = tempfile.TemporaryDirectory(prefix='push_swap_session_')
     lock = os.open(folder, os.O_RDONLY)
@@ -336,7 +516,7 @@ def main():
             if not os.access(ROOT / 'checker_linux', os.X_OK):
                 raise ValueError('checker_linux must be executable')
             executable = Path(snapshot_dir.name) / 'push_swap'
-            executable.write_bytes((ROOT / 'push_swap').read_bytes())
+            profile_build(executable)
             executable.chmod(0o700)
             binary_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
         settings = {name: int(value) for name, value in re.findall(
@@ -345,22 +525,24 @@ def main():
         seen = {r['rank_sha256'] for r in records}
         generation = records[-1]['generation_id'] + 1 if records else 0
         target = len(records) + args.n if args.n else None
-        permutations = math.factorial(config['size'])
-        print(f"Session: {folder}\nSeed: {config['seed']} | size: {config['size']} | saved: {len(records)}", flush=True)
+        fixed = config.get('size_mode', 'fixed') == 'fixed'
+        permutations = math.factorial(config['size']) if fixed else None
+        print(f"Session: {folder}\nSeed: {config['seed']} | mode: {config.get('size_mode', 'fixed')} | bounds: {config.get('min_size', 2)}..{config.get('max_size', 500)} | fixed size: {config['size']} | saved: {len(records)}", flush=True)
         save_summary(summary, config, records, 'running')
         status = 'complete'
         try:
             while target is None or len(records) < target:
-                if len(seen) == permutations:
+                if fixed and len(seen) == permutations:
                     status = 'all_unique_permutations_tested'
                     print('All unique permutations have been tested.', flush=True)
                     break
-                values = generate(config['seed'], generation, config['size'])
+                size = trial_size(config, generation)
+                values = generate(config['seed'], generation, size)
                 digest = rank_hash(values)
                 generation += 1
-                if digest in seen:
+                if fixed and digest in seen:
                     continue
-                print(f"Run {len(records)+1} | generation {generation-1} | ranks {digest[:12]}", flush=True)
+                print(f"Run {len(records)+1} | generation {generation-1} | size {size} | ranks {digest[:12]}", flush=True)
                 record = {'run_id': len(records)+1, 'generation_id': generation-1,
                           'seed': config['seed'], 'rank_sha256': digest, 'input_ranks': values,
                           'binary_sha256': binary_hash, 'settings': settings}
