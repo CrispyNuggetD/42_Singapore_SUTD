@@ -4,10 +4,497 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
+<a id="description"></a>
+
+## Description
+
+Push_swap is a C program that takes distinct integers in stack A, with stack B
+initially empty, and prints instructions that leave A ascending and B empty.
+The aim is to use as few instructions as possible. The first input is the top
+of A; the output is one operation per line, not the sorted numbers themselves.
+
+| Permitted operations | Effect |
+| --- | --- |
+| `sa`, `sb`, `ss` | Swap the top two elements of A, B, or both |
+| `pa`, `pb` | Push the top element from B to A, or A to B |
+| `ra`, `rb`, `rr` | Move the top element to the bottom of A, B, or both |
+| `rra`, `rrb`, `rrr` | Move the bottom element to the top of A, B, or both |
+
+Each emitted instruction counts as one move, including combined operations.
+My bonus `checker` reads a move stream and verifies its final result.
+
+My [background and motivation](#background) and [technical appendices](#appendix)
+explain the wider investigation behind this implementation.
+
+After returning silently for already-sorted input, the main program dispatches
+inputs of 1–4 values to a precomputed exact table
+and 5–10 values to full-input BFS. With the current skip flag set to zero, it
+also runs the five greedy candidates; 11–500 values use those greedy candidates
+alone. Above 500, it runs the existing three-element-seed local candidate. The first shortest generated solution wins. Archived experiments
+are distinguished from this active path in the appendix.
+
+<a id="reading-routes"></a>
+
+### Reading routes
+
+**For evaluation:** [Build and run](#instructions) → [Final algorithms and settings](#seed-candidate-flow) →
+[Bonus checker](#my-bonus-checker) → [Pre-submission checks](#what-i-checked-before-submission) →
+[Resources and AI usage](#resources). These sections form the overview before the appendix.
+
+**For a deeper read:** [Background](#background), [mathematical claims and evidence](#reading-the-mathematics),
+or the [appendix contents](#contents). The investigation is optional background, not a prerequisite for evaluating the code.
+
+<a id="instructions"></a>
+
+## Instructions
+
+Run these commands from the project directory. Building requires `make`, a C
+compiler available as `cc`, and `ar`. The Makefile builds the bundled `libft/`
+automatically; no sibling checkout or extra library copy is needed.
+
+### Build and clean
+
+```sh
+make          # ./push_swap
+make bonus    # ./checker
+make clean
+make fclean
+make re
+```
+
+`make clean` removes project and libft objects; `make fclean` also removes built
+executables and the library archive. Repeated `make` did not relink in my
+[pre-submission checks](#what-i-checked-before-submission).
+
+### Run the solver
+
+```sh
+./push_swap 3 2 1
+./push_swap "3 2 1" > moves.txt
+./checker "3 2 1" < moves.txt
+```
+
+The final header uses `DEBUG=0`: stdout contains only the selected instructions,
+and invalid input produces `Error` on stderr. No arguments or already-sorted
+valid input produce no output. The checker examples require `make bonus`.
+
+My submission clone needs only the C sources, headers, Makefiles and README.
+The [GitHub development tools](#my-github-tools-and-the-42-submission) are optional;
+their commands and links require the public repository's `tests/` directory.
+
+### Accepted input formats
+
+My parser (`src/parsing_and_ranking_input/parse_sort_input.c`) reads arguments
+from left to right and can read several space-separated integers from each argument. These forms
+therefore describe the same initial stack, with 3 at the top:
+
+| Form | Example |
+| --- | --- |
+| Separate arguments | `./push_swap 3 1 2` |
+| One double-quoted list | `./push_swap "3 1 2"` |
+| One single-quoted list | `./push_swap '3 1 2'` |
+| Mixed grouped and separate arguments | `./push_swap "3 1" 2` |
+| Leading, repeated and trailing spaces inside a group | `./push_swap "  3   1  2  "` |
+
+The shell removes the surrounding quotes before my program receives the
+argument. Quotes group the input; they are not characters that my parser needs
+to strip. I also accept an optional `+` or `-` directly before the digits,
+and leading zeroes:
+
+```sh
+./push_swap +3 -1 02
+```
+
+Values must be distinct after conversion: `2`, `+2` and `02` represent the
+same integer, so using more than one of them is a duplicate. My intended range
+is signed 32-bit integers on my 42 machine. There is no arbitrary 500-value
+input cap. The parser counts tokens before allocating and checks numerical
+range rather than digit count, so long strings of leading zeroes are accepted.
+Input size is still constrained by available memory, the shell/OS argument
+limit, and the implementation's `int` indices (`count + 1` must fit).
+
+Inside a quoted argument, the supported separator is an ordinary ASCII space,
+not general whitespace. Do not use commas, tabs, newlines, decimal points or
+bracketed list notation. Empty arguments, space-only arguments and signs
+without digits are not valid input. Integer-boundary, malformed-input and allocation-failure cases are covered by
+the [hybrid-storage checks](#hybrid-storage-and-recursive-malloc); those checks are not a complete submission audit.
+
+The supplied Linux checker also accepted the grouped and mixed forms in my
+AI-assisted checks. Both programs should receive the same initial input.
+
+For shell-variable input, quoting preserves the whole list as one argument:
+
+```sh
+ARG="3 1 2"
+./push_swap "$ARG" > moves.txt
+./checker "$ARG" < moves.txt
+```
+
+[Evaluation: next — final algorithms and settings](#seed-candidate-flow) · [Back to reading routes](#reading-routes)
+
+<a id="at-a-glance"></a>
+
+<a id="seed-candidate-flow"></a>
+
+## Final algorithms and settings
+
+`solve()` dispatches the exact candidate first when the input has at most
+`BRUTE_MAX_N` values (currently 10). It then loops from `ALGO_THREE_LOCAL` to
+`ALGO_COUNT`, unless `SKIP_OTHER_ALGO_AFTER_BFS` is enabled (currently 0).
+Above 500, it dispatches directly to the existing `ALGO_THREE_LOCAL` strategy before this candidate loop.
+
+Circular LIS means the longest increasing subsequence I can retain after choosing
+a rotation of A. I keep that seed, or a sorted three-element seed, and greedily
+reinsert B into circularly ascending A before aligning its minimum to the top.
+Lookahead compares complete candidate insertions, including rotations and `pa`;
+branch-and-bound pruning avoids branches that cannot improve the horizon score.
+
+The enum and `src/sorting_and_algorithms/algorithm_config.c` define six entries:
+
+| Enum | Preparation | Search policy |
+| --- | --- | --- |
+| `ALGO_BFS` | None | Precomputed 1–4; full-input BFS 5–10; absent above 10 |
+| `ALGO_THREE_LOCAL` | Three elements | Local greedy |
+| `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
+| `ALGO_LIS_LOOKAHEAD` | Circular LIS | Repeated lookahead with partial execution |
+| `ALGO_LIS_OPENING_ONE` | Circular LIS | Special opening search, execute one, then repeated lookahead |
+| `ALGO_LIS_OPENING_BATCH` | Circular LIS | Special opening search, execute a batch, then repeated lookahead |
+
+I run the three-element local candidate before circular LIS local. Equal-length
+answers keep the first candidate, so this order can change the chosen move
+sequence in a tie without changing its length.
+
+There are six generated candidates for small inputs with the skip flag off,
+and five for 11–500 values. Above 500 has one local greedy answer. Algorithm IDs and generated solution-slot indices
+are different when the exact candidate is absent. Three-element seed plus
+lookahead is not an active enum entry.
+
+My final, best-supported tested settings in `includes/push_swap.h` are:
+
+| Phase | Lookahead depth | Execution limit |
+| --- | ---: | ---: |
+| Normal continuation, total input size <= 100 | 12 | 10 |
+| Normal continuation, total input size 101–500 | 7 | 5 |
+| Special opening | 12 | 1 for OPENING_ONE; 5 for OPENING_BATCH |
+
+Above 500 values, I use local greedy without lookahead. Within the lookahead
+path, the size threshold uses **A plus B**, not the shrinking length of B.
+Actual saved paths and executed batches are capped by the remaining work. The opening
+variants currently continue with lookahead because their `use_lookahead` field
+is 1; older opening-then-local benchmarks are historical experiments.
+
+Each candidate starts from fresh stack copies and its own answer slot. The first
+shortest generated answer wins ties. `t_seed_mode` chooses preparation;
+`t_algorithm` and `t_algo_config` choose the whole strategy. Internal depth zero
+selects local greedy; a positive depth searches candidate insertions.
+
+| Stage | File | Responsibility |
+| --- | --- | --- |
+| Candidate loop | `src/sorting_and_algorithms/solve.c` | Reset stacks and solution for each generated candidate |
+| Preparation | `greedy_prepare.c` | Keep three values or a circular LIS |
+| Composition | `greedy_stages.c` | Prepare, search/execute batches, then align A |
+| Execution | `greedy_execute.c` | Share rotations, finish residual rotations, then push |
+
+<a id="rank-normalisation"></a>
+
+### Rank normalisation
+
+[`rank_values.c`](src/parsing_and_ranking_input/rank_values.c) counts how many input values are smaller
+than each value. For distinct inputs, that gives ranks from `0` to `n - 1`:
+
+```text
+values:  40  -8  12
+ranks:    2   0   1
+```
+
+The ordering is preserved, so the same stack moves sort either representation.
+The current implementation compares every value with every other value, taking
+O(n²) time. Small BFS states store normalised ranks as unsigned bytes; the main
+stacks still store integers.
+
+<a id="circular-buffer-stacks"></a>
+
+### Circular-buffer stacks
+
+Each stack has an integer array, a capacity, a read index and a write index.
+The indices wrap around the array. One spare slot distinguishes a full buffer
+from an empty one, so `n` input values use a capacity of `n + 1`.
+
+The circular-buffer helpers implement the underlying movements. The
+`stack_operation_*.c` wrappers also append an encoded move to the solution.
+The output helper translates those codes back to names such as `sa`, `pb` and
+`rra`, one instruction per line. Progress diagnostics use stderr; the detailed
+solution dump uses descriptor 3. Neither is part of stdout's instruction stream.
+
+After parsing and validation, I check the ranks before allocating answer
+buffers or running any candidates.
+If each logical position `i` contains rank `i`, the input is already sorted.
+I just walk through A once: O(n), with the same check for inline and heap
+buffers. There is nothing to sort, so I print nothing and use the normal cleanup
+path. I still validate the entire input first; duplicates and invalid tokens
+must not become successful early exits.
+
+The small-input table and full-input BFS provide shortest answers under unit
+instruction costs. Greedy lookahead provides a tested heuristic, not a globally
+optimal answer. Details: [BFS and state indexing](#bfs-and-state-indexing),
+[precomputed tables](#precomputed-bfs-tables), [lookahead](#greedy-lookahead-who-owns-each-plan)
+and [safe pruning](#safe-pruning-bounds).
+
+[Evaluation: next — bonus checker](#my-bonus-checker) · [Back to reading routes](#reading-routes)
+
+## My bonus checker
+
+I ended up needing only two bonus `.c` files: [main_checker_bonus.c](src/bonus/main_checker_bonus.c)
+and [checker_util_bonus.c](src/bonus/checker_util_bonus.c). I keep the reader
+and move dispatcher together in the utility file. Most of the machinery
+was already there. I needed to read and execute someone else's moves, then
+check the result; I did not need another sorting algorithm.
+
+```sh
+make bonus
+./push_swap 3 1 2 | ./checker 3 1 2
+printf 'sa\n' | ./checker 2 1
+```
+
+I start with the same input in A and an empty B. `parse_input()` validates the
+integers, checks overflow and duplicates, and replaces the values with ranks.
+Ranking preserves their order, so it works for checking as well as sorting.
+The first argument remains the top of A. With no arguments, I exit silently
+without reading stdin.
+
+My reader applies each instruction as it arrives, in its original order.
+Once it reaches EOF, I print `OK` if A is sorted and B is empty, or `KO` if the
+valid moves did not finish the job. Invalid arguments, malformed instructions,
+or reader failures produce `Error` on stderr instead. A failed sort is still
+a valid execution, so `KO` uses the normal success exit status.
+Even if the input starts sorted, I still read the moves: they could scramble
+it, leave something in B, or contain an error.
+
+The move dispatcher matches the whole instruction, including its newline and
+terminator. I reject extra spaces, unknown names and a last instruction with
+no newline. Two function-pointer tables handle the existing signatures:
+one-stack operations such as `sa`, and two-stack operations such as `ss`.
+The matching index chooses the function, and I select A or B for the
+one-stack calls. I pass `NULL` as the solution pointer because
+`append_move_to_soln()` already treats that as “execute without recording”.
+That small convention saved me from duplicating all eleven operations.
+
+I did need to handle one difference: my `pa()` and `pb()` wrappers report an
+error if they pop an empty source. In my checker, those are valid no-ops. I check
+B before `pa` and A before `pb`, returning success immediately when the source
+is empty. Swaps and rotations already handle stacks with fewer than two values.
+
+The circular-buffer helpers let me reuse both inline and heap storage.
+`ranks_are_sorted()` now lives in a shared utility file and checks that logical
+position `i` contains rank `i`. I also require B to be empty before accepting
+the result. Both optional heap buffers are freed after execution or failure.
+
+I wrote the checker logic after discussing the design with Codex. Codex supplied
+the initial skeleton and build rules, explained function pointers, reviewed my
+implementation, helped with formatting and comments, and moved the existing
+rank check into shared code. It also ran 107 functional checks, including 84
+random instruction-stream comparisons with the reference checker, plus four
+Valgrind checks covering valid execution, invalid moves, invalid arguments and
+heap storage. Those checks passed, as did the bonus build and Norm checks.
+These checks give me evidence about the cases tested; they do not mean I have
+tested every possible input. Bonus assessment still depends on the mandatory part
+meeting all required benchmarks at the highest score.
+
+For the reader and error-handling rationale, see [why my status-returning GNL helped](#why-my-status-returning-gnl-helped).
+
+[Evaluation: next — pre-submission checks](#what-i-checked-before-submission) · [Back to reading routes](#reading-routes)
+
+<a id="checks-and-current-limitations"></a>
+
+## What I checked before submission
+
+I checked the current layout with diagnostics disabled (`DEBUG = 0`).
+`norminette src includes libft` passed. A temporary submission-only copy with
+no test tools or downloaded checker built both programs, did not relink on
+repeated `make`, preserved executables with `clean`, rebuilt with `re`, and
+removed them with `fclean`.
+
+The table below records the inputs I checked and their results. For valid unsorted cases I
+saved the solver's moves and replayed them with both my checker and the supplied
+Linux checker; stdout contained only moves and stderr was empty.
+
+| Inputs checked | Result |
+| --- | --- |
+| No arguments; `42`; `0 1 2 3 4 5 6 7 8 9` | Silent success |
+| `-2147483648 0 2147483647` | Silent sorted input; both checkers accepted the empty move stream |
+| `2147483647 0 -2147483648` | Both checkers returned `OK`; Valgrind reported no errors or leaks |
+| `2 1`; every permutation of `0 1 2` | Both checkers returned `OK`; at most three moves |
+| `1 5 2 4 3`; every permutation of `0 1 2 3 4` | Both checkers returned `OK`; at most twelve moves; the first case also passed Valgrind |
+| `0 one 2`; `1 2 1`; `2147483648`; `-2147483649`; `""`; `--1`; `-0 +0`; `"1-2"` | Both programs printed only `Error` on stderr |
+| `1x`; `1 1` under Valgrind | Both programs rejected them without memory errors or leaks |
+| Three seeded random 100-value inputs, seed `42` through `push_swap_tester.sh` | Reference checker `OK`; 496, 507 and 511 moves, all below 700 |
+| Three random 500-value inputs through `tests/benchmark_500.sh` | Both checkers `OK`; 4811, 4943 and 4969 moves, all below 5500; successful solver exits and empty stderr |
+
+The valid-case suite covered 135 runs, including all three- and five-value
+permutations. The error suite covered 16 program/input combinations; eight
+Valgrind runs and 18 injected allocation failures with ASan/UBSan also passed.
+The precomputed-table test passed all 33 permutations through size four,
+including wrapped buffers and a five-value BFS fallback. These results apply
+to the tested inputs; they do not imply that every permutation was checked
+for larger sizes.
+
+The three documented 500-value runs averaged **4907.67 moves** and approximately
+**211.77 seconds (3 min 32 sec)** on my school Intel Core i7-12700, with `DEBUG=0`.
+The time is an estimate from file timestamps, not a CPU-time measurement.
+The later 24-run profiled 100-value session averaged **499.29 winning moves**.
+See [benchmark context and per-candidate results](#benchmark-details) for
+inputs, settings, hardware and measurement limits.
+
+I passed the listed pre-submission checks, including the build, Norm,
+small-input, error and memory checks above. The tested 100- and 500-value
+inputs met the highest move bands. The local subject allows at most 5500
+moves; the evaluation mirror used by my checklist says fewer than 5500,
+and all three 500-value trials meet that stricter boundary. These results
+document what I tested; the live evaluation determines the mandatory score
+and bonus eligibility.
+
+The final header settings are my best-supported tested compromise between
+move count, runtime and memory use within my available computational resources.
+I reached them through a variety of inputs and repeated trials, rather than
+choosing a depth after one successful run. The approximately three-and-a-half-minute
+average for the three documented 500-value trials is a runtime I consider
+practical for my 42 evaluation, with acceptable move counts. By “current best”,
+I mean the overall trade-off I have had the resources to test and substantiate,
+not a proven optimum, an inherent limit of the algorithm, or the fastest
+possible configuration. The [configuration table](#seed-candidate-flow)
+records those final settings.
+
+<a id="current-limitations"></a>
+
+### Current limitations
+
+I have completed the implementation and the listed pre-submission checks.
+The remaining limits concern the scope of the evidence and the cost of the
+algorithms, rather than unfinished versions of the earlier fixes:
+
+- BFS memory still grows factorially, and recursive lookahead remains expensive.
+- The documented benchmarks cover the inputs and configurations tested; they
+  do not guarantee the same move counts or runtime on every input or machine.
+- My candidate regression harness now checks the current candidates, and the
+  random runner captures the current configuration macros. Older reports retain
+  only the metadata recorded at the time.
+- The listed build, Norm and memory checks passed. The live evaluation still
+  assesses the submission against the full project requirements.
+
+My final settings reflect the trade-off I could substantiate with the resources
+and trials available to me. Further tuning remains possible, but is not required
+to describe this implementation as complete.
+
+[Evaluation: next — resources and AI usage](#resources) · [Back to reading routes](#reading-routes)
+
+<a id="resources"></a>
+
+## Resources
+
+- 2swap. [*I Solved Klotski*](https://www.youtube.com/watch?v=YGLNyHd2w10) (also circulated as *Adventures in State Space*). Inspiration for viewing a concrete puzzle as a graph of configurations and moves, and for my proposed exact push_swap state-graph visualisation described under future research.
+- Jamie Dawson. [*Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a), 11 May 2019. An early foundation for my understanding of hard-coded small cases and the five-element optimality question described in the background.
+- Ulysse Gerkens. [*Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0), 1 August 2023. A related implementation article that links to Dawson's small-case explanation; its reported performance belongs to that author's implementation.
+
+- [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. It influenced my thinking, but I did not implement its beam search or Iterated Greedy methods.
+
+- Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein. [*Introduction to Algorithms*, third edition](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/). MIT Press, 2009. ISBN 978-0-262-03384-8. A major reading reference during my time at 42 and a substantial help to this project; see the [background](#background).
+
+- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. I found this useful inspiration for testing lookahead in greedy reinsertion, but those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve my solver.
+- [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. I used this as a reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
+- [Working notes](../backups/notes.md) and [saved study reports](tests/debug/old_results/) document the investigation and examples.
+- [Bundled libft documentation](libft/README.md) describes the shared library.
+- I followed the structure of my [Pipex README](../2_pipex/README.md): feature status, design explanations, reproducible commands and explicit limitations.
+- Harvard CS50 lectures by David J. Malan, peer discussions and debugging references contributed to the broader learning process recorded in the previous README.
+
+### Use of AI
+
+I use ChatGPT/Codex for explanations, alternative approaches and tradeoffs, and
+help when I am stuck. I bring questions, ideas and deductions into the discussion
+and work through the reasoning with AI. This project's algorithm design and
+process were developed through that collaboration; established methods such as
+Lehmer ranking are not my invention.
+
+AI generated the Lehmer-ranking Mermaid diagram and helped write the mathematical
+explanation in this README. I did not create that diagram myself. Its attribution
+is also placed beside the diagram so readers do not mistake it for unaided work.
+
+AI assistance also includes the debugging and diagnostic printing tools, test
+harnesses and experimental comparisons, mechanical editing, file organisation,
+build checks, and documentation. These supporting tools help me inspect behaviour
+and test ideas; their output is not proof that the solver is correct or ready
+for evaluation.
+
+For Norm compliance, Codex helped refactor my existing BFS code
+for the 25-line function limit, five-local-variable limit, typedef naming and
+formatting rules. This mainly meant splitting existing work into named functions,
+grouping search variables into a struct, moving helpers into focused files, and
+updating declarations and Makefile paths. It was not a request to "vibe code" a
+new BFS algorithm: the queue, visited bitset, move order, parent links and path
+reconstruction came from the existing implementation. I reviewed the changes
+through discussion so I can understand and explain them during evaluation.
+
+AI did write the refactoring edits, so "no code was generated" would be too
+broad a claim. The distinction is that these edits reorganised existing logic
+for readability and Norm compliance rather than replacing it with an unexplained
+new solution. In the direct BFS regression check, 159 inputs produced exactly
+the same move sequences before and after the refactor. That is evidence for
+those cases, not a proof covering every possible input.
+
+For hybrid storage, I asked Codex to implement the agreed
+inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
+regression checks. This work includes new code, beyond the earlier mechanical
+BFS refactor. I remain responsible for understanding and explaining that code.
+
+I also use AI as an editorial assistant for this README. I bring my questions,
+scattered notes, conversations, experiments and sometimes rather tangled
+explanations; AI helps collate and paraphrase them into a coherent, readable
+account. This write-up grew through those discussions and revisions, rather
+than from a single request to generate a README. I remain responsible for
+checking that it reflects what I meant and what I actually implemented.
+Where AI contributed explanations, mathematical derivations, diagrams or
+generated tools, I identify that assistance separately; editorial help does
+not make every technical contribution solely mine.
+
+The [precomputed-table attribution](#authorship-and-ai-assistance-for-precomputed-solutions)
+and [checker section](#my-bonus-checker) identify those contributions in more detail.
+
+My aim is to understand and explain the implementation, rather than present an
+unexplained generated solution as my own. This follows the distinction described
+in my [Pipex README's Use of AI section](../2_pipex/README.md#use-of-ai): the
+learning discussion and my own reasoning are distinguished from AI-assisted
+mechanical work, testing and documentation.
+
+---
+
+**End of the evaluation overview.** The project, commands, final algorithms,
+checker, recorded checks and AI attribution are covered above. The sections
+below are optional technical detail, background and earlier experiments.
+
+<a id="appendix"></a>
+<a id="contents"></a>
+
+## Appendix — technical detail and investigation
+
+| Topic | Read more |
+| --- | --- |
+| Background | [Why I spent time on push_swap](#background) |
+| Mathematical claims | [Definitions, guarantees and hypotheses](#reading-the-mathematics) |
+| Seed choice | [LIS, LDS and the square-root guarantee](#lis-lds-guarantee) |
+| Exact solutions | [BFS and Lehmer ranking](#bfs-and-state-indexing) · [Precomputed tables](#precomputed-bfs-tables) |
+| Greedy implementation | [Plan ownership](#greedy-lookahead-who-owns-each-plan) · [Hybrid storage](#hybrid-storage-and-recursive-malloc) |
+| Heuristics and pruning | [Cost and disorder](#greedy-heuristics) · [Safe bounds](#safe-pruning-bounds) |
+| Checker internals | [Status-returning GNL](#why-my-status-returning-gnl-helped) |
+| Benchmarks | [Machine, timings and candidate comparison](#benchmark-details) |
+| Development tools | [GitHub versus submission files](#my-github-tools-and-the-42-submission) · [Analysis tools](#analysis-tools-and-study-data) · [Random runner](#repeated-random-tests) |
+| Earlier approaches | [Archived chunking](#chunk-extraction-and-the-hidden-stack) · [Batching experiments](#earlier-batching-experiment-initial-decision-on-five-inputs) · [Discussion](#discussion--discoveries) |
+| Unimplemented ideas | [Future research](#future-research) |
+
+[Return to the evaluation route](#reading-routes)
 
 <a id="preface"></a>
+<a id="background"></a>
 
-## Preface — why I spent so much time on push_swap
+## Background — why I spent so much time on push_swap
 
 I spent a substantial part of my time at 42 reading **Introduction to Algorithms,
 Third Edition**, by Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and
@@ -23,12 +510,12 @@ as much as I could about why an approach works, where it fails, and how to
 improve it within real computational limits. That is why this README is long:
 it is both project documentation and a record of an extended investigation.
 
-The roughly four months associated with this project included an absence from
+The roughly six months I spent on this project included an absence from
 school of more than a month for health and personal reasons. Much of that
 period was spent reading, watching algorithm explanations and working through
 ideas away from school, with limited access to coding tools. The implementation
 work was concentrated into a shorter period. This timeline reflects both my
-circumstances and the breadth of the learning process, rather than four months
+circumstances and the breadth of the learning process, rather than six months
 of continuous coding.
 
 What interested me was the difference between sorting an ordinary array and
@@ -131,89 +618,9 @@ invariants and trade-offs explicit.
 
 The result is not a claim to the best push_swap implementation. It is a record
 of what I built, tested, reconsidered and still want to understand. Readers
-looking for the current implementation can begin with [At a glance](#at-a-glance);
-readers interested in the investigation can use the [Contents](#contents) and
+looking for the current implementation can begin with [the final algorithms](#seed-candidate-flow);
+readers interested in the investigation can use the [appendix contents](#contents) and
 the [guide to mathematical claims and evidence](#reading-the-mathematics).
-
-> Current implementation: small inputs use precomputed answers (1–4) or full-input BFS (5–10); five greedy candidates run through 500 values. Above 500, the existing nonrecursive three-element-seed greedy solver uses heap-backed circular buffers. Archived chunk and seed experiments live in `../backups/`. See [Seed candidate flow](#seed-candidate-flow) for current dispatch and settings. Dated experiments below retain their original configurations.
-
-> Portability: With AI assistance, I fixed a bug in the bundled formatter's shared `va_list` handling that caused the decoded-move debug printer to crash on Apple Silicon. The best-solution scan now considers only generated solutions (`0` through `x->cur`). See the [library portability update](libft/1_ft_printf/README.md#post-submission-update-portable-variadic-argument-consumption) for details and validation. Three generated runs each at 2, 11, 100, and 500 values completed without a crash; sorting correctness and move-count compliance are separate checks.
-
-
-<a id="at-a-glance"></a>
-
-## At a glance
-
-✅ = implemented. 🚧 = partial or experimental. ❌ = not met or not implemented.
-These describe the current code and study tools; they are not evaluation scores.
-
-I have completed the project and passed the listed
-[pre-submission checks](#what-i-checked-before-submission). My final solver
-combines exact small-input answers with greedy candidate comparison. The
-documented trials support my choice of settings; the live evaluation determines
-the final score. Earlier experiments, including the archived chunk solver,
-remain here as a record of how I reached this implementation.
-
-| Status | Feature | Current behavior |
-|---|---|---|
-| ✅ | Integer input | Validates signs, integer range and duplicates; supports grouped arguments, long leading zeroes and more than 500 values. |
-| ✅ | Rank normalisation | Replaces each distinct value with its position in sorted order. |
-| ✅ | Circular-buffer stacks | Uses inline arrays through 500 values and allocated arrays above 500, with wrapping indices. |
-| ✅ | Operation implementations | Swap, push, rotate, reverse rotate and combined-operation functions are present, alongside BFS state transformations. |
-| ✅ | BFS state indexing | Uses a Lehmer permutation rank plus the A/B split and a visited bitset. |
-| 🚧 | Archived chunk solver | Rank-interval extraction and restricted BFS replay are preserved in `../backups/`; they are not in the active build. |
-| ✅ | Candidate comparison | Five greedy strategies run through 500 values; inputs of at most 10 also receive an exact candidate. Above 500 uses the existing three-element-seed local candidate. The first shortest generated solution is printed. |
-| ✅ | Study tools | Includes a permutation analyser, a reverse-BFS shortest-path analyser and an input generator. |
-| ✅ | Saved study data | Reports and trial logs are preserved in Git under [`tests/debug/old_results/`](tests/debug/old_results/). |
-| ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
-| ✅ | Subject move requirements | Three current 100-value and three current 500-value trials passed the highest move bands; exact counts and supporting checks are documented below. |
-| ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics use stderr and descriptor 3. |
-| ✅ | Bonus checker implementation | My two-file checker reuses the parser and stack operations; `make bonus` builds it. The supplied Linux checker remains a separate reference. |
-
-[↑ Back to top](#top)
-
-<a id="design-choices-and-edge-cases"></a>
-
-## Design choices and edge cases
-
-| Status | Choice | Why it matters |
-|---|---|---|
-| ✅ | [Normalise before searching](#rank-normalisation) | Relative order determines sorting; original integer magnitudes need not appear in BFS states. |
-| ✅ | [Circular buffers](#circular-buffer-stacks) | Stack operations reuse fixed storage without allocating nodes for each move. |
-| ✅ | [Encode states directly](#bfs-and-state-indexing) | A permutation and split identify both stacks, allowing direct visited-bit lookup. |
-| 🚧 | [Protect the hidden part of A](#chunk-extraction-and-the-hidden-stack) | Restricts the active search so a chunk can be considered separately from the rest of the stack. |
-| 🚧 | [Compare extraction routes](#chunk-extraction-and-the-hidden-stack) | Tries both initial rotation directions and at most one direction change; this is not a global optimality proof. |
-| ✅ | [Reverse BFS for study](#analysis-tools-and-study-data) | Reuses distances from the goal to enumerate shortest solutions for small permutations. |
-| ✅ | [Pre-submission checks](#what-i-checked-before-submission) | The listed parser, memory, build, Norm and output checks passed; their scope is documented below. |
-
-[↑ Back to top](#top)
-
-<a id="contents"></a>
-
-## Contents
-
-- [Preface](#preface)
-- [At a glance](#at-a-glance)
-- [Design choices and edge cases](#design-choices-and-edge-cases)
-- [How to read the mathematics and evidence](#reading-the-mathematics)
-- [Description](#description)
-- [Instructions](#instructions)
-- [Rank normalisation](#rank-normalisation)
-- [Hybrid storage and recursive malloc](#hybrid-storage-and-recursive-malloc)
-- [LIS, LDS and the square-root guarantee](#lis-lds-guarantee)
-- [Circular-buffer stacks](#circular-buffer-stacks)
-- [Greedy lookahead: who owns each plan?](#greedy-lookahead-who-owns-each-plan)
-- [Greedy heuristics and disorder measures](#greedy-heuristics)
-- [Safe pruning bounds](#safe-pruning-bounds)
-- [BFS and state indexing](#bfs-and-state-indexing)
-- [Precomputed BFS tables, pages, heap and stack](#precomputed-bfs-tables)
-- [Chunk extraction and the hidden stack](#chunk-extraction-and-the-hidden-stack)
-- [Analysis tools and study data](#analysis-tools-and-study-data)
-- [Checks and current limitations](#checks-and-current-limitations)
-- [Resources and use of AI](#resources)
-- [Future research — ideas not implemented](#future-research)
-
-[↑ Back to top](#top)
 
 <a id="reading-the-mathematics"></a>
 
@@ -253,464 +660,6 @@ allowing later reconsideration. That trade-off motivated me to test it; correctn
 comes from valid stack operations and checking the result, while any claim of
 better move counts needs comparative evidence. The rationale is worth testing
 even if no setting can be shown to win universally.
-
-<a id="description"></a>
-
-## Description
-
-Push_swap explores sorting with two stacks and a limited vocabulary of moves.
-The intended result is an ascending stack A, an empty stack B, and a short list
-of instructions that reproduces the sort.
-
-This version is also a study of the search space: how to represent a state,
-recognise a state already visited, recover a path, and use small optimal solutions
-to investigate larger sorting strategies. The saved reports are reference material
-for that investigation, including cases with several equally short solutions.
-
-The main program dispatches inputs of 1–4 values to a precomputed exact table
-and 5–10 values to full-input BFS. With the current skip flag set to zero, it
-also runs the five greedy candidates; 11–500 values use those greedy candidates
-alone. Above 500, it runs the existing three-element-seed local candidate. The first shortest generated solution wins. Archived chunk experiments
-and dated benchmarks are distinguished from this active path below.
-
-[↑ Back to top](#top)
-
-<a id="instructions"></a>
-
-## Instructions
-
-Run these commands from the project directory. Building requires `make`, a C
-compiler available as `cc`, and `ar`. The Makefile builds the bundled `libft/`
-automatically; no sibling checkout or extra library copy is needed.
-
-### Build and clean
-
-```sh
-make                      # ./push_swap
-make debug                # bin/push_swap_debug
-make analyse_bfs          # bin/bfs_analyser
-make analyse_bfs_all_paths # bin/bfs_all_paths
-make generator            # bin/generator
-make clean
-make fclean
-make re
-```
-
-`make debug` defines `BFS_DEBUG` and links the logging helper. The logging call
-in the old BFS implementation is currently commented out, so this target does
-not guarantee a separate report. The ordinary executable's progress diagnostics follow `DEBUG` and use stderr;
-the solution dump uses file descriptor 3.
-
-`make clean` removes project and libft objects. `make fclean` also removes built
-executables and the library archive. Both preserve study reports and the supplied
-checker. Repeated `make` did not relink in my submission-only build checks,
-as recorded under [pre-submission checks](#what-i-checked-before-submission).
-
-### Run the development solver
-
-```sh
-./push_swap 3 2 1
-./push_swap "3 2 1"
-./bin/generator 5
-```
-
-Start with small inputs. BFS allocation now scales with the input's state count,
-but factorial growth still makes the upper end expensive. Greedy lookahead can
-also be expensive on large inputs. Stdout contains the selected instructions;
-stderr carries progress, and descriptor 3 can capture the solution dump:
-
-```sh
-./push_swap 3 2 1 > moves.txt 2> progress.log 3> solutions.log
-./checker_linux 3 2 1 < moves.txt
-```
-
-The supplied checker is a Linux executable. These commands illustrate validation,
-not a claim that every input or submission requirement has passed.
-
-### My GitHub tools and the 42 submission
-
-I keep the development tools on [GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap).
-My local 42 submission repository contains `Makefile`, `README.md`, `src/`,
-`includes/` and the bundled `libft/` sources and Makefile. I leave out `tests/`,
-`.sh` and `.py` tools, the downloaded `checker_linux`, `.gitignore`, archived
-experiments and generated executables, objects and reports. The subject asks
-for the C sources, headers and Makefile, and separately requires the README;
-it explicitly says development tests do not need to be submitted. This is my
-submission layout, rather than a claim that every extra file is forbidden.
-
-The normal and bonus builds do not need those development files.
-`make debug`, `make analyse_bfs`, `make analyse_bfs_all_paths` and `make generator`
-are GitHub-only development targets whose sources live in `tests/debug/`.
-During evaluation I download the supplied Linux checker again as
-`./checker_linux` and make it executable. I can also recreate `tests/debug/`
-with `mkdir -p` for logs; creating that directory does not make it submission
-source. The random runner writes new reports to `tests/debug/results/random_tests/`;
-older studies live in `tests/debug/old_results/`.
-
-[manual_eval.txt](tests/manual_eval.txt) is just one copy-pastable terminal
-command per line, with no helper functions or scripted verdicts. It includes
-100- and 500-value commands for my own manual evaluation. I also ran
-[benchmark_500.sh](tests/benchmark_500.sh) as part of the checks below.
-[push_swap_eval.txt](tests/push_swap_eval.txt)
-is the separate, longer scripted checklist. Both use the current executable
-and directory names.
-
-### What I checked before submission
-
-I checked the current layout with diagnostics disabled (`DEBUG = 0`).
-`norminette src includes libft` passed. A temporary submission-only copy with
-no test tools or downloaded checker built both programs, did not relink on
-repeated `make`, preserved executables with `clean`, rebuilt with `re`, and
-removed them with `fclean`.
-
-The table below records the inputs I checked and their results. For valid unsorted cases I
-saved the solver's moves and replayed them with both my checker and the supplied
-Linux checker; stdout contained only moves and stderr was empty.
-
-| Inputs checked | Result |
-| --- | --- |
-| No arguments; `42`; `0 1 2 3 4 5 6 7 8 9` | Silent success |
-| `-2147483648 0 2147483647` | Silent sorted input; both checkers accepted the empty move stream |
-| `2147483647 0 -2147483648` | Both checkers returned `OK`; Valgrind reported no errors or leaks |
-| `2 1`; every permutation of `0 1 2` | Both checkers returned `OK`; at most three moves |
-| `1 5 2 4 3`; every permutation of `0 1 2 3 4` | Both checkers returned `OK`; at most twelve moves; the first case also passed Valgrind |
-| `0 one 2`; `1 2 1`; `2147483648`; `-2147483649`; `""`; `--1`; `-0 +0`; `"1-2"` | Both programs printed only `Error` on stderr |
-| `1x`; `1 1` under Valgrind | Both programs rejected them without memory errors or leaks |
-| Three seeded random 100-value inputs, seed `42` through `push_swap_tester.sh` | Reference checker `OK`; 496, 507 and 511 moves, all below 700 |
-| Three random 500-value inputs through `tests/benchmark_500.sh` | Both checkers `OK`; 4811, 4943 and 4969 moves, all below 5500; successful solver exits and empty stderr |
-
-The valid-case suite covered 135 runs, including all three- and five-value
-permutations. The error suite covered 16 program/input combinations; eight
-Valgrind runs and 18 injected allocation failures with ASan/UBSan also passed.
-The precomputed-table test passed all 33 permutations through size four,
-including wrapped buffers and a five-value BFS fallback. These results apply
-to the tested inputs; they do not imply that every permutation was checked
-for larger sizes.
-
-The 500-value script passed all three trials. I kept the exact inputs, moves
-and report in `tests/debug/results/benchmark_500.ulrwcP/`. The report identifies
-commit `9214973` and records the executable hashes:
-
-```text
-push_swap: 58a4c40fc5fbef76caa6322d898d96da8f7fdbe2a08fc37f59fb72fde6f0c939
-checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620
-```
-
-The three counts average 4907.67 moves; the largest, 4969, is below the strict
-5500 boundary. These were sorting and move-count checks, not additional
-500-value Valgrind runs. I rely on the separate memory checks listed above for
-evidence about memory safety. Generated benchmark reports stay local and are
-ignored by Git.
-
-#### Runtime and test-machine context
-
-The 500-value shell script saved moves, not explicit timing fields. I estimated
-solver durations from each move file's creation time to its last modification:
-the file is created before launching the solver and receives the answer near
-completion. These are approximate wall times, not CPU-time measurements.
-
-| 500-value trial | Moves | Approximate solver seconds | Approximate duration |
-| --- | ---: | ---: | --- |
-| 1 | 4811 | 163.79 | 2 min 44 sec |
-| 2 | 4943 | 224.02 | 3 min 44 sec |
-| 3 | 4969 | 247.50 | 4 min 7 sec |
-| Mean | 4907.67 | 211.77 | 3 min 32 sec |
-
-From the benchmark directory's creation to the report's last update, the whole
-three-trial test took about 635.36 seconds (10 min 35 sec), including the small
-checker/report overhead after the directory was created. The build ran before
-that directory was created and is not included in this estimate.
-
-The earlier Python runner did record total solver wall time for the three
-100-value trials: 85.153702, 82.470882 and 80.064915 seconds, averaging
-82.563166 seconds (about 1 min 23 sec). Those records are in the local session
-`tests/debug/results/random_tests/20261002_033534_output/`. It did not record
-individual candidate timings. Older 10-value logs exist, including a historical
-56-run session averaging 48.015 seconds, but those belong to an earlier
-executable/configuration and are not current-version timing evidence. The
-candidate regression checks through size 10 did not save timing measurements.
-
-The test PC reports the following hardware and software:
-
-| Item | Test environment |
-| --- | --- |
-| CPU | Intel Core i7-12700, 12th generation; 12 cores and 20 logical CPUs |
-| Reported CPU frequency range | 800–4900 MHz; actual frequencies during the tests were not logged |
-| Memory | 15.31 GiB usable RAM reported by Linux; nominal 16 GB class |
-| OS | Ubuntu 22.04.5 LTS, x86_64; Linux 5.15.0-190-generic |
-| Compiler | Ubuntu Clang 12.0.1 (`cc`) |
-| Build flags | `-Wall -Wextra -Werror`; no explicit optimization flag |
-| Python | 3.10.12 |
-| Solver diagnostics | `DEBUG=0` for the documented benchmark runs |
-
-The solver creates no worker threads and runs its candidates sequentially.
-A solver run therefore uses one execution thread rather than all 20 logical
-CPUs. The OS may move that thread between cores; CPU affinity, background load,
-CPU frequencies and peak RAM usage were not recorded for these older runs.
-Installed RAM is capacity, not measured solver consumption. The checker runs
-after the solver; parallel compilation is separate from sorting runtime.
-These details make the times useful as a rough replication reference, not a
-promise of identical runtime on another machine.
-
-My Python runner records candidate wall and CPU times plus a
-process-wide peak RSS sample at candidate completion, without changing the
-submission executable. This peak can include earlier candidates' memory usage;
-it is not memory owned by the named candidate. To collect new comparable
-measurements, run `bash push_swap_tester.sh -n 3 --size 100 --seed 42` or use
-`--size 500` for a new 500-value session. The original timing fields cannot be
-retroactively split into per-algorithm durations.
-
-I passed the listed pre-submission checks, including the build, Norm,
-small-input, error and memory checks above. The tested 100- and 500-value
-inputs met the highest move bands. The local subject allows at most 5500
-moves; the evaluation mirror used by my checklist says fewer than 5500,
-and all three 500-value trials meet that stricter boundary. These results
-document what I tested; the live evaluation determines the mandatory score
-and bonus eligibility.
-
-The final header settings are my best-supported tested compromise between
-move count, runtime and memory use within my available computational resources.
-I reached them through a variety of inputs and repeated trials, rather than
-choosing a depth after one successful run. The approximately three-and-a-half-minute
-average for the three documented 500-value trials is a runtime I consider
-practical for my 42 evaluation, with acceptable move counts. By “current best”,
-I mean the overall trade-off I have had the resources to test and substantiate,
-not a proven optimum, an inherent limit of the algorithm, or the fastest
-possible configuration. The [configuration table](#seed-candidate-flow)
-records those final settings.
-
-#### What the first profiled 100-value session showed
-
-I stopped the profiled session `20261002_043555_output` after 24 successful
-100-value runs. All winning streams passed the reference checker. Winners
-averaged 499.29 moves, ranging from 456 to 525. The saved seed was
-`2459232882432727273`, with `DEBUG=0`, continuation depth 12 and execution
-limit 10, and opening depth 12 with batch execution limit 5.
-
-| Candidate | Mean moves | Mean wall time | Mean CPU time | Chosen wins |
-| --- | ---: | ---: | ---: | ---: |
-| Three-element seed + local greedy | 573.88 | 0.000618 s | 0.000616 s | 0 |
-| Circular LIS + local greedy | 539.13 | 0.004047 s | 0.004044 s | 1 |
-| Circular LIS + lookahead | 509.42 | 29.737392 s | 29.735572 s | 13 |
-| Circular LIS + opening-one lookahead | 510.88 | 34.277833 s | 34.275884 s | 5 |
-| Circular LIS + opening-batch lookahead | 521.21 | 36.103273 s | 36.101130 s | 5 |
-
-This helped me see the tradeoff more clearly than the earlier total-runtime measurements.
-The plain LIS local candidate averaged about 40 more moves than the winning
-answer, but took roughly four milliseconds. Every candidate's move count stayed
-below 700 in this sample. Ordinary LIS lookahead had the lowest average move
-count among individual candidates and won most often. Opening-batch was worse
-on average than the other lookahead variants here, but still won five inputs,
-so its contribution cannot be judged from its mean alone. These observations
-do not establish the same ranking for 500 values, and I have not changed the
-algorithm settings based on them.
-
-Average total solver wall time was 100.125525 seconds. Subtracting the candidate
-wall times left about 0.002364 seconds per run for launch, parsing,
-initialization, instrumentation output and final output combined. CPU times
-closely matched wall times. Almost all measured solver runtime was therefore
-spent computing the lookahead candidates. This difference is not a measurement
-of all Python overhead: input generation, reference checking and report writing
-between solver invocations are outside the solver runtime field.
-
-The ordinary submission executable does not contain the FD 4 profiler; the
-Python runner separately links its temporary instrumented executable.
-With `DEBUG=0`, existing FD 3 solution diagnostics are suppressed, while the
-runner explicitly opens FD 4 for profiling records. These are local file
-descriptors, not network destinations. With `DEBUG=1`, FD 3 is normally closed
-unless I redirect it, so those writes fail and the dump is lost; stderr progress
-still appears. If the evaluator agrees to diagnostic output, I can use:
-
-```sh
-./push_swap 3 2 1 3>&2
-./push_swap 3 2 1 3>debug
-```
-
-The first sends the solution dump to stderr, normally the terminal; the second
-saves it to a file. The filename does not need a `.txt` extension. Both keep
-stdout reserved for instructions. Diagnostic output can affect runtime, so the
-measurements above use `DEBUG=0`.
-
-### My bonus checker
-
-I ended up needing only two bonus `.c` files: [main_checker_bonus.c](src/bonus/main_checker_bonus.c)
-and [checker_util_bonus.c](src/bonus/checker_util_bonus.c). I keep the reader
-and move dispatcher together in the utility file. Most of the machinery
-was already there. I needed to read and execute someone else's moves, then
-check the result; I did not need another sorting algorithm.
-
-```sh
-make bonus
-./push_swap 3 1 2 | ./checker 3 1 2
-printf 'sa\n' | ./checker 2 1
-```
-
-I start with the same input in A and an empty B. `parse_input()` validates the
-integers, checks overflow and duplicates, and replaces the values with ranks.
-Ranking preserves their order, so it works for checking as well as sorting.
-The first argument remains the top of A. With no arguments, I exit silently
-without reading stdin.
-
-My reader applies each instruction as it arrives, in its original order.
-Once it reaches EOF, I print `OK` if A is sorted and B is empty, or `KO` if the
-valid moves did not finish the job. Invalid arguments, malformed instructions,
-or reader failures produce `Error` on stderr instead. A failed sort is still
-a valid execution, so `KO` uses the normal success exit status.
-Even if the input starts sorted, I still read the moves: they could scramble
-it, leave something in B, or contain an error.
-
-The move dispatcher matches the whole instruction, including its newline and
-terminator. I reject extra spaces, unknown names and a last instruction with
-no newline. Two function-pointer tables handle the existing signatures:
-one-stack operations such as `sa`, and two-stack operations such as `ss`.
-The matching index chooses the function, and I select A or B for the
-one-stack calls. I pass `NULL` as the solution pointer because
-`append_move_to_soln()` already treats that as “execute without recording”.
-That small convention saved me from duplicating all eleven operations.
-
-I did need to handle one difference: my `pa()` and `pb()` wrappers report an
-error if they pop an empty source. In my checker, those are valid no-ops. I check
-B before `pa` and A before `pb`, returning success immediately when the source
-is empty. Swaps and rotations already handle stacks with fewer than two values.
-
-The circular-buffer helpers let me reuse both inline and heap storage.
-`ranks_are_sorted()` now lives in a shared utility file and checks that logical
-position `i` contains rank `i`. I also require B to be empty before accepting
-the result. Both optional heap buffers are freed after execution or failure.
-
-#### Why my status-returning GNL helped
-
-My custom `ryker_ft_get_next_line()` returns `GNL_LINE`, `GNL_EOF`, or
-`GNL_ERROR`, separately from the returned line pointer. That distinction turned
-out to be useful here. `GNL_LINE` means I have a move to validate and execute;
-`GNL_EOF` means all supplied moves have been read and, because I apply them
-immediately, executed. `GNL_ERROR` means I cannot trust that I read the complete
-stream, so I report an error instead of checking a potentially partial result.
-
-A straightforward loop around ordinary GNL often looks like this:
-
-```c
-line = get_next_line(STDIN_FILENO);
-while (line)
-{
-    /* Validate and apply the move, then free the line. */
-    line = get_next_line(STDIN_FILENO);
-}
-/* Check the final stacks. */
-```
-
-The catch is that ordinary GNL returns `NULL` for both EOF and errors.
-That loop alone cannot distinguish “finished reading” from “reading failed”.
-For example, if a read or allocation fails after a prefix of moves has sorted
-A, it could incorrectly print `OK` while unread moves remain. Ordinary GNL can
-still be used with an additional reliable error-reporting mechanism; a bare
-`NULL` check is what loses the information. My custom result enum makes the
-choice explicit, and its cleanup function lets me free any buffered remainder
-when I stop early on an invalid instruction. I also free every returned line.
-EOF is the end signal, not an empty stack or a special move: a pipe supplies it
-when its writer closes, and an interactive run needs EOF from the terminal.
-
-I wrote the checker logic after discussing the design with Codex. Codex supplied
-the initial skeleton and build rules, explained function pointers, reviewed my
-implementation, helped with formatting and comments, and moved the existing
-rank check into shared code. It also ran 107 functional checks, including 84
-random instruction-stream comparisons with the reference checker, plus four
-Valgrind checks covering valid execution, invalid moves, invalid arguments and
-heap storage. Those checks passed, as did the bonus build and Norm checks.
-These checks give me evidence about the cases tested; they do not mean I have
-tested every possible input. Bonus assessment still depends on the mandatory part
-meeting all required benchmarks at the highest score.
-
-### Accepted input formats
-
-My parser (`src/parsing_and_ranking_input/parse_sort_input.c`) reads arguments
-from left to right and can read several space-separated integers from each argument. These forms
-therefore describe the same initial stack, with 3 at the top:
-
-| Form | Example |
-| --- | --- |
-| Separate arguments | `./push_swap 3 1 2` |
-| One double-quoted list | `./push_swap "3 1 2"` |
-| One single-quoted list | `./push_swap '3 1 2'` |
-| Mixed grouped and separate arguments | `./push_swap "3 1" 2` |
-| Leading, repeated and trailing spaces inside a group | `./push_swap "  3   1  2  "` |
-
-The shell removes the surrounding quotes before my program receives the
-argument. Quotes group the input; they are not characters that my parser needs
-to strip. I also accept an optional `+` or `-` directly before the digits,
-and leading zeroes:
-
-```sh
-./push_swap +3 -1 02
-```
-
-Values must be distinct after conversion: `2`, `+2` and `02` represent the
-same integer, so using more than one of them is a duplicate. My intended range
-is signed 32-bit integers on my 42 machine. There is no arbitrary 500-value
-input cap. The parser counts tokens before allocating and checks numerical
-range rather than digit count, so long strings of leading zeroes are accepted.
-Input size is still constrained by available memory, the shell/OS argument
-limit, and the implementation's `int` indices (`count + 1` must fit).
-
-Inside a quoted argument, the supported separator is an ordinary ASCII space,
-not general whitespace. Do not use commas, tabs, newlines, decimal points or
-bracketed list notation. Empty arguments, space-only arguments and signs
-without digits are not valid input. Integer-boundary, malformed-input and allocation-failure cases are covered by
-the hybrid-storage checks below; those checks are not a complete submission audit.
-
-The bundled Linux checker accepted the grouped and mixed forms in my
-AI-assisted checks as well. For a quoted list, pass the same input to both
-programs:
-
-```sh
-./push_swap "3 1 2" > moves.txt 2> progress.log 3> solutions.log
-./checker_linux "3 1 2" < moves.txt
-```
-
-For shell-variable input, quoting preserves the whole list as one argument:
-
-```sh
-ARG="3 1 2"
-./push_swap "$ARG" > moves.txt 2> progress.log 3> solutions.log
-./checker_linux "$ARG" < moves.txt
-```
-
-### Project layout
-
-| Path | Purpose |
-|---|---|
-| [`src/`](src/) | Solver, parsing, stack operations and BFS implementation. |
-| [`includes/push_swap.h`](includes/push_swap.h) | Shared structures, limits and function declarations. |
-| [`libft/`](libft/) | Self-contained library sources used by this project. |
-| [`tests/debug/`](tests/debug/) | Analysis and generator sources. |
-| [`tests/debug/old_results/`](tests/debug/old_results/) | Study reports and trial logs, kept in Git. |
-| [`checker_linux`](checker_linux) | Supplied Linux checker binary. |
-| [`notes.md`](../backups/notes.md) | Working questions, ideas and unfinished plans. |
-| `obj/`, `bin/`, `push_swap` | Generated build products, ignored by Git. |
-
-The old `DO_NOT_SUBMIT_DEBUG_hidden_bfs.c` now lives in `../backups/` and is not
-a dependency of the main build.
-
-[↑ Back to top](#top)
-
-<a id="rank-normalisation"></a>
-
-## Rank normalisation
-
-[`rank_values.c`](src/parsing_and_ranking_input/rank_values.c) counts how many input values are smaller
-than each value. For distinct inputs, that gives ranks from `0` to `n - 1`:
-
-```text
-values:  40  -8  12
-ranks:    2   0   1
-```
-
-The ordering is preserved, so the same stack moves sort either representation.
-The current implementation compares every value with every other value, taking
-O(n²) time. Small BFS states store normalised ranks as unsigned bytes; the main
-stacks still store integers.
-
-[↑ Back to top](#top)
 
 <a id="lis-lds-guarantee"></a>
 
@@ -863,24 +812,6 @@ A longer seed reduces the first term, but can change the second. So LIS is a
 justified starting heuristic, not proof of the fewest total moves. The current implementation keeps the first longest seed it finds; comparing
 rotation costs between equally long seeds remains a possible extension. Circular seed selection can also retain more than an
 ordinary LIS: `8 9 0 1 2` is already circularly ascending as a whole.
-
-[↑ Back to top](#top)
-
-<a id="circular-buffer-stacks"></a>
-
-## Circular-buffer stacks
-
-Each stack has an integer array, a capacity, a read index and a write index.
-The indices wrap around the array. One spare slot distinguishes a full buffer
-from an empty one, so `n` input values use a capacity of `n + 1`.
-
-The circular-buffer helpers implement the underlying movements. The
-`stack_operation_*.c` wrappers also append an encoded move to the solution.
-The output helper translates those codes back to names such as `sa`, `pb` and
-`rra`, one instruction per line. Progress diagnostics use stderr; the detailed
-solution dump uses descriptor 3. Neither is part of stdout's instruction stream.
-
-[↑ Back to top](#top)
 
 <a id="bfs-and-state-indexing"></a>
 
@@ -1128,7 +1059,6 @@ contract. A ten-element A above nonempty B in a larger problem is not a supporte
 entry. The old restricted chunk/seed experiments in `../backups/` are separate
 from this active full-input implementation.
 
-[↑ Back to top](#top)
 
 <a id="precomputed-bfs-tables"></a>
 
@@ -1396,279 +1326,6 @@ for submission.
 turned into me learning about pages, virtual memory, the heap and the stack.
 The evaluator should be checking my sorting, not downloading my homemade WinRAR
 replacement.
-
-[↑ Back to top](#top)
-
-<a id="chunk-extraction-and-the-hidden-stack"></a>
-
-## Chunk extraction and the hidden stack
-
-**Experiment outcome:** this chunking approach did not work out for my move-count
-goal. In my earlier trials, 500 elements took roughly **10,000–12,000 moves**.
-My observation was that most moves went into selecting and extracting elements
-in increasing order to form the chunks. Finding short BFS routes for the small
-chunks did not make up for that selection cost. These are my reported results
-for this implementation, not a claim that every chunking algorithm performs
-poorly. I am shelving this approach and focusing on full-input BFS for small
-inputs and LIS/greedy strategies for larger ones.
-
-The archived development path processed successive rank intervals of up to ten
-values. It first moved the selected interval from A to B, then created temporary
-stacks containing the active chunk, searched for a solution and replayed that
-solution on the real stacks.
-
-[`chunk_optimal_BFS.c`](../backups/chunk_optimal_BFS.c) simulates extraction
-routes before executing one. It tries each initial rotation direction and each
-point at which to reverse direction after collecting a target value. It chooses
-the lowest rotation-plus-push cost among those candidates.
-
-“Optimal” here refers only to that limited family of extraction routes. The code
-does not compare arbitrary direction changes or the total future sorting cost.
-Likewise, a short BFS solution for one chunk does not prove that the full sequence
-meets the subject's move requirements.
-
-The archived hidden search treated the unseen portion of A as a boundary: it
-disallowed A rotations when the visible portion was nonempty and disallowed
-`sa` when fewer than two visible values were available. This is the experiment behind “hidden BFS”. Its overall
-correctness and efficiency still need broader validation.
-
-[↑ Back to top](#top)
-
-<a id="analysis-tools-and-study-data"></a>
-
-## Analysis tools and study data
-
-The two analysis executables accept an `n` from 2 to 7 and write timestamped
-reports into their working directory. For a small reverse-BFS study:
-
-```sh
-make analyse_bfs_all_paths
-mkdir -p tests/debug/old_results
-(cd tests/debug/old_results && ../../../bin/bfs_all_paths 3)
-```
-
-The reverse analyser builds distances from the sorted goal, uses all eleven
-operations, and enumerates shortest paths by following moves that reduce the
-remaining distance. The active full-input BFS now also uses all eleven
-operations; unlike the reverse analyser, it searches forward from one input.
-
-The permutation analyser can be run with
-`(cd tests/debug/old_results && ../../../bin/bfs_analyser 3)` after `make analyse_bfs`.
-Its source calls `brute_solve`; historical reports can reflect earlier search
-restrictions. An earlier build of `analyse_bfs` failed because its target
-omitted required debug-printer symbols. That issue was fixed, and the forward
-analyser subsequently rebuilt successfully during the hybrid-storage work.
-
-| Saved material | What to study |
-|---|---|
-| [`tests/debug/old_results/`](tests/debug/old_results/) | All preserved BFS reports and 500-number trial logs. |
-| [All shortest paths, n = 5](tests/debug/old_results/push_swap_bfs_all_paths_n5_2026-08-24_22-02-49.txt) | The report records 120 starting permutations, 720 graph states and a maximum optimal distance of 9. |
-| [All shortest paths, n = 7](tests/debug/old_results/push_swap_bfs_all_paths_n7_2026-08-24_22-02-53.txt) | The report records 5,040 starting permutations, 40,320 graph states and a maximum optimal distance of 13. |
-| [`notes.md`](../backups/notes.md) | Questions about pattern discovery, heuristics and how small solutions might inform larger cases. |
-
-These numbers describe the saved reports, not a fresh evaluation of the current
-executable. The reports are important study data and are **not ignored**. Build
-cleanup does not delete them. Larger all-path reports can grow quickly because
-one starting permutation may have many equally short solutions.
-
-[↑ Back to top](#top)
-
-<a id="checks-and-current-limitations"></a>
-
-## Checks and current limitations
-
-### Build checks
-
-The following are **historical** checks from the directory reorganisation,
-not guarantees about the current targets. They establish build behavior at
-that time, not sorting correctness or a subject score.
-
-| Result | Check |
-|---|---|
-| ✅ | Main executable and all four development tools build with `-Wall -Wextra -Werror`. |
-| ✅ | Repeating all build targets leaves executable and archive timestamps unchanged. |
-| ✅ | `make clean` removes objects while preserving executables. |
-| ✅ | `make fclean` removes build products while preserving the checker and all 17 existing study reports. |
-| ✅ | All targets rebuild after cleanup. |
-| ✅ | Deleted main and analyser executables are recreated. |
-
-As part of my AI-assisted README review, I had the main executable and reverse
-all-path analyser rebuilt successfully. Four small smoke cases (one value, sorted three,
-unsorted three and unsorted five) returned `OK` from the supplied checker.
-The forward analyser was subsequently rebuilt successfully during the hybrid-storage update.
-This limited check is not a final benchmark, Norm audit or full validation.
-
-After parsing and validation, I check the ranks before allocating answer
-buffers or running any candidates.
-If each logical position `i` contains rank `i`, the input is already sorted.
-I just walk through A once: O(n), with the same check for inline and heap
-buffers. There is nothing to sort, so I print nothing and use the normal cleanup
-path. I still validate the entire input first; duplicates and invalid tokens
-must not become successful early exits.
-
-<a id="current-limitations"></a>
-
-### Current limitations
-
-I have completed the implementation and the listed pre-submission checks.
-The remaining limits concern the scope of the evidence and the cost of the
-algorithms, rather than unfinished versions of the earlier fixes:
-
-- BFS memory still grows factorially, and recursive lookahead remains expensive.
-- The documented benchmarks cover the inputs and configurations tested; they
-  do not guarantee the same move counts or runtime on every input or machine.
-- My candidate regression harness now checks the current candidates, and the
-  random runner captures the current configuration macros. Older reports retain
-  only the metadata recorded at the time.
-- The listed build, Norm and memory checks passed. The live evaluation still
-  assesses the submission against the full project requirements.
-
-My final settings reflect the trade-off I could substantiate with the resources
-and trials available to me. Further tuning remains possible, but is not required
-to describe this implementation as complete.
-
-[↑ Back to top](#top)
-
-<a id="resources"></a>
-
-## Resources
-
-- 2swap. [*I Solved Klotski*](https://www.youtube.com/watch?v=YGLNyHd2w10) (also circulated as *Adventures in State Space*). Inspiration for viewing a concrete puzzle as a graph of configurations and moves, and for my proposed exact push_swap state-graph visualisation described under future research.
-- Jamie Dawson. [*Push_Swap: The least amount of moves with two stacks*](https://medium.com/@jamierobertdawson/push-swap-the-least-amount-of-moves-with-two-stacks-d1e76a71789a), 11 May 2019. An early foundation for my understanding of hard-coded small cases and the five-element optimality question described in the preface.
-- Ulysse Gerkens. [*Push Swap in less than 4200 operations*](https://medium.com/@ulysse.gks/push-swap-in-less-than-4200-operations-c292f034f6c0), 1 August 2023. A related implementation article that links to Dawson's small-case explanation; its reported performance belongs to that author's implementation.
-
-- [aaax8 — push_swap](https://github.com/aaax8/push_swap) and its [Japanese technical report](https://github.com/aaax8/push_swap/blob/main/docs/push_swap_report.qmd). I came across this repository through Slack in September 2026 while working on this project. Its discussion of beam search for initial solutions and Iterated Greedy destruction/reconstruction inspired me to consider alternative candidates, lookahead and pruning. It influenced my thinking, but I did not implement its beam search or Iterated Greedy methods.
-
-- Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein. [*Introduction to Algorithms*, third edition](https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/). MIT Press, 2009. ISBN 978-0-262-03384-8. A major reading reference during my time at 42 and a substantial help to this project; see the [preface](#preface).
-
-- [aleksify — pushswap-research](https://github.com/aleksify/pushswap-research) explores move-sequence optimisation and BFS-based superoptimisation. Its **More Thoughts** section proposes bounded lookahead with beam search or Monte Carlo Tree Search and discusses the difficulty of scoring intermediate stack states. I found this useful inspiration for testing lookahead in greedy reinsertion, but those proposed approaches are not benchmark evidence that two-insertion lookahead, circular-LDS preparation, or their combination will improve my solver.
-- [A. Yigit Ogun — Push Swap: A journey to find most efficient sorting algorithm](https://medium.com/@ayogun/push-swap-c1f5d2d41e97) introduces the Turk algorithm. I used this as a reference for my greedy reinsertion approach: both choose transfers by move cost, but mine applies that choice when returning elements from B into circularly sorted A.
-- [Working notes](../backups/notes.md) and [saved study reports](tests/debug/old_results/) document the investigation and examples.
-- [Bundled libft documentation](libft/README.md) describes the shared library.
-- I followed the structure of my [Pipex README](../2_pipex/README.md): feature status, design explanations, reproducible commands and explicit limitations.
-- Harvard CS50 lectures by David J. Malan, peer discussions and debugging references contributed to the broader learning process recorded in the previous README.
-
-### Use of AI
-
-I use ChatGPT/Codex for explanations, alternative approaches and tradeoffs, and
-help when I am stuck. I bring questions, ideas and deductions into the discussion
-and work through the reasoning with AI. This project's algorithm design and
-process were developed through that collaboration; established methods such as
-Lehmer ranking are not my invention.
-
-AI generated the Lehmer-ranking Mermaid diagram and helped write the mathematical
-explanation in this README. I did not create that diagram myself. Its attribution
-is also placed beside the diagram so readers do not mistake it for unaided work.
-
-AI assistance also includes the debugging and diagnostic printing tools, test
-harnesses and experimental comparisons, mechanical editing, file organisation,
-build checks, and documentation. These supporting tools help me inspect behaviour
-and test ideas; their output is not proof that the solver is correct or ready
-for evaluation.
-
-For Norm compliance, Codex helped refactor my existing BFS code
-for the 25-line function limit, five-local-variable limit, typedef naming and
-formatting rules. This mainly meant splitting existing work into named functions,
-grouping search variables into a struct, moving helpers into focused files, and
-updating declarations and Makefile paths. It was not a request to "vibe code" a
-new BFS algorithm: the queue, visited bitset, move order, parent links and path
-reconstruction came from the existing implementation. I reviewed the changes
-through discussion so I can understand and explain them during evaluation.
-
-AI did write the refactoring edits, so "no code was generated" would be too
-broad a claim. The distinction is that these edits reorganised existing logic
-for readability and Norm compliance rather than replacing it with an unexplained
-new solution. In the direct BFS regression check, 159 inputs produced exactly
-the same move sequences before and after the refactor. That is evidence for
-those cases, not a proof covering every possible input.
-
-For hybrid storage, I asked Codex to implement the agreed
-inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
-regression checks. This work includes new code, beyond the earlier mechanical
-BFS refactor. I remain responsible for understanding and explaining that code.
-
-I also use AI as an editorial assistant for this README. I bring my questions,
-scattered notes, conversations, experiments and sometimes rather tangled
-explanations; AI helps collate and paraphrase them into a coherent, readable
-account. This write-up grew through those discussions and revisions, rather
-than from a single request to generate a README. I remain responsible for
-checking that it reflects what I meant and what I actually implemented.
-Where AI contributed explanations, mathematical derivations, diagrams or
-generated tools, I identify that assistance separately; editorial help does
-not make every technical contribution solely mine.
-
-My aim is to understand and explain the implementation, rather than present an
-unexplained generated solution as my own. This follows the distinction described
-in my [Pipex README's Use of AI section](../2_pipex/README.md#use-of-ai): the
-learning discussion and my own reasoning are distinguished from AI-assisted
-mechanical work, testing and documentation.
-
-[↑ Back to top](#top)
-
-## Seed candidate flow
-
-`solve()` dispatches the exact candidate first when the input has at most
-`BRUTE_MAX_N` values (currently 10). It then loops from `ALGO_THREE_LOCAL` to
-`ALGO_COUNT`, unless `SKIP_OTHER_ALGO_AFTER_BFS` is enabled (currently 0).
-Above 500, it dispatches directly to the existing `ALGO_THREE_LOCAL` strategy before this candidate loop.
-The enum and `src/sorting_and_algorithms/algorithm_config.c` define six entries:
-
-| Enum | Preparation | Search policy |
-| --- | --- | --- |
-| `ALGO_BFS` | None | Precomputed 1–4; full-input BFS 5–10; absent above 10 |
-| `ALGO_THREE_LOCAL` | Three elements | Local greedy |
-| `ALGO_LIS_LOCAL` | Circular LIS | Local greedy |
-| `ALGO_LIS_LOOKAHEAD` | Circular LIS | Repeated lookahead with partial execution |
-| `ALGO_LIS_OPENING_ONE` | Circular LIS | Special opening search, execute one, then repeated lookahead |
-| `ALGO_LIS_OPENING_BATCH` | Circular LIS | Special opening search, execute a batch, then repeated lookahead |
-
-I run the three-element local candidate before circular LIS local. Equal-length
-answers keep the first candidate, so this order can change the chosen move
-sequence in a tie without changing its length.
-
-There are six generated candidates for small inputs with the skip flag off,
-and five for 11–500 values. Above 500 has one local greedy answer. Algorithm IDs and generated solution-slot indices
-are different when the exact candidate is absent. Three-element seed plus
-lookahead is not an active enum entry.
-
-My final, best-supported tested settings in `includes/push_swap.h` are:
-
-| Phase | Lookahead depth | Execution limit |
-| --- | ---: | ---: |
-| Normal continuation, total input size <= 100 | 12 | 10 |
-| Normal continuation, total input size 101–500 | 7 | 5 |
-| Special opening | 12 | 1 for OPENING_ONE; 5 for OPENING_BATCH |
-
-Above 500 values, I use local greedy without lookahead. Within the lookahead
-path, the size threshold uses **A plus B**, not the shrinking length of B.
-Actual saved paths and executed batches are capped by the remaining work. The opening
-variants currently continue with lookahead because their `use_lookahead` field
-is 1; older opening-then-local benchmarks are historical experiments.
-
-Each candidate starts from fresh stack copies and its own answer slot. The first
-shortest generated answer wins ties. `t_seed_mode` chooses preparation;
-`t_algorithm` and `t_algo_config` choose the whole strategy. Internal depth zero
-selects local greedy; a positive depth searches candidate insertions.
-
-| Stage | File | Responsibility |
-| --- | --- | --- |
-| Candidate loop | `src/sorting_and_algorithms/solve.c` | Reset stacks and solution for each generated candidate |
-| Preparation | `greedy_prepare.c` | Keep three values or a circular LIS |
-| Composition | `greedy_stages.c` | Prepare, search/execute batches, then align A |
-| Execution | `greedy_execute.c` | Share rotations, finish residual rotations, then push |
-
-Archived seed-search prototypes are in
-[backups/BFS WIP backup](../backups/BFS%20WIP%20backup/README.md).
-They are not built; the separate full-input BFS under `src/` is built.
-
-**Candidate regression harness:** `tests/test_seed_candidates.py` now builds a
-temporary diagnostic executable and reads every recorded candidate from
-descriptor 3. It checks sorted-input silence, replays each candidate, and checks
-that stdout is the first shortest answer. The updated run passed 173 inputs,
-including all permutations through five values and selected arrangements
-through 100. Its default run stops at 100; `--include-500` explicitly adds
-500-value cases. The diagnostic build leaves my submission settings alone.
-
 
 ## Greedy lookahead: who owns each plan?
 
@@ -2088,7 +1745,6 @@ subtract skipped from coverage to get actual evaluations (unless counters
 saturate). Completion still reports final recorded moves after alignment.
 
 
-
 <a id="safe-pruning-bounds"></a>
 
 ### What makes a pruning bound safe?
@@ -2152,6 +1808,437 @@ effects and costs of the real moves; deleting elements changes which positions
 a swap or rotation acts on. This is a possible research direction, not part of
 the current solver.
 
+## Why my status-returning GNL helped
+
+My custom `ryker_ft_get_next_line()` returns `GNL_LINE`, `GNL_EOF`, or
+`GNL_ERROR`, separately from the returned line pointer. That distinction turned
+out to be useful here. `GNL_LINE` means I have a move to validate and execute;
+`GNL_EOF` means all supplied moves have been read and, because I apply them
+immediately, executed. `GNL_ERROR` means I cannot trust that I read the complete
+stream, so I report an error instead of checking a potentially partial result.
+
+A straightforward loop around ordinary GNL often looks like this:
+
+```c
+line = get_next_line(STDIN_FILENO);
+while (line)
+{
+    /* Validate and apply the move, then free the line. */
+    line = get_next_line(STDIN_FILENO);
+}
+/* Check the final stacks. */
+```
+
+The catch is that ordinary GNL returns `NULL` for both EOF and errors.
+That loop alone cannot distinguish “finished reading” from “reading failed”.
+For example, if a read or allocation fails after a prefix of moves has sorted
+A, it could incorrectly print `OK` while unread moves remain. Ordinary GNL can
+still be used with an additional reliable error-reporting mechanism; a bare
+`NULL` check is what loses the information. My custom result enum makes the
+choice explicit, and its cleanup function lets me free any buffered remainder
+when I stop early on an invalid instruction. I also free every returned line.
+EOF is the end signal, not an empty stack or a special move: a pipe supplies it
+when its writer closes, and an interactive run needs EOF from the terminal.
+
+<a id="benchmark-details"></a>
+
+## Benchmark details
+
+The 500-value script passed all three trials. I kept the exact inputs, moves
+and report in `tests/debug/results/benchmark_500.ulrwcP/`. The report identifies
+commit `9214973` and records the executable hashes:
+
+```text
+push_swap: 58a4c40fc5fbef76caa6322d898d96da8f7fdbe2a08fc37f59fb72fde6f0c939
+checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620
+```
+
+The three counts average 4907.67 moves; the largest, 4969, is below the strict
+5500 boundary. These were sorting and move-count checks, not additional
+500-value Valgrind runs. I rely on the separate memory checks listed above for
+evidence about memory safety. Generated benchmark reports stay local and are
+ignored by Git.
+
+### Runtime and test-machine context
+
+The 500-value shell script saved moves, not explicit timing fields. I estimated
+solver durations from each move file's creation time to its last modification:
+the file is created before launching the solver and receives the answer near
+completion. These are approximate wall times, not CPU-time measurements.
+
+| 500-value trial | Moves | Approximate solver seconds | Approximate duration |
+| --- | ---: | ---: | --- |
+| 1 | 4811 | 163.79 | 2 min 44 sec |
+| 2 | 4943 | 224.02 | 3 min 44 sec |
+| 3 | 4969 | 247.50 | 4 min 7 sec |
+| Mean | 4907.67 | 211.77 | 3 min 32 sec |
+
+From the benchmark directory's creation to the report's last update, the whole
+three-trial test took about 635.36 seconds (10 min 35 sec), including the small
+checker/report overhead after the directory was created. The build ran before
+that directory was created and is not included in this estimate.
+
+The earlier Python runner did record total solver wall time for the three
+100-value trials: 85.153702, 82.470882 and 80.064915 seconds, averaging
+82.563166 seconds (about 1 min 23 sec). Those records are in the local session
+`tests/debug/results/random_tests/20261002_033534_output/`. It did not record
+individual candidate timings. Older 10-value logs exist, including a historical
+56-run session averaging 48.015 seconds, but those belong to an earlier
+executable/configuration and are not current-version timing evidence. The
+candidate regression checks through size 10 did not save timing measurements.
+
+The test PC reports the following hardware and software:
+
+| Item | Test environment |
+| --- | --- |
+| CPU | Intel Core i7-12700, 12th generation; 12 cores and 20 logical CPUs |
+| Reported CPU frequency range | 800–4900 MHz; actual frequencies during the tests were not logged |
+| Memory | 15.31 GiB usable RAM reported by Linux; nominal 16 GB class |
+| OS | Ubuntu 22.04.5 LTS, x86_64; Linux 5.15.0-190-generic |
+| Compiler | Ubuntu Clang 12.0.1 (`cc`) |
+| Build flags | `-Wall -Wextra -Werror`; no explicit optimization flag |
+| Python | 3.10.12 |
+| Solver diagnostics | `DEBUG=0` for the documented benchmark runs |
+
+The solver creates no worker threads and runs its candidates sequentially.
+A solver run therefore uses one execution thread rather than all 20 logical
+CPUs. The OS may move that thread between cores; CPU affinity, background load,
+CPU frequencies and peak RAM usage were not recorded for these older runs.
+Installed RAM is capacity, not measured solver consumption. The checker runs
+after the solver; parallel compilation is separate from sorting runtime.
+These details make the times useful as a rough replication reference, not a
+promise of identical runtime on another machine.
+
+My Python runner records candidate wall and CPU times plus a
+process-wide peak RSS sample at candidate completion, without changing the
+submission executable. This peak can include earlier candidates' memory usage;
+it is not memory owned by the named candidate. To collect new comparable
+measurements, run `bash push_swap_tester.sh -n 3 --size 100 --seed 42` or use
+`--size 500` for a new 500-value session. The original timing fields cannot be
+retroactively split into per-algorithm durations.
+
+### What the first profiled 100-value session showed
+
+I stopped the profiled session `20261002_043555_output` after 24 successful
+100-value runs. All winning streams passed the reference checker. Winners
+averaged 499.29 moves, ranging from 456 to 525. The saved seed was
+`2459232882432727273`, with `DEBUG=0`, continuation depth 12 and execution
+limit 10, and opening depth 12 with batch execution limit 5.
+
+| Candidate | Mean moves | Mean wall time | Mean CPU time | Chosen wins |
+| --- | ---: | ---: | ---: | ---: |
+| Three-element seed + local greedy | 573.88 | 0.000618 s | 0.000616 s | 0 |
+| Circular LIS + local greedy | 539.13 | 0.004047 s | 0.004044 s | 1 |
+| Circular LIS + lookahead | 509.42 | 29.737392 s | 29.735572 s | 13 |
+| Circular LIS + opening-one lookahead | 510.88 | 34.277833 s | 34.275884 s | 5 |
+| Circular LIS + opening-batch lookahead | 521.21 | 36.103273 s | 36.101130 s | 5 |
+
+This helped me see the tradeoff more clearly than the earlier total-runtime measurements.
+The plain LIS local candidate averaged about 40 more moves than the winning
+answer, but took roughly four milliseconds. Every candidate's move count stayed
+below 700 in this sample. Ordinary LIS lookahead had the lowest average move
+count among individual candidates and won most often. Opening-batch was worse
+on average than the other lookahead variants here, but still won five inputs,
+so its contribution cannot be judged from its mean alone. These observations
+do not establish the same ranking for 500 values, and I have not changed the
+algorithm settings based on them.
+
+Average total solver wall time was 100.125525 seconds. Subtracting the candidate
+wall times left about 0.002364 seconds per run for launch, parsing,
+initialization, instrumentation output and final output combined. CPU times
+closely matched wall times. Almost all measured solver runtime was therefore
+spent computing the lookahead candidates. This difference is not a measurement
+of all Python overhead: input generation, reference checking and report writing
+between solver invocations are outside the solver runtime field.
+
+The ordinary submission executable does not contain the FD 4 profiler; the
+Python runner separately links its temporary instrumented executable.
+With `DEBUG=0`, existing FD 3 solution diagnostics are suppressed, while the
+runner explicitly opens FD 4 for profiling records. These are local file
+descriptors, not network destinations. With `DEBUG=1`, FD 3 is normally closed
+unless I redirect it, so those writes fail and the dump is lost; stderr progress
+still appears. If the evaluator agrees to diagnostic output, I can use:
+
+```sh
+./push_swap 3 2 1 3>&2
+./push_swap 3 2 1 3>debug
+```
+
+The first sends the solution dump to stderr, normally the terminal; the second
+saves it to a file. The filename does not need a `.txt` extension. Both keep
+stdout reserved for instructions. Diagnostic output can affect runtime, so the
+measurements above use `DEBUG=0`.
+
+## My GitHub tools and the 42 submission
+
+I keep the development tools on [GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap).
+My local 42 submission repository contains `Makefile`, `README.md`, `src/`,
+`includes/` and the bundled `libft/` sources and Makefile. I leave out `tests/`,
+`.sh` and `.py` tools, the downloaded `checker_linux`, `.gitignore`, archived
+experiments and generated executables, objects and reports. The subject asks
+for the C sources, headers and Makefile, and separately requires the README;
+it explicitly says development tests do not need to be submitted. This is my
+submission layout, rather than a claim that every extra file is forbidden.
+
+The normal and bonus builds do not need those development files.
+`make debug`, `make analyse_bfs`, `make analyse_bfs_all_paths` and `make generator`
+are GitHub-only development targets whose sources live in `tests/debug/`.
+During evaluation I download the supplied Linux checker again as
+`./checker_linux` and make it executable. I can also recreate `tests/debug/`
+with `mkdir -p` for logs; creating that directory does not make it submission
+source. The random runner writes new reports to `tests/debug/results/random_tests/`;
+older studies live in `tests/debug/old_results/`.
+
+[manual_eval.txt](tests/manual_eval.txt) is just one copy-pastable terminal
+command per line, with no helper functions or scripted verdicts. It includes
+100- and 500-value commands for my own manual evaluation. I also ran
+[benchmark_500.sh](tests/benchmark_500.sh) as part of my [pre-submission checks](#what-i-checked-before-submission).
+[push_swap_eval.txt](tests/push_swap_eval.txt)
+is the separate, longer scripted checklist. Both use the current executable
+and directory names.
+
+### Development build targets
+
+```sh
+make debug                # bin/push_swap_debug
+make analyse_bfs          # bin/bfs_analyser
+make analyse_bfs_all_paths # bin/bfs_all_paths
+make generator            # bin/generator
+./bin/generator 5
+```
+
+`make debug` defines `BFS_DEBUG` and links the logging helper. The old BFS logging
+call is commented out, so this target does not guarantee a separate report.
+Progress and solution diagnostics follow `DEBUG`; see [debug printers](#debug-printers-and-the-debug-flag).
+The supplied `checker_linux` is a separate Linux reference executable.
+
+```sh
+./push_swap 3 2 1 > moves.txt
+./checker_linux 3 2 1 < moves.txt
+```
+
+### Project layout
+
+| Path | Purpose |
+|---|---|
+| [`src/`](src/) | Solver, parsing, stack operations and BFS implementation. |
+| [`includes/push_swap.h`](includes/push_swap.h) | Shared structures, limits and function declarations. |
+| [`libft/`](libft/) | Self-contained library sources used by this project. |
+| [`tests/debug/`](tests/debug/) | Analysis and generator sources. |
+| [`tests/debug/old_results/`](tests/debug/old_results/) | Study reports and trial logs, kept in Git. |
+| [`checker_linux`](checker_linux) | Supplied Linux checker binary. |
+| [`notes.md`](../backups/notes.md) | Working questions, ideas and unfinished plans. |
+| `obj/`, `bin/`, `push_swap` | Generated build products, ignored by Git. |
+
+The old `DO_NOT_SUBMIT_DEBUG_hidden_bfs.c` now lives in `../backups/` and is not
+a dependency of the main build.
+
+<a id="analysis-tools-and-study-data"></a>
+
+## Analysis tools and study data
+
+The two analysis executables accept an `n` from 2 to 7 and write timestamped
+reports into their working directory. For a small reverse-BFS study:
+
+```sh
+make analyse_bfs_all_paths
+mkdir -p tests/debug/old_results
+(cd tests/debug/old_results && ../../../bin/bfs_all_paths 3)
+```
+
+The reverse analyser builds distances from the sorted goal, uses all eleven
+operations, and enumerates shortest paths by following moves that reduce the
+remaining distance. The active full-input BFS now also uses all eleven
+operations; unlike the reverse analyser, it searches forward from one input.
+
+The permutation analyser can be run with
+`(cd tests/debug/old_results && ../../../bin/bfs_analyser 3)` after `make analyse_bfs`.
+Its source calls `brute_solve`; historical reports can reflect earlier search
+restrictions. An earlier build of `analyse_bfs` failed because its target
+omitted required debug-printer symbols. That issue was fixed, and the forward
+analyser subsequently rebuilt successfully during the hybrid-storage work.
+
+| Saved material | What to study |
+|---|---|
+| [`tests/debug/old_results/`](tests/debug/old_results/) | All preserved BFS reports and 500-number trial logs. |
+| [All shortest paths, n = 5](tests/debug/old_results/push_swap_bfs_all_paths_n5_2026-08-24_22-02-49.txt) | The report records 120 starting permutations, 720 graph states and a maximum optimal distance of 9. |
+| [All shortest paths, n = 7](tests/debug/old_results/push_swap_bfs_all_paths_n7_2026-08-24_22-02-53.txt) | The report records 5,040 starting permutations, 40,320 graph states and a maximum optimal distance of 13. |
+| [`notes.md`](../backups/notes.md) | Questions about pattern discovery, heuristics and how small solutions might inform larger cases. |
+
+These numbers describe the saved reports, not a fresh evaluation of the current
+executable. The reports are important study data and are **not ignored**. Build
+cleanup does not delete them. Larger all-path reports can grow quickly because
+one starting permutation may have many equally short solutions.
+
+**Candidate regression harness:** `tests/test_seed_candidates.py` now builds a
+temporary diagnostic executable and reads every recorded candidate from
+descriptor 3. It checks sorted-input silence, replays each candidate, and checks
+that stdout is the first shortest answer. The updated run passed 173 inputs,
+including all permutations through five values and selected arrangements
+through 100. Its default run stops at 100; `--include-500` explicitly adds
+500-value cases. The diagnostic build leaves my submission settings alone.
+
+## Repeated random tests
+
+The Bash entry point uses `tests/run_random_tests.py` (Python 3 standard library)
+for seeded generation, checking, logs and resume. It builds once with `make`.
+No C solver changes or generator executable are required by this runner.
+
+```bash
+# 100 successful tests, 100 numbers each (the default size).
+./push_swap_tester.sh -n 100
+
+# Run until Ctrl-C, using 500 numbers per input.
+./push_swap_tester.sh --size 500
+
+# Also show the full solution debug dump on stderr; it is still saved.
+./push_swap_tester.sh -n 100 --show-solutions
+
+# Reproducible master seed; every attempt has its own generation ID.
+./push_swap_tester.sh -n 100 --size 100 --seed 42
+```
+
+The runner prints its session directory and summary path. To resume a session:
+
+```bash
+# Replace this example directory with the session path printed by your run.
+./push_swap_tester.sh --resume tests/debug/results/random_tests/YYYYMMDD_HHMMSS_output -n 100
+```
+
+On resume, `-n 100` means **100 additional successful tests**; omitting `-n`
+continues until Ctrl-C. Seed and input size come from the saved session.
+The generation ID advances for duplicate attempts too. Inputs are permutations
+of `0..size-1`; SHA-256 hashes use normalised ranks, so different integer values
+with identical relative order would deduplicate. Rotations remain distinct.
+Small input sizes stop when every unique permutation has been tested.
+
+Files live in the git-ignored `tests/debug/results/random_tests/` directory:
+
+- `YYYYMMDD_HHMMSS_output_summary.md`: Markdown summary with averages/minimum/maximum tables, atomically replaced
+  after every successful run. Includes master seed, next generation ID, move and
+  runtime averages/min/max, per-algorithm move statistics and detail filenames.
+- `YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
+  Each section includes the ranked input,
+  seed, generation ID, rank hash, binary hash, captured settings, checker result,
+  complete winning moves and full solution-debug dump in collapsible details.
+  The current ten-run file is atomically refreshed after each success.
+
+Thus 100 successful tests produce **one summary plus ten detail files**.
+FD 1 is captured and passed to `checker_linux`; FD 2 remains visible for
+progress; FD 3 captures the solution dump. `--show-solutions` also prints that
+saved dump to stderr after the solver finishes. It does not change the C printer.
+
+Only a zero-exit solver producing valid moves and a checker result of `OK` is
+committed to the success log or averages. On failure the runner saves a separate
+`*_failed.md` with the input and diagnostics, then stops. Ctrl-C terminates the
+active solver/checker process group; completed records remain saved, and resume
+retries the uncommitted input. Saved Markdown reports recover a stale summary after an interruption; atomic
+replacement keeps the current batch intact. A session lock prevents concurrent writers.
+
+Exact inputs remain replayable even if a Python version changes shuffle details.
+Each session builds and snapshots an executable; its runs use that snapshot
+and record its hash. Resuming after rebuilding is allowed, so summary averages
+may span multiple binaries (listed in the summary). The metadata parser records the per-size and opening depth/limit macros,
+`DEBUG`, the opening-lookahead switch, BFS skip switch and relevant capacities.
+Older reports retain the settings that were actually captured at the time.
+
+
+Variable-size sessions are available for comparing algorithms across input
+sizes. `-random` chooses each size from a separately domain-separated SHA-256
+seed derived from the master seed and generation ID; the existing deterministic
+permutation generator then shuffles that many ranks. `-loop` cycles through
+all sizes from `-min` to `-max`, inclusively, and wraps around. The default
+bounds are 2 and 500; a larger maximum such as 600 is supported by the solver's
+existing heap-backed path. Algorithms unavailable at a size produce no rows.
+
+```sh
+bash push_swap_tester.sh -random -max 500 --seed 42 -n 100
+bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
+```
+
+The size modes and bounds are saved for resume. Variable-size sessions retain
+repeated permutations, especially at small sizes, so the loop's size sequence
+is not disrupted by deduplication. Fixed-size sessions retain their existing
+unique-permutation behavior. The comparison table groups by input size as well
+as executable and settings, and the summary includes a winning-result table by
+size. Per-run rows support size-versus-time plots with separate algorithm lines.
+SD and SEM are sample summaries, not confidence guarantees; repeated inputs
+and changing machine load should be considered when interpreting them.
+`python3 tests/test_size_modes.py` tests generation and reporting without
+building or running a solver.
+
+The runner now links a temporary profiling executable from the current solver
+objects and `tests/profile_solver.c`. It wraps the three candidate entry points
+with monotonic wall and process CPU clocks, then saves their encoded moves on
+descriptor 4. This works with `DEBUG=0`; I do not need to change submission
+settings or parse the timing of progress messages. The regular `push_swap`
+executable is left alone. Sorted inputs have no algorithm rows, and skipped
+candidates are absent rather than assigned zero time.
+
+The summary includes an algorithm comparison table grouped by executable hash
+and settings, plus one row per candidate per run. I can use those rows as a
+later analysis dump without reopening the detailed batches. They include each
+instruction count (`rr` and `rrr` included), forward/reverse/shared rotations,
+wall and CPU time, process peak RSS, chosen wins, tied best results and the
+strict top-band result. The comparison includes mean, sample standard deviation,
+coefficient of variation, quartiles, median, P95, range and standard error,
+plus average extra moves versus the best candidate. A single sample has no
+sample SD or SEM. Missing measurements in older logs stay missing.
+
+These timings cover candidate execution, excluding candidate initialization and
+the wrapper's reporting. Total solver time includes process startup, parsing,
+initialization and output, so I do not expect the two totals to match exactly.
+The profiling build adds reporting overhead to total time. RSS is a process-wide
+high-water mark at candidate completion, not each algorithm's private memory;
+later algorithms inherit earlier peaks. The move counts describe emitted
+instructions and can include no-ops. SD and percentiles describe this sample's
+variability; they do not promise future results or establish asymptotic
+complexity from one input size. The reference checker validates the winning
+stream, not every candidate separately. `python3 tests/test_runner_profiles.py`
+checks the instrumentation, statistics, Markdown round-trip and old-log parsing.
+
+New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
+The seed, hash and resume metadata are ordinary readable table rows; no hidden
+JSON state file is needed. `--resume` also accepts older TXT/JSON sessions. Their
+existing files are preserved, while new or updated reports use Markdown.
+
+<a id="chunk-extraction-and-the-hidden-stack"></a>
+
+## Chunk extraction and the hidden stack
+
+**Experiment outcome:** this chunking approach did not work out for my move-count
+goal. In my earlier trials, 500 elements took roughly **10,000–12,000 moves**.
+My observation was that most moves went into selecting and extracting elements
+in increasing order to form the chunks. Finding short BFS routes for the small
+chunks did not make up for that selection cost. These are my reported results
+for this implementation, not a claim that every chunking algorithm performs
+poorly. I am shelving this approach and focusing on full-input BFS for small
+inputs and LIS/greedy strategies for larger ones.
+
+The archived development path processed successive rank intervals of up to ten
+values. It first moved the selected interval from A to B, then created temporary
+stacks containing the active chunk, searched for a solution and replayed that
+solution on the real stacks.
+
+[`chunk_optimal_BFS.c`](../backups/chunk_optimal_BFS.c) simulates extraction
+routes before executing one. It tries each initial rotation direction and each
+point at which to reverse direction after collecting a target value. It chooses
+the lowest rotation-plus-push cost among those candidates.
+
+“Optimal” here refers only to that limited family of extraction routes. The code
+does not compare arbitrary direction changes or the total future sorting cost.
+Likewise, a short BFS solution for one chunk does not prove that the full sequence
+meets the subject's move requirements.
+
+The archived hidden search treated the unseen portion of A as a boundary: it
+disallowed A rotations when the visible portion was nonempty and disallowed
+`sa` when fewer than two visible values were available. This is the experiment behind “hidden BFS”. Its overall
+correctness and efficiency still need broader validation.
+
+Archived seed-search prototypes are in
+[backups/BFS WIP backup](../backups/BFS%20WIP%20backup/README.md).
+They are not built; the separate full-input BFS under `src/` is built.
+
 ### Earlier batching experiment: initial decision on five inputs
 
 I tested saving the best multi-depth insertion sequence and executing several
@@ -2205,7 +2292,7 @@ variant produces the fewest complete sorting operations. See the
 This discussion records my earlier eight-lookahead/six-executed experiments
 and the reasoning they prompted. My final configuration uses depth 12 /
 execute 10 through 100 values and depth 7 / execute 5 for 101–500 values,
-with separate opening settings shown in [Seed candidate flow](#seed-candidate-flow).
+with separate opening settings shown in [Final algorithms and settings](#seed-candidate-flow).
 I keep the earlier dialogue and equations because they explain my investigation;
 eight/six is no longer my current preferred setting.
 
@@ -2527,7 +2614,6 @@ remain empirical questions. I am explaining the rationale here, not introducing
 a solver change.
 
 
-
 #### What this discussion establishes, and what remains open
 
 | Statement | Status |
@@ -2598,7 +2684,7 @@ then continues with repeated lookahead; algorithm 5 executes an opening batch
 before that same continuation. Both use `use_lookahead = 1` in the final solver.
 The older opening-then-local results above do **not** benchmark these variants;
 the later profiled 100-value session does. My final settings are listed in the
-seed-flow configuration table above; the normal size threshold uses total A+B
+[seed-flow configuration table](#seed-candidate-flow); the normal size threshold uses total A+B
 length, not remaining B length. These are tested configuration choices, not
 fixed properties of the algorithms.
 
@@ -2872,128 +2958,4 @@ transfer poorly to large inputs or to insertion-level decisions. I would
 therefore need to compare these ideas with the existing search under controlled
 conditions before claiming that they improve it.
 
-[↑ Back to top](#top)
-
-## Repeated random tests
-
-The Bash entry point uses `tests/run_random_tests.py` (Python 3 standard library)
-for seeded generation, checking, logs and resume. It builds once with `make`.
-No C solver changes or generator executable are required by this runner.
-
-```bash
-# 100 successful tests, 100 numbers each (the default size).
-./push_swap_tester.sh -n 100
-
-# Run until Ctrl-C, using 500 numbers per input.
-./push_swap_tester.sh --size 500
-
-# Also show the full solution debug dump on stderr; it is still saved.
-./push_swap_tester.sh -n 100 --show-solutions
-
-# Reproducible master seed; every attempt has its own generation ID.
-./push_swap_tester.sh -n 100 --size 100 --seed 42
-```
-
-The runner prints its session directory and summary path. To resume a session:
-
-```bash
-# Replace this example directory with the session path printed by your run.
-./push_swap_tester.sh --resume tests/debug/results/random_tests/YYYYMMDD_HHMMSS_output -n 100
-```
-
-On resume, `-n 100` means **100 additional successful tests**; omitting `-n`
-continues until Ctrl-C. Seed and input size come from the saved session.
-The generation ID advances for duplicate attempts too. Inputs are permutations
-of `0..size-1`; SHA-256 hashes use normalised ranks, so different integer values
-with identical relative order would deduplicate. Rotations remain distinct.
-Small input sizes stop when every unique permutation has been tested.
-
-Files live in the git-ignored `tests/debug/results/random_tests/` directory:
-
-- `YYYYMMDD_HHMMSS_output_summary.md`: Markdown summary with averages/minimum/maximum tables, atomically replaced
-  after every successful run. Includes master seed, next generation ID, move and
-  runtime averages/min/max, per-algorithm move statistics and detail filenames.
-- `YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
-  Each section includes the ranked input,
-  seed, generation ID, rank hash, binary hash, captured settings, checker result,
-  complete winning moves and full solution-debug dump in collapsible details.
-  The current ten-run file is atomically refreshed after each success.
-
-Thus 100 successful tests produce **one summary plus ten detail files**.
-FD 1 is captured and passed to `checker_linux`; FD 2 remains visible for
-progress; FD 3 captures the solution dump. `--show-solutions` also prints that
-saved dump to stderr after the solver finishes. It does not change the C printer.
-
-Only a zero-exit solver producing valid moves and a checker result of `OK` is
-committed to the success log or averages. On failure the runner saves a separate
-`*_failed.md` with the input and diagnostics, then stops. Ctrl-C terminates the
-active solver/checker process group; completed records remain saved, and resume
-retries the uncommitted input. Saved Markdown reports recover a stale summary after an interruption; atomic
-replacement keeps the current batch intact. A session lock prevents concurrent writers.
-
-Exact inputs remain replayable even if a Python version changes shuffle details.
-Each session builds and snapshots an executable; its runs use that snapshot
-and record its hash. Resuming after rebuilding is allowed, so summary averages
-may span multiple binaries (listed in the summary). The metadata parser records the per-size and opening depth/limit macros,
-`DEBUG`, the opening-lookahead switch, BFS skip switch and relevant capacities.
-Older reports retain the settings that were actually captured at the time.
-
-
-Variable-size sessions are available for comparing algorithms across input
-sizes. `-random` chooses each size from a separately domain-separated SHA-256
-seed derived from the master seed and generation ID; the existing deterministic
-permutation generator then shuffles that many ranks. `-loop` cycles through
-all sizes from `-min` to `-max`, inclusively, and wraps around. The default
-bounds are 2 and 500; a larger maximum such as 600 is supported by the solver's
-existing heap-backed path. Algorithms unavailable at a size produce no rows.
-
-```sh
-bash push_swap_tester.sh -random -max 500 --seed 42 -n 100
-bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
-```
-
-The size modes and bounds are saved for resume. Variable-size sessions retain
-repeated permutations, especially at small sizes, so the loop's size sequence
-is not disrupted by deduplication. Fixed-size sessions retain their existing
-unique-permutation behavior. The comparison table groups by input size as well
-as executable and settings, and the summary includes a winning-result table by
-size. Per-run rows support size-versus-time plots with separate algorithm lines.
-SD and SEM are sample summaries, not confidence guarantees; repeated inputs
-and changing machine load should be considered when interpreting them.
-`python3 tests/test_size_modes.py` tests generation and reporting without
-building or running a solver.
-
-The runner now links a temporary profiling executable from the current solver
-objects and `tests/profile_solver.c`. It wraps the three candidate entry points
-with monotonic wall and process CPU clocks, then saves their encoded moves on
-descriptor 4. This works with `DEBUG=0`; I do not need to change submission
-settings or parse the timing of progress messages. The regular `push_swap`
-executable is left alone. Sorted inputs have no algorithm rows, and skipped
-candidates are absent rather than assigned zero time.
-
-The summary includes an algorithm comparison table grouped by executable hash
-and settings, plus one row per candidate per run. I can use those rows as a
-later analysis dump without reopening the detailed batches. They include each
-instruction count (`rr` and `rrr` included), forward/reverse/shared rotations,
-wall and CPU time, process peak RSS, chosen wins, tied best results and the
-strict top-band result. The comparison includes mean, sample standard deviation,
-coefficient of variation, quartiles, median, P95, range and standard error,
-plus average extra moves versus the best candidate. A single sample has no
-sample SD or SEM. Missing measurements in older logs stay missing.
-
-These timings cover candidate execution, excluding candidate initialization and
-the wrapper's reporting. Total solver time includes process startup, parsing,
-initialization and output, so I do not expect the two totals to match exactly.
-The profiling build adds reporting overhead to total time. RSS is a process-wide
-high-water mark at candidate completion, not each algorithm's private memory;
-later algorithms inherit earlier peaks. The move counts describe emitted
-instructions and can include no-ops. SD and percentiles describe this sample's
-variability; they do not promise future results or establish asymptotic
-complexity from one input size. The reference checker validates the winning
-stream, not every candidate separately. `python3 tests/test_runner_profiles.py`
-checks the instrumentation, statistics, Markdown round-trip and old-log parsing.
-
-New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
-The seed, hash and resume metadata are ordinary readable table rows; no hidden
-JSON state file is needed. `--resume` also accepts older TXT/JSON sessions. Their
-existing files are preserved, while new or updated reports use Markdown.
+[↑ Back to reading routes](#reading-routes) · [Appendix contents](#contents)
