@@ -1,4 +1,5 @@
 NAME		= push_swap
+BONUS_NAME	= checker
 BIN_DIR		= bin
 DEBUG_NAME	= $(BIN_DIR)/push_swap_debug
 ANALYSIS_NAME	= $(BIN_DIR)/bfs_analyser
@@ -76,6 +77,31 @@ SRCS		= main_push_swap.c \
 OBJ_DIR		= obj
 OBJS		= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
 
+# Checker reuses parsing, stacks and operations without linking the solver main.
+BONUS_SRCS = bonus/main_checker_bonus.c \
+	bonus/checker_read_bonus.c \
+	bonus/checker_moves_bonus.c \
+	bonus/checker_utils_bonus.c \
+	$(PARSING_DIR)/parse_sort_input.c \
+	$(PARSING_DIR)/input_storage.c \
+	algorithms/rank_values.c \
+	$(OPERATIONS_DIR)/stack_operation_swap_push.c \
+	$(OPERATIONS_DIR)/stack_operation_rotate.c \
+	$(OPERATIONS_DIR)/stack_operation_reverse_rotate.c \
+	$(CBUF_DIR)/circular_buffer_utils.c \
+	$(CBUF_DIR)/circular_buffer_storage.c \
+	$(CBUF_DIR)/circular_buffer_move_element.c \
+	$(CBUF_DIR)/circular_buffer_insert_remove.c \
+	solution_utils.c
+BONUS_OBJS = $(addprefix $(OBJ_DIR)/,$(BONUS_SRCS:.c=.o))
+
+bonus: $(BONUS_NAME)
+
+$(BONUS_NAME): $(LIBFT) $(BONUS_OBJS)
+	$(CC) $(CFLAGS) $(BONUS_OBJS) $(LIBFT) -o $@
+
+$(OBJ_DIR)/bonus/%.o: $(INC_DIR)/checker_bonus.h
+
 all: $(NAME)
 
 debug: $(DEBUG_NAME)
@@ -139,13 +165,13 @@ clean:
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
-	$(RM) $(NAME) $(DEBUG_NAME) $(ANALYSIS_NAME) $(ALL_PATHS_NAME)
+	$(RM) $(NAME) $(BONUS_NAME) $(DEBUG_NAME) $(ANALYSIS_NAME) $(ALL_PATHS_NAME)
 	$(RM) $(BIN_DIR)/generator
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
-.PHONY: all generator debug analyse_bfs analyse_bfs_all_paths clean fclean re
+.PHONY: all bonus generator debug analyse_bfs analyse_bfs_all_paths clean fclean re
 
 FORCE:
 
