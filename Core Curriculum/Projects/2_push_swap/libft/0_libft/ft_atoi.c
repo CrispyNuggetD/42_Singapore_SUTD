@@ -6,12 +6,12 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/07 12:44:41 by hnah              #+#    #+#             */
-/*   Updated: 2025/12/08 10:19:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/01 17:14:26 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-// atoi supposed to return garbage on overflow
+/* Signed accumulation avoids a positive magnitude for INT_MIN. */
 int	ft_atoi(const char *nptr)
 {
 	int	sign;
@@ -23,18 +23,15 @@ int	ft_atoi(const char *nptr)
 		|| *nptr == '\r' || *nptr == '\v' || *nptr == '\f')
 		nptr++;
 	if (*nptr == '-')
-	{
 		sign = -1;
+	if (*nptr == '-' || *nptr == '+')
 		nptr++;
-	}
-	else if (*nptr == '+')
-		nptr++;
-	while (*nptr && *nptr >= '0' && *nptr <= '9')
+	while (*nptr >= '0' && *nptr <= '9')
 	{
-		number = number * 10 + (*nptr - '0');
+		number = number * 10 + sign * (*nptr - '0');
 		nptr++;
 	}
-	return (sign * number);
+	return (number);
 }
 
 /*

@@ -17,8 +17,8 @@ HARNESS = r'''
 
 int main(int argc, char **argv)
 {
-    circle_buf a, b, stacks[2], before;
-    soln x;
+    t_circle_buf a, b, stacks[2], before;
+    t_soln x;
     int n = argc - 1;
     memset(&a, 0, sizeof(a));
     memset(&b, 0, sizeof(b));

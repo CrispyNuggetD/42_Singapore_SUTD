@@ -1,19 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   DO_NOT_SUBMIT_DEBUG_bfs_results.h                  :+:      :+:    :+:   */
+/*   circular_buffer_lis.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/20 20:25:10 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/01 17:49:31 by hnah             ###   ########.fr       */
+/*   Created: 2026/09/25 14:49:00 by hnah              #+#    #+#             */
+/*   Updated: 2026/10/01 18:53:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DO_NOT_SUBMIT_DEBUG_BFS_RESULTS_H
-# define DO_NOT_SUBMIT_DEBUG_BFS_RESULTS_H
+#ifndef CIRCULAR_BUFFER_LIS_H
+# define CIRCULAR_BUFFER_LIS_H
 
-void	debug_log_bfs_run(const int *values, int n,
-		const char *solution, int solution_len);
+/* Array positions are relative to start, not physical buffer indices. */
+typedef struct s_cbuf_lis
+{
+	int	length[500];
+	int	previous[500];
+	int	count;
+	int	start;
+	int	best_length;
+}	t_cbuf_lis;
 
 #endif

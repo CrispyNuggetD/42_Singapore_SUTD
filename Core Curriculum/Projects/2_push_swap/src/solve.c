@@ -13,10 +13,10 @@
 #include "push_swap.h"
 
 /* Each candidate owns a fresh copy; preparation never resets a solution. */
-int	solve(soln *x, circle_buf *a, circle_buf *b, int count)
+int	solve(t_soln *x, t_circle_buf *a, t_circle_buf *b, int count)
 {
-	circle_buf	stacks[2];
-	t_algorithm	algo;
+	t_circle_buf	stacks[2];
+	t_algorithm		algo;
 
 	if (count != cbuf_len(a) || cbuf_len(b) != 0)
 		return (ERROR);

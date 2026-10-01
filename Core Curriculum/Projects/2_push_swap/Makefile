@@ -21,15 +21,18 @@ LIBFT_HEADERS = $(LIBFT_DIR)/ryker_libft.h \
 HEADERS = $(wildcard $(INC_DIR)/*.h) $(LIBFT_HEADERS)
 
 CBUF_DIR = data_structures/circular_buffer
-BFS_DIR = sorting_algorithms/Brute_force/BFS
+BFS_DIR = algorithms/sorting_algorithms/Brute_force/BFS
+PARSING_DIR = push_swap_requirements/parsing_input
+OPERATIONS_DIR = push_swap_requirements/stack_operations
 
 SRCS		= main_push_swap.c \
-			  algorithm_config.c \
-			  parse_sort_input.c \
-			  stack_operation_swap_push.c \
-			  stack_operation_rotate.c \
-			  stack_operation_reverse_rotate.c \
+			  algorithms/algorithm_config.c \
+			  $(PARSING_DIR)/parse_sort_input.c \
+			  $(OPERATIONS_DIR)/stack_operation_swap_push.c \
+			  $(OPERATIONS_DIR)/stack_operation_rotate.c \
+			  $(OPERATIONS_DIR)/stack_operation_reverse_rotate.c \
 			  $(CBUF_DIR)/circular_buffer_utils.c \
+			  $(CBUF_DIR)/circular_buffer_alignment.c \
 			  $(CBUF_DIR)/circular_buffer_get_info.c \
 			  $(CBUF_DIR)/circular_buffer_move_element.c \
 			  $(CBUF_DIR)/circular_buffer_insert_remove.c \
@@ -45,25 +48,28 @@ SRCS		= main_push_swap.c \
 			  printers/debug_bfs_status.c \
 			  printers/debug_chunks.c \
 			  printers/solution_printers.c \
-			  rank_values.c \
-			  stack_utils.c \
+			  algorithms/rank_values.c \
+			  solution_utils.c \
 			  solve.c \
-			  sorting_algorithms/Exact_hardcoded/hardcode.c \
-			  sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c \
-			  $(BFS_DIR)/bfs.c \
+			  algorithms/sorting_algorithms/Exact_hardcoded/hardcode.c \
+			  algorithms/sorting_algorithms/Exact_hardcoded/precomputed_ranks_bfs.c \
+			  $(BFS_DIR)/bfs_main.c \
+			  $(BFS_DIR)/bfs_search.c \
+			  $(BFS_DIR)/bfs_state_representation.c \
 			  $(BFS_DIR)/bfs_utils.c \
+			  $(BFS_DIR)/bfs_array_helpers.c \
 			  $(BFS_DIR)/bfs_verify_node.c \
-			  $(BFS_DIR)/bfs_operations_swap_push.c \
-			  $(BFS_DIR)/bfs_operations_rotate.c \
-			  $(BFS_DIR)/bfs_operations_reverse_rotate.c \
+			  $(BFS_DIR)/push_swap_operations_bfs/bfs_operations_swap_push.c \
+			  $(BFS_DIR)/push_swap_operations_bfs/bfs_operations_rotate.c \
+			  $(BFS_DIR)/push_swap_operations_bfs/bfs_operations_reverse_rotate.c \
 			  $(BFS_DIR)/bfs_optimiser_lehmer_rank.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_lookahead_utils.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_choose_plan.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_branch.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
-			  sorting_algorithms/Cost_aware/Greedy/greedy_execute.c
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_reinsertion.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_lookahead_utils.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_choose_plan.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_branch.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_stages.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_prepare.c \
+			  algorithms/sorting_algorithms/Cost_aware/Greedy/greedy_execute.c
 
 OBJ_DIR		= obj
 OBJS		= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
@@ -79,11 +85,19 @@ $(DEBUG_NAME): $(addprefix $(SRC_DIR)/,$(SRCS)) $(HEADERS) \
 	$(CC) $(CFLAGS) -DBFS_DEBUG $(INCLUDES) $(addprefix $(SRC_DIR)/,$(SRCS)) \
 		debug/DO_NOT_SUBMIT_DEBUG_bfs_results.c $(LIBFT) -o $(DEBUG_NAME)
 
-BFS_SRCS = bfs_utils.c bfs_verify_node.c bfs_operations_swap_push.c \
-	bfs_operations_rotate.c bfs_operations_reverse_rotate.c \
+BFS_SRCS = bfs_utils.c bfs_array_helpers.c bfs_verify_node.c \
+	push_swap_operations_bfs/bfs_operations_swap_push.c \
+	push_swap_operations_bfs/bfs_operations_rotate.c \
+	push_swap_operations_bfs/bfs_operations_reverse_rotate.c \
 	bfs_optimiser_lehmer_rank.c
 ANALYSIS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_all_permutations.c \
-	$(SRC_DIR)/$(BFS_DIR)/bfs.c \
+	$(SRC_DIR)/algorithms/algorithm_config.c \
+	$(SRC_DIR)/printers/debug_tools.c \
+	$(SRC_DIR)/printers/debug_bfs.c \
+	$(SRC_DIR)/printers/debug_bfs_status.c \
+	$(SRC_DIR)/$(BFS_DIR)/bfs_main.c \
+	$(SRC_DIR)/$(BFS_DIR)/bfs_search.c \
+	$(SRC_DIR)/$(BFS_DIR)/bfs_state_representation.c \
 	$(SRC_DIR)/$(CBUF_DIR)/circular_buffer_utils.c \
 	$(addprefix $(SRC_DIR)/$(BFS_DIR)/,$(BFS_SRCS))
 ALL_PATHS_SRCS = debug/DO_NOT_SUBMIT_DEBUG_bfs_reverse_all_paths.c \

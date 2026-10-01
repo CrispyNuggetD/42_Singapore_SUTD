@@ -12,7 +12,7 @@
 
 #include "push_swap.h"
 
-static int	free_and_error(soln *x)
+static int	free_and_error(t_soln *x)
 {
 	if (x)
 	{
@@ -25,11 +25,11 @@ static int	free_and_error(soln *x)
 
 int	main(int argc, char **argv)
 {
-	int	i;
-	int	count;
-	circle_buf	a;
-	circle_buf	b;
-	soln	x;
+	int				i;
+	int				count;
+	t_circle_buf	a;
+	t_circle_buf	b;
+	t_soln			x;
 
 	i = 1;
 	count = 0;

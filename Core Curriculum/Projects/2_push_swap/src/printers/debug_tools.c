@@ -31,7 +31,7 @@ void	debug_print_int_array(const int *array, int size)
 	ryker_ft_printf_fd(STDERR_FILENO, "\n");
 }
 
-static void	cbuf_print_metadata(circle_buf *stack, char name)
+static void	cbuf_print_metadata(t_circle_buf *stack, char name)
 {
 	if (DEBUG < 2)
 		return ;
@@ -47,7 +47,7 @@ static void	cbuf_print_metadata(circle_buf *stack, char name)
 	ft_putstr_fd("]: ", 2);
 }
 
-void	cbuf_print(circle_buf *stack, char name)
+void	cbuf_print(t_circle_buf *stack, char name)
 {
 	int	offset;
 	int	index;
@@ -69,7 +69,7 @@ void	cbuf_print(circle_buf *stack, char name)
 	ft_putchar_fd('\n', 2);
 }
 
-void	cbuf_print_stacks(circle_buf *a, circle_buf *b)
+void	cbuf_print_stacks(t_circle_buf *a, t_circle_buf *b)
 {
 	if (DEBUG < 2)
 		return ;

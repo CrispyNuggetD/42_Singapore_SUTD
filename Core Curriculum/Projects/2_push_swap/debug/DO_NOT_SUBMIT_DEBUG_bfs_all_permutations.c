@@ -82,9 +82,9 @@ static int	next_permutation(int *values, int n)
 static int	solve_permutation(t_analysis_result *result,
 		const int *values, int n)
 {
-	circle_buf	a;
-	circle_buf	b;
-	soln	x;
+	t_circle_buf	a;
+	t_circle_buf	b;
+	t_soln	x;
 	char	*answers[1];
 	int	answer_len;
 	int	i;

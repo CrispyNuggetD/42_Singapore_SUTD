@@ -39,7 +39,7 @@ static const char	*move_name(char move)
 	return ("UNKNOWN");
 }
 
-static void	debug_soln_header(const soln *x, circle_buf *a_ori)
+static void	debug_soln_header(const t_soln *x, t_circle_buf *a_ori)
 {
 	if (DEBUG < 1)
 		return ;
@@ -55,7 +55,7 @@ static void	debug_soln_header(const soln *x, circle_buf *a_ori)
 	ryker_ft_printf_fd(3, "current step    : %d\n", x->step);
 }
 
-static void	debug_encoded(const soln *x, int index)
+static void	debug_encoded(const t_soln *x, int index)
 {
 	int	i;
 
@@ -70,7 +70,7 @@ static void	debug_encoded(const soln *x, int index)
 	ryker_ft_printf_fd(3, "\nDecoded moves:\n");
 }
 
-static void	debug_decoded(const soln *x, int index)
+static void	debug_decoded(const t_soln *x, int index)
 {
 	int	i;
 
@@ -85,7 +85,7 @@ static void	debug_decoded(const soln *x, int index)
 	}
 }
 
-void	debug_print_soln(const soln *x, circle_buf *a_ori)
+void	debug_print_soln(const t_soln *x, t_circle_buf *a_ori)
 {
 	int	index;
 

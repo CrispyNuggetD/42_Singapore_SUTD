@@ -59,12 +59,12 @@ void	debug_lookahead_stop(int depth, int cost, const char *reason);
 void	debug_greedy_execute(const t_greedy_plan *plan);
 
 /* Scan returns a raw position; greedy_find_target normalises it. */
-int		greedy_scan_target(circle_buf *a, int desired_rank, int scan_dir);
+int		greedy_scan_target(t_circle_buf *a, int desired_rank, int scan_dir);
 /* Remaining functions return SUCCESS / ERROR; outputs require SUCCESS. */
-int		greedy_find_target(circle_buf *a, int rank, int *target_index);
-int		greedy_plan_candidate(circle_buf *a, circle_buf *b, int b_index,
+int		greedy_find_target(t_circle_buf *a, int rank, int *target_index);
+int		greedy_plan_candidate(t_circle_buf *a, t_circle_buf *b, int b_index,
 			t_greedy_plan *plan);
-int		greedy_choose_plan_local(circle_buf *a, circle_buf *b,
+int		greedy_choose_plan_local(t_circle_buf *a, t_circle_buf *b,
 			t_greedy_plan *best_first_plan);
 /*
 ** Requires valid stacks, circularly ascending A, and all ranks 0..n-1
@@ -77,19 +77,19 @@ int		greedy_choose_plan_local(circle_buf *a, circle_buf *b,
 ** Saves the winning path, capped by the search depth and remaining B.
 */
 /* A pruned search leaves the output path untouched. Budget is exclusive. */
-int		greedy_lookahead_cost(circle_buf *a, circle_buf *b,
+int		greedy_lookahead_cost(t_circle_buf *a, t_circle_buf *b,
 			t_greedy_search search);
-int		greedy_choose_bounded(circle_buf *a, circle_buf *b,
+int		greedy_choose_bounded(t_circle_buf *a, t_circle_buf *b,
 			t_greedy_search search);
-int		greedy_branch_cost(circle_buf *a, circle_buf *b,
+int		greedy_branch_cost(t_circle_buf *a, t_circle_buf *b,
 			t_greedy_search search, t_greedy_path *candidate_path);
-int		greedy_choose_plan_lookahead(circle_buf *a, circle_buf *b, int depth,
-			t_greedy_path *best_path);
-int		greedy_execute_plan(soln *x, circle_buf *a, circle_buf *b,
+int		greedy_choose_plan_lookahead(t_circle_buf *a, t_circle_buf *b,
+			int depth, t_greedy_path *best_path);
+int		greedy_execute_plan(t_soln *x, t_circle_buf *a, t_circle_buf *b,
 			const t_greedy_plan *plan);
 
 /* Requires empty or circularly ascending A; accepts arbitrary B. */
-int		greedy_insert_all(soln *x, circle_buf stacks[2], int use_lookahead);
-int		greedy_prepare(soln *x, circle_buf *a, circle_buf *b,
+int		greedy_insert_all(t_soln *x, t_circle_buf stacks[2], int use_lookahead);
+int		greedy_prepare(t_soln *x, t_circle_buf *a, t_circle_buf *b,
 			t_seed_mode mode);
 #endif

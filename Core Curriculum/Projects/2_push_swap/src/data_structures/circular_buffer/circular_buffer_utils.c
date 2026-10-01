@@ -12,7 +12,7 @@
 
 #include "push_swap.h"
 
-void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count)
+void	cbuf_init_ab(t_circle_buf *a, t_circle_buf *b, int count)
 {
 	a->capacity = count + 1;
 	a->read_idx = 0;
@@ -24,7 +24,7 @@ void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count)
 }
 
 /* Read a logical position from the top without changing the stack. */
-int	cbuf_read_at(circle_buf *stack, int read_index, int *value)
+int	cbuf_read_at(t_circle_buf *stack, int read_index, int *value)
 {
 	int len;
 	
@@ -39,18 +39,18 @@ int	cbuf_read_at(circle_buf *stack, int read_index, int *value)
 	return (SUCCESS);
 }
 
-int	cbuf_len(circle_buf *stack)
+int	cbuf_len(t_circle_buf *stack)
 {
 	return ((stack->write_idx - stack->read_idx + stack->capacity) \
 % stack->capacity);
 }
 
-int	cbuf_is_empty(circle_buf *stack)
+int	cbuf_is_empty(t_circle_buf *stack)
 {
 	return (stack->read_idx == stack->write_idx);
 }
 
-int	cbuf_is_full(circle_buf *stack)
+int	cbuf_is_full(t_circle_buf *stack)
 {
 	return ((stack->write_idx + 1) % stack->capacity == stack->read_idx);
 }

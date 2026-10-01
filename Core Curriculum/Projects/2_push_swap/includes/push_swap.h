@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 13:22:29 by hnah              #+#    #+#             */
-/*   Updated: 2026/09/30 22:39:45 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/01 19:11:02 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,7 @@
 # define BRUTE_TOTAL_N_PLUS_1_FACTORIAL		39916800
 # define SKIP_OTHER_ALGO_AFTER_BFS			0
 
-/*
-** Number of insertions searched, including the current candidate; must be >= 1.
-** 1 = current insertion only; 3 = current plus two future insertions.
-** Recursion stops at depth 0. Config depth 0 separately selects local greedy.
-*/
+/* Search depth counts insertions and must be at least one. */
 # define LOOKAHEAD_DEPTH_100					12
 # define LOOKAHEAD_DEPTH_500					8
 # define LOOKAHEAD_DEPTH_FIRST_MOVE				12
@@ -40,7 +36,7 @@
 /* Capacity must cover every configured lookahead depth. */
 # define GREEDY_PATH_CAPACITY 14
 
-// Level 0-4 for STDERR progress bar + info printing (Does not affect checker)
+/* Zero disables diagnostics; positive levels enable debug output. */
 # define DEBUG 								1
 
 typedef struct s_circle_buf
@@ -49,7 +45,7 @@ typedef struct s_circle_buf
 	int	capacity;
 	int	read_idx;
 	int	write_idx;
-}	circle_buf;
+}	t_circle_buf;
 
 typedef struct s_soln
 {
@@ -57,17 +53,15 @@ typedef struct s_soln
 	int		*ans_len;
 	int		cur;
 	int		step;
-}	soln;
+}	t_soln;
 
-// FYI: Don't (int) type apparently - (unsigned char) is 0..255; values are normalized ranks and split only needs 0..n. 
-// So is safe for any brute-force size CPU can go bzzzzzz!~ \(^o^)/ 
+/* Normalised ranks; split is the number of values in A. */
 typedef struct s_brutestate
 {
 	unsigned char	value[BRUTE_MAX_N];
 	unsigned char	split;
 }	t_brutestate;
 
-// FYI: Apparently reordering t_brutenode members can minimize alignment padding:
 typedef struct s_brutenode
 {
 	int				parent;
@@ -105,12 +99,12 @@ typedef struct s_brutenode
 # define RRB	'A'
 # define RRR	'B'
 
-/* debugger */
+/* Debug output; emission depends on DEBUG. */
 void	debug_print_bfs_memory(size_t node_count);
 void	debug_print_int_array(const int *array, int size);
-void	cbuf_print(circle_buf *stack, char name);
-void	cbuf_print_stacks(circle_buf *a, circle_buf *b);
-void	debug_print_soln(const soln *x, circle_buf *a_ori);
+void	cbuf_print(t_circle_buf *stack, char name);
+void	cbuf_print_stacks(t_circle_buf *a, t_circle_buf *b);
+void	debug_print_soln(const t_soln *x, t_circle_buf *a_ori);
 void	debug_lis_length(int length);
 void	debug_bfs_progress(int expanded, int discovered, int capacity);
 void	debug_bfs_start(int n, int capacity);
@@ -124,35 +118,37 @@ void	debug_chunk_turn(int turn);
 void	debug_total_moves(int total);
 
 /* Solution output: stdout, independent of DEBUG. */
-int		print_best_soln(const soln *x);
-
-/* do not submit*/
+int		print_best_soln(const t_soln *x);
 
 /* parser */
-int	count_int_in_str(char *str, int *count, int *values);
-int	rank_values(const int count, const int *values, int *ranks);
+int		count_int_in_str(char *str, int *count, int *values);
+int		rank_values(const int count, const int *values, int *ranks);
 
 /* Solution storage and shared sorting helpers. */
-void	append_move_to_soln(soln *x, char move);
-int	soln_init(soln *x, const int soln_num, const int steps_limit);
-int	new_soln_init(soln *x, circle_buf stacks[2], circle_buf *a_ori,
-		circle_buf *b_ori);
-int	get_order_top_three(circle_buf *a);
-int	hardcode_three(soln *x, circle_buf *a);
-int	rot_a_min_plan(circle_buf *a, int *rotations);
-int	rot_a_min_to_top(soln *x, circle_buf *a);
+/* Caller ensures answer capacity. NULL x skips recording. */
+void	append_move_to_soln(t_soln *x, char move);
+int		soln_init(t_soln *x, const int soln_num, const int steps_limit);
+/* Start an allocated answer slot and copy the original stacks. */
+int		new_soln_init(t_soln *x, t_circle_buf stacks[2], t_circle_buf *a_ori,
+			t_circle_buf *b_ori);
+int		get_order_top_three(t_circle_buf *a);
+int		hardcode_three(t_soln *x, t_circle_buf *a);
+int		rot_a_min_rotation(t_circle_buf *a, int *rotations);
+int		rot_a_min_to_top(t_soln *x, t_circle_buf *a);
 
-/* Solver entry points; callers do not need algorithm-specific headers. */
-int	solve(soln *x, circle_buf *a, circle_buf *b, int count);
-int	greedy_reinsertion(soln *x, circle_buf stacks[2],
-		t_algorithm algo);
-int	brute_solve(soln *x, circle_buf *a, circle_buf *b, int count);
-int	get_precomputed_bfs(soln *x, circle_buf *a, int count);
+/* Solver entry points. */
+int		solve(t_soln *x, t_circle_buf *a, t_circle_buf *b, int count);
+int		greedy_reinsertion(t_soln *x, t_circle_buf stacks[2],
+			t_algorithm algo);
+int		brute_solve(t_soln *x, t_circle_buf *a, t_circle_buf *b, int count);
+/* Record a 1..4-value answer; requires a fresh slot, ranked A and empty B. */
+int		get_precomputed_bfs(t_soln *x, t_circle_buf *a, int count);
 
 /* bfs solver */
-int	brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
-		int total, int n);
-int	is_brute_goal(t_brutestate *state, int n);
+void	gen_brute_state(t_brutestate *state, t_circle_buf *a, t_circle_buf *b);
+int		brute_state_exists(t_brutestate *temp, t_brutenode *nodes,
+			int total, int n);
+int		is_brute_goal(t_brutestate *state, int n);
 void	brute_apply_move(t_brutestate *state, char move, int n);
 
 /* bfs operations */
@@ -168,46 +164,48 @@ void	brute_rra(t_brutestate *state);
 void	brute_rrb(t_brutestate *state, int n);
 void	brute_rrr(t_brutestate *state, int n);
 
-/* bfs helpers */
+/* BFS state counts and indexing. */
 /* Return -1 outside factorial range 0..11 or BFS input size 0..10. */
 int		factorial_max_11(int n);
 int		bfs_possible_states(int n);
+int		state_was_visited(const unsigned char *visited, int state_id);
+void	mark_state_visited(unsigned char *visited, int state_id);
+int		calculate_state_id(t_brutestate *a, int n);
+
+/* BFS array helpers: physical indices and inclusive ranges. */
 void	brute_swap_at(t_brutestate *state, int a, int b);
 void	brute_rotate_left(t_brutestate *state, int start, int end);
 void	brute_rotate_right(t_brutestate *state, int start, int end);
-int		calculate_state_id(t_brutestate *a, int n);
 
+/* Circular-buffer access. */
+void	cbuf_init_ab(t_circle_buf *a, t_circle_buf *b, int count);
+int		cbuf_read_at(t_circle_buf *stack, int index, int *value);
+int		cbuf_is_empty(t_circle_buf *stack);
+int		cbuf_is_full(t_circle_buf *stack);
+int		cbuf_len(t_circle_buf *stack);
+int		cbuf_opp_moves(t_circle_buf *stack, int moves);
+int		get_cbuf_lis(t_circle_buf *stack, char keep_flags[500]);
 
-/* circle_buf core */
-void	cbuf_init_ab(circle_buf *a, circle_buf *b, int count);
-int	cbuf_read_at(circle_buf *stack, int index, int *value);
-int	cbuf_is_empty(circle_buf *stack);
-int	cbuf_is_full(circle_buf *stack);
-int	cbuf_len(circle_buf *stack);
-int	cbuf_opp_moves(circle_buf *stack, int moves);
-int	cbuf_lis(circle_buf *stack, char keep_flags[500]);
-// int	cbuf_free(circle_buf *stack);
-
-/* circle_buf operations */
-int	cbuf_push_top(circle_buf *stack, int number);
-int	cbuf_push_bottom(circle_buf *stack, int number);
-int	cbuf_pop_bottom(circle_buf *stack, int *pop_number);
-int	cbuf_pop_top(circle_buf *stack, int *pop_number);
-int	cbuf_swap_top(circle_buf *stack);
-int	cbuf_rotate(circle_buf *stack);
-int	cbuf_rev_rotate(circle_buf *stack);
+/* Circular-buffer mutations. */
+int		cbuf_push_top(t_circle_buf *stack, int number);
+int		cbuf_push_bottom(t_circle_buf *stack, int number);
+int		cbuf_pop_bottom(t_circle_buf *stack, int *pop_number);
+int		cbuf_pop_top(t_circle_buf *stack, int *pop_number);
+int		cbuf_swap_top(t_circle_buf *stack);
+int		cbuf_rotate(t_circle_buf *stack);
+int		cbuf_rev_rotate(t_circle_buf *stack);
 
 /* push_swap operations */
-int	sa(soln *x, circle_buf *a);
-int	sb(soln *x, circle_buf *b);
-int	ss(soln *x, circle_buf *a, circle_buf *b);
-int	pa(soln *x, circle_buf *a, circle_buf *b);
-int	pb(soln *x, circle_buf *a, circle_buf *b);
-int	ra(soln *x, circle_buf *a);
-int	rb(soln *x, circle_buf *b);
-int	rr(soln *x, circle_buf *a, circle_buf *b);
-int	rra(soln *x, circle_buf *a);
-int	rrb(soln *x, circle_buf *b);
-int	rrr(soln *x, circle_buf *a, circle_buf *b);
+int		sa(t_soln *x, t_circle_buf *a);
+int		sb(t_soln *x, t_circle_buf *b);
+int		ss(t_soln *x, t_circle_buf *a, t_circle_buf *b);
+int		pa(t_soln *x, t_circle_buf *a, t_circle_buf *b);
+int		pb(t_soln *x, t_circle_buf *a, t_circle_buf *b);
+int		ra(t_soln *x, t_circle_buf *a);
+int		rb(t_soln *x, t_circle_buf *b);
+int		rr(t_soln *x, t_circle_buf *a, t_circle_buf *b);
+int		rra(t_soln *x, t_circle_buf *a);
+int		rrb(t_soln *x, t_circle_buf *b);
+int		rrr(t_soln *x, t_circle_buf *a, t_circle_buf *b);
 
 #endif

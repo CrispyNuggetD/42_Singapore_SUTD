@@ -1,6 +1,67 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> Post-submission update (2026-10-01): `ft_atoi` now accumulates with the sign, so valid `INT_MIN` input does not depend on signed overflow. See [the integer-conversion update](#post-submission-update-defined-int_min-conversion).
+
 > Post-submission update (2026-09-14): this directory remains the original base libft project. My expanded library for later projects is maintained separately as `libft`. See [Expanded Ryker libft](#post-submission-update-expanded-ryker-libft) below.
+
+## Post-submission update: defined INT_MIN conversion
+
+**2026-10-01 — applied with Codex assistance to the libft copy bundled with
+push_swap, together with its parser call site.** Other project/library copies
+were not updated in this change.
+
+My original `ft_atoi` accumulated a positive magnitude in an `int`, then
+multiplied by the sign. For `-2147483648` on this system, that first tried to
+represent positive `2147483648`, which exceeds `INT_MAX`. The final negation
+could overflow again. The tested 42 Linux build appeared to produce the expected
+negative result, but UBSan detected signed overflow: that result was not
+guaranteed by C. A check for `number == INT_MIN` after the digit loop was too
+late to prevent the first overflow.
+
+This is a post-submission correctness and portability update. It does not
+establish that my earlier submission failed an evaluation or that this case
+necessarily crashes on the school computers. It removes dependence on undefined
+behaviour for a valid, representable integer; observed wraparound is not a
+guarantee of safe execution under another compiler or optimisation setting.
+
+The accumulation now applies the sign to each digit:
+
+```c
+number = number * 10 + sign * (*nptr - '0');
+```
+
+Negative input stays negative throughout. For `INT_MIN`, the final step is
+`-2147483640 - 8`, which fits in an `int`; there is no final negation. Positive
+input still accumulates positively. The interface remains `int ft_atoi(const
+char *nptr)`.
+
+Like ordinary `atoi`, the function skips leading whitespace, accepts **at most
+one** optional sign, and converts consecutive decimal digits until the first
+non-digit. `"42abc"` returns 42, while `"+-42"`, `"--42"`, and a sign without
+digits return 0. Repeated signs are not a requirement. The push_swap parser is
+stricter: it must reject malformed complete tokens rather than accepting an
+`atoi` prefix or treating failed conversion as a valid zero.
+
+The push_swap parser previously stripped the minus sign and used
+`sign * ft_atoi(str)`. It now preserves the original signed token in
+`number_start` and calls `ft_atoi(number_start)` after validation. This lets the
+converter handle `INT_MIN` without first requesting its unrepresentable positive
+magnitude. The earlier delimiter guard remains in place to reject `"1-2"` and
+similar malformed tokens before writing a value.
+
+This does **not** turn `ft_atoi` into a checked conversion API: numbers outside
+the `int` range still have no supported conversion result and can overflow.
+Push_swap validates the range before calling it. The parser's existing
+ten-digit cap (including leading zeros) and 500-value cap remain unchanged.
+
+Validation on this 42 Linux computer: both edited C files pass norminette.
+At both `-O0` and `-O2`, 1,022 conversion cases matched system `atoi`, covering
+representable integer boundaries, 1,000 seeded random values, leading whitespace
+and zeros, trailing text, empty input and repeated signs. Eighteen parser cases
+covered valid signed values, both out-of-range boundaries, malformed tokens and
+duplicates. ASan/UBSan reported no errors in those tests. The project rebuilt,
+and all 33 precomputed sample permutations plus the five-value fallback test
+passed. These checks do not establish whole-project submission readiness.
 
 # Description
 

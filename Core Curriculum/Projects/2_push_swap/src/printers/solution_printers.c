@@ -41,7 +41,7 @@ static int	print_move(char move)
 	return (SUCCESS);
 }
 
-int	print_best_soln(const soln *x)
+int	print_best_soln(const t_soln *x)
 {
 	int	i;
 	int	best_algo;

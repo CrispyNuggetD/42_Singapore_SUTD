@@ -328,7 +328,8 @@ not a claim that every input or submission requirement has passed.
 
 ### Accepted input formats
 
-My parser (`src/parse_sort_input.c`) reads arguments from left to right and
+My parser (`src/push_swap_requirements/parsing_input/parse_sort_input.c`)
+reads arguments from left to right and
 can read several space-separated integers from each argument. These forms
 therefore describe the same initial stack, with 3 at the top:
 
@@ -840,6 +841,14 @@ can be reconstructed backwards.
 
 ### What the optimization saves
 
+The original `same_brute_state` and `brute_state_exists` helpers are preserved
+as commented code at the bottom of
+[`bfs_verify_node.c`](src/sorting_algorithms/Brute_force/BFS/bfs_verify_node.c).
+That approach still works; it just gets slower as more states are discovered.
+If Lehmer indexing feels unfamiliar, read those helpers first to see what it
+replaces: scanning earlier nodes and comparing their split and array values.
+They are kept for reference and are not compiled or called by the current BFS.
+
 The old duplicate check scanned previously discovered nodes and compared their
 arrays. With $V$ stored states and $n$ values, this takes up to $O(Vn)$ work per
 candidate. The current nested-loop ranking performs exactly
@@ -1323,6 +1332,22 @@ harnesses and experimental comparisons, mechanical editing, file organisation,
 build checks, and documentation. These supporting tools help me inspect behaviour
 and test ideas; their output is not proof that the solver is correct or ready
 for evaluation.
+
+**Norm refactoring (2026-10-01):** Codex helped refactor my existing BFS code
+for the 25-line function limit, five-local-variable limit, typedef naming and
+formatting rules. This mainly meant splitting existing work into named functions,
+grouping search variables into a struct, moving helpers into focused files, and
+updating declarations and Makefile paths. It was not a request to "vibe code" a
+new BFS algorithm: the queue, visited bitset, move order, parent links and path
+reconstruction came from the existing implementation. I reviewed the changes
+through discussion so I can understand and explain them during evaluation.
+
+AI did write the refactoring edits, so "no code was generated" would be too
+broad a claim. The distinction is that these edits reorganised existing logic
+for readability and Norm compliance rather than replacing it with an unexplained
+new solution. In the direct BFS regression check, 159 inputs produced exactly
+the same move sequences before and after the refactor. That is evidence for
+those cases, not a proof covering every possible input.
 
 I also use AI as an editorial assistant for this README. I bring my questions,
 scattered notes, conversations, experiments and sometimes rather tangled
