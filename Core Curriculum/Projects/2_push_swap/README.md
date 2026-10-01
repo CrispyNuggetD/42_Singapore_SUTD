@@ -147,11 +147,12 @@ the [guide to mathematical claims and evidence](#reading-the-mathematics).
 ✅ = implemented. 🚧 = partial or experimental. ❌ = not met or not implemented.
 These describe the current code and study tools; they are not evaluation scores.
 
-**Submission readiness is not established by this README.** The active solver
-combines exact small-input answers with greedy candidate comparison. Saved
-experiments include promising move counts, but they are not a final evaluation
-of the current executable. See [current limitations](#current-limitations) for
-remaining checks; the old chunk solver's results do not describe current performance.
+I have completed the project and passed the listed
+[pre-submission checks](#what-i-checked-before-submission). My final solver
+combines exact small-input answers with greedy candidate comparison. The
+documented trials support my choice of settings; the live evaluation determines
+the final score. Earlier experiments, including the archived chunk solver,
+remain here as a record of how I reached this implementation.
 
 | Status | Feature | Current behavior |
 |---|---|---|
@@ -183,7 +184,7 @@ remaining checks; the old chunk solver's results do not describe current perform
 | 🚧 | [Protect the hidden part of A](#chunk-extraction-and-the-hidden-stack) | Restricts the active search so a chunk can be considered separately from the rest of the stack. |
 | 🚧 | [Compare extraction routes](#chunk-extraction-and-the-hidden-stack) | Tries both initial rotation directions and at most one direction change; this is not a global optimality proof. |
 | ✅ | [Reverse BFS for study](#analysis-tools-and-study-data) | Reuses distances from the goal to enumerate shortest solutions for small permutations. |
-| 🚧 | [Submission edge cases](#current-limitations) | Parser safety, solution-buffer limits and compliance need review; stdout already contains only instructions. |
+| ✅ | [Pre-submission checks](#what-i-checked-before-submission) | The listed parser, memory, build, Norm and output checks passed; their scope is documented below. |
 
 [↑ Back to top](#top)
 
@@ -302,8 +303,8 @@ the solution dump uses file descriptor 3.
 
 `make clean` removes project and libft objects. `make fclean` also removes built
 executables and the library archive. Both preserve study reports and the supplied
-checker. The current main link rule may relink through the forced libft prerequisite;
-the historical timestamp checks below are not a current incremental-build guarantee.
+checker. Repeated `make` did not relink in my submission-only build checks,
+as recorded under [pre-submission checks](#what-i-checked-before-submission).
 
 ### Run the development solver
 
@@ -459,13 +460,24 @@ measurements, run `bash push_swap_tester.sh -n 3 --size 100 --seed 42` or use
 `--size 500` for a new 500-value session. The original timing fields cannot be
 retroactively split into per-algorithm durations.
 
-Together, the tested 100- and 500-value inputs meet the highest move bands.
-Combined with the build, Norm, small-input, error and memory checks above,
-these results support 100% mandatory validation and bonus eligibility, subject
-to the remaining live evaluation checks. The local subject allows at most
-5500 moves; the evaluation mirror used by my checklist says fewer than 5500,
-and all three trials meet that stricter boundary. The final bonus total is
-awarded by the live evaluation scale.
+I passed the listed pre-submission checks, including the build, Norm,
+small-input, error and memory checks above. The tested 100- and 500-value
+inputs met the highest move bands. The local subject allows at most 5500
+moves; the evaluation mirror used by my checklist says fewer than 5500,
+and all three 500-value trials meet that stricter boundary. These results
+document what I tested; the live evaluation determines the mandatory score
+and bonus eligibility.
+
+The final header settings are my best-supported tested compromise between
+move count, runtime and memory use within my available computational resources.
+I reached them through a variety of inputs and repeated trials, rather than
+choosing a depth after one successful run. The approximately three-and-a-half-minute
+average for the three documented 500-value trials is a runtime I consider
+practical for my 42 evaluation, with acceptable move counts. By “current best”,
+I mean the overall trade-off I have had the resources to test and substantiate,
+not a proven optimum, an inherent limit of the algorithm, or the fastest
+possible configuration. The [configuration table](#seed-candidate-flow)
+records those final settings.
 
 #### What the first profiled 100-value session showed
 
@@ -1443,9 +1455,9 @@ operations; unlike the reverse analyser, it searches forward from one input.
 The permutation analyser can be run with
 `(cd tests/debug/old_results && ../../../bin/bfs_analyser 3)` after `make analyse_bfs`.
 Its source calls `brute_solve`; historical reports can reflect earlier search
-restrictions. During my AI-assisted README review, `analyse_bfs_all_paths` built, but
-`analyse_bfs` failed to link because its target omits required debug-printer
-symbols. Its command above requires fixing that development target first.
+restrictions. An earlier build of `analyse_bfs` failed because its target
+omitted required debug-printer symbols. That issue was fixed, and the forward
+analyser subsequently rebuilt successfully during the hybrid-storage work.
 
 | Saved material | What to study |
 |---|---|
@@ -1498,15 +1510,22 @@ must not become successful early exits.
 
 ### Current limitations
 
-The active solver already separates instructions from diagnostics and has exact
-small-input dispatch. I still need to:
+I have completed the implementation and the listed pre-submission checks.
+The remaining limits concern the scope of the evidence and the cost of the
+algorithms, rather than unfinished versions of the earlier fixes:
 
-- Record reproducible move-count and runtime benchmarks for the current settings.
-- Account for factorial BFS memory at the upper limit and costly lookahead.
-- Update development harnesses to match current candidate counts and descriptor-3
-  dumps; see the seed-test note below and random-runner metadata limitation.
-- Review Norm, allowed functions and global variables before submission. Build
-  success and saved successful examples are not a complete compliance check.
+- BFS memory still grows factorially, and recursive lookahead remains expensive.
+- The documented benchmarks cover the inputs and configurations tested; they
+  do not guarantee the same move counts or runtime on every input or machine.
+- My candidate regression harness now checks the current candidates, and the
+  random runner captures the current configuration macros. Older reports retain
+  only the metadata recorded at the time.
+- The listed build, Norm and memory checks passed. The live evaluation still
+  assesses the submission against the full project requirements.
+
+My final settings reflect the trade-off I could substantiate with the resources
+and trials available to me. Further tuning remains possible, but is not required
+to describe this implementation as complete.
 
 [↑ Back to top](#top)
 
@@ -1566,7 +1585,7 @@ those cases, not a proof covering every possible input.
 For hybrid storage, I asked Codex to implement the agreed
 inline/heap split, parser/storage changes, reuse of the existing local greedy solver above 500 and
 regression checks. This work includes new code, beyond the earlier mechanical
-BFS refactor; it remains for me to review and understand before submission.
+BFS refactor. I remain responsible for understanding and explaining that code.
 
 I also use AI as an editorial assistant for this README. I bring my questions,
 scattered notes, conversations, experiments and sometimes rather tangled
@@ -1612,16 +1631,17 @@ and five for 11–500 values. Above 500 has one local greedy answer. Algorithm I
 are different when the exact candidate is absent. Three-element seed plus
 lookahead is not an active enum entry.
 
-Current settings in `includes/push_swap.h` are:
+My final, best-supported tested settings in `includes/push_swap.h` are:
 
 | Phase | Lookahead depth | Execution limit |
 | --- | ---: | ---: |
 | Normal continuation, total input size <= 100 | 12 | 10 |
-| Normal continuation, total input size > 100 | 7 | 5 |
+| Normal continuation, total input size 101–500 | 7 | 5 |
 | Special opening | 12 | 1 for OPENING_ONE; 5 for OPENING_BATCH |
 
-The size threshold uses **A plus B**, not the shrinking length of B. Actual
-saved paths and executed batches are capped by the remaining work. The opening
+Above 500 values, I use local greedy without lookahead. Within the lookahead
+path, the size threshold uses **A plus B**, not the shrinking length of B.
+Actual saved paths and executed batches are capped by the remaining work. The opening
 variants currently continue with lookahead because their `use_lookahead` field
 is 1; older opening-then-local benchmarks are historical experiments.
 
@@ -1705,7 +1725,7 @@ the returned integer scores the entire searched horizon.
 Simulations call `greedy_execute_plan(NULL, ...)`, changing only copies and
 recording no real moves. After selection, the executor applies the first
 `min(execute_limit, best.length)` saved plans on the real stacks. Execute-one
-is a supported policy, but the current normal limits are 10 or 6.
+is a supported policy, but the current normal limits are 10 or 5.
 
 If B empties, the leaf returns final alignment cost, even at depth zero.
 Otherwise depth zero returns zero: stop looking, not sorted. At depth one with
@@ -1773,10 +1793,12 @@ searches repeat as batches are executed. More practically, one million
 simulated branches would mean two million mallocs and two million frees in
 that design. I cannot infer the actual branch count from elapsed time alone.
 
-My current full run comparing the enabled algorithms on 500 values already
-takes **about 10 minutes in my own observation**, with simulated stack copies
-on the stack, not heap clones. That is motivation to avoid adding allocator
-work, not a measured stack-versus-heap benchmark. Other parts of the existing
+With an earlier configuration, I observed full runs comparing the enabled
+algorithms on 500 values taking **about 10 minutes**, using simulated stack
+copies on the stack rather than heap clones. With my final settings, the three
+documented 500-value trials averaged **about 3½ minutes per run**. These describe
+different configurations, not a measured stack-versus-heap comparison. Search
+cost still motivates me to avoid adding per-branch allocator work. Other parts of the existing
 program already use malloc. A reusable scratch pool per depth could also avoid
 per-branch allocation, but would require a different ownership design; keeping
 the inline path preserves the implementation I currently understand.
@@ -2180,6 +2202,13 @@ variant produces the fewest complete sorting operations. See the
 
 ### More lookahead, plan switching and partial commitment
 
+This discussion records my earlier eight-lookahead/six-executed experiments
+and the reasoning they prompted. My final configuration uses depth 12 /
+execute 10 through 100 values and depth 7 / execute 5 for 101–500 values,
+with separate opening settings shown in [Seed candidate flow](#seed-candidate-flow).
+I keep the earlier dialogue and equations because they explain my investigation;
+eight/six is no longer my current preferred setting.
+
 *I shared this real conversation with AI and used its help to paraphrase it,
 remove profanity and make the wording suitable for school. This is not a
 verbatim transcript. The observations and hypotheses come from my conversation
@@ -2211,8 +2240,8 @@ with my friend; AI helped draft the analysis and diagram below.*
 In this exchange, "moves" means **candidate insertions**, each including its
 rotations and final `pa`, rather than individual push_swap instructions.
 "Then recurse" means search again from the resulting real state; the search
-itself uses recursion. Depth 8 / execute 6 is the best setting I currently report
-from my repeated live trials, not a demonstrated universal optimum.
+itself uses recursion. Depth 8 / execute 6 was the best setting I reported
+from those earlier live trials, not a demonstrated universal optimum.
 I did not include new benchmark logs, a sample size or runtime measurements
 with this exchange. The earlier five-input batching experiment remains evidence about that earlier sample,
 not a permanent decision against batching.
@@ -2512,8 +2541,8 @@ a solver change.
 | Eight/six beats eight/one or eight/eight in general | Not established |
 | The published MPC guarantees apply to this solver | Not established |
 
-My reason to pursue eight/six is therefore practical and experimental: depth
-eight was affordable on my tested workload, partial commitment had promising
+My reason for pursuing eight/six at that stage was practical and experimental:
+depth eight was affordable on my tested workload, partial commitment had promising
 results I observed, and leaving two planned insertions uncommitted was an
 intentional design choice. The mathematics makes that choice precise and
 exposes its assumptions. It does not supply missing benchmark evidence,
@@ -2553,8 +2582,8 @@ My working explanation / things to test next:
    moves than the 3-element seed with local reinsertion in this sample. Keeping
    more elements avoids push pairs, although rotations still affect the total.
 4. Across my trials, the 3-element seed can sometimes outperform LIS. In this
-   latest sample it beat LIS local twice, but never won overall. Circular LIS +
-   repeated lookahead currently has the best average here; that is an observation,
+   sample it beat LIS local twice, but never won overall. Circular LIS +
+   repeated lookahead had the best average here; that is an observation,
    not a claim that it wins every input or every input size.
 
 Keeping alternatives still pays: selecting the best recorded solution averaged
@@ -2563,14 +2592,15 @@ whole solver averaged 82.045 seconds per input (43.364–132.692 seconds); the l
 do not split runtime by algorithm, so they cannot tell me which variant consumed
 how much of that time. Saturated trial counters are not exact search-work totals.
 
-I am now comparing algorithm 3's repeated lookahead against two opening variants:
-algorithm 4 searches deeper once, executes one insertion, then continues with
-repeated lookahead; algorithm 5 executes an opening batch before that same
-continuation. Both currently use `use_lookahead = 1`. The older opening-then-local
-results above do **not** benchmark these new variants. The current settings are
-listed in the seed-flow configuration table above; the normal size threshold
-uses total A+B length, not remaining B length. These are experiment settings,
-not fixed properties of the algorithms.
+After that experiment, I compared algorithm 3's repeated lookahead against
+two opening variants: algorithm 4 searches deeper once, executes one insertion,
+then continues with repeated lookahead; algorithm 5 executes an opening batch
+before that same continuation. Both use `use_lookahead = 1` in the final solver.
+The older opening-then-local results above do **not** benchmark these variants;
+the later profiled 100-value session does. My final settings are listed in the
+seed-flow configuration table above; the normal size threshold uses total A+B
+length, not remaining B length. These are tested configuration choices, not
+fixed properties of the algorithms.
 
 
 ### Depth 3 can lose to local greedy — on the same input
