@@ -167,7 +167,7 @@ remaining checks; the old chunk solver's results do not describe current perform
 | ✅ | Build organisation | Bundled libft, separate source/header directories, ignored build products and incremental builds. |
 | 🚧 | Subject move requirements | Final current-version 100/500-number validation remains outstanding; historical experiments are labelled below. |
 | ✅ | Clean instruction-only output | The active candidate solver prints the selected moves to stdout; debug diagnostics use stderr and descriptor 3. |
-| ❌ | Bonus checker implementation | The supplied Linux checker is a reference binary, not a checker written for this project. |
+| ✅ | Bonus checker implementation | My two-file checker reuses the parser and stack operations; `make bonus` builds it. The supplied Linux checker remains a separate reference. |
 
 [↑ Back to top](#top)
 
@@ -325,6 +325,96 @@ stderr carries progress, and descriptor 3 can capture the solution dump:
 
 The supplied checker is a Linux executable. These commands illustrate validation,
 not a claim that every input or submission requirement has passed.
+
+### My bonus checker
+
+I ended up needing only two bonus `.c` files: [main_checker_bonus.c](src/bonus/main_checker_bonus.c)
+and [checker_util_bonus.c](src/bonus/checker_util_bonus.c). I keep the reader
+and move dispatcher together in the utility file. Most of the machinery
+was already there. I needed to read and execute someone else's moves, then
+check the result; I did not need another sorting algorithm.
+
+```sh
+make bonus
+./push_swap 3 1 2 | ./checker 3 1 2
+printf 'sa\n' | ./checker 2 1
+```
+
+I start with the same input in A and an empty B. `parse_input()` validates the
+integers, checks overflow and duplicates, and replaces the values with ranks.
+Ranking preserves their order, so it works for checking as well as sorting.
+The first argument remains the top of A. With no arguments, I exit silently
+without reading stdin.
+
+My reader applies each instruction as it arrives, in its original order.
+Once it reaches EOF, I print `OK` if A is sorted and B is empty, or `KO` if the
+valid moves did not finish the job. Invalid arguments, malformed instructions,
+or reader failures produce `Error` on stderr instead. A failed sort is still
+a valid execution, so `KO` uses the normal success exit status.
+Even if the input starts sorted, I still read the moves: they could scramble
+it, leave something in B, or contain an error.
+
+The move dispatcher matches the whole instruction, including its newline and
+terminator. I reject extra spaces, unknown names and a last instruction with
+no newline. Two function-pointer tables handle the existing signatures:
+one-stack operations such as `sa`, and two-stack operations such as `ss`.
+The matching index chooses the function, and I select A or B for the
+one-stack calls. I pass `NULL` as the solution pointer because
+`append_move_to_soln()` already treats that as “execute without recording”.
+That small convention saved me from duplicating all eleven operations.
+
+I did need to handle one difference: my `pa()` and `pb()` wrappers report an
+error if they pop an empty source. For checker, those are valid no-ops. I check
+B before `pa` and A before `pb`, returning success immediately when the source
+is empty. Swaps and rotations already handle stacks with fewer than two values.
+
+The circular-buffer helpers let me reuse both inline and heap storage.
+`ranks_are_sorted()` now lives in a shared utility file and checks that logical
+position `i` contains rank `i`. I also require B to be empty before accepting
+the result. Both optional heap buffers are freed after execution or failure.
+
+#### Why my status-returning GNL helped
+
+My custom `ryker_ft_get_next_line()` returns `GNL_LINE`, `GNL_EOF`, or
+`GNL_ERROR`, separately from the returned line pointer. That distinction turned
+out to be useful here. `GNL_LINE` means I have a move to validate and execute;
+`GNL_EOF` means all supplied moves have been read and, because I apply them
+immediately, executed. `GNL_ERROR` means I cannot trust that I read the complete
+stream, so I report an error instead of checking a potentially partial result.
+
+A straightforward loop around ordinary GNL often looks like this:
+
+```c
+line = get_next_line(STDIN_FILENO);
+while (line)
+{
+    /* Validate and apply the move, then free the line. */
+    line = get_next_line(STDIN_FILENO);
+}
+/* Check the final stacks. */
+```
+
+The catch is that ordinary GNL returns `NULL` for both EOF and errors.
+That loop alone cannot distinguish “finished reading” from “reading failed”.
+For example, if a read or allocation fails after a prefix of moves has sorted
+A, it could incorrectly print `OK` while unread moves remain. Ordinary GNL can
+still be used with an additional reliable error-reporting mechanism; a bare
+`NULL` check is what loses the information. My custom result enum makes the
+choice explicit, and its cleanup function lets me free any buffered remainder
+when I stop early on an invalid instruction. I also free every returned line.
+EOF is the end signal, not an empty stack or a special move: a pipe supplies it
+when its writer closes, and an interactive run needs EOF from the terminal.
+
+I wrote the checker logic after discussing the design with Codex. Codex supplied
+the initial skeleton and build rules, explained function pointers, reviewed my
+implementation, helped with formatting and comments, and moved the existing
+rank check into shared code. It also ran 107 functional checks, including 84
+random instruction-stream comparisons with the reference checker, plus four
+Valgrind checks covering valid execution, invalid moves, invalid arguments and
+heap storage. Those checks passed, as did the bonus build and Norm checks.
+They are evidence for this implementation, not a promise that every possible
+input has been tested. Bonus assessment still depends on the mandatory part
+meeting all required benchmarks at the highest score.
 
 ### Accepted input formats
 

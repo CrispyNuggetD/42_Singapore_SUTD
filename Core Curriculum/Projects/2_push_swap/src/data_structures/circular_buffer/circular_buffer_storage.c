@@ -34,3 +34,19 @@ int	cbuf_allocate_ab(t_circle_buf *a, t_circle_buf *b, int count)
 		return (ERROR);
 	return (SUCCESS);
 }
+
+/* After ranking, ascending input has rank i at each logical position i. */
+int	ranks_are_sorted(t_circle_buf *a)
+{
+	int	i;
+	int	value;
+
+	i = 0;
+	while (i < cbuf_len(a))
+	{
+		if (cbuf_read_at(a, i, &value) || value != i)
+			return (0);
+		i++;
+	}
+	return (1);
+}

@@ -190,6 +190,8 @@ int		cbuf_read_at(t_circle_buf *stack, int index, int *value);
 int		cbuf_is_empty(t_circle_buf *stack);
 int		cbuf_is_full(t_circle_buf *stack);
 int		cbuf_len(t_circle_buf *stack);
+/* True for ranks 0..n-1 in order; checker must also require B empty. */
+int		ranks_are_sorted(t_circle_buf *a);
 int		cbuf_opp_moves(t_circle_buf *stack, int moves);
 int		get_cbuf_lis(t_circle_buf *stack, char keep_flags[500]);
 

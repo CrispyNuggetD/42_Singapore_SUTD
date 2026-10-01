@@ -79,9 +79,7 @@ OBJS		= $(addprefix $(OBJ_DIR)/,$(SRCS:.c=.o))
 
 # Checker reuses parsing, stacks and operations without linking the solver main.
 BONUS_SRCS = bonus/main_checker_bonus.c \
-	bonus/checker_read_bonus.c \
-	bonus/checker_moves_bonus.c \
-	bonus/checker_utils_bonus.c \
+	bonus/checker_util_bonus.c \
 	$(PARSING_DIR)/parse_sort_input.c \
 	$(PARSING_DIR)/input_storage.c \
 	algorithms/rank_values.c \
