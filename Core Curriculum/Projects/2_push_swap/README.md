@@ -4,10 +4,6 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **For 42SG evaluators: [open the frozen evaluation README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/7fb896138dbaa336cb56b645ab3c3bea872c4c82/Core%20Curriculum/Projects/2_push_swap/README.md).**
-> This commit-pinned snapshot preserves the README I prepared for evaluation, with the intended rendering of diagrams, equations and navigation. Public readers can continue below for the latest README.
-> The evaluation snapshot stays fixed. This public revision adds viewing and navigation guidance; I will update this note if post-submission changes alter the project documentation.
-
 <a id="description"></a>
 
 ## Description
@@ -103,8 +99,8 @@ My bonus `checker` reads a move stream and verifies its final result.
 My [background and motivation](#background) and [technical appendices](#appendix)
 explain the wider investigation behind this implementation.
 
-After returning silently for already-sorted input, the main program dispatches
-inputs of 1–4 values to a precomputed exact table
+If the input is already sorted, `push_swap` prints nothing and exits successfully.
+Otherwise, it dispatches inputs of 1–4 values to a precomputed exact table
 and 5–10 values to full-input BFS. With the current skip flag set to zero, it
 also runs the five greedy candidates; 11–500 values use those greedy candidates
 alone. Above 500, it runs the existing three-element-seed local candidate. The first shortest generated solution wins. Archived experiments
@@ -115,8 +111,6 @@ are distinguished from this active path in the appendix.
 ### Reading routes
 
 **For 42SG evaluation**
-
-[Open the frozen evaluation version](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/7fb896138dbaa336cb56b645ab3c3bea872c4c82/Core%20Curriculum/Projects/2_push_swap/README.md#reading-routes), or follow this copy:
 
 1. [Build and run](#instructions)
 2. [Final algorithms and settings](#seed-candidate-flow)
