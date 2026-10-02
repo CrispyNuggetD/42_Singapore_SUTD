@@ -4,9 +4,9 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **For school evaluation: [view the frozen README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/9092f1e840096d2f8ebe70e8466ca78e8713f9dc/Core%20Curriculum/Projects/2_push_swap/README.md).**
-> This commit-pinned snapshot preserves the README I prepared for evaluation, with GitHub's rendering of the diagrams, equations and navigation.
-> When I linked it, the public README differed only by this viewing note. The public README may evolve after submission; the evaluation snapshot will remain fixed, and I will update this note when the public documentation diverges.
+> **For 42SG evaluators: [open the frozen evaluation README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/9092f1e840096d2f8ebe70e8466ca78e8713f9dc/Core%20Curriculum/Projects/2_push_swap/README.md).**
+> This commit-pinned snapshot preserves the README I prepared for evaluation, with the intended rendering of diagrams, equations and navigation. Public readers can continue below for the latest README.
+> The evaluation snapshot stays fixed. This public revision adds viewing and navigation guidance; I will update this note if post-submission changes alter the project documentation.
 
 <a id="description"></a>
 
@@ -114,7 +114,8 @@ are distinguished from this active path in the appendix.
 
 ### Reading routes
 
-**For evaluation:** [Build and run](#instructions) → [Final algorithms and settings](#seed-candidate-flow) →
+**For 42SG evaluation:** Start with the [frozen GitHub version](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/9092f1e840096d2f8ebe70e8466ca78e8713f9dc/Core%20Curriculum/Projects/2_push_swap/README.md#reading-routes) for the evaluation snapshot and rendered diagrams, then follow its reading route. To navigate this copy:
+[Build and run](#instructions) → [Final algorithms and settings](#seed-candidate-flow) →
 [Bonus checker](#my-bonus-checker) → [Pre-submission checks](#what-i-checked-before-submission) →
 [Resources and AI usage](#resources). These sections form the overview before the appendix.
 
