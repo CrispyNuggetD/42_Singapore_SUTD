@@ -78,7 +78,7 @@ int	new_soln_init(t_soln *x, t_circle_buf stacks[2],
 	x->cur++;
 	x->ans_len[x->cur] = 0;
 	x->step = 0;
-	stacks[A] = *a_ori;
-	stacks[B] = *b_ori;
+	ft_memcpy(&stacks[A], a_ori, sizeof(stacks[A]));
+	ft_memcpy(&stacks[B], b_ori, sizeof(stacks[B]));
 	return (SUCCESS);
 }

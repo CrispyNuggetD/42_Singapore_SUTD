@@ -37,7 +37,8 @@ int	greedy_choose_plan_local(t_circle_buf *a, t_circle_buf *b,
 			candidate_plan.cost, best_score);
 		if (best_score < 0 || candidate_plan.cost < best_score)
 		{
-			*best_first_plan = candidate_plan;
+			ft_memcpy(best_first_plan, &candidate_plan,
+				sizeof(*best_first_plan));
 			best_score = candidate_plan.cost;
 		}
 	}
@@ -103,7 +104,8 @@ int	greedy_choose_bounded(t_circle_buf *a, t_circle_buf *b,
 		{
 			search.budget = score;
 			best_score = score;
-			*search.best_path = candidate_path;
+			ft_memcpy(search.best_path, &candidate_path,
+				sizeof(*search.best_path));
 		}
 	}
 	return (best_score);

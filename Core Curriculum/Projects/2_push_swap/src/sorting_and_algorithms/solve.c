@@ -34,11 +34,11 @@ static int	solve_large_local(t_soln *x, t_circle_buf *a, t_circle_buf *b)
 	x->cur = 0;
 	x->step = 0;
 	x->ans_len[0] = 0;
-	stacks[A] = *a;
-	stacks[B] = *b;
+	ft_memcpy(&stacks[A], a, sizeof(stacks[A]));
+	ft_memcpy(&stacks[B], b, sizeof(stacks[B]));
 	status = greedy_reinsertion(x, stacks, ALGO_THREE_LOCAL);
-	*a = stacks[A];
-	*b = stacks[B];
+	ft_memcpy(a, &stacks[A], sizeof(*a));
+	ft_memcpy(b, &stacks[B], sizeof(*b));
 	return (status);
 }
 

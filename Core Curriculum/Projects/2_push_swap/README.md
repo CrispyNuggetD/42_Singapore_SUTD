@@ -1397,6 +1397,23 @@ shorter complete sort. Error/pruning return contracts are described in the
 [branch-and-bound section](#optimization-technique-branch-and-bound-pruning).
 
 
+### Copying stacks and plans with `ft_memcpy`
+
+I use my libft's `ft_memcpy` to copy circular-buffer structs, insertion plans
+and winning paths. A C struct assignment can compile into a call to the system
+`memcpy`, even without a `memcpy` call in the source. Using `ft_memcpy` explicitly
+keeps these copies within my own libft implementation and avoids that external
+symbol under the submission build flags.
+
+Each call copies `sizeof(destination)` bytes from the source address to the
+destination address. These are separate objects, so their memory does not
+overlap. Copying a circular buffer includes its embedded `buf[501]` array and
+indices, giving a simulated branch its own inline stack contents. Pointer fields
+are copied as addresses; allocated buffers are still shared, which is why the
+large-input solver borrows them for one local pass rather than recursive search.
+Copying a plan or path preserves its fields and embedded plan array in the same
+way. This changes the copy implementation, not the sorting decisions.
+
 ### Hybrid storage and recursive malloc
 
 I use 500 as the threshold for choosing storage and solver strategies, rather
@@ -1410,7 +1427,7 @@ search's cheap, independent struct copies:
 
 The spare element distinguishes an empty circular buffer from a full one.
 `cbuf_data()` chooses inline or allocated storage. It deliberately does not
-store a pointer to the struct's own inline array: after `copies[A] = *a`, such
+store a pointer to the struct's own inline array: after copying `*a` into `copies[A]`, such
 a pointer would still point at the parent's array! Inline copies remain
 independent. Heap buffers belong to the original stacks, and the large solver
 mutates them directly. The candidate-copy entry point rejects large buffers.
@@ -2104,6 +2121,17 @@ The runner prints its session directory and summary path. To resume a session:
 # Replace this example directory with the session path printed by your run.
 ./push_swap_tester.sh --resume tests/debug/results/random_tests/YYYYMMDD_HHMMSS_output -n 100
 ```
+
+To resume the session with the most recently modified summary:
+
+```bash
+./push_swap_tester.sh --resume-latest
+# Or add only 100 successful tests:
+./push_swap_tester.sh --resume-latest -n 100
+```
+
+An active session is protected by the existing lock; this does not start a second
+runner for it. The flag reports an error if no saved session exists.
 
 On resume, `-n 100` means **100 additional successful tests**; omitting `-n`
 continues until Ctrl-C. Seed and input size come from the saved session.

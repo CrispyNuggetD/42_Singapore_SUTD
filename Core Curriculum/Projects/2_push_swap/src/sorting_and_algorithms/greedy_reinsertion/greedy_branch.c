@@ -22,7 +22,8 @@ static void	append_child_path(t_greedy_path *candidate_path,
 	i = 0;
 	while (i < child_path->length)
 	{
-		candidate_path->plans[i + 1] = child_path->plans[i];
+		ft_memcpy(&candidate_path->plans[i + 1], &child_path->plans[i],
+			sizeof(candidate_path->plans[i + 1]));
 		i++;
 	}
 }
@@ -46,8 +47,8 @@ static int	continuation_cost(t_circle_buf *a, t_circle_buf *b,
 		debug_lookahead_stop(0, 0, "depth limit");
 		return (0);
 	}
-	copies[A] = *a;
-	copies[B] = *b;
+	ft_memcpy(&copies[A], a, sizeof(copies[A]));
+	ft_memcpy(&copies[B], b, sizeof(copies[B]));
 	if (greedy_execute_plan(NULL, &copies[A], &copies[B],
 			&candidate_path->plans[0]) == ERROR)
 		return (-1);

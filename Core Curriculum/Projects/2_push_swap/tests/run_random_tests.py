@@ -438,6 +438,15 @@ def run_case(values, show_solutions=False, executable=None):
     return result
 
 
+def latest_session(base):
+    summaries = [summary for folder in base.glob('*_output*') if folder.is_dir()
+                 for summary in list(folder.glob('*_output_summary.md'))
+                 + list(folder.glob('*_output_summary.txt'))]
+    if not summaries:
+        raise ValueError('No saved sessions found in ' + str(base))
+    return max(summaries, key=lambda path: (path.stat().st_mtime_ns, str(path)))
+
+
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-n', type=int, help='successful runs to add; omit for Ctrl-C mode')
@@ -450,7 +459,10 @@ def arguments():
     parser.add_argument('--seed', type=int, help='master seed (random by default)')
     parser.add_argument('--show-solutions', action='store_true',
                         help='also print the saved solution dump to stderr')
-    parser.add_argument('--resume', type=Path, help='existing session directory or summary file')
+    resume = parser.add_mutually_exclusive_group()
+    resume.add_argument('--resume', type=Path, help='existing session directory or summary file')
+    resume.add_argument('--resume-latest', action='store_true',
+                        help='resume the most recently modified session summary')
     args = parser.parse_args()
     if args.n is not None and args.n < 1:
         parser.error('-n must be positive')
@@ -464,9 +476,14 @@ def arguments():
     high = args.max_size if args.max_size is not None else 500
     if low < 2 or high < low:
         parser.error('sizes require 2 <= min <= max')
-    if args.resume and any([args.seed is not None, args.size is not None,
+    if (args.resume or args.resume_latest) and any([args.seed is not None, args.size is not None,
                             args.random, args.loop, args.min_size is not None, args.max_size is not None]):
-        parser.error('--resume reuses its saved seed and size mode/bounds')
+        parser.error('resume reuses its saved seed and size mode/bounds')
+    if args.resume_latest:
+        try:
+            args.resume = latest_session(ROOT / 'tests/debug/results/random_tests')
+        except ValueError as error:
+            parser.error(str(error))
     return args
 
 
