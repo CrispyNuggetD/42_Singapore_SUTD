@@ -338,6 +338,12 @@ including wrapped buffers and a five-value BFS fallback. These results apply
 to the tested inputs; they do not imply that every permutation was checked
 for larger sizes.
 
+I also passed Norminette and isolated mandatory and bonus build checks. `nm -u` showed only permitted application functions (`malloc`,
+`free`, `write`, and checker `read`), alongside compiler startup symbols. I checked
+no input, one value, `INT_MIN`/`INT_MAX`, reversals, greedy sorting and the
+501-value local fallback, as well as invalid checker arguments and moves.
+The checked five-value solver and two-value checker runs passed Valgrind.
+
 The three documented 500-value runs averaged **4907.67 moves** and approximately
 **211.77 seconds (3 min 32 sec)** on my school Intel Core i7-12700, with `DEBUG=0`.
 The time is an estimate from file timestamps, not a CPU-time measurement.
@@ -1367,9 +1373,10 @@ runs; copying a winning path copies values, not pointers to expired child locals
 | `child_path` | Each continuation helper call | Child's saved winning continuation |
 
 `append_child_path` copies the child plans after `plans[0]`. When a candidate
-wins, `*search.best_path = candidate_path` copies the entire path struct to the
-caller's storage. The child receives `&child_path`, not the root's output
-address, so it cannot overwrite the root winner through that parameter.
+wins, `ft_memcpy(search.best_path, &candidate_path, sizeof(*search.best_path))`
+copies the entire path struct to the caller's storage. The child receives
+`&child_path`, not the root's output address, so it cannot overwrite the root
+winner through that parameter.
 
 ### Follow one depth-three branch
 
@@ -1400,14 +1407,14 @@ shorter complete sort. Error/pruning return contracts are described in the
 ### Copying stacks and plans with `ft_memcpy`
 
 I use my libft's `ft_memcpy` to copy circular-buffer structs, insertion plans
-and winning paths. A C struct assignment can compile into a call to the system
-`memcpy`, even without a `memcpy` call in the source. Using `ft_memcpy` explicitly
-keeps these copies within my own libft implementation and avoids that external
-symbol under the submission build flags.
+and winning paths. The campus compiler lowered some of my struct assignments
+into calls to the system `memcpy`, even without a `memcpy` call in the source.
+Using `ft_memcpy` explicitly keeps these copies within my own libft implementation
+and avoids that external symbol under the submission build flags.
 
-Each call copies `sizeof(destination)` bytes from the source address to the
-destination address. These are separate objects, so their memory does not
-overlap. Copying a circular buffer includes its embedded `buf[501]` array and
+Each call copies the size of the destination object in bytes from the source
+address to the destination address. These are separate objects, so their memory
+does not overlap. Copying a circular buffer includes its embedded `buf[501]` array and
 indices, giving a simulated branch its own inline stack contents. Pointer fields
 are copied as addresses; allocated buffers are still shared, which is why the
 large-input solver borrows them for one local pass rather than recursive search.
@@ -1857,6 +1864,10 @@ when I stop early on an invalid instruction. I also free every returned line.
 EOF is the end signal, not an empty stack or a special move: a pipe supplies it
 when its writer closes, and an interactive run needs EOF from the terminal.
 
+My bundled custom GNL reports failures through `GNL_ERROR` without assigning
+`errno`; the checker uses that status to print `Error`. This avoids the
+`__errno_location` dependency while preserving stdin, EOF and error handling.
+
 <a id="benchmark-details"></a>
 
 ## Benchmark details
@@ -1930,8 +1941,9 @@ My Python runner records candidate wall and CPU times plus a
 process-wide peak RSS sample at candidate completion, without changing the
 submission executable. This peak can include earlier candidates' memory usage;
 it is not memory owned by the named candidate. To collect new comparable
-measurements, run `bash push_swap_tester.sh -n 3 --size 100 --seed 42` or use
-`--size 500` for a new 500-value session. The original timing fields cannot be
+measurements, run `bash push_swap_tester.sh --light -n 3 --size 100 --seed 42`.
+For a new 500-value session, replace `--size 100` with `--size 500` and keep
+`--light` so inputs run one at a time. The original timing fields cannot be
 retroactively split into per-algorithm durations.
 
 ### What the first profiled 100-value session showed
@@ -2232,7 +2244,7 @@ available physical-core count minus one, with a minimum of one worker, and
 uses a session memory budget of 60% of available RAM at startup. Each pending
 input gets its own conservative allowance: at least 128 MiB, with factorial
 state growth and transient allocation headroom only when that input may invoke
-BFS. Finished jobs release their reservations immediately, allowing more
+BFS. Finished jobs release their reservations immediately, allowing additional
 lighter jobs to start up to the CPU ceiling. Available RAM is checked again
 before additional jobs are admitted. These are implementation-specific scheduling
 estimates, not measured allocations or guaranteed bounds; one job is allowed
@@ -3027,21 +3039,3 @@ therefore need to compare these ideas with the existing search under controlled
 conditions before claiming that they improve it.
 
 [↑ Back to reading routes](#reading-routes) · [Appendix contents](#contents)
-
-## Submission maintenance: external function dependencies
-
-I replaced the stack and greedy-plan struct assignments that the campus compiler
-lowered into libc `memcpy` calls with explicit calls to my own `ft_memcpy`.
-These copy the same bytes and preserve the existing inline-buffer copies and
-borrowed heap-buffer pointers. Sorting decisions have not been changed.
-
-The copied custom GNL no longer assigns `errno`; the checker already uses its
-`GNL_ERROR` status to print `Error`. This removes the `__errno_location`
-dependency without changing the checker's stdin, EOF or error behavior.
-
-Both active copies passed Norminette and isolated mandatory/bonus builds.
-`nm -u` showed only permitted application functions (`malloc`, `free`, `write`,
-and checker `read`), alongside compiler startup symbols. Checked sorting cases
-included no input, one value, INT_MIN/INT_MAX, reversals, greedy sorting and the
-501-value local fallback. Checker invalid arguments and moves were also checked.
-The checked five-value solver and two-value checker runs passed Valgrind.
