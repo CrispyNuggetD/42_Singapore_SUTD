@@ -15,7 +15,7 @@ import secrets
 import signal
 import statistics
 import threading
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from collections import Counter
 import subprocess
 import sys
@@ -71,27 +71,36 @@ def physical_cpu_count():
     return len(cores)
 
 
-def worker_limit(config, settings, requested=None, light=False):
-    """Conservative BFS memory estimate; this is a scheduling cap, not a guarantee."""
-    maximum = max(1, physical_cpu_count() - 1)
-    if requested is not None:
-        maximum = requested
-    mode = config.get('size_mode', 'fixed')
-    low = config['size'] if mode == 'fixed' else config.get('min_size', 2)
-    high = config['size'] if mode == 'fixed' else config.get('max_size', 500)
-    bfs_n = min(high, settings.get('BRUTE_MAX_N', 10))
-    estimate = 128 * 1024 ** 2
-    if bfs_n >= max(low, 5):
-        # Nodes, visited storage and transient allocation growth headroom.
-        estimate = max(estimate, math.factorial(bfs_n + 1) * 48)
-    available = None
+def available_memory():
     try:
         match = re.search(r'^MemAvailable:\s+(\d+)', Path('/proc/meminfo').read_text(), re.M)
-        available = int(match.group(1)) * 1024
+        return int(match.group(1)) * 1024
     except (OSError, AttributeError):
-        pass
-    cap = max(1, int(available * .6) // estimate) if available else 1
-    return (1 if light else min(maximum, cap)), estimate
+        return None
+
+
+def memory_allowance(size, settings):
+    estimate = 128 * 1024 ** 2
+    if 5 <= size <= settings.get('BRUTE_MAX_N', 10):
+        estimate = max(estimate, math.factorial(size + 1) * 48)
+    return estimate
+
+
+def worker_limit(config, settings, requested=None, light=False):
+    """Return the CPU ceiling and session memory budget, not a fixed RAM worker cap."""
+    ceiling = requested if requested is not None else max(1, physical_cpu_count() - 1)
+    available = available_memory()
+    budget = int(available * .6) if available else 128 * 1024 ** 2
+    return (1 if light or available is None else ceiling), budget
+
+
+def can_schedule(size, settings, reserved, budget, active):
+    estimate = memory_allowance(size, settings)
+    available = available_memory()
+    # Always permit one job for progress; estimates are not strict allocation limits.
+    if not active:
+        return True
+    return reserved + estimate <= budget and (available is None or estimate <= available * .6)
 
 def rank_hash(values):
     """Equivalent relative orders have identical hashes, irrespective of values."""
@@ -315,7 +324,7 @@ def parse_records(text):
                   'binary_sha256': metadata['Binary SHA-256'], 'checker': metadata['Checker'],
                   'move_count': int(metadata['Moves']), 'solver_seconds': float(metadata['Solver seconds']),
                   'solver_exit': int(metadata['Solver exit']),
-                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG', 'LOOKAHEAD_DEPTH_100', 'LOOKAHEAD_DEPTH_500', 'LOOKAHEAD_DEPTH_FIRST_MOVE', 'EXECUTE_LIMIT_100', 'EXECUTE_LIMIT_500', 'EXECUTE_LIMIT_FIRST_MOVE', 'ENABLE_OPENING_LOOKAHEAD', 'SKIP_OTHER_ALGO_AFTER_BFS', 'GREEDY_PATH_CAPACITY', 'BRUTE_MAX_N', 'BENCHMARK_WORKERS') if k in metadata},
+                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG', 'LOOKAHEAD_DEPTH_100', 'LOOKAHEAD_DEPTH_500', 'LOOKAHEAD_DEPTH_FIRST_MOVE', 'EXECUTE_LIMIT_100', 'EXECUTE_LIMIT_500', 'EXECUTE_LIMIT_FIRST_MOVE', 'ENABLE_OPENING_LOOKAHEAD', 'SKIP_OTHER_ALGO_AFTER_BFS', 'GREEDY_PATH_CAPACITY', 'BRUTE_MAX_N', 'BENCHMARK_WORKERS', 'BENCHMARK_SCHEDULER') if k in metadata},
                   'input_ranks': list(map(int, read_section(body, 'Input ranks').split())),
                   'moves': read_section(body, 'Winning moves').splitlines(),
                   'solution_debug': read_section(body, 'Solution debug'),
@@ -618,8 +627,9 @@ def main():
         settings = {name: int(value) for name, value in re.findall(
             r'#\s*define\s+(LOOKAHEAD_DEPTH(?:_100|_500|_FIRST_MOVE)?|EXECUTE_(?:DEPTH|LIMIT_100|LIMIT_500|LIMIT_FIRST_MOVE)|DEBUG|ENABLE_OPENING_LOOKAHEAD|SKIP_OTHER_ALGO_AFTER_BFS|GREEDY_PATH_CAPACITY|BRUTE_MAX_N)\s+(\d+)',
             (ROOT / 'includes/push_swap.h').read_text())}
-        workers, memory_estimate = worker_limit(config, settings, args.jobs, args.light)
+        workers, memory_budget = worker_limit(config, settings, args.jobs, args.light)
         settings['BENCHMARK_WORKERS'] = workers
+        settings['BENCHMARK_SCHEDULER'] = 2
         config['workers'] = workers
         seen = {r['rank_sha256'] for r in records}
         generation = records[-1]['generation_id'] + 1 if records else 0
@@ -627,40 +637,67 @@ def main():
         fixed = config.get('size_mode', 'fixed') == 'fixed'
         permutations = math.factorial(config['size']) if fixed else None
         print(f"Session: {folder}\nSeed: {config['seed']} | mode: {config.get('size_mode', 'fixed')} | size: {config['size']} | saved: {len(records)}", flush=True)
-        print(f"Workers: {workers} | estimated memory allowance per worker: {memory_estimate / 1024**2:.0f} MiB", flush=True)
+        print(f"Workers: {workers} | dynamic per-input scheduling | total memory budget: {memory_budget / 1024**2:.0f} MiB", flush=True)
         if workers > 1:
             print('Concurrent throughput mode: timings include resource contention; use --light for isolated comparisons.', flush=True)
         save_summary(summary, config, records, 'running')
         status = 'complete'
         executor = ThreadPoolExecutor(max_workers=workers)
         try:
-            while target is None or len(records) < target:
-                if fixed and len(seen) == permutations:
-                    status = 'all_unique_permutations_tested'
-                    break
-                count = workers if target is None else min(workers, target - len(records))
-                if fixed:
-                    count = min(count, permutations - len(seen))
-                batch = []
-                pending = set()
-                while len(batch) < count:
-                    size = trial_size(config, generation)
-                    values = generate(config['seed'], generation, size)
-                    digest = rank_hash(values)
-                    generation += 1
-                    if fixed and (digest in seen or digest in pending):
-                        continue
-                    pending.add(digest)
-                    record = {'run_id': len(records) + len(batch) + 1,
-                              'generation_id': generation - 1, 'seed': config['seed'],
-                              'rank_sha256': digest, 'input_ranks': values,
-                              'binary_sha256': binary_hash, 'settings': settings}
-                    print(f"Run {record['run_id']} | generation {generation-1} | size {size} | ranks {digest[:12]}", flush=True)
+            scheduled = len(records)
+            entries = []
+            pending = set()
+            next_input = None
+            exhausted = False
+            while True:
+                active = [entry for entry in entries if not entry['future'].done()]
+                reserved = sum(entry['memory'] for entry in active)
+                # Bound completed-but-uncommitted results while an earlier job is slow.
+                while len(active) < workers and len(entries) < 2 * workers and not exhausted:
+                    if target is not None and scheduled >= target:
+                        exhausted = True
+                        break
+                    if fixed and len(seen) + len(pending) == permutations:
+                        exhausted = True
+                        break
+                    if next_input is None:
+                        size = trial_size(config, generation)
+                        values = generate(config['seed'], generation, size)
+                        digest = rank_hash(values)
+                        generation += 1
+                        if fixed and (digest in seen or digest in pending):
+                            continue
+                        next_input = (size, values, digest, generation - 1)
+                    size, values, digest, ident = next_input
+                    if not can_schedule(size, settings, reserved, memory_budget, len(active)):
+                        break
+                    record = {'run_id': scheduled + 1, 'generation_id': ident,
+                              'seed': config['seed'], 'rank_sha256': digest,
+                              'input_ranks': values, 'binary_sha256': binary_hash,
+                              'settings': dict(settings)}
+                    print(f"Run {record['run_id']} | generation {ident} | size {size} | ranks {digest[:12]}", flush=True)
                     future = executor.submit(run_case, values, False, executable, workers == 1)
-                    batch.append((record, future))
-                # Commit in generation order, so interruption/resume stays deterministic.
-                for record, future in batch:
-                    record.update(future.result())
+                    entry = dict(record=record, future=future,
+                                 memory=memory_allowance(size, settings))
+                    entries.append(entry)
+                    active.append(entry)
+                    reserved += entry['memory']
+                    pending.add(digest)
+                    scheduled += 1
+                    next_input = None
+                if not entries:
+                    if fixed and len(seen) == permutations:
+                        status = 'all_unique_permutations_tested'
+                    break
+                if not entries[0]['future'].done():
+                    running = [entry['future'] for entry in entries if not entry['future'].done()]
+                    if running:
+                        wait(running, return_when=FIRST_COMPLETED)
+                # Release finished reservations immediately; persist in generation order.
+                while entries and entries[0]['future'].done():
+                    entry = entries.pop(0)
+                    record = entry['record']
+                    record.update(entry['future'].result())
                     if args.show_solutions:
                         sys.stderr.write(record['solution_debug'])
                     if 'error' in record:
@@ -672,6 +709,7 @@ def main():
                     save_detail(folder, config, records, record)
                     records.append(record)
                     seen.add(record['rank_sha256'])
+                    pending.discard(record['rank_sha256'])
                     save_summary(summary, config, records, 'running')
                     print(f"OK | run {record['run_id']} | {record['move_count']} moves | {record['solver_seconds']:.3f}s", flush=True)
                 if status == 'failed':

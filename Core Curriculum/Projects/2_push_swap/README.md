@@ -2229,11 +2229,15 @@ checks the instrumentation, statistics, Markdown round-trip and old-log parsing.
 
 The Python runner now defaults to concurrent input runs. It uses up to the
 available physical-core count minus one, with a minimum of one worker, and
-caps the worker count using 60% of currently available RAM. The conservative
-per-worker allowance is at least 128 MiB; for input sizes that may invoke BFS,
-it includes factorial state growth and transient allocation headroom. These
-are scheduling estimates, not guaranteed memory bounds. Variable-size sessions
-use the worst eligible BFS size within their configured range.
+uses a session memory budget of 60% of available RAM at startup. Each pending
+input gets its own conservative allowance: at least 128 MiB, with factorial
+state growth and transient allocation headroom only when that input may invoke
+BFS. Finished jobs release their reservations immediately, allowing more
+lighter jobs to start up to the CPU ceiling. Available RAM is checked again
+before additional jobs are admitted. These are implementation-specific scheduling
+estimates, not measured allocations or guaranteed bounds; one job is allowed
+when idle even if its estimate exceeds the budget. A bounded result buffer
+prevents a slow earlier input from accumulating unlimited uncommitted results.
 
 ```sh
 bash push_swap_tester.sh -n 20 --size 500
@@ -2253,11 +2257,12 @@ Concurrent results remain useful for sorting correctness and move counts, but
 wall/CPU times include shared resource contention. Use `--light` for comparable
 algorithm timing, and avoid running other benchmarks simultaneously. Each
 record saves the configured maximum worker count as `BENCHMARK_WORKERS` in its
-settings, so comparison groups separate concurrency configurations. This is a
+settings, together with `BENCHMARK_SCHEDULER=2` for dynamic admission, so
+comparison groups distinguish the earlier fixed scheduler. This is a
 configured limit, not a measurement of how many workers overlapped each row.
 Completed records are committed in generation order for deterministic resume.
 Ctrl-C stops tracked solver/checker process groups and leaves uncommitted
-inputs for retry. `tests/test_runner_parallel.py` checks scheduling, RAM caps
+inputs for retry. `tests/test_runner_parallel.py` checks scheduling, per-input RAM admission, concurrency growth
 and resume with mock solvers, without starting real benchmarks.
 
 New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
