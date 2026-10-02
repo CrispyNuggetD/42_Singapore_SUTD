@@ -114,3 +114,22 @@ passed; heredoc checks covered append, exact and prefix delimiters, trailing
 input after the limiter, EOF without a newline, empty input, large input, and
 closed stdin. All four library copies built, and changed C/header files passed
 Norminette. This is focused validation, not a full fault-injection audit of Pipex.
+
+## Post-submission update: status-only errors
+
+I removed the explicit `errno = EINVAL` assignment from the custom reader.
+Invalid descriptors or buffer sizes still return `GNL_ERROR`, clear the output
+line and clean up the stash. The reader borrows its FD and never closes it.
+This avoids an external `__errno_location` dependency in the push_swap checker.
+
+`GNL_ERROR` is the error contract; this wrapper does not promise an `errno` value
+after its cleanup. Callers should report a reader failure directly rather than
+use `perror()` to infer its cause. Successful lines and EOF behave as before.
+The original mandatory and bonus `get_next_line` implementations are unchanged.
+
+Validation for this update: isolated shared-libft, mandatory/bonus push_swap,
+Pipex and FdF builds passed, as did original Libft and ft_printf builds.
+Norminette passed for the checked active code. GNL line/EOF/error checks and
+Pipex pipeline/heredoc checks passed. Valgrind reported no errors or leaks in
+the checked GNL, push_swap, checker and heredoc cases. These checks do not
+constitute a new school evaluation.

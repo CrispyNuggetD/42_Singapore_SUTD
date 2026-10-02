@@ -14,7 +14,6 @@
 # define RYKER_FT_GET_NEXT_LINE_H
 
 # include "../../1_get_next_line/get_next_line.h"
-# include <errno.h>
 
 typedef enum e_gnl_result
 {

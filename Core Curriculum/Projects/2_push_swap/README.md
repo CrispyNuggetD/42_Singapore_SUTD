@@ -2987,3 +2987,21 @@ therefore need to compare these ideas with the existing search under controlled
 conditions before claiming that they improve it.
 
 [↑ Back to reading routes](#reading-routes) · [Appendix contents](#contents)
+
+## Submission maintenance: external function dependencies
+
+I replaced the stack and greedy-plan struct assignments that the campus compiler
+lowered into libc `memcpy` calls with explicit calls to my own `ft_memcpy`.
+These copy the same bytes and preserve the existing inline-buffer copies and
+borrowed heap-buffer pointers. Sorting decisions have not been changed.
+
+The copied custom GNL no longer assigns `errno`; the checker already uses its
+`GNL_ERROR` status to print `Error`. This removes the `__errno_location`
+dependency without changing the checker's stdin, EOF or error behavior.
+
+Both active copies passed Norminette and isolated mandatory/bonus builds.
+`nm -u` showed only permitted application functions (`malloc`, `free`, `write`,
+and checker `read`), alongside compiler startup symbols. Checked sorting cases
+included no input, one value, INT_MIN/INT_MAX, reversals, greedy sorting and the
+501-value local fallback. Checker invalid arguments and moves were also checked.
+The checked five-value solver and two-value checker runs passed Valgrind.

@@ -468,3 +468,24 @@ I, (42 intra) hnah (Christopher Hui-Kang Nah) am contactable via:
 ```
 
 ##### EOF :D
+
+## Post-submission update: signed accumulation in ft_atoi
+
+I synchronized `ft_atoi` with the later push_swap implementation. It accumulates
+negative digits directly, so `INT_MIN` does not require the unrepresentable
+positive value 2147483648 in an `int`. Whitespace, optional sign and stopping at
+the first non-digit retain their existing behavior. Out-of-range conversion
+still has no guaranteed overflow behavior; this is not a checked parser.
+
+The earlier implementation passed the campus evaluation on Linux, where the
+signed overflow appeared to produce the expected result. That was undefined
+behavior. This maintenance update does not alter the recorded original pass or
+claim a new evaluation result. Each updated source has a comment above the
+function identifying the post-submission change. Unused custom drafts were
+left alone.
+
+All 11 synchronized `ft_atoi` copies passed 417 valid-range checks each with
+UBSan, including INT_MIN, INT_MAX, whitespace, signs and trailing characters.
+Norminette passed for the changed files. Isolated project builds passed; the
+school FdF build required its missing MiniLibX dependency to be supplied in the
+temporary copy. No sorting benchmark was rerun for this synchronization.

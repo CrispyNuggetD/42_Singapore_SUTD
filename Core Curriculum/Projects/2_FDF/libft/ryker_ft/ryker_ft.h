@@ -20,6 +20,6 @@
 int	ryker_ft_isspace(int c);
 
 /* Return the smaller integer; accepts the full int range. */
-int		ryker_ft_min(int one, int two);
+int	ryker_ft_min(int one, int two);
 
 #endif

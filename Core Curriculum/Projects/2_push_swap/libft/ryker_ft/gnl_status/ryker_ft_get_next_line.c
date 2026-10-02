@@ -72,7 +72,6 @@ t_gnl_result	ryker_ft_get_next_line(t_gnl_info *gnl, char **line)
 	if (gnl->fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE > SIZE_MAX - 1)
 	{
 		ryker_ft_gnl_cleanup(gnl);
-		errno = EINVAL;
 		return (GNL_ERROR);
 	}
 	while (!gnl->eof)

@@ -11,7 +11,12 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-// atoi supposed to return garbage on overflow
+/*
+** Post-submission update: accumulate signed digits to handle INT_MIN safely.
+** The original passed on campus Linux, where its overflow appeared to work.
+** That signed overflow was UB; this fix leaves the recorded pass unchanged.
+** Inputs outside the int range still have no guaranteed overflow behavior.
+*/
 int	ft_atoi(const char *nptr)
 {
 	int	sign;
@@ -23,18 +28,15 @@ int	ft_atoi(const char *nptr)
 		|| *nptr == '\r' || *nptr == '\v' || *nptr == '\f')
 		nptr++;
 	if (*nptr == '-')
-	{
 		sign = -1;
+	if (*nptr == '-' || *nptr == '+')
 		nptr++;
-	}
-	else if (*nptr == '+')
-		nptr++;
-	while (*nptr && *nptr >= '0' && *nptr <= '9')
+	while (*nptr >= '0' && *nptr <= '9')
 	{
-		number = number * 10 + (*nptr - '0');
+		number = number * 10 + sign * (*nptr - '0');
 		nptr++;
 	}
-	return (sign * number);
+	return (number);
 }
 
 /*

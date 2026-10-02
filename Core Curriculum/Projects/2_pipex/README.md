@@ -1164,3 +1164,17 @@ the control flow and document it. The 45-check evaluation recorded above is
 the earlier result, not a rerun for this post-submission change.
 
 [↑ Back to top](#top)
+
+## Post-submission update: custom GNL error reporting
+
+I updated the copied custom GNL to use `GNL_ERROR` without explicitly assigning
+`errno`. Pipex now reports a reader failure as `here_doc: input reader failed`,
+rather than asking `perror()` to describe a possibly stale error number.
+File creation, reopening and write failures retain their OS error reporting.
+The temporary file and buffered input are still cleaned up on failure; limiter,
+EOF and normal pipeline behavior are unchanged. This is maintenance after the
+original submission, not a new evaluation result.
+
+Both active Pipex copies passed Norminette and isolated mandatory/bonus builds.
+Checks passed for an ordinary pipeline, heredoc limiter, EOF before the limiter,
+and stdin read failure. The checked successful heredoc run also passed Valgrind.

@@ -11,7 +11,12 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-/* Signed accumulation avoids a positive magnitude for INT_MIN. */
+/*
+** Post-submission update: accumulate signed digits to handle INT_MIN safely.
+** The original passed on campus Linux, where its overflow appeared to work.
+** That signed overflow was UB; this fix leaves the recorded pass unchanged.
+** Inputs outside the int range still have no guaranteed overflow behavior.
+*/
 int	ft_atoi(const char *nptr)
 {
 	int	sign;
