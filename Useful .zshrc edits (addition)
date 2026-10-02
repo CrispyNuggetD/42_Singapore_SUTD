@@ -247,6 +247,10 @@ leaveschool() {
 # Uses the same CODEX_HOME as the extension; no credentials/config are copied.
 importhome() {
   local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
+  if [[ ! -d "$private/.git" && ! -f "$private/.git" ]]; then
+    print -- 'Private repository unavailable; skipping home-chat import.'
+    return 0
+  fi
   GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes -o ConnectTimeout=15" \
     command git -C "$private" -c merge.autostash=false -c rebase.autostash=false \
     pull --no-rebase --ff-only || return 1
@@ -1005,6 +1009,30 @@ pullzshrc() {
       print -u2 -- "Repository pull failed; dailylogin stopped before updating .zshrc."
       return 1
     }
+}
+
+# --- Short login commands: lg<Tab>, dl<Tab>, dai<Tab> ---
+# Private login items are optional; sourcing this file never runs them.
+# CODEX_PRIVATE_REPO_ROOT selects the private clone; LOGIN_ITEMS_SCRIPT overrides
+# its 42/login_items.sh. Missing scripts are skipped without a startup failure.
+lgi() {
+  local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
+  local script="${LOGIN_ITEMS_SCRIPT:-$private/42/login_items.sh}"
+  if [[ ! -f "$script" ]]; then
+    print -- 'Personal login items unavailable; skipping.'
+    return 0
+  fi
+  command bash "$script" "$@"
+}
+
+dli() {
+  # Run both even if a daily task fails, preserving failure status.
+  # Arguments are passed only to the personal login script.
+  local daily_result=0 items_result=0
+  dailylogin || daily_result=$?
+  lgi "$@" || items_result=$?
+  (( daily_result == 0 )) || return "$daily_result"
+  return "$items_result"
 }
 
 dailylogin() {
