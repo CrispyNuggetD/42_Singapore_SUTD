@@ -4,9 +4,9 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **Prefer the browser view? [Open the frozen README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/9092f1e840096d2f8ebe70e8466ca78e8713f9dc/Core%20Curriculum/Projects/2_push_swap/README.md).**
-> I recommend it for the intended rendering of the diagrams, equations and navigation.
-> The link is pinned to a specific commit; that snapshot differs from this revision only by the absence of this viewing note.
+> **For school evaluation: [view the frozen README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/9092f1e840096d2f8ebe70e8466ca78e8713f9dc/Core%20Curriculum/Projects/2_push_swap/README.md).**
+> This commit-pinned snapshot preserves the README I prepared for evaluation, with GitHub's rendering of the diagrams, equations and navigation.
+> When I linked it, the public README differed only by this viewing note. The public README may evolve after submission; the evaluation snapshot will remain fixed, and I will update this note when the public documentation diverges.
 
 <a id="description"></a>
 
