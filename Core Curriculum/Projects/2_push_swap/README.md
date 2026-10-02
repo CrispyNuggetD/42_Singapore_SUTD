@@ -4,9 +4,10 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **For 42SG evaluators: [open the frozen evaluation README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/8e74f982593cb2b87a4d62056058be09aa39066d/Core%20Curriculum/Projects/2_push_swap/README.md).**
-> This commit-pinned snapshot preserves the README I prepared for evaluation, with only a navigation banner added to return to the current project. It retains the intended rendering of diagrams, equations and navigation. Public readers can continue below for the latest README.
-> The evaluation snapshot stays fixed. This public revision adds optional Python showcase routes, benchmark-plot plans and navigation guidance; the frozen snapshot predates these additions.
+> **42SG evaluation edition — prepared for evaluation on 2 October 2026.**
+> Evaluation has not yet taken place. This README includes the complete evaluation flow, both optional performance-showcase routes, and the wider public project documentation.
+> **[Start with the reading routes](#reading-routes)** · [Prepared evaluation edition](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/evaluation-2026-10-02-final/Core%20Curriculum/Projects/2_push_swap/README.md) · [Go to the latest public project ↗](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap) · [Download the matching offline HTML](assets/push-swap-evaluation-offline.html)
+> For a fixed reference, use this edition's commit permalink (GitHub's **Copy permalink** / `y` shortcut). The relative HTML link follows the same revision. Download the HTML and open it in a browser to view its embedded diagrams and equations offline; linked repository files and websites still require internet access.
 
 <a id="description"></a>
 
@@ -116,9 +117,10 @@ are distinguished from this active path in the appendix.
 
 ### For 42SG evaluators
 
-[Open the frozen evaluation version](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/8e74f982593cb2b87a4d62056058be09aa39066d/Core%20Curriculum/Projects/2_push_swap/README.md#reading-routes), or follow the evaluation overview here:
+Follow this route for the prepared evaluation edition. Public readers can use
+the same route to understand, build and test the project:
 
-1. **(Optional)** [Performance showcase](#showcase-setup): choose the [public seed-42 loop, sizes 2–600](#showcase-public) or the [evaluation-size tests, small inputs / 100 / 500](#showcase-evaluation).
+1. **(Optional)** [Performance showcase](#showcase-setup): choose the [full-range seed-42 loop, sizes 2–600](#showcase-public) or the [evaluation-size tests, small inputs / 100 / 500](#showcase-evaluation).
 2. [Build and run](#instructions)
 3. [Final algorithms and settings](#seed-candidate-flow)
 4. [Bonus checker](#my-bonus-checker)
@@ -177,8 +179,10 @@ and invalid input produces `Error` on stderr. No arguments or already-sorted
 valid input produce no output. The checker examples require `make bonus`.
 
 My submission clone needs only the C sources, headers, Makefiles and README.
-The [GitHub development tools](#my-github-tools-and-the-42-submission) are optional;
-their commands and links require the public repository's `tests/` directory.
+The [GitHub development tools](#my-github-tools-and-the-42-submission) are optional.
+For either showcase route in a school clone, copy the four files listed in
+[showcase setup](#showcase-setup); other development commands may need additional
+files from the public repository's `tests/` directory.
 
 ### Accepted input formats
 
@@ -591,7 +595,7 @@ below are optional technical detail, background and earlier experiments.
 | Heuristics and pruning | [Cost and disorder](#greedy-heuristics) · [Safe bounds](#safe-pruning-bounds) |
 | Checker internals | [Status-returning GNL](#why-my-status-returning-gnl-helped) |
 | Benchmarks | [Machine, timings and candidate comparison](#benchmark-details) |
-| Development tools | [GitHub versus submission files](#my-github-tools-and-the-42-submission) · [Analysis tools](#analysis-tools-and-study-data) · [Random runner](#repeated-random-tests) |
+| Development tools | [Optional performance showcase](#showcase-setup) · [GitHub versus submission files](#my-github-tools-and-the-42-submission) · [Analysis tools](#analysis-tools-and-study-data) · [Random runner](#repeated-random-tests) |
 | Earlier approaches | [Archived chunking](#chunk-extraction-and-the-hidden-stack) · [Batching experiments](#earlier-batching-experiment-initial-decision-on-five-inputs) · [Discussion](#discussion--discoveries) |
 | Unimplemented ideas | [Future research](#future-research) |
 
@@ -2102,6 +2106,10 @@ measurements above use `DEBUG=0`.
 
 ## Optional Python performance showcase
 
+Both routes below are part of this evaluation edition and are also available
+to public readers. Choose one for the optional first step of the evaluation
+flow; the remaining evaluation checks still apply.
+
 ### Setup in the school submission clone
 
 All showcase commands below run from the **root of the cloned school submission
@@ -2140,13 +2148,14 @@ tools and do not need to be committed to the school submission.
 
 <a id="showcase-public"></a>
 
-### Route 1 — public showcase, seed 42 and maximum 600
+### Route 1 — full-range showcase, seed 42 and maximum 600
 
 ```sh
 bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
 ```
 
-This is my public demonstration command: cycle through sizes 2–600 inclusive,
+This demonstration is available to both evaluators and public readers: cycle
+through sizes 2–600 inclusive,
 then repeat until **Ctrl-C**. Each sweep has 599 inputs; subsequent sweeps use
 new generation IDs, rather than restarting the seed and replaying the same sweep.
 Each size gets one sampled permutation per sweep, not every possible permutation.
@@ -3073,7 +3082,7 @@ Timing plots would be separate from move-count plots and identify concurrent
 versus light-mode runs. These plans extend the existing tables; they are not
 claims of completed graphs or new performance guarantees.
 
-[Back to the public showcase](#showcase-public)
+[Back to the full-range showcase](#showcase-public)
 
 ### Tune planning depth, execution count and heuristic weights
 
