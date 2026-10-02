@@ -6,7 +6,7 @@
 
 > **For 42SG evaluators: [open the frozen evaluation README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/f7ecd0cb32bb88d062d415fd8b8a31f807f86e35/Core%20Curriculum/Projects/2_push_swap/README.md).**
 > This commit-pinned snapshot preserves the README I prepared for evaluation, with the intended rendering of diagrams, equations and navigation. Public readers can continue below for the latest README.
-> The evaluation snapshot stays fixed. This public revision adds viewing and navigation guidance; I will update this note if post-submission changes alter the project documentation.
+> The evaluation snapshot stays fixed. This public revision adds optional Python showcase routes, benchmark-plot plans and navigation guidance; the frozen snapshot predates these additions.
 
 <a id="description"></a>
 
@@ -114,7 +114,22 @@ are distinguished from this active path in the appendix.
 
 ### Reading routes
 
-**For 42SG evaluation**
+**Start with an optional performance showcase**
+
+The subject encourages developing your own tests for use during defence, even
+though those tests do not need to be submitted. My Python test runner makes that
+work visible: it runs the C solver, checks its winning output with the reference
+checker and records the candidate performance in tables.
+
+1. [Public showcase: repeat sizes 2–600 with seed 42](#showcase-public).
+2. [Evaluation-size showcase: small inputs, 100 and 500](#showcase-evaluation).
+
+[Copy the four runner files into the school clone](#showcase-setup) first.
+These routes demonstrate sorting correctness and move counts on the generated
+inputs. Keep the [separate error, memory and evaluation checks](#showcase-other-checks)
+as part of the evaluation.
+
+**Otherwise: follow the existing 42SG evaluation route**
 
 [Open the frozen evaluation version](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/f7ecd0cb32bb88d062d415fd8b8a31f807f86e35/Core%20Curriculum/Projects/2_push_swap/README.md#reading-routes), or follow this copy:
 
@@ -222,6 +237,121 @@ ARG="3 1 2"
 
 [Evaluation: next — final algorithms and settings](#seed-candidate-flow) · [Back to reading routes](#reading-routes)
 
+<a id="showcase-setup"></a>
+
+## Optional Python performance showcase
+
+### Setup in the school submission clone
+
+All showcase commands below run from the **root of the cloned school submission
+repository**, where `Makefile`, `src/`, `includes/` and `libft/` already live.
+The Python program is a test and profiling runner; the sorting algorithms still
+execute in C. This setup targets the school Linux environment and needs Bash,
+Python 3, the normal C build tools and the supplied Linux reference checker.
+
+Copy these **four files**, preserving the two `tests/` paths:
+
+| Public project file | Destination in the school clone | Purpose |
+| --- | --- | --- |
+| `push_swap_tester.sh` | `push_swap_tester.sh` | Bash entry point |
+| `tests/run_random_tests.py` | `tests/run_random_tests.py` | Generation, checking, reports and resume |
+| `tests/profile_solver.c` | `tests/profile_solver.c` | Temporary candidate-profiling build |
+| `checker_linux` | `checker_linux` | Supplied reference checker, separate from my bonus checker |
+
+From the school clone root, set `PUBLIC_PROJECT` to your local public project's
+absolute path (replace the example path), then copy:
+
+```sh
+PUBLIC_PROJECT="/absolute/path/to/42_Singapore_SUTD/Core Curriculum/Projects/2_push_swap"
+mkdir -p tests
+cp "$PUBLIC_PROJECT/push_swap_tester.sh" .
+cp "$PUBLIC_PROJECT/tests/run_random_tests.py" tests/
+cp "$PUBLIC_PROJECT/tests/profile_solver.c" tests/
+cp "$PUBLIC_PROJECT/checker_linux" .
+chmod +x checker_linux
+make
+```
+
+Alternatively, obtain a fresh `checker_linux` from the school's supplied download
+and make it executable. No entire `tests/` archive or old reports are needed;
+the runner creates its result directories. These are optional local evaluation
+tools and do not need to be committed to the school submission.
+
+<a id="showcase-public"></a>
+
+### Route 1 — public showcase, seed 42 and maximum 600
+
+```sh
+bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
+```
+
+This is my public demonstration command: cycle through sizes 2–600 inclusive,
+then repeat until **Ctrl-C**. Each sweep has 599 inputs; subsequent sweeps use
+new generation IDs, rather than restarting the seed and replaying the same sweep.
+Each size gets one sampled permutation per sweep, not every possible permutation.
+Above 500 the solver uses its local-greedy path, so algorithm availability changes
+with input size. The default concurrent mode demonstrates throughput; append
+`--light` for one worker when comparing timings with less CPU contention.
+
+The terminal prints the session and summary paths. Results currently use
+**Markdown statistical tables**, including per-size and per-candidate move counts
+and timing distributions. Graph generation is **WIP / future work**: I want to
+use Matplotlib, which I have experience with, to plot **moves on the y-axis
+against input size on the x-axis**, with spread across repeated sweeps.
+See [planned performance plots and uncertainty summaries](#performance-plots).
+
+To continue the most recently updated saved session from the same clone root:
+
+```sh
+bash push_swap_tester.sh --resume-latest
+```
+
+<a id="showcase-evaluation"></a>
+
+### Route 2 — showcase at evaluation input sizes
+
+Use the same runner for the small-input, 100-value and 500-value performance
+portion. Run these commands from the school clone root:
+
+```sh
+# All distinct permutations at these small sizes (2!, 3!, 4!, 5!).
+bash push_swap_tester.sh --light --size 2 --seed 42 -n 2
+bash push_swap_tester.sh --light --size 3 --seed 42 -n 6
+bash push_swap_tester.sh --light --size 4 --seed 42 -n 24
+bash push_swap_tester.sh --light --size 5 --seed 42 -n 120
+
+# Three reproducible samples at each required large size.
+bash push_swap_tester.sh --light --size 100 --seed 42 -n 3
+bash push_swap_tester.sh --light --size 500 --seed 42 -n 3
+```
+
+Fixed-size sessions deduplicate permutations. Each command creates a separate
+session and checks the winning instruction stream with `checker_linux`.
+The tables show performance; `OK` alone means correctly sorted, not a passing
+move-count grade. Compare the counts with the assigned live evaluation sheet:
+my existing checklist uses at most 3 moves for three values, at most 12 for five,
+fewer than 700 for 100, and fewer than 5500 for 500. The subject's 500-value
+boundary is at most 5500; the checklist uses the stricter boundary. Increase
+`-n` for more large-input samples if time permits. These samples do not guarantee
+performance on every possible input.
+
+<a id="showcase-other-checks"></a>
+
+### Separately — errors, memory, builds and the evaluation sheet
+
+Neither showcase replaces invalid-input and silent-output checks, Norm/build
+checks, Valgrind, or bonus-checker testing. Continue through the
+[existing evaluation route](#reading-routes) and
+[pre-submission checks](#what-i-checked-before-submission).
+The [manual commands](tests/manual_eval.txt) and
+[scripted evaluation checklist](tests/push_swap_eval.txt) remain the otherwise
+route for running the ordinary evaluation checks, including its own performance
+samples. These two optional checklist files are separate from the four runner
+files above; open them on GitHub or copy them if using them in the school clone.
+The assigned subject and live evaluation sheet take precedence over this guide.
+
+[Back to reading routes](#reading-routes) · [Runner details and report format](#repeated-random-tests)
+
 <a id="at-a-glance"></a>
 
 <a id="seed-candidate-flow"></a>
@@ -254,7 +384,9 @@ I run the three-element local candidate before circular LIS local. Equal-length
 answers keep the first candidate, so this order can change the chosen move
 sequence in a tie without changing its length.
 
-There are six generated candidates for small inputs with the skip flag off,
+<a id="skip-flag-reference"></a>
+
+There are six generated candidates for small inputs with the skip flag [OwO](#hey-skip) off,
 and five for 11–500 values. Above 500 has one local greedy answer. Algorithm IDs and generated solution-slot indices
 are different when the exact candidate is absent. Three-element seed plus
 lookahead is not an active enum entry.
@@ -2926,6 +3058,30 @@ model, beam-search solver, or recursive multiple-run representation described
 below has been implemented here. Existing BFS, exact tables and chunk experiments
 are separate work.
 
+<a id="performance-plots"></a>
+
+### Plot moves against input size and compare repeated sweeps
+
+**WIP / future work:** the runner already generates statistical tables; an
+automatic graph generator is not implemented. I want to use Matplotlib, drawing
+on my previous experience with it, to plot input size on the x-axis and emitted
+moves on the y-axis, with separate series for each candidate and the selected
+answer. Repeated loop sweeps would let me show the distribution at each size,
+using individual samples, quantiles or a clearly labelled spread band.
+
+I also want statistical summaries of variability across inputs and uncertainty
+in estimated mean performance. Sample SD describes observed spread; SEM measures
+estimated precision of the mean under sampling assumptions. Neither is a
+worst-case bound, and an uncertainty band must state what it represents.
+Repeated identical permutations are not new independent evidence. I would keep
+executable hashes and settings separate, report sample counts and failures,
+and mark sizes where a candidate is unavailable instead of plotting zero moves.
+Timing plots would be separate from move-count plots and identify concurrent
+versus light-mode runs. These plans extend the existing tables; they are not
+claims of completed graphs or new performance guarantees.
+
+[Back to the public showcase](#showcase-public)
+
 ### Tune planning depth, execution count and heuristic weights
 
 I originally considered **Optuna** for tuning a floating-point weighted cost
@@ -3133,3 +3289,9 @@ therefore need to compare these ideas with the existing search under controlled
 conditions before claiming that they improve it.
 
 [↑ Back to reading routes](#reading-routes) · [Appendix contents](#contents)
+
+<a id="hey-skip"></a>
+
+Hey Skip, found your flag. 👀 #iykyk
+
+[Click here to go back ↑](#skip-flag-reference)
