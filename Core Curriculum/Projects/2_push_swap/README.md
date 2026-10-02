@@ -67,10 +67,15 @@ It led me from exact shortest paths to heuristics, lookahead and the limits of
 what I could compute. The [mathematical discussion](#reading-the-mathematics)
 separates guarantees from design intuition; I do not claim NP-completeness.
 
-*I drew the two-ring, shared-exchange and rotation concepts, including the
-circular-LIS idea in my third sketch. I asked ChatGPT (Codex) to turn them into
-this Mermaid illustration and help shape the caption: a little art from six
-months of algorithms, rendered directly from text.*
+*My original hand-drawn references: [tethered rings](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/2_push_swap/assets/sketch-01-tethered-rings.png),
+[top-to-top exchange](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/2_push_swap/assets/sketch-02-top-exchange.png), and
+[rotations and the circular-LIS idea](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/2_push_swap/assets/sketch-03-rotations-and-circular-lis.png).
+I asked ChatGPT (Codex) to turn my sketches into this Mermaid illustration and
+help shape the caption: a little art from six months of algorithms, rendered
+directly from text. The PNGs stay in my public repository, outside the school
+submission. A small creative workaround: no PNG attachments in that folder,
+but Mermaid and LaTeX let me draw with text. Apparently my pictures just needed
+to learn Markdown.*
 
 | Permitted operations | Effect |
 | --- | --- |
