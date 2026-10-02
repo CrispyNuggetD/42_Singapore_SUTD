@@ -4,10 +4,6 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **For 42SG evaluators: [open the frozen evaluation README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/0bd95aa706ff07e12da9da2cf0dd5f18c7eec91c/Core%20Curriculum/Projects/2_push_swap/README.md).**
-> This commit-pinned snapshot preserves the README I prepared for evaluation, with the intended rendering of diagrams, equations and navigation. Public readers can continue below for the latest README.
-> The evaluation snapshot stays fixed. This public revision adds viewing and navigation guidance; I will update this note if post-submission changes alter the project documentation.
-
 <a id="description"></a>
 
 ## Description
@@ -88,7 +84,7 @@ but Mermaid and LaTeX let me draw with text.*
 
 > ***“Apparently my pictures just needed to learn Markdown.”***
 >
-> — Ryker, 2026, technically submitting text.
+> — Ryker (hnah), 2026, technically submitting text.
 
 | Permitted operations | Effect |
 | --- | --- |
@@ -115,8 +111,6 @@ are distinguished from this active path in the appendix.
 ### Reading routes
 
 **For 42SG evaluation**
-
-[Open the frozen evaluation version](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/0bd95aa706ff07e12da9da2cf0dd5f18c7eec91c/Core%20Curriculum/Projects/2_push_swap/README.md#reading-routes), or follow this copy:
 
 1. [Build and run](#instructions)
 2. [Final algorithms and settings](#seed-candidate-flow)
