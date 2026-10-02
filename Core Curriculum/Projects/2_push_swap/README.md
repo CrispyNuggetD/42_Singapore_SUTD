@@ -4,6 +4,10 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
+> **Prefer the browser view? [Open the frozen README on GitHub](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/bbbf9625add7aea1c093a958a9352e1edb0dbc56/Core%20Curriculum/Projects/2_push_swap/README.md).**
+> I recommend it for the intended rendering of the diagrams, equations and navigation.
+> The link is pinned to a specific commit; that snapshot differs from this revision only by the absence of this viewing note.
+
 <a id="description"></a>
 
 ## Description
