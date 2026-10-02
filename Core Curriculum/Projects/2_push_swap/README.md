@@ -21,7 +21,7 @@ behind my [circular-buffer representation](#circular-buffer-stacks).
 
 ```mermaid
 flowchart LR
-    subgraph FRAME["TWO RINGS · ONE EXCHANGE · HOW FEW MOVES?"]
+    subgraph FRAME[" "]
         direction LR
         subgraph A[" "]
             a1(("A · top 1"))
@@ -45,7 +45,7 @@ flowchart LR
     class a1,a4,a7 seed
     class b6,b2,b5 pending
     class a1,b6 port
-    style FRAME fill:#f8fafc,stroke:#334155,stroke-width:4px,color:#0f172a,font-size:22px
+    style FRAME fill:#f8fafc,stroke:#334155,stroke-width:4px
     style A fill:transparent,stroke:transparent
     style B fill:transparent,stroke:transparent
     linkStyle 0,1,2 stroke:#15803d,stroke-width:3px
