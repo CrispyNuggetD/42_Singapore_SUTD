@@ -13,6 +13,65 @@ initially empty, and prints instructions that leave A ascending and B empty.
 The aim is to use as few instructions as possible. The first input is the top
 of A; the output is one operation per line, not the sorted numbers themselves.
 
+### Two rings. One exchange. How few moves?
+
+I picture the stacks as two rings tethered at their tops: rotate either ring,
+bring a value to the exchange point, then push it across. This is the picture
+behind my [circular-buffer representation](#circular-buffer-stacks).
+
+```mermaid
+flowchart LR
+    subgraph A[" "]
+        a1(("A · top 1"))
+        a4(("4"))
+        a7(("7"))
+        a1 --> a4 --> a7 --> a1
+    end
+    subgraph B[" "]
+        b6(("B · top 6"))
+        b2(("2"))
+        b5(("5"))
+        b6 --> b2 --> b5 --> b6
+    end
+    a1 -->|"pb"| b6
+    b6 -->|"pa"| a1
+
+    classDef seed fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:2px
+    classDef pending fill:#ffe4e6,stroke:#be123c,color:#881337,stroke-width:2px
+    classDef port stroke:#2563eb,stroke-width:4px
+    class a1,a4,a7 seed
+    class b6,b2,b5 pending
+    class a1,b6 port
+    style A fill:#f0fdf4,stroke:#15803d,color:#14532d
+    style B fill:#fff1f2,stroke:#be123c,color:#881337
+    linkStyle 0,1,2 stroke:#15803d,stroke-width:2px
+    linkStyle 3,4,5 stroke:#be123c,stroke-width:2px
+    linkStyle 6,7 stroke:#2563eb,stroke-width:3px
+```
+
+*An illustrative mid-sort state, not a trace of a particular solver run.*
+The loop arrows show circular order. `ra`/`rb` advance the top through that
+order; `rra`/`rrb` move it back. The blue links transfer the source's top
+element to the other stack's top. The rings represent logical order, not shared
+memory or every allocated buffer slot. In my circular-LIS candidates, the green
+seed stays in **A** while I reinsert values from B.
+Swaps and combined operations are omitted from the picture and listed below.
+
+Sorting is the destination; **finding a short legal route is the optimisation
+problem**. I am counting stack instructions, rather than benchmarking this
+against merge sort or bubble sort under their usual operation models. Every
+pair of stack contents is a state, and each permitted move is a transition.
+That raises the question that kept me exploring for six months:
+**can I reach ascending A and empty B in at most $k$ moves?**
+It led me from exact shortest paths to heuristics, lookahead and the limits of
+what I could compute. The [mathematical discussion](#reading-the-mathematics)
+separates guarantees from design intuition; I do not claim NP-completeness.
+
+*I drew the two-ring, shared-exchange and rotation concepts, including the
+circular-LIS idea in my third sketch. I asked ChatGPT (Codex) to turn them into
+this Mermaid illustration and help shape the caption: a little art from six
+months of algorithms, rendered directly from text.*
+
 | Permitted operations | Effect |
 | --- | --- |
 | `sa`, `sb`, `ss` | Swap the top two elements of A, B, or both |
