@@ -294,11 +294,35 @@ def read_section(text, title):
     return match.group(2) if match else ''
 
 
-def render_record(record):
+def sweep_fields(config, completed):
+    """Count committed inputs, never merely scheduled parallel jobs."""
+    if config.get('size_mode') != 'loop':
+        return []
+    width = config['max_size'] - config['min_size'] + 1
+    full, partial = divmod(completed, width)
+    return [('Inputs per sweep', width), ('Completed sweeps', full),
+            ('Current sweep', full + 1), ('Completed inputs in current sweep', partial),
+            ('Next input size', config['min_size'] + partial)]
+
+
+def sweep_label(config, generation):
+    if config.get('size_mode') != 'loop':
+        return ''
+    width = config['max_size'] - config['min_size'] + 1
+    sweep, offset = divmod(generation, width)
+    return f'sweep {sweep + 1} | input {offset + 1}/{width}'
+
+
+def render_record(record, config=None):
     keys = [('Generation ID', 'generation_id'), ('Seed', 'seed'), ('Rank SHA-256', 'rank_sha256'),
             ('Binary SHA-256', 'binary_sha256'), ('Checker', 'checker'), ('Moves', 'move_count'),
             ('Solver seconds', 'solver_seconds'), ('Solver exit', 'solver_exit')]
     rows = [(label, record.get(key, '')) for label, key in keys]
+    if config and config.get('size_mode') == 'loop':
+        width = config['max_size'] - config['min_size'] + 1
+        sweep, offset = divmod(record['generation_id'], width)
+        rows += [('Sweep', sweep + 1), ('Input within sweep', offset + 1),
+                 ('Inputs per sweep', width)]
     rows += [(key, value) for key, value in record['settings'].items()]
     rows += [(key, record[key]) for key in ('error', 'stderr_tail', 'checker_stderr') if key in record]
     text = f"\n## Run {record['run_id']}\n\n" + table(['Field', 'Value'], rows)
@@ -369,7 +393,7 @@ def save_detail(folder, config, records, record):
     text += table(['Run', 'Generation', 'Checker', 'Moves', 'Seconds', 'Rank hash (short)'],
                   [(r['run_id'], r['generation_id'], r['checker'], r['move_count'],
                     r['solver_seconds'], r['rank_sha256'][:12]) for r in selected])
-    text += ''.join(render_record(r) for r in selected)
+    text += ''.join(render_record(r, config) for r in selected)
     atomic_text(folder / f"{config['prefix']}_output_{batch+1:06d}.md", text)
 
 
@@ -400,6 +424,9 @@ def save_summary(path, config, records, status):
         ('Minimum size', config.get('min_size', 2)), ('Maximum size', config.get('max_size', 500)), ('Next generation ID', records[-1]['generation_id']+1 if records else 0),
         ('Updated', dt.datetime.now().astimezone().isoformat()), ('Session prefix', config['prefix']),
         ('Generator', config['generator']), ('Python version', config['python_version'])])
+    if config.get('size_mode') == 'loop':
+        text += '\n## Sweep progress\n\n' + table(['Field', 'Value'], sweep_fields(config, len(records)))
+        text += '\nA sweep tests each configured size once; it does not exhaust all permutations or certify evaluation coverage.\n'
     text += '\n## Averages\n\n'
     rows = []
     measures = [('Winning solution', [r['move_count'] for r in records], 'moves')]
@@ -675,7 +702,7 @@ def main():
                               'seed': config['seed'], 'rank_sha256': digest,
                               'input_ranks': values, 'binary_sha256': binary_hash,
                               'settings': dict(settings)}
-                    print(f"Run {record['run_id']} | generation {ident} | size {size} | ranks {digest[:12]}", flush=True)
+                    print(f"Run {record['run_id']} | {sweep_label(config, ident) or f'generation {ident}'} | size {size} | ranks {digest[:12]}", flush=True)
                     future = executor.submit(run_case, values, False, executable, workers == 1)
                     entry = dict(record=record, future=future,
                                  memory=memory_allowance(size, settings))
@@ -701,7 +728,7 @@ def main():
                     if args.show_solutions:
                         sys.stderr.write(record['solution_debug'])
                     if 'error' in record:
-                        atomic_text(folder / f"{config['prefix']}_failed.md", "# Failed test\n" + render_record(record))
+                        atomic_text(folder / f"{config['prefix']}_failed.md", "# Failed test\n" + render_record(record, config))
                         status = 'failed'
                         print(f"Failed: {record['error']}; input and diagnostics saved.", file=sys.stderr)
                         stop_workers()
@@ -711,7 +738,8 @@ def main():
                     seen.add(record['rank_sha256'])
                     pending.discard(record['rank_sha256'])
                     save_summary(summary, config, records, 'running')
-                    print(f"OK | run {record['run_id']} | {record['move_count']} moves | {record['solver_seconds']:.3f}s", flush=True)
+                    progress = sweep_label(config, record['generation_id']) or f"generation {record['generation_id']}"
+                    print(f"OK | run {record['run_id']} | {progress} | {record['move_count']} moves | {record['solver_seconds']:.3f}s", flush=True)
                 if status == 'failed':
                     break
         except KeyboardInterrupt:

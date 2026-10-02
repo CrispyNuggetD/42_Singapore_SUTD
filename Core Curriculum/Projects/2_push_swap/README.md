@@ -2267,7 +2267,11 @@ bash push_swap_tester.sh -random -max 500 --seed 42 -n 100
 bash push_swap_tester.sh -loop -min 2 -max 600 --seed 42
 ```
 
-The size modes and bounds are saved for resume. Variable-size sessions retain
+The size modes and bounds are saved for resume. Loop reports and terminal output
+show the sweep number and position within it; the summary records completed
+sweeps and partial progress from saved results. For bounds 2–600, each sweep
+contains 599 inputs, so run 600 starts sweep 2. A sweep samples each configured
+size once; it does not test every permutation or establish full evaluation coverage. Variable-size sessions retain
 repeated permutations, especially at small sizes, so the loop's size sequence
 is not disrupted by deduplication. Fixed-size sessions retain their existing
 unique-permutation behavior. The comparison table groups by input size as well

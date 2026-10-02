@@ -17,6 +17,17 @@ spec.loader.exec_module(runner)
 
 
 class ParallelTests(unittest.TestCase):
+    def test_sweep_boundaries(self):
+        config = dict(size_mode='loop', min_size=2, max_size=600)
+        for completed, full, partial, next_size in [(0, 0, 0, 2), (599, 1, 0, 2),
+                (600, 1, 1, 3), (607, 1, 8, 10), (6000, 10, 10, 12)]:
+            fields = dict(runner.sweep_fields(config, completed))
+            self.assertEqual(fields['Completed sweeps'], full)
+            self.assertEqual(fields['Completed inputs in current sweep'], partial)
+            self.assertEqual(fields['Next input size'], next_size)
+        self.assertEqual(runner.sweep_label(config, 599), 'sweep 2 | input 1/599')
+        self.assertEqual(runner.sweep_fields(dict(size_mode='random'), 600), [])
+
     def test_ram_and_light_limits(self):
         config = dict(size=500, size_mode='fixed')
         with patch.object(runner, 'physical_cpu_count', return_value=12):
