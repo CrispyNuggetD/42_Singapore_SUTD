@@ -78,8 +78,9 @@ I asked ChatGPT (Codex) to turn my sketches into this Mermaid illustration and
 help shape the caption: a little art from six months of algorithms, rendered
 directly from text. The PNGs stay in my public repository, outside the school
 submission. A small creative workaround: no PNG attachments in that folder,
-but Mermaid and LaTeX let me draw with text. Apparently my pictures just needed
-to learn Markdown.*
+but Mermaid and LaTeX let me draw with text.*
+
+*Apparently my pictures just needed to learn Markdown.*
 
 | Permitted operations | Effect |
 | --- | --- |
