@@ -2102,13 +2102,73 @@ saves it to a file. The filename does not need a `.txt` extension. Both keep
 stdout reserved for instructions. Diagnostic output can affect runtime, so the
 measurements above use `DEBUG=0`.
 
+<a id="latest-loop-benchmark"></a>
+
+### Latest ongoing loop benchmark snapshot
+
+My latest session, `20261002_122609_output`, was still running when this
+snapshot was saved on 2 October 2026 at 16:45 SGT. It contains **930 completed
+runs**, all with winning instruction streams accepted as `OK` by the Linux
+reference checker. With seed 42 and inclusive bounds 2–600, that is **one
+complete 599-input sweep, plus 331 inputs of sweep 2** (sizes 2–332).
+A sweep samples one permutation at each size; it does not exhaust permutations
+or establish full evaluation coverage. These inputs are shuffled nonnegative
+ranks, not additional invalid-input, signed-boundary or memory-safety tests.
+
+| Input size | Completed trials | Winning moves (each trial) | Mean winning moves | Mean total solver wall time |
+| --- | ---: | --- | ---: | ---: |
+| 5 | 2 | 3, 4 | 3.50 | 0.003634 s |
+| 10 | 2 | 17, 17 | 17.00 | 65.308380 s |
+| 100 | 2 | 504, 519 | 511.50 | 209.716740 s |
+| 500 | 1 | 5024 | 5024.00 | 438.584894 s |
+| 600 | 1 | 6598 | 6598.00 | 0.091089 s |
+
+Both 100-value winners are below 700 moves; the 500-value winner is below
+5500. Those are two and one observations respectively, not hundreds of trials
+at those exact sizes. Size 600 is an extra local test outside the 500-value
+benchmark; it uses the three-element local strategy directly.
+
+This session uses up to 11 concurrent single-threaded solver processes with
+per-input memory admission. Each solver still runs its candidates sequentially.
+The times below include contention and are not isolated speed comparisons
+against the earlier single-worker sessions. All 930 records identify profiling
+executable SHA-256
+`08460e7ad94ba0ef385b18a4a656cb97d6b4c2181feadbbe895df321ae44d32d`.
+The saved settings are continuation depth/execution 12/10 through size 100,
+7/5 through size 500, and opening depth/execution 12/5, with `DEBUG=0` and
+all eligible candidates enabled.
+
+| Input size | Candidate | Trials | Mean moves | Mean candidate wall time | Mean candidate CPU time |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 100 | Three-element seed + local greedy | 2 | 567.50 | 0.001197 s | 0.001196 s |
+| 100 | Circular LIS + local greedy | 2 | 535.50 | 0.008098 s | 0.008097 s |
+| 100 | Circular LIS + lookahead | 2 | 515.50 | 73.057587 s | 73.049657 s |
+| 100 | Circular LIS + opening-one lookahead | 2 | 530.50 | 60.340986 s | 60.339148 s |
+| 100 | Circular LIS + opening-batch lookahead | 2 | 536.50 | 76.305427 s | 76.303361 s |
+| 500 | Three-element seed + local greedy | 1 | 5370.00 | 0.060856 s | 0.060849 s |
+| 500 | Circular LIS + local greedy | 1 | 5024.00 | 0.772574 s | 0.772508 s |
+| 500 | Circular LIS + lookahead | 1 | 5096.00 | 69.761300 s | 69.746677 s |
+| 500 | Circular LIS + opening-one lookahead | 1 | 5372.00 | 204.427964 s | 204.416685 s |
+| 500 | Circular LIS + opening-batch lookahead | 1 | 5313.00 | 163.550626 s | 163.547889 s |
+
+On the one 500-value input, plain LIS local produced the winning 5024 moves
+in about 0.773 seconds; running every eligible candidate brought total solver
+wall time to 438.585 seconds. That is a useful example of the cost of selecting
+among candidates, not evidence that local LIS always wins. The runner checks
+the winning stream, not each candidate independently, and these runs did not
+perform Valgrind checks. The detailed inputs, moves and profiling records remain
+in the local, Git-ignored session directory; this table records the completed
+snapshot rather than claiming the ongoing session is finished.
+
 <a id="showcase-setup"></a>
 
 ## Optional Python performance showcase
 
 Both routes below are part of this evaluation edition and are also available
 to public readers. Choose one for the optional first step of the evaluation
-flow; the remaining evaluation checks still apply.
+flow; the remaining evaluation checks still apply. The [latest completed benchmark
+snapshot](#latest-loop-benchmark) records the ongoing loop session separately
+from the earlier timing samples.
 
 ### Setup in the school submission clone
 
