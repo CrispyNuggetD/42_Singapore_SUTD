@@ -14,6 +14,8 @@ import re
 import secrets
 import signal
 import statistics
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
 import subprocess
 import sys
@@ -24,6 +26,72 @@ ROOT = Path(__file__).resolve().parents[1]
 MOVES = set('sa sb ss pa pb ra rb rr rra rrb rrr'.split())
 GENERATOR = 'python-mt19937-shuffle-sha256-v1'
 
+
+
+ACTIVE_PROCESSES = set()
+PROCESS_LOCK = threading.Lock()
+STOP_REQUESTED = threading.Event()
+
+
+def start_process(*args, **kwargs):
+    with PROCESS_LOCK:
+        if STOP_REQUESTED.is_set():
+            raise InterruptedError('Benchmark stopping')
+        process = subprocess.Popen(*args, **kwargs)
+        ACTIVE_PROCESSES.add(process)
+        return process
+
+
+def forget_process(process):
+    with PROCESS_LOCK:
+        ACTIVE_PROCESSES.discard(process)
+
+
+def stop_workers():
+    with PROCESS_LOCK:
+        STOP_REQUESTED.set()
+        active = list(ACTIVE_PROCESSES)
+    for process in active:
+        try:
+            stop_process(process)
+        except ProcessLookupError:
+            pass
+
+
+def physical_cpu_count():
+    allowed = os.sched_getaffinity(0)
+    cores = set()
+    for cpu in allowed:
+        folder = Path(f'/sys/devices/system/cpu/cpu{cpu}/topology')
+        try:
+            cores.add(((folder / 'physical_package_id').read_text().strip(),
+                       (folder / 'core_id').read_text().strip()))
+        except OSError:
+            return len(allowed)
+    return len(cores)
+
+
+def worker_limit(config, settings, requested=None, light=False):
+    """Conservative BFS memory estimate; this is a scheduling cap, not a guarantee."""
+    maximum = max(1, physical_cpu_count() - 1)
+    if requested is not None:
+        maximum = requested
+    mode = config.get('size_mode', 'fixed')
+    low = config['size'] if mode == 'fixed' else config.get('min_size', 2)
+    high = config['size'] if mode == 'fixed' else config.get('max_size', 500)
+    bfs_n = min(high, settings.get('BRUTE_MAX_N', 10))
+    estimate = 128 * 1024 ** 2
+    if bfs_n >= max(low, 5):
+        # Nodes, visited storage and transient allocation growth headroom.
+        estimate = max(estimate, math.factorial(bfs_n + 1) * 48)
+    available = None
+    try:
+        match = re.search(r'^MemAvailable:\s+(\d+)', Path('/proc/meminfo').read_text(), re.M)
+        available = int(match.group(1)) * 1024
+    except (OSError, AttributeError):
+        pass
+    cap = max(1, int(available * .6) // estimate) if available else 1
+    return (1 if light else min(maximum, cap)), estimate
 
 def rank_hash(values):
     """Equivalent relative orders have identical hashes, irrespective of values."""
@@ -247,7 +315,7 @@ def parse_records(text):
                   'binary_sha256': metadata['Binary SHA-256'], 'checker': metadata['Checker'],
                   'move_count': int(metadata['Moves']), 'solver_seconds': float(metadata['Solver seconds']),
                   'solver_exit': int(metadata['Solver exit']),
-                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG', 'LOOKAHEAD_DEPTH_100', 'LOOKAHEAD_DEPTH_500', 'LOOKAHEAD_DEPTH_FIRST_MOVE', 'EXECUTE_LIMIT_100', 'EXECUTE_LIMIT_500', 'EXECUTE_LIMIT_FIRST_MOVE', 'ENABLE_OPENING_LOOKAHEAD', 'SKIP_OTHER_ALGO_AFTER_BFS', 'GREEDY_PATH_CAPACITY', 'BRUTE_MAX_N') if k in metadata},
+                  'settings': {k: int(metadata[k]) for k in ('LOOKAHEAD_DEPTH', 'EXECUTE_DEPTH', 'DEBUG', 'LOOKAHEAD_DEPTH_100', 'LOOKAHEAD_DEPTH_500', 'LOOKAHEAD_DEPTH_FIRST_MOVE', 'EXECUTE_LIMIT_100', 'EXECUTE_LIMIT_500', 'EXECUTE_LIMIT_FIRST_MOVE', 'ENABLE_OPENING_LOOKAHEAD', 'SKIP_OTHER_ALGO_AFTER_BFS', 'GREEDY_PATH_CAPACITY', 'BRUTE_MAX_N', 'BENCHMARK_WORKERS') if k in metadata},
                   'input_ranks': list(map(int, read_section(body, 'Input ranks').split())),
                   'moves': read_section(body, 'Winning moves').splitlines(),
                   'solution_debug': read_section(body, 'Solution debug'),
@@ -316,7 +384,8 @@ def save_summary(path, config, records, status):
             algorithms.setdefault(algorithm['name'], []).append(algorithm['moves'])
     text = '# Push_swap test summary\n\n'
     text += table(['Session', 'Value'], [
-        ('Status', status), ('Successful runs', len(records)), ('Master seed', config['seed']),
+        ('Status', status), ('Workers for this invocation', config.get('workers', 1)),
+        ('Successful runs', len(records)), ('Master seed', config['seed']),
         ('Input size', config['size'] if config.get('size_mode', 'fixed') == 'fixed' else 'variable'),
         ('Size mode', config.get('size_mode', 'fixed')),
         ('Minimum size', config.get('min_size', 2)), ('Maximum size', config.get('max_size', 500)), ('Next generation ID', records[-1]['generation_id']+1 if records else 0),
@@ -366,7 +435,7 @@ def stop_process(process):
             process.wait()
 
 
-def run_case(values, show_solutions=False, executable=None):
+def run_case(values, show_solutions=False, executable=None, live_progress=True):
     """FD 1 = moves, FD 2 = live progress, FD 3 = saved solution dump."""
     args = list(map(str, values))
     executable = executable or ROOT / 'push_swap'
@@ -377,7 +446,7 @@ def run_case(values, show_solutions=False, executable=None):
             command = ['bash', '-c', 'exec 3>"$1" 4>"$2"; shift 2; exec "$@"',
                        'push-swap-runner', str(dump), str(metrics_path), str(executable), *args]
             start = time.monotonic()
-            process = subprocess.Popen(command, stdout=moves, stderr=subprocess.PIPE,
+            process = start_process(command, stdout=moves, stderr=subprocess.PIPE,
                                        start_new_session=True)
             try:
                 while True:
@@ -385,14 +454,16 @@ def run_case(values, show_solutions=False, executable=None):
                     if not chunk:
                         break
                     diagnostic.write(chunk)
-                    sys.stderr.buffer.write(chunk)
-                    sys.stderr.buffer.flush()
+                    if live_progress:
+                        sys.stderr.buffer.write(chunk)
+                        sys.stderr.buffer.flush()
                 code = process.wait()
             except BaseException:
                 stop_process(process)
                 raise
             finally:
                 process.stderr.close()
+                forget_process(process)
             elapsed = time.monotonic() - start
             moves.seek(0)
             output = moves.read()
@@ -423,7 +494,7 @@ def run_case(values, show_solutions=False, executable=None):
         result.update(checker='NOT RUN', error='Solver failed or printed invalid moves',
                       stderr_tail=debug[-8000:])
         return result
-    checker = subprocess.Popen([str(ROOT / 'checker_linux'), *args],
+    checker = start_process([str(ROOT / 'checker_linux'), *args],
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, start_new_session=True)
     try:
@@ -431,6 +502,8 @@ def run_case(values, show_solutions=False, executable=None):
     except BaseException:
         stop_process(checker)
         raise
+    finally:
+        forget_process(checker)
     result['checker'] = answer.decode(errors='replace').strip()
     if checker.returncode != 0 or answer.strip() != b'OK':
         result.update(error='Checker rejected solution',
@@ -450,6 +523,9 @@ def latest_session(base):
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-n', type=int, help='successful runs to add; omit for Ctrl-C mode')
+    load = parser.add_mutually_exclusive_group()
+    load.add_argument('-light', '--light', action='store_true', help='one worker; use for isolated timings')
+    load.add_argument('-j', '--jobs', type=int, help='requested concurrent runs (RAM cap still applies)')
     parser.add_argument('--size', type=int, help='numbers per test (default: 100)')
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument('-random', '--random', action='store_true', help='deterministic random input size per trial')
@@ -464,6 +540,8 @@ def arguments():
     resume.add_argument('--resume-latest', action='store_true',
                         help='resume the most recently modified session summary')
     args = parser.parse_args()
+    if args.jobs is not None and args.jobs < 1:
+        parser.error('--jobs must be positive')
     if args.n is not None and args.n < 1:
         parser.error('-n must be positive')
     if args.size is not None and args.size < 2:
@@ -489,6 +567,7 @@ def arguments():
 
 def main():
     args = arguments()
+    STOP_REQUESTED.clear()
     if args.resume:
         folder = args.resume.resolve()
         if folder.is_file():
@@ -539,46 +618,73 @@ def main():
         settings = {name: int(value) for name, value in re.findall(
             r'#\s*define\s+(LOOKAHEAD_DEPTH(?:_100|_500|_FIRST_MOVE)?|EXECUTE_(?:DEPTH|LIMIT_100|LIMIT_500|LIMIT_FIRST_MOVE)|DEBUG|ENABLE_OPENING_LOOKAHEAD|SKIP_OTHER_ALGO_AFTER_BFS|GREEDY_PATH_CAPACITY|BRUTE_MAX_N)\s+(\d+)',
             (ROOT / 'includes/push_swap.h').read_text())}
+        workers, memory_estimate = worker_limit(config, settings, args.jobs, args.light)
+        settings['BENCHMARK_WORKERS'] = workers
+        config['workers'] = workers
         seen = {r['rank_sha256'] for r in records}
         generation = records[-1]['generation_id'] + 1 if records else 0
         target = len(records) + args.n if args.n else None
         fixed = config.get('size_mode', 'fixed') == 'fixed'
         permutations = math.factorial(config['size']) if fixed else None
-        print(f"Session: {folder}\nSeed: {config['seed']} | mode: {config.get('size_mode', 'fixed')} | bounds: {config.get('min_size', 2)}..{config.get('max_size', 500)} | fixed size: {config['size']} | saved: {len(records)}", flush=True)
+        print(f"Session: {folder}\nSeed: {config['seed']} | mode: {config.get('size_mode', 'fixed')} | size: {config['size']} | saved: {len(records)}", flush=True)
+        print(f"Workers: {workers} | estimated memory allowance per worker: {memory_estimate / 1024**2:.0f} MiB", flush=True)
+        if workers > 1:
+            print('Concurrent throughput mode: timings include resource contention; use --light for isolated comparisons.', flush=True)
         save_summary(summary, config, records, 'running')
         status = 'complete'
+        executor = ThreadPoolExecutor(max_workers=workers)
         try:
             while target is None or len(records) < target:
                 if fixed and len(seen) == permutations:
                     status = 'all_unique_permutations_tested'
-                    print('All unique permutations have been tested.', flush=True)
                     break
-                size = trial_size(config, generation)
-                values = generate(config['seed'], generation, size)
-                digest = rank_hash(values)
-                generation += 1
-                if fixed and digest in seen:
-                    continue
-                print(f"Run {len(records)+1} | generation {generation-1} | size {size} | ranks {digest[:12]}", flush=True)
-                record = {'run_id': len(records)+1, 'generation_id': generation-1,
-                          'seed': config['seed'], 'rank_sha256': digest, 'input_ranks': values,
-                          'binary_sha256': binary_hash, 'settings': settings}
-                record.update(run_case(values, args.show_solutions, executable))
-                if 'error' in record:
-                    atomic_text(folder / f"{config['prefix']}_failed.md", "# Failed test\n" + render_record(record))
-                    status = 'failed'
-                    print(f"Failed: {record['error']}; input and diagnostics saved.", file=sys.stderr)
+                count = workers if target is None else min(workers, target - len(records))
+                if fixed:
+                    count = min(count, permutations - len(seen))
+                batch = []
+                pending = set()
+                while len(batch) < count:
+                    size = trial_size(config, generation)
+                    values = generate(config['seed'], generation, size)
+                    digest = rank_hash(values)
+                    generation += 1
+                    if fixed and (digest in seen or digest in pending):
+                        continue
+                    pending.add(digest)
+                    record = {'run_id': len(records) + len(batch) + 1,
+                              'generation_id': generation - 1, 'seed': config['seed'],
+                              'rank_sha256': digest, 'input_ranks': values,
+                              'binary_sha256': binary_hash, 'settings': settings}
+                    print(f"Run {record['run_id']} | generation {generation-1} | size {size} | ranks {digest[:12]}", flush=True)
+                    future = executor.submit(run_case, values, False, executable, workers == 1)
+                    batch.append((record, future))
+                # Commit in generation order, so interruption/resume stays deterministic.
+                for record, future in batch:
+                    record.update(future.result())
+                    if args.show_solutions:
+                        sys.stderr.write(record['solution_debug'])
+                    if 'error' in record:
+                        atomic_text(folder / f"{config['prefix']}_failed.md", "# Failed test\n" + render_record(record))
+                        status = 'failed'
+                        print(f"Failed: {record['error']}; input and diagnostics saved.", file=sys.stderr)
+                        stop_workers()
+                        break
+                    save_detail(folder, config, records, record)
+                    records.append(record)
+                    seen.add(record['rank_sha256'])
+                    save_summary(summary, config, records, 'running')
+                    print(f"OK | run {record['run_id']} | {record['move_count']} moves | {record['solver_seconds']:.3f}s", flush=True)
+                if status == 'failed':
                     break
-                save_detail(folder, config, records, record)
-                records.append(record)
-                seen.add(digest)
-                save_summary(summary, config, records, 'running')
-                print(f"OK | {record['move_count']} moves | average {stats([r['move_count'] for r in records])['average']:.2f}", flush=True)
         except KeyboardInterrupt:
             signal.signal(signal.SIGINT, signal.SIG_IGN)
+            stop_workers()
             records = load_records(folder, config['prefix'])
             status = 'interrupted'
-            print('\nStopped; completed runs saved. Interrupted input will be retried.', flush=True)
+            print('Stopped; completed runs saved. Uncommitted inputs will be retried.', flush=True)
+        finally:
+            stop_workers()
+            executor.shutdown(wait=True, cancel_futures=True)
         save_summary(summary, config, records, status)
         print(f'Summary: {summary}', flush=True)
         return 1 if status == 'failed' else 0

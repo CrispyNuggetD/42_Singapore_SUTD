@@ -2225,6 +2225,41 @@ complexity from one input size. The reference checker validates the winning
 stream, not every candidate separately. `python3 tests/test_runner_profiles.py`
 checks the instrumentation, statistics, Markdown round-trip and old-log parsing.
 
+### Parallel throughput and light timing mode
+
+The Python runner now defaults to concurrent input runs. It uses up to the
+available physical-core count minus one, with a minimum of one worker, and
+caps the worker count using 60% of currently available RAM. The conservative
+per-worker allowance is at least 128 MiB; for input sizes that may invoke BFS,
+it includes factorial state growth and transient allocation headroom. These
+are scheduling estimates, not guaranteed memory bounds. Variable-size sessions
+use the worst eligible BFS size within their configured range.
+
+```sh
+bash push_swap_tester.sh -n 20 --size 500
+bash push_swap_tester.sh -n 3 --size 500 --light
+bash push_swap_tester.sh -n 20 --size 100 --jobs 4
+```
+
+`-light` is an alias for `--light`; it selects one worker. `--jobs N` requests
+an explicit limit, still subject to the RAM cap. There must also be enough
+pending inputs to fill the workers. On this PC, the automatic CPU ceiling is
+11 simultaneous solver processes, rather than forcing all 20 logical CPUs.
+The existing C solver remains single-threaded: this improves throughput across
+inputs, not the speed of one input or the execution order of its candidates.
+No GPU acceleration is involved.
+
+Concurrent results remain useful for sorting correctness and move counts, but
+wall/CPU times include shared resource contention. Use `--light` for comparable
+algorithm timing, and avoid running other benchmarks simultaneously. Each
+record saves the configured maximum worker count as `BENCHMARK_WORKERS` in its
+settings, so comparison groups separate concurrency configurations. This is a
+configured limit, not a measurement of how many workers overlapped each row.
+Completed records are committed in generation order for deterministic resume.
+Ctrl-C stops tracked solver/checker process groups and leaves uncommitted
+inputs for retry. `tests/test_runner_parallel.py` checks scheduling, RAM caps
+and resume with mock solvers, without starting real benchmarks.
+
 New sessions contain only Markdown reports: 100 tests still means 11 `.md` files.
 The seed, hash and resume metadata are ordinary readable table rows; no hidden
 JSON state file is needed. `--resume` also accepts older TXT/JSON sessions. Their
