@@ -4,6 +4,9 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
+> **[Go to the current push_swap directory on GitHub ↗](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap)**
+> This is the frozen evaluation README. The link above opens the latest public project on `main`.
+
 <a id="description"></a>
 
 ## Description
