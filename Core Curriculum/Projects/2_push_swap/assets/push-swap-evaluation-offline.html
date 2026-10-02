@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>push_swap — 42SG evaluation edition, 2 October 2026</title><meta name="source-ref" content="evaluation-2026-10-02-final"><meta name="source-readme-sha256" content="41242ffa2ad92c710ea7af1031c5716cd7d5eef93f6a7216023d237b97b4b517"><style>/*light */
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>push_swap — 42SG evaluation edition, 2 October 2026</title><meta name="source-ref" content="evaluation-2026-10-02-final"><meta name="source-readme-sha256" content="d0a1bc43c494f1ea5fdac9a9702cecde0b1ceca04a6badd620e2a61aa284fe32"><style>/*light */
 .markdown-body {
   color-scheme: light;
   /** CSS default easing. Use for hover state changes and micro-interactions. */
@@ -2608,9 +2608,157 @@ checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620</cod
 <div class="sourceCode" id="cb16"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./push_swap</span> 3 2 1 <span class="dv">3</span><span class="op">&gt;&amp;</span><span class="dv">2</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./push_swap</span> 3 2 1 <span class="dv">3</span><span class="op">&gt;</span>debug</span></code></pre></div>
 <p>The first sends the solution dump to stderr, normally the terminal; the second saves it to a file. The filename does not need a <code>.txt</code> extension. Both keep stdout reserved for instructions. Diagnostic output can affect runtime, so the measurements above use <code>DEBUG=0</code>.</p>
+<p><a id="latest-loop-benchmark"></a></p>
+<h3 id="latest-ongoing-loop-benchmark-snapshot">Latest ongoing loop benchmark snapshot</h3>
+<p>My latest session, <code>20261002_122609_output</code>, was still running when this snapshot was saved on 2 October 2026 at 16:45 SGT. It contains <strong>930 completed runs</strong>, all with winning instruction streams accepted as <code>OK</code> by the Linux reference checker. With seed 42 and inclusive bounds 2–600, that is <strong>one complete 599-input sweep, plus 331 inputs of sweep 2</strong> (sizes 2–332). A sweep samples one permutation at each size; it does not exhaust permutations or establish full evaluation coverage. These inputs are shuffled nonnegative ranks, not additional invalid-input, signed-boundary or memory-safety tests.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Input size</th>
+<th style="text-align: right;">Completed trials</th>
+<th>Winning moves (each trial)</th>
+<th style="text-align: right;">Mean winning moves</th>
+<th style="text-align: right;">Mean total solver wall time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>5</td>
+<td style="text-align: right;">2</td>
+<td>3, 4</td>
+<td style="text-align: right;">3.50</td>
+<td style="text-align: right;">0.003634 s</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td style="text-align: right;">2</td>
+<td>17, 17</td>
+<td style="text-align: right;">17.00</td>
+<td style="text-align: right;">65.308380 s</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td style="text-align: right;">2</td>
+<td>504, 519</td>
+<td style="text-align: right;">511.50</td>
+<td style="text-align: right;">209.716740 s</td>
+</tr>
+<tr class="even">
+<td>500</td>
+<td style="text-align: right;">1</td>
+<td>5024</td>
+<td style="text-align: right;">5024.00</td>
+<td style="text-align: right;">438.584894 s</td>
+</tr>
+<tr class="odd">
+<td>600</td>
+<td style="text-align: right;">1</td>
+<td>6598</td>
+<td style="text-align: right;">6598.00</td>
+<td style="text-align: right;">0.091089 s</td>
+</tr>
+</tbody>
+</table>
+<p>Both 100-value winners are below 700 moves; the 500-value winner is below 5500. Those are two and one observations respectively, not hundreds of trials at those exact sizes. Size 600 is an extra local test outside the 500-value benchmark; it uses the three-element local strategy directly.</p>
+<p>This session uses up to 11 concurrent single-threaded solver processes with per-input memory admission. Each solver still runs its candidates sequentially. The times below include contention and are not isolated speed comparisons against the earlier single-worker sessions. All 930 records identify profiling executable SHA-256 <code>08460e7ad94ba0ef385b18a4a656cb97d6b4c2181feadbbe895df321ae44d32d</code>. The saved settings are continuation depth/execution 12/10 through size 100, 7/5 through size 500, and opening depth/execution 12/5, with <code>DEBUG=0</code> and all eligible candidates enabled.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Input size</th>
+<th>Candidate</th>
+<th style="text-align: right;">Trials</th>
+<th style="text-align: right;">Mean moves</th>
+<th style="text-align: right;">Mean candidate wall time</th>
+<th style="text-align: right;">Mean candidate CPU time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>100</td>
+<td>Three-element seed + local greedy</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">567.50</td>
+<td style="text-align: right;">0.001197 s</td>
+<td style="text-align: right;">0.001196 s</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>Circular LIS + local greedy</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">535.50</td>
+<td style="text-align: right;">0.008098 s</td>
+<td style="text-align: right;">0.008097 s</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>Circular LIS + lookahead</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">515.50</td>
+<td style="text-align: right;">73.057587 s</td>
+<td style="text-align: right;">73.049657 s</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>Circular LIS + opening-one lookahead</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">530.50</td>
+<td style="text-align: right;">60.340986 s</td>
+<td style="text-align: right;">60.339148 s</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>Circular LIS + opening-batch lookahead</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">536.50</td>
+<td style="text-align: right;">76.305427 s</td>
+<td style="text-align: right;">76.303361 s</td>
+</tr>
+<tr class="even">
+<td>500</td>
+<td>Three-element seed + local greedy</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5370.00</td>
+<td style="text-align: right;">0.060856 s</td>
+<td style="text-align: right;">0.060849 s</td>
+</tr>
+<tr class="odd">
+<td>500</td>
+<td>Circular LIS + local greedy</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5024.00</td>
+<td style="text-align: right;">0.772574 s</td>
+<td style="text-align: right;">0.772508 s</td>
+</tr>
+<tr class="even">
+<td>500</td>
+<td>Circular LIS + lookahead</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5096.00</td>
+<td style="text-align: right;">69.761300 s</td>
+<td style="text-align: right;">69.746677 s</td>
+</tr>
+<tr class="odd">
+<td>500</td>
+<td>Circular LIS + opening-one lookahead</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5372.00</td>
+<td style="text-align: right;">204.427964 s</td>
+<td style="text-align: right;">204.416685 s</td>
+</tr>
+<tr class="even">
+<td>500</td>
+<td>Circular LIS + opening-batch lookahead</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5313.00</td>
+<td style="text-align: right;">163.550626 s</td>
+<td style="text-align: right;">163.547889 s</td>
+</tr>
+</tbody>
+</table>
+<p>On the one 500-value input, plain LIS local produced the winning 5024 moves in about 0.773 seconds; running every eligible candidate brought total solver wall time to 438.585 seconds. That is a useful example of the cost of selecting among candidates, not evidence that local LIS always wins. The runner checks the winning stream, not each candidate independently, and these runs did not perform Valgrind checks. The detailed inputs, moves and profiling records remain in the local, Git-ignored session directory; this table records the completed snapshot rather than claiming the ongoing session is finished.</p>
 <p><a id="showcase-setup"></a></p>
 <h2 id="optional-python-performance-showcase">Optional Python performance showcase</h2>
-<p>Both routes below are part of this evaluation edition and are also available to public readers. Choose one for the optional first step of the evaluation flow; the remaining evaluation checks still apply.</p>
+<p>Both routes below are part of this evaluation edition and are also available to public readers. Choose one for the optional first step of the evaluation flow; the remaining evaluation checks still apply. The <a href="#latest-loop-benchmark">latest completed benchmark snapshot</a> records the ongoing loop session separately from the earlier timing samples.</p>
 <h3 id="setup-in-the-school-submission-clone">Setup in the school submission clone</h3>
 <p>All showcase commands below run from the <strong>root of the cloned school submission repository</strong>, where <code>Makefile</code>, <code>src/</code>, <code>includes/</code> and <code>libft/</code> already live. The Python program is a test and profiling runner; the sorting algorithms still execute in C. This setup targets the school Linux environment and needs Bash, Python 3, the normal C build tools and the supplied Linux reference checker.</p>
 <p>Copy these <strong>four files</strong>, preserving the two <code>tests/</code> paths:</p>
