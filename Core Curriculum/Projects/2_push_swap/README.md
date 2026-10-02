@@ -21,32 +21,36 @@ behind my [circular-buffer representation](#circular-buffer-stacks).
 
 ```mermaid
 flowchart LR
-    subgraph A[" "]
-        a1(("A · top 1"))
-        a4(("4"))
-        a7(("7"))
-        a1 --> a4 --> a7 --> a1
+    subgraph FRAME["TWO RINGS · ONE EXCHANGE · HOW FEW MOVES?"]
+        direction LR
+        subgraph A[" "]
+            a1(("A · top 1"))
+            a4(("4 · seed"))
+            a7(("7 · seed"))
+            a1 --> a4 --> a7 --> a1
+        end
+        subgraph B[" "]
+            b6(("B · top 6"))
+            b2(("2 · waiting"))
+            b5(("5 · waiting"))
+            b6 --> b2 --> b5 --> b6
+        end
+        a1 -->|"pb · A to B"| b6
+        b6 -->|"pa · B to A"| a1
     end
-    subgraph B[" "]
-        b6(("B · top 6"))
-        b2(("2"))
-        b5(("5"))
-        b6 --> b2 --> b5 --> b6
-    end
-    a1 -->|"pb"| b6
-    b6 -->|"pa"| a1
 
-    classDef seed fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:2px
-    classDef pending fill:#ffe4e6,stroke:#be123c,color:#881337,stroke-width:2px
-    classDef port stroke:#2563eb,stroke-width:4px
+    classDef seed fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:3px,font-size:20px
+    classDef pending fill:#ffe4e6,stroke:#be123c,color:#881337,stroke-width:3px,font-size:20px
+    classDef port stroke:#2563eb,stroke-width:5px,font-size:22px
     class a1,a4,a7 seed
     class b6,b2,b5 pending
     class a1,b6 port
-    style A fill:#f0fdf4,stroke:#15803d,color:#14532d
-    style B fill:#fff1f2,stroke:#be123c,color:#881337
-    linkStyle 0,1,2 stroke:#15803d,stroke-width:2px
-    linkStyle 3,4,5 stroke:#be123c,stroke-width:2px
-    linkStyle 6,7 stroke:#2563eb,stroke-width:3px
+    style FRAME fill:#f8fafc,stroke:#334155,stroke-width:4px,color:#0f172a,font-size:22px
+    style A fill:transparent,stroke:transparent
+    style B fill:transparent,stroke:transparent
+    linkStyle 0,1,2 stroke:#15803d,stroke-width:3px
+    linkStyle 3,4,5 stroke:#be123c,stroke-width:3px
+    linkStyle 6,7 stroke:#2563eb,stroke-width:4px
 ```
 
 *An illustrative mid-sort state, not a trace of a particular solver run.*
