@@ -7,7 +7,9 @@
 *.d
 
 # Resumable local random-test sessions.
-/tests/debug/results/random_tests/
+/tests/debug/results/random_tests/*
+
+!/tests/debug/results/random_tests/20261002_122609_output/
 
 /checker
 **/__pycache__/
