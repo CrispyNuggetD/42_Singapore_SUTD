@@ -1,5 +1,5 @@
 # Local scratch files and macOS metadata
-gitignored/*
+gitignored/
 *.DS_Store
 
 # Build intermediates at any depth (no leading slash)
@@ -16,3 +16,4 @@ bin/
 **/2_pipex/pipex
 **/2_FDF/fdf
 **/2_push_swap/push_swap
+**/3_Philosophers/philo/philo
