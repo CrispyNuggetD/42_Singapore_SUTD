@@ -416,6 +416,20 @@ def save_summary(path, config, records, status):
         for algorithm in record['algorithms']:
             algorithms.setdefault(algorithm['name'], []).append(algorithm['moves'])
     text = '# Push_swap test summary\n\n'
+    text += '## Evaluation benchmarks — n=100 and n=500\n\n'
+    benchmark_rows = []
+    for size in (100, 500):
+        selected = [r for r in records if len(r['input_ranks']) == size]
+        moves = stats([r['move_count'] for r in selected])
+        seconds = stats([r['solver_seconds'] for r in selected])
+        benchmark_rows.append((f'**{size}**', len(selected),
+                               f"{moves['average']:.3f}" if selected else '—',
+                               moves['min'] if selected else '—',
+                               moves['max'] if selected else '—',
+                               f"{seconds['average']:.6f}" if selected else '—'))
+    text += table(['Input size', 'Runs', 'Average moves', 'Minimum moves',
+                   'Maximum moves', 'Average solver seconds'], benchmark_rows)
+    text += '\nSizes with zero runs have not been sampled yet.\n\n'
     text += table(['Session', 'Value'], [
         ('Status', status), ('Workers for this invocation', config.get('workers', 1)),
         ('Successful runs', len(records)), ('Master seed', config['seed']),
@@ -439,7 +453,8 @@ def save_summary(path, config, records, status):
     text += table(['Metric / algorithm', 'Runs', 'Average', 'Minimum', 'Maximum', 'Unit'], rows)
     text += '\n## Winning result by input size\n\n'
     size_rows = []
-    for size in sorted({len(r['input_ranks']) for r in records}):
+    for size in sorted({len(r['input_ranks']) for r in records},
+                       key=lambda size: (size not in (100, 500), size)):
         selected = [r for r in records if len(r['input_ranks']) == size]
         size_rows.append([size, len(selected),
                           *distribution([r['move_count'] for r in selected]),
