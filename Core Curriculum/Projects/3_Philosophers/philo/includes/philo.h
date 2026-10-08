@@ -8,6 +8,12 @@
 # include <sys/time.h>
 # include <unistd.h>
 
+typedef struct s_locker
+{
+	void			*counter;
+	pthread_mutex_t	lock;
+}	t_locker;
+
 typedef struct s_sim	t_sim;
 
 typedef struct s_philo
