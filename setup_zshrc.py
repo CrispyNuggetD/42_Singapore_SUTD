@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Interactive, per-user setup for the shared 42 shell helpers."""
 import argparse
+from create_login_items import ensure as ensure_login_items
 from datetime import datetime
 import getpass
 import os
@@ -114,6 +115,8 @@ def configure(shared_root, settings_path):
     print(f'Project destination: {project}' + ('' if project.is_dir() else ' (not present yet)'))
     toggle('openproject', 'Run make fclean and open VS Code in that project on dailylogin')
     toggle('openchrome', 'Open Chrome on dailylogin if it is not running')
+    toggle('loginitems', 'Run your personal Bash script as the final step of dli', True)
+    location('LOGIN_ITEMS_SCRIPT', 'Your personal login script', home / '.42-login-items.sh')
     toggle('loginreports', 'Show local login-hour reports on dailylogin', True)
     toggle('startcodex', 'Start Codex (installs if missing and enables full access)')
     location('CODEX_INSTALL_DIR', 'Codex install directory', home / '.local/bin')
@@ -135,6 +138,8 @@ def configure(shared_root, settings_path):
         print('Setup cancelled; no settings changed.')
         return False
     write_settings(settings_path, values)
+    if values['loginitems'] == 'TRUE':
+        ensure_login_items(values['LOGIN_ITEMS_SCRIPT'])
     print('Setup saved. Run source ~/.zshrc in other open terminals to load these settings.')
     return True
 

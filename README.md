@@ -22,8 +22,32 @@ For a tmux session that is already running, run `tmux set -g mouse on` once.
 Running `python3 setup_zshrc.py` alone only saves settings; it does not install
 the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 
-When ready, run `dailylogin` to start the tasks you enabled. See the
+When ready, run `dli` to start the tasks you enabled and then your own login script.
+`dailylogin` runs only the shared tasks; `lgi` runs only your personal script. See the
 [full shell setup guide](Study%20Notes/Codex/shell-setup.md) for more details.
+
+### Your own final login step
+
+The `loginitems` flag defaults to `TRUE`. Setup creates `~/.42-login-items.sh`
+with instructions and commented examples, and no active commands. Add your own
+Bash commands there: `dli` runs them **last**, even if a shared daily task fails.
+If the script is missing, the enabled step creates it before running it.
+Existing scripts are never overwritten by setup or updates. Each user gets their
+own file; no personal solver or project commands are shipped in this template.
+
+Edit `~/.42-shell-settings.zsh` to set `loginitems=FALSE` to disable this step,
+or set `LOGIN_ITEMS_SCRIPT` to another path, then run `source ~/.zshrc`.
+`setupzshrc` also offers these settings. Arguments to `dli` are passed to your
+script. It runs in Bash as a separate process, so zsh aliases/functions are not
+available and `cd` does not change the parent terminal's directory. Manual
+`dli` and `lgi` calls repeat your commands; make them safe to run more than once.
+
+On GNOME Linux, your account can also use `~/.config/autostart/` to launch a
+terminal at desktop login. Automatic `dli` needs a shared session flag and a
+`flock` lock to prevent duplicate runs when it opens more shells or reloads
+`.zshrc`. A new desktop login should get a new flag; unlocking should only
+restore brightness. These startup hooks are machine-specific and are not
+installed by the shared shell installer.
 
 For fun, run `badapple` to play Bad Apple in your terminal. On first use it
 sets up `~/joke/play.sh` with assets from

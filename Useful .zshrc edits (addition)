@@ -1012,22 +1012,30 @@ pullzshrc() {
 }
 
 # --- Short login commands: lg<Tab>, dl<Tab>, dai<Tab> ---
-# Private login items are optional; sourcing this file never runs them.
-# CODEX_PRIVATE_REPO_ROOT selects the private clone; LOGIN_ITEMS_SCRIPT overrides
-# its 42/login_items.sh. Missing scripts are skipped without a startup failure.
+# dli runs dailylogin, then your own Bash script as its final step.
+# Personal commands live in HOME, never in this shared repository.
+export loginitems="${loginitems:-TRUE}"
+export LOGIN_ITEMS_SCRIPT="${LOGIN_ITEMS_SCRIPT:-$HOME/.42-login-items.sh}"
+
+_login_items_ensure() {
+  [[ -e "$LOGIN_ITEMS_SCRIPT" ]] && return 0
+  command mkdir -p -- "${LOGIN_ITEMS_SCRIPT:h}" || return $?
+  # Exclusive creation preserves existing scripts, including concurrent setup.
+  command python3 "$ZSHRC_RUNTIME_ROOT/create_login_items.py" "$LOGIN_ITEMS_SCRIPT"
+}
+
 lgi() {
-  local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
-  local script="${LOGIN_ITEMS_SCRIPT:-$private/42/login_items.sh}"
-  if [[ ! -f "$script" ]]; then
-    print -- 'Personal login items unavailable; skipping.'
+  if ! _dailylogin_enabled "$loginitems"; then
+    print -- 'Personal login items disabled (loginitems=FALSE).'
     return 0
   fi
-  command bash "$script" "$@"
+  _login_items_ensure || return $?
+  command bash "$LOGIN_ITEMS_SCRIPT" "$@"
 }
 
 dli() {
-  # Run both even if a daily task fails, preserving failure status.
-  # Arguments are passed only to the personal login script.
+  # Personal commands still run if a daily task fails; retain failure status.
+  # Arguments are passed only to your personal Bash script.
   local daily_result=0 items_result=0
   dailylogin || daily_result=$?
   lgi "$@" || items_result=$?
