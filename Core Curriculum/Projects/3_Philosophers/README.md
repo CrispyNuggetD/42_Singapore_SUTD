@@ -777,3 +777,469 @@ philos[1] = philos[0]; /* Also copies meal_mutex: do not use that copy. */
 
 Initialize the structs in their final storage, then initialize each mutex
 there. Keep that storage alive until all threads using it have finished.
+
+### NULL arguments: defaults, omitted inputs, and ignored outputs
+
+`NULL` is a null pointer constant: it represents a pointer that does not
+point to an object or function. It does not universally mean "default".
+The function's contract decides whether a particular argument may be NULL
+and what that means. Dereferencing a null pointer is undefined behavior.
+
+| Example | Meaning of this particular NULL |
+| --- | --- |
+| `pthread_create(&thread, NULL, routine, &philo)` | Use default thread attributes |
+| `pthread_mutex_init(&mutex, NULL)` | Use default mutex attributes |
+| `pthread_join(thread, NULL)` | Wait, but do not collect the routine's returned pointer |
+| `pthread_create(&thread, NULL, routine, NULL)` | Also pass a null argument pointer to the routine |
+| `return (NULL)` in a thread routine | Return no result object |
+
+#### Default thread attributes
+
+```c
+pthread_create(&thread, NULL, routine, &philo);
+```
+
+The second parameter is `const pthread_attr_t *attr`. An attributes object
+configures properties such as stack size, scheduling settings, and whether
+the thread starts joinable or detached. NULL requests the default attributes;
+the thread is joinable by default. Exact stack sizes depend on the environment.
+It does not mean "use no stack" or "skip creating the thread".
+
+Custom attributes normally involve `pthread_attr_init()` and related
+setters. Those functions are not in this subject's allowed list, so the
+project can use NULL here. This is a deliberate API option, not an omitted
+argument: C still requires all four arguments.
+
+The fourth parameter is different: it is the pointer delivered to the
+routine. If I pass NULL there, the routine must not dereference it:
+
+```c
+void	*routine(void *argument)
+{
+	(void)argument; /* This example needs no input. */
+	return (NULL);
+}
+
+/* Two NULLs, with different meanings. */
+pthread_create(&thread, NULL, routine, NULL);
+```
+
+Passing NULL as the routine itself is not a request for a default routine.
+Passing NULL instead of `&thread` is not an option to ignore the handle.
+These parameters require valid values.
+
+#### Default mutex attributes
+
+```c
+pthread_mutex_init(&mutex, NULL);
+```
+
+The second parameter is `const pthread_mutexattr_t *attr`. NULL selects
+default attributes, including a process-private mutex and the default mutex
+type. It does not make the mutex pointer itself NULL: `&mutex` still refers
+to the actual object being initialized.
+
+Do not assume the default mutex supports recursive locking. Our code must
+not lock a mutex it already holds, unlock someone else's mutex, or unlock
+an unlocked mutex. Custom mutex attributes use other APIs not listed for
+mandatory Philo.
+
+#### Ignoring a thread's returned pointer
+
+```c
+pthread_join(thread, NULL);
+```
+
+The second parameter is `void **retval`: an optional address where the API
+can store the routine's returned pointer. NULL means I do not want that
+output. Joining still waits for the thread and performs the join operation;
+it does not detach, cancel, or kill the thread.
+
+To collect a result instead:
+
+```c
+void	*result;
+int		error;
+
+error = pthread_join(thread, &result);
+if (error != 0)
+	return (1);
+/* result now contains the pointer returned by the routine. */
+```
+
+This explains the pointer-to-pointer: `result` is a pointer, and the
+function needs its address to change it. The integer returned by
+`pthread_join()` is the API's success/error code; it is separate from the
+worker's returned pointer.
+
+A routine can return its input pointer when that object remains alive:
+
+```c
+void	*routine(void *argument)
+{
+	return (argument);
+}
+```
+
+Do not return the address of a routine's ordinary local variable: its
+lifetime ends when the routine returns. If returning heap-allocated data,
+agree on who frees it. Joining does not automatically free such data,
+even when the result argument is NULL.
+
+#### Reading a prototype instead of guessing
+
+```c
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+	void *(*start_routine)(void *), void *arg);
+int pthread_mutex_init(pthread_mutex_t *mutex,
+	const pthread_mutexattr_t *attr);
+int pthread_join(pthread_t thread, void **retval);
+```
+
+The prototype tells me the types. The manual tells me which pointers are
+optional and what NULL means for each. The local references for this section
+are `man pthread_create`, `man pthread_mutex_init`, and `man pthread_join`.
+A pointer parameter alone does not imply that NULL is accepted.
+
+### Why I saw volatile in Minishell, but it is not a Philo lock
+
+I read other Minishell teams' code and saw `volatile` used for signal
+handling. That made me wonder whether it could also protect Philo's stop
+flag. These are different situations.
+
+`volatile` tells the compiler that accesses to an object are observable
+and its value may change outside the ordinary execution path. For example,
+it prevents the compiler from treating repeated volatile reads as one
+cached value. It does not make an operation atomic, establish cross-thread
+memory ordering, or make conflicting thread accesses safe.
+
+A common signal-handling declaration is:
+
+```c
+volatile sig_atomic_t	g_signal;
+```
+
+`sig_atomic_t` comes from `<signal.h>`. It is an integer type that can be
+accessed as an atomic entity in the presence of asynchronous interrupts.
+A minimal signal handler can record the signal number:
+
+```c
+/* Signal-handling illustration, not code for mandatory Philo. */
+#include <signal.h>
+
+volatile sig_atomic_t	g_signal;
+
+void	handle_signal(int signal_number)
+{
+	g_signal = signal_number;
+}
+```
+
+The handler can interrupt normal execution, so ordinary assumptions about
+when a variable changes do not apply. `volatile sig_atomic_t` is the usual
+combination for a simple flag written by the handler and read by normal
+code. This does not make arbitrary handler work safe, nor does it make a
+read-modify-write operation such as `g_signal++` safe. Signal handlers also
+have restrictions on which functions they can call; `printf()` and mutex
+locking are not appropriate substitutes for simply recording a flag.
+
+This example explains a pattern I saw; it is not a claim that every
+Minishell team's signal handling is correct. A bare `volatile int` is not
+the same portable signal-handling guarantee as `volatile sig_atomic_t`.
+
+For Philo, a monitor thread and philosopher threads execute independently:
+
+```c
+volatile int	stop;
+
+/* Monitor thread */
+stop = 1;
+
+/* Philosopher thread */
+if (stop)
+	return (NULL);
+```
+
+Those unsynchronized accesses can race. `volatile` does not fix that,
+even if an individual integer load or store happens to be indivisible on
+this CPU. `sig_atomic_t` is not a replacement for thread synchronization
+either. Hardware atomicity alone does not satisfy C's thread memory rules.
+
+The proposed Philo design uses the same mutex for every concurrent read
+and write of the stop flag:
+
+```c
+/* Monitor thread */
+pthread_mutex_lock(&sim->stop_mutex);
+sim->stop = 1;
+pthread_mutex_unlock(&sim->stop_mutex);
+
+/* Philosopher thread: read a snapshot under the same lock. */
+pthread_mutex_lock(&sim->stop_mutex);
+stopped = sim->stop;
+pthread_mutex_unlock(&sim->stop_mutex);
+if (stopped)
+	return (NULL);
+```
+
+The local `stopped` snapshot can be used after unlocking, but the shared
+flag may change afterward. Operations such as deciding whether to print
+need their own coordinated protocol with stopping; a snapshot alone does
+not prevent a message from slipping out after death.
+
+C atomic types are another general tool for thread-safe flags, but this
+project's proposed implementation uses the allowed pthread mutex API.
+The signal example uses a global to illustrate the Minishell pattern;
+Philo's subject forbids globals, so its state stays in the simulation struct.
+
+### What atomic means
+
+An atomic operation is indivisible with respect to other relevant operations:
+other threads cannot observe it half-completed. This does not mean the CPU
+runs only that thread, or that the operation necessarily takes one machine
+instruction. The guarantee is about how the operation can be observed.
+
+An ordinary increment is not guaranteed atomic:
+
+```c
+counter++;
+```
+
+Conceptually it reads the old value, adds one, and writes the new value.
+Two threads can both read 0 and both write 1. In C, unsynchronized
+conflicting accesses to an ordinary shared object also cause a data race
+and undefined behavior; that interleaving is only an illustration.
+
+With the mutex approach used in this project:
+
+```c
+pthread_mutex_lock(&lock);
+counter++;
+pthread_mutex_unlock(&lock);
+```
+
+Only one cooperating thread enters that critical section at a time.
+The increment is protected against other accesses using the same lock;
+it does not magically become an atomic C object, and an unlocked access
+can still cause a race.
+
+C also provides atomic objects through `<stdatomic.h>`. This separate
+learning example shows an atomic read-modify-write operation:
+
+```c
+#include <stdatomic.h>
+
+atomic_int	counter;
+
+atomic_init(&counter, 0); /* Initialize before threads use it. */
+atomic_fetch_add(&counter, 1); /* Add one as a single atomic operation. */
+```
+
+If two threads each perform that addition once, the value becomes 2,
+assuming no other modifications. The operations do not lose an increment.
+These default C atomic operations also provide sequentially consistent
+ordering. Other ordering modes exist, but atomicity and ordering are
+separate ideas; choosing weaker ordering requires additional reasoning.
+This example is theoretical background, not a proposal to add atomic APIs
+to the subject's allowed function list.
+
+Even with an atomic counter, two separate operations are not automatically
+one indivisible transaction:
+
+```c
+if (atomic_load(&counter) > 0)
+	atomic_fetch_sub(&counter, 1);
+```
+
+Two threads could both observe 1 and both subtract, leaving -1. Each
+operation is atomic, but the combined check-and-subtract is not. A mutex
+around the complete decision and update, or an appropriate atomic algorithm,
+is needed when those steps must act as one unit.
+
+An atomic operation may use special CPU instructions. Some atomic types
+or operations require implementation-provided locks instead: atomic does
+not necessarily mean lock-free. Linux mutex implementations themselves use
+atomic operations internally to coordinate ownership of the lock.
+
+For my Philo design, mutexes protect shared meal data, the stop flag,
+and compound decisions. `volatile` does not provide these guarantees.
+The earlier `sig_atomic_t` discussion concerns simple signal-handler
+accesses, not a general guarantee for synchronization between threads.
+
+### What the non-default pthread settings actually configure
+
+`pthread_t` is a thread handle, not its settings object. The settings types
+are `pthread_attr_t` for thread creation and `pthread_mutexattr_t` for mutex
+initialization. The second argument of each creation/initialization call
+can point to the corresponding initialized settings object instead of NULL.
+
+The attribute initialization and setter functions discussed below are not
+in subject v13.0's allowed function lists for mandatory or bonus. They are
+background knowledge; this project uses default attributes. A default
+joinable thread can later be detached with the allowed `pthread_detach()`,
+although joining is more convenient for this proposed cleanup design.
+
+#### Thread attributes
+
+| Setting | What it changes | Relevance to Philo |
+| --- | --- | --- |
+| Detach state | Joinable threads can be joined; detached threads cannot and release their thread resources automatically when finished | Default joinable threads let main wait before freeing shared data |
+| Stack size | Space available for the thread's call stack | Default is sufficient for these small routines; avoid large local arrays and deep recursion |
+| Stack address | Uses caller-provided memory for the thread stack | Unnecessary; introduces alignment and lifetime responsibilities |
+| Guard size | A protected region intended to detect stack overflow | Keep the implementation's default; caller-provided stacks need special care |
+| Scheduling inheritance | Inherit the creator's scheduling policy/parameters, or use explicitly configured ones | Default inheritance is sufficient |
+| Scheduling policy | Chooses policies such as ordinary scheduling, FIFO, or round-robin real-time scheduling | Do not use real-time scheduling to compensate for simulation bugs; permissions and platform support vary |
+| Scheduling priority | Priority under the selected scheduling policy | Ordinary Linux scheduling does not provide arbitrary real-time priorities through this field |
+| Contention scope | Whether scheduling competition is system-wide or within a process | Platform-dependent; Linux supports system scope, not process scope |
+
+Linux also has a non-portable affinity attribute API to restrict which CPUs
+a thread may run on. Pinning threads is unnecessary for Philo, and its API
+is not allowed by the subject. Creating threads does not assign each one a
+permanent CPU core.
+
+The following illustrates configuring a detached thread in a general program,
+not permitted project code. Error handling is omitted here to show the calls:
+
+```c
+pthread_attr_t	attributes;
+pthread_t		thread;
+
+pthread_attr_init(&attributes);
+pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
+pthread_create(&thread, &attributes, routine, argument);
+pthread_attr_destroy(&attributes);
+```
+
+Destroying the attributes object after creation does not destroy the thread:
+the object describes creation settings. A detached thread still requires a
+safe shared-data lifetime protocol; it cannot be joined afterward.
+
+#### Mutex attributes
+
+| Setting | What it changes | Relevance to Philo |
+| --- | --- | --- |
+| Type: default | Implementation-defined default mutex behavior within POSIX rules | Use disciplined lock/unlock ownership; do not assume recursive or error-checking behavior |
+| Type: normal | Locking again from the owner deadlocks; incorrect unlocks have undefined behavior | Fork locks should never rely on double-locking |
+| Type: error-checking | Detects certain misuse, such as self-locking or unlocking without ownership, through error returns | Useful in general debugging, but the attribute setter is not allowed here |
+| Type: recursive | Owner may lock repeatedly; each successful lock needs a matching unlock | Does not fix the dining-philosophers deadlock between different threads |
+| Process sharing | Process-private, or usable between processes when placed in suitable shared memory | Mandatory shares one process; bonus uses semaphores rather than shared mutexes |
+| Robustness | A robust mutex can report that its previous owner died while holding it | Requires recovery logic; unnecessary for the proposed design |
+| Priority protocol | Priority inheritance or priority ceilings can address certain scheduling problems | Advanced real-time concerns; not needed here |
+
+For a robust mutex, acquiring it after owner death may return `EOWNERDEAD`
+while also giving the caller ownership. The caller must repair protected
+state and mark it consistent using additional APIs. It is not an automatic
+"recover from any crash" feature.
+
+A process-shared mutex is not created merely by copying its bytes after
+`fork()`: the mutex must reside in memory genuinely shared between the
+processes and be initialized appropriately.
+
+For example, a general program could select an error-checking mutex:
+
+```c
+pthread_mutexattr_t	attributes;
+pthread_mutex_t		mutex;
+
+pthread_mutexattr_init(&attributes);
+pthread_mutexattr_settype(&attributes, PTHREAD_MUTEX_ERRORCHECK);
+pthread_mutex_init(&mutex, &attributes);
+pthread_mutexattr_destroy(&attributes);
+```
+
+Again, these attribute APIs are background examples outside the project's
+allowed list. With Philo's defaults, correct ownership, consistent lock
+ordering, and return-value handling remain my responsibility.
+
+#### Other NULL positions are not settings
+
+`pthread_join(thread, NULL)` has no attributes parameter. Its NULL means
+"do not collect the routine's returned pointer". Passing `&result` collects
+that pointer instead. Likewise, the fourth argument of `pthread_create()`
+is the routine's input pointer, not a configuration object.
+
+### Recursive mutex use case and the caller-held-lock alternative
+
+A recursive mutex can help when a function already holding a lock calls
+another function that also acquires the same lock. For example, a document
+API might have both an append-text operation and an append-paragraph operation:
+
+```c
+/* Illustration: this nesting requires a recursive mutex. */
+void	append_text(t_doc *doc)
+{
+	pthread_mutex_lock(&doc->mutex);
+	/* Modify the document. */
+	pthread_mutex_unlock(&doc->mutex);
+}
+
+void	append_paragraph(t_doc *doc)
+{
+	pthread_mutex_lock(&doc->mutex);
+	append_text(doc);
+	append_text(doc);
+	pthread_mutex_unlock(&doc->mutex);
+}
+```
+
+With a normal mutex, the inner lock waits for a mutex already held by the
+same thread. That thread cannot reach the outer unlock, so it deadlocks.
+A recursive mutex instead counts the owner's successful acquisitions:
+
+```text
+outer lock:    count 1
+inner lock:    count 2
+inner unlock:  count 1 -- still owned by this thread
+outer unlock:  count 0 -- another thread can acquire it
+```
+
+Each lock needs a matching unlock. Other threads cannot acquire the mutex
+until the owner releases its final acquisition. This only handles repeated
+locking by the same owner; it does not fix circular waiting between threads.
+
+An alternative is to separate the actual work from the public operation
+that acquires the lock:
+
+```c
+/* Caller must already hold doc->mutex. This helper does not lock. */
+static void	append_text_locked(t_doc *doc)
+{
+	/* Modify the document. */
+	(void)doc; /* Placeholder until the actual work is written. */
+}
+
+void	append_text(t_doc *doc)
+{
+	pthread_mutex_lock(&doc->mutex);
+	append_text_locked(doc);
+	pthread_mutex_unlock(&doc->mutex);
+}
+
+void	append_paragraph(t_doc *doc)
+{
+	pthread_mutex_lock(&doc->mutex);
+	append_text_locked(doc);
+	append_text_locked(doc);
+	pthread_mutex_unlock(&doc->mutex);
+}
+```
+
+Now each top-level operation locks only once. The helper runs inside the
+caller's existing critical section, so its work is still protected without
+acquiring the mutex again. Keeping the lock across both append operations
+also prevents another cooperating thread from modifying the document between
+them. Unlocking before each nested public call would lose that guarantee.
+
+The helper's contract matters: calling `append_text_locked()` without holding
+the mutex would leave its accesses unprotected. `static` limits which source
+file can call it, but does not enforce ownership or provide synchronization.
+The `_locked` suffix documents the precondition; it is not a C language feature.
+These snippets illustrate structure, with operation error handling omitted.
+
+For Philo, the same pattern can be useful for internal helpers that update
+protected state while their caller already owns the relevant mutex. It does
+not mean moving all locks to main: the thread performing the operation acquires
+the lock before calling the helper and releases it afterward. Fork ownership
+still lasts through eating. Recursive locking cannot turn the sole fork in
+the one-philosopher case into two forks, and recursive attribute setters are
+not in this subject's allowed list.

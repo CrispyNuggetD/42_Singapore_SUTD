@@ -1,5 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
+#include "philo.h"
+
 
 void	*increment(void *argument)
 {
