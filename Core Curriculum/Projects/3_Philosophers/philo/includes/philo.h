@@ -1,6 +1,7 @@
 #ifndef PHILO_H
 # define PHILO_H
 
+# include <limits.h>
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -8,11 +9,21 @@
 # include <sys/time.h>
 # include <unistd.h>
 
-typedef struct s_locker
+typedef enum e_error
+{
+	ERR_NONE,
+	ERR_USAGE,
+	ERR_NEGATIVE,
+	ERR_INVALID_INTEGER,
+	ERR_INTEGER_OVERFLOW,
+	ERR_NON_POSITIVE
+}	t_error;
+
+typedef struct s_locked_var
 {
 	void			*var;
 	pthread_mutex_t	lock;
-}	t_locker;
+}	t_locked_var;
 
 typedef struct s_sim	t_sim;
 
@@ -36,11 +47,15 @@ typedef struct s_sim
 	long			time_to_sleep; // Sleeping duration, in ms
 	int				meal_goal; // Optional meal quota; -1 means omitted
 	long			start_time; // Shared simulation start time, in ms
-	int				stop; // 0 while running, 1 when stopping
-	pthread_mutex_t	stop_mutex; // Protects every access to stop
+	t_locked_var	is_stop; // 0 while running, 1 when stopping
 	pthread_mutex_t	print_mutex; // Coordinates logging
 	pthread_mutex_t	*forks; // Allocated array of count fork mutexes
 	t_philo			*philos; // Allocated array of count philosophers
 }	t_sim;
+
+t_error	parse_input(int argc, char **argv, t_sim *sim);
+t_error	ft_pos_atoi_status(const char *nptr, int *out_value);
+void	print_error(t_error error);
+long	now_ms(void);
 
 #endif

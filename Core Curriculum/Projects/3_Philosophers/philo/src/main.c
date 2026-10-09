@@ -12,10 +12,18 @@
 
 int	main(int argc, char **argv)
 {
-	thread_t	*threads = malloc(sizeof(pthread_t) * data->num_philosophers);
+	t_sim		sim;
+	t_error		error;
+	pthread_t	*threads;
 
-	parse_input(argc, argv);
-	initialize_data();
+	error = parse_input(argc, argv, &sim);
+	if (error != ERR_NONE)
+	{
+		print_error(error);
+		return (EXIT_FAILURE);
+	}
+	sim.start_time = now_ms();
+	threads = malloc(sizeof(pthread_t) * sim.count);
 	while (1)
 	{
 		current_time - last_meal >= time_to_die? printf("Philosopher %d has died\n", i), exit(1) : 0;
@@ -85,3 +93,9 @@ pthread_mutex_lock(&lock);
 pthread_mutex_unlock(&lock);
 
 pthread_mutex_destroy(&lock);
+
+
+
+timestamp = now_ms() - sim->start_time;
+
+usleep(1000); /* Request about 1 millisecond */
