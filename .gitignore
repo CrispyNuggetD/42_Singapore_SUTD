@@ -2,6 +2,11 @@
 gitignored/
 *.DS_Store
 
+# Python bytecode caches
+__pycache__/
+*.pyc
+*.pyo
+
 # Build intermediates at any depth (no leading slash)
 obj/
 bin/

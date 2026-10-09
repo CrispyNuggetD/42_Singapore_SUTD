@@ -77,9 +77,10 @@
 # then code --reuse-window .; it returns early if either command fails.
 # It also displays local Git history using PROJECTS_ROOT/current_proj.
 # cdmain enters MAIN_REPO_ROOT.
-# syncproj runs git pull and displays status. If changes exist, it stages ALL
-# changes, asks for a commit title/body, commits, and pushes. Its Git steps do
-# not currently stop on every error; inspect the Git output for failures.
+# syncproj first runs gitpushswap for debug/non-project changes, then pulls
+# --ff-only and displays status. Remaining changes are staged for a separate
+# project commit; it asks for a title/body and stops on Git failures.
+# leaveschool uses the same side-push before its main-repo project commit.
 # syncdocs pulls repositories with configured upstreams using --ff-only; it
 # never commits/pushes. It excludes MAIN_REPO_ROOT and scans nested repositories,
 # including Vogsphere clones and worktrees. It pulls the mailbox clone but skips
@@ -471,6 +472,12 @@ syncdocs() (
   (( failed == 0 && scan_failed == 0 ))
 )
 
+# Debug output/non-project side commit and push before the main project sync.
+gitpushswap() {
+  command python3 "$ZSHRC_RUNTIME_ROOT/git_side_push.py" \
+    --repo "$MAIN_REPO_ROOT" --projects-root "$PROJECTS_ROOT" "$@"
+}
+
 # sync current main GitHub repo: pull, then commit & push local changes
 syncproj() {
   if [ -z "$MAIN_REPO_ROOT" ]; then
@@ -493,9 +500,12 @@ syncproj() {
   echo "  $MAIN_REPO_ROOT"
   echo
 
-  # 1) Always pull latest from GitHub first
+  # Save debug/non-project changes separately before syncing project code.
+  gitpushswap || return $?
+
+  # 1) Pull latest only after the side-push succeeded.
   echo "Pulling from remote..."
-  git pull
+  git pull --ff-only || return $?
   echo
 
   # 2) Show current status
@@ -510,7 +520,7 @@ syncproj() {
   fi
 
   # 4) Stage everything (tracked + untracked + deletions)
-  git add -A
+  git add -A || return $?
 
   # show status so you see what will be committed
   echo
@@ -523,13 +533,13 @@ syncproj() {
   read "body?Commit details (optional, leave blank if none): "
 
   if [[ -n "$body" ]]; then
-    git commit -m "$title" -m "$body"
+    git commit -m "$title" -m "$body" || return $?
   else
-    git commit -m "$title"
+    git commit -m "$title" || return $?
   fi
 
   # 6) Push to GitHub
-  git push
+  git push || return $?
 
   echo
   echo "Committed & pushed with message:"

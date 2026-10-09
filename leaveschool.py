@@ -46,6 +46,10 @@ def push(repo):
             raise ValueError(f'{repo}: unfinished Git operation ({marker})')
     if git(repo, 'ls-files', '--unmerged', capture=True).stdout:
         raise ValueError(f'{repo}: unresolved conflicts')
+    main_repo = Path(os.environ.get('MAIN_REPO_ROOT', str(Path.home() / 'Documents/42_Singapore_SUTD'))).resolve()
+    if repo.resolve() == main_repo:
+        from git_side_push import side_push
+        side_push(repo, os.environ.get('PROJECTS_ROOT', 'Core Curriculum/Projects'))
     git(repo, 'add', '--all')
     if git(repo, 'diff', '--cached', '--name-only', capture=True).stdout:
         git(repo, 'commit', '-m', 'leaveschool: save work ' + datetime.now().astimezone().isoformat(timespec='seconds'))

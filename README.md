@@ -1,3 +1,5 @@
+> **Forgot to push before leaving for the weekend? [Get private backups on screen lock + zsh/tmux helpers](Shell%20automations/README.md).** Helpers-only download available. Requires setup; you still need to share changes with teammates.
+
 # 42 Repository for Christopher Nah (hnah)
 
 42 Singapore SUTD.
