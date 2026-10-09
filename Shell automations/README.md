@@ -33,10 +33,10 @@ with `privatebackup=FALSE`; disable the final script with `loginitems=FALSE`.
 
 > ⚠️ **Warning**
 >
-> **Authorship:** ideas by hnah; newer (python) scripts are fully AI-written (“vibe coded”), but I run them on my own comp to
+> **Authorship:** ideas by hnah; newer (python) scripts are fully AI-written (“vibe coded”), but I run them on my own 42 Ubuntu + Mac to
 > review and test for specific behavior.
 >
-> Use at your own risk; this is not a security audit.
+> Use at your own risk; this is not a security audit. (There's no `rm -rf` however...)
 >
 > Review files before enabling uploads and keep the destination private.
 
@@ -128,18 +128,3 @@ Update with `git pull --ff-only`, then `python3 sync_zshrc.py`. To stop an insta
 backup service immediately: `systemctl --user stop 42-lock-backup.service`; also
 save `privatebackup=FALSE`. To unload shell helpers, remove their marked `.zshrc`
 block or restore its pre-install backup. Configuration files remain on disk.
-
-## Separate debug/non-project side-push
-
-`gitpushswap` regenerates Push_swap plots when debug files changed, then commits
-and pushes changes under `Core Curriculum/Projects/2_push_swap/tests/debug`
-and outside `PROJECTS_ROOT`. This includes new non-ignored non-project files.
-Project source changes stay for the main syncing commit; unrelated staged project
-changes stay staged. Renames crossing the project boundary stay in the main commit.
-
-`syncproj` and `leaveschool` automatically run this side-push first for
-`MAIN_REPO_ROOT`. If it fails, they stop syncing that repo rather than mix those
-files into the project commit. Both commits use the existing tracking branch;
-“side-push” means a separate commit and push, not a separate branch.
-Private screen-lock snapshots still capture school work privately and do not
-invoke a public side-push.
