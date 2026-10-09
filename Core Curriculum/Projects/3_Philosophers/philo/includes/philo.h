@@ -10,7 +10,7 @@
 
 typedef struct s_locker
 {
-	void			*counter;
+	void			*var;
 	pthread_mutex_t	lock;
 }	t_locker;
 

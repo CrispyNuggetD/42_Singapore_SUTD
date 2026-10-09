@@ -646,3 +646,134 @@ park a waiting thread. The pthread API handles those details for me.
 These isolate argument lifetime, shared memory, and locking. The full
 project then combines fork ownership, meal timing, monitoring, logging,
 and shutdown without data races or deadlock.
+
+### Thread handles are not the threads themselves
+
+On this Linux system, the system header defines `pthread_t` as an alias
+for `unsigned long int`. That is a type definition, not a variable.
+Its representation is platform-dependent, so I treat it as an opaque
+thread handle rather than a number to calculate myself.
+
+```c
+pthread_t	*threads;
+
+threads = malloc(sizeof(*threads) * count);
+```
+
+This allocates storage for handles; it does not start any threads.
+`pthread_create()` writes a handle into that storage, and `pthread_join()`
+uses the handle to identify the thread to wait for:
+
+```c
+pthread_create(&threads[i], NULL, routine, &philos[i]);
+pthread_join(threads[i], NULL);
+```
+
+These are illustrative calls; actual code must check their results and
+handle allocation failure. My philosopher struct already has a
+`pthread_t thread` member, so a separate handle array is unnecessary:
+
+```c
+pthread_create(&philos[i].thread, NULL, routine, &philos[i]);
+pthread_join(philos[i].thread, NULL);
+```
+
+`thread_t` is not the POSIX type used here; the name is `pthread_t`.
+
+### Passing a pointer does not give a thread private memory
+
+The wrong loop-argument example passes `&i` to every thread. All arguments
+point to one loop counter, not to separate philosopher objects:
+
+```text
+thread 0 argument --+
+thread 1 argument --+--> one variable: i
+thread 2 argument --+
+```
+
+Main increments `i` while the threads may read it. Even if no worker writes
+anything, this can cause a data race. A worker may also read a later value
+than the index at which it was created, including the loop's final value.
+
+Passing `&philos[i]` instead gives each thread a different array element:
+
+```text
+thread 0 argument ----> philos[0]
+thread 1 argument ----> philos[1]
+thread 2 argument ----> philos[2]
+```
+
+Changing `philos[2].id` changes that element's member, not every
+philosopher's ID. However, the threads still share the address space.
+The argument selects their starting object; it does not restrict access.
+
+If a thread receives `&philos[2]`, it can reach the previous element:
+
+```c
+t_philo	*philo;
+t_philo	*previous;
+
+philo = argument;      /* In this example, &philos[2]. */
+previous = philo - 1;  /* Points to philos[1]. */
+```
+
+Pointer arithmetic moves by whole objects: subtracting 1 moves by one
+`t_philo`, not one byte. It must stay within the same array or its
+one-past-the-end position, which cannot be dereferenced. Subtracting 1
+from `&philos[0]` goes outside those bounds and is invalid.
+
+The shared simulation pointer can also give access to another philosopher:
+
+```c
+philo->sim->philos[1]
+```
+
+Having a valid pointer does not make concurrent access safe. Reading or
+modifying another philosopher's changing meal data still requires the
+mutex that protects it. Immutable data initialized before thread creation
+can be read without adding a mutex for every read.
+
+### Copy the mutex pointer, not the mutex object
+
+A mutex contains synchronization state. Its implementation can track lock
+state, ownership, and waiting threads. Copying its bytes does not create
+a valid new synchronization object, and using that copy is undefined:
+
+```c
+pthread_mutex_t	a;
+pthread_mutex_t	b;
+
+pthread_mutex_init(&a, NULL);
+b = a; /* Invalid way to create a usable second mutex. */
+```
+
+For two independent locks, initialize each object separately:
+
+```c
+pthread_mutex_init(&a, NULL);
+pthread_mutex_init(&b, NULL);
+```
+
+For two philosophers sharing one fork, store pointers to the same object:
+
+```c
+philo_a.right_fork = &forks[1];
+philo_b.left_fork = &forks[1];
+```
+
+```text
+philo_a.right_fork --+
+                    +--> same mutex: forks[1]
+philo_b.left_fork ---+
+```
+
+Copying a mutex pointer is fine. Copying an initialized mutex with
+assignment or `memcpy()` is not. This also applies indirectly when copying
+a struct containing an initialized mutex:
+
+```c
+philos[1] = philos[0]; /* Also copies meal_mutex: do not use that copy. */
+```
+
+Initialize the structs in their final storage, then initialize each mutex
+there. Keep that storage alive until all threads using it have finished.
