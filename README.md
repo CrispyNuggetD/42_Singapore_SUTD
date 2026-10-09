@@ -42,12 +42,56 @@ script. It runs in Bash as a separate process, so zsh aliases/functions are not
 available and `cd` does not change the parent terminal's directory. Manual
 `dli` and `lgi` calls repeat your commands; make them safe to run more than once.
 
-On GNOME Linux, your account can also use `~/.config/autostart/` to launch a
-terminal at desktop login. Automatic `dli` needs a shared session flag and a
-`flock` lock to prevent duplicate runs when it opens more shells or reloads
-`.zshrc`. A new desktop login should get a new flag; unlocking should only
-restore brightness. These startup hooks are machine-specific and are not
-installed by the shared shell installer.
+### Private backups when you lock the screen
+
+After installing the shell helpers, run:
+
+```sh
+setupprivatebackup
+```
+
+Create your own **empty private** GitHub repository (for example `42-school-wip`),
+then paste its SSH URL when asked: `git@github.com:YOUR_USER/42-school-wip.git`.
+The installer checks SSH access, rejects publicly visible repositories, and asks
+you to confirm the private setting. SSH authentication must already work without
+interactive prompts. This uses a Linux desktop with systemd, Python 3 and PyGObject
+(`gi`, normally provided by GNOME). It does not change system lock/logout settings.
+
+`privatebackup` defaults to `TRUE`. Until setup is complete, **every `dli` prints
+an instruction to run `setupprivatebackup`**. Setup does not happen automatically.
+The setup wizard also offers this flag. Set `privatebackup=FALSE` in
+`~/.42-shell-settings.zsh` to stop automatic backups and the reminder; reload
+`.zshrc` to silence the reminder. The watcher reads the saved setting on each lock.
+
+Once configured, locking or switching away from your desktop saves all tracked
+and non-ignored new files in your selected school repo, including deletions, and
+pushes a snapshot to `wip/42-school` in your private repo. This is the equivalent
+file selection to `git add --all`; known credential filenames stop the checkpoint
+for local review. Existing ignore rules still apply to new files; tracked files
+remain included. This is not a complete secret detector. Nested repositories and
+submodule contents are not traversed. Unsaved editor buffers are not captured.
+
+The installer adds a `backup` remote. Snapshots have their own local Git history,
+so your public branch, current HEAD, staged changes and public `origin` stay intact.
+No-change locks retry the existing push instead of creating duplicate commits.
+Uploads use non-interactive authentication and never force-push. A failed upload
+keeps its local checkpoint. Keep the destination private after setup.
+
+Use `privatebackupnow` for a manual checkpoint, `privatebackupnow --preview` to
+list included files, and `privatebackupstatus` to check setup/service status.
+Configuration is in `~/.config/42-lock-checkpoint.json`; logs are in
+`~/.local/state/42-lock-backup/watch.log` (XDG overrides apply).
+The user service starts at desktop login. Codam activation signals and GNOME lock
+signals trigger it; switching to another TTY also counts as leaving the desktop.
+Tmux, Codex and desktop applications keep running. Campus forced logout can still
+terminate them later. The full `leaveschool` command separately closes tmux after
+successful syncing and is not used by this lock hook.
+
+School backups contain your own school files. Friends' setups do not export Codex
+chats by default. The owner's optional chat workflow copies session JSONL files
+only into the separate private workspace's `42/codex_cache/`, then snapshots that
+folder to its private `wip/42-chat-backup` branch. It never puts chats in the school
+WIP repo or public school repo.
 
 For fun, run `badapple` to play Bad Apple in your terminal. On first use it
 sets up `~/joke/play.sh` with assets from

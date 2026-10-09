@@ -13,7 +13,7 @@ import tempfile
 BEGIN = '# >>> 42 shared zshrc >>>'
 END = '# <<< 42 shared zshrc <<<'
 RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py',
-                 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'Useful .zshrc edits (addition)')
+                 'lock_backup.py', 'lock_backup_watch.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'Useful .zshrc edits (addition)')
 
 
 def install_runtime(source_dir, runtime, check=False):

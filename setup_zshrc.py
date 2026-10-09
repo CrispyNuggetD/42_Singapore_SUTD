@@ -115,6 +115,7 @@ def configure(shared_root, settings_path):
     print(f'Project destination: {project}' + ('' if project.is_dir() else ' (not present yet)'))
     toggle('openproject', 'Run make fclean and open VS Code in that project on dailylogin')
     toggle('openchrome', 'Open Chrome on dailylogin if it is not running')
+    toggle('privatebackup', 'Enable private screen-lock backups and remind me to run setupprivatebackup', True)
     toggle('loginitems', 'Run your personal Bash script as the final step of dli', True)
     location('LOGIN_ITEMS_SCRIPT', 'Your personal login script', home / '.42-login-items.sh')
     toggle('loginreports', 'Show local login-hour reports on dailylogin', True)

@@ -1011,6 +1011,29 @@ pullzshrc() {
     }
 }
 
+# Private lock backups are opt-in through setup; the reminder defaults to on.
+export privatebackup="${privatebackup:-TRUE}"
+setupprivatebackup() { command python3 "$ZSHRC_RUNTIME_ROOT/setup_private_backup.py" "$@"; }
+privatebackupstatus() {
+  if command python3 "$ZSHRC_RUNTIME_ROOT/setup_private_backup.py" --status; then
+    print -- 'Private backup configured.'
+    command systemctl --user status 42-lock-backup.service --no-pager
+  else
+    print -- 'Run setupprivatebackup to bind your own private GitHub repository.'
+    return 1
+  fi
+}
+privatebackupnow() { command python3 "$ZSHRC_RUNTIME_ROOT/lock_backup.py" "$@"; }
+_privatebackup_check() {
+  _dailylogin_enabled "$privatebackup" || return 0
+  if ! command python3 "$ZSHRC_RUNTIME_ROOT/setup_private_backup.py" --status; then
+    print -- 'Private lock backup is not set up. Run setupprivatebackup to bind your own private GitHub repo.'
+    print -- 'Set privatebackup=FALSE in ~/.42-shell-settings.zsh to disable backups and this reminder.'
+    return 0
+  fi
+  command systemctl --user start 42-lock-backup.service || true
+}
+
 # --- Short login commands: lg<Tab>, dl<Tab>, dai<Tab> ---
 # dli runs dailylogin, then your own Bash script as its final step.
 # Personal commands live in HOME, never in this shared repository.
@@ -1034,6 +1057,7 @@ lgi() {
 }
 
 dli() {
+  _privatebackup_check
   # Personal commands still run if a daily task fails; retain failure status.
   # Arguments are passed only to your personal Bash script.
   local daily_result=0 items_result=0
