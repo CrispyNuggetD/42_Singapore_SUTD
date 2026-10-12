@@ -4,10 +4,20 @@
 
 # push_swap — studying sorting through stack operations and shortest paths
 
-> **42SG evaluation edition — prepared for evaluation on 2 October 2026.**
-> Evaluation has not yet taken place. This README includes the complete evaluation flow, both optional performance-showcase routes, and the wider public project documentation.
-> **[Start with the reading routes](#reading-routes)** · [Prepared evaluation edition](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/evaluation-2026-10-02-final/Core%20Curriculum/Projects/2_push_swap/README.md) · [Go to the latest public project ↗](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap) · [Download the matching offline HTML](assets/push-swap-evaluation-offline.html)
-> For a fixed reference, use this edition's commit permalink (GitHub's **Copy permalink** / `y` shortcut). The relative HTML link follows the same revision. Download the HTML and open it in a browser to view its embedded diagrams and equations offline; linked repository files and websites still require internet access.
+> **Post-evaluation public edition. Passed with 125/100.**
+>
+> Evaluation is complete. This public README now includes post-submission
+> presentation updates and newer benchmark evidence. The prepared evaluation
+> edition remains unchanged at commit `2812eb9baf7800623a9f459f8d54b39ce97ead5c`.
+>
+> - **[Start with the reading routes](#reading-routes)** for building, testing and the technical discussion.
+> - [Frozen evaluation README](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/2812eb9baf7800623a9f459f8d54b39ce97ead5c/Core%20Curriculum/Projects/2_push_swap/README.md): the prepared edition, not this updated page.
+> - [Latest public project](https://github.com/CrispyNuggetD/42_Singapore_SUTD/tree/main/Core%20Curriculum/Projects/2_push_swap): current code, documentation and study data.
+> - [Frozen evaluation offline HTML](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/2812eb9baf7800623a9f459f8d54b39ce97ead5c/Core%20Curriculum/Projects/2_push_swap/assets/push-swap-evaluation-offline.html): download the file and open it in a browser.
+>
+> The offline HTML contains that edition's diagrams and equations; it does not
+> include later README updates. Linked repository files and websites still
+> require internet access.
 
 <a id="description"></a>
 
@@ -23,6 +33,11 @@ of A; the output is one operation per line, not the sorted numbers themselves.
 I picture the stacks as two rings tethered at their tops: rotate either ring,
 bring a value to the exchange point, then push it across. This is the picture
 behind my [circular-buffer representation](#circular-buffer-stacks).
+
+![Two circular stacks with top-to-top push operations](assets/tethered-rings.png)
+
+<details>
+<summary>Editable Mermaid source</summary>
 
 ```mermaid
 flowchart LR
@@ -60,6 +75,8 @@ flowchart LR
     linkStyle 8,9 stroke:#2563eb,stroke-width:2px
 ```
 
+</details>
+
 *An illustrative mid-sort state, not a trace of a particular solver run.*
 The loop arrows show circular order. `ra`/`rb` advance the top through that
 order; `rra`/`rrb` move it back. The blue links transfer the source's top
@@ -83,7 +100,9 @@ separates guarantees from design intuition; I do not claim NP-completeness.
 [rotations and the circular-LIS idea](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/2_push_swap/assets/sketch-03-rotations-and-circular-lis.png).
 I asked ChatGPT (Codex) to turn my sketches into this Mermaid illustration and
 help shape the caption: a little art from six months of algorithms, rendered
-directly from text. The PNGs stay in my public repository, outside the school
+from text. This public edition uses a fixed image export so GitHub and editor
+previews show the same layout; the editable Mermaid source is above.
+The PNGs stay in my public repository, outside the school
 submission. A small creative workaround: no PNG attachments in that folder,
 but Mermaid and LaTeX let me draw with text.*
 
@@ -115,10 +134,10 @@ are distinguished from this active path in the appendix.
 
 ## Reading routes
 
-### For 42SG evaluators
+### Build, test and evaluation reference
 
-Follow this route for the prepared evaluation edition. Public readers can use
-the same route to understand, build and test the project:
+Evaluation is complete. This route still explains how to understand, build and
+test the project; the frozen edition linked above preserves the prepared flow:
 
 1. **(Optional)** [Performance showcase](#showcase-setup): choose the [full-range seed-42 loop, sizes 2–600](#showcase-public) or the [evaluation-size tests, small inputs / 100 / 500](#showcase-evaluation).
 2. [Build and run](#instructions)
@@ -244,6 +263,10 @@ ARG="3 1 2"
 `BRUTE_MAX_N` values (currently 10). It then loops from `ALGO_THREE_LOCAL` to
 `ALGO_COUNT`, unless `SKIP_OTHER_ALGO_AFTER_BFS` is enabled (currently 0).
 Above 500, it dispatches directly to the existing `ALGO_THREE_LOCAL` strategy before this candidate loop.
+
+`ENABLE_OPENING_LOOKAHEAD` is currently 1, so both opening variants participate.
+Setting it to 0 omits those two candidates; the candidate counts below describe
+the current enabled configuration.
 
 Circular LIS means the longest increasing subsequence I can retain after choosing
 a rotation of A. I keep that seed, or a sorted three-element seed, and greedily
@@ -1988,8 +2011,8 @@ checker:   0ee13489947755bfb22f6effa4c5b3ab57b6ac0bfdb7ee67a6576ca2367ab620
 The three counts average 4907.67 moves; the largest, 4969, is below the strict
 5500 boundary. These were sorting and move-count checks, not additional
 500-value Valgrind runs. I rely on the separate memory checks listed above for
-evidence about memory safety. Generated benchmark reports stay local and are
-ignored by Git.
+evidence about memory safety. Some historical generated reports remain local;
+the newer loop-session data and plots linked below are tracked publicly.
 
 ### Runtime and test-machine context
 
@@ -2106,59 +2129,55 @@ measurements above use `DEBUG=0`.
 
 ### Latest ongoing loop benchmark snapshot
 
-My latest session, `20261002_122609_output`, was still running when this
-snapshot was saved on 2 October 2026 at 16:45 SGT. It contains **930 completed
-runs**, all with winning instruction streams accepted as `OK` by the Linux
-reference checker. With seed 42 and inclusive bounds 2–600, that is **one
-complete 599-input sweep, plus 331 inputs of sweep 2** (sizes 2–332).
-A sweep samples one permutation at each size; it does not exhaust permutations
-or establish full evaluation coverage. These inputs are shuffled nonnegative
-ranks, not additional invalid-input, signed-boundary or memory-safety tests.
+The saved session `20261002_122609_output` was still running at its
+**12 October 2026, 10:35:30 SGT** snapshot. It records **8,592 successful
+winning-output checks**, seed 42, sizes 2–600: **14 complete 599-input sweeps
+plus 206 completed inputs of sweep 15**.
 
-| Input size | Completed trials | Winning moves (each trial) | Mean winning moves | Mean total solver wall time |
-| --- | ---: | --- | ---: | ---: |
-| 5 | 2 | 3, 4 | 3.50 | 0.003634 s |
-| 10 | 2 | 17, 17 | 17.00 | 65.308380 s |
-| 100 | 2 | 504, 519 | 511.50 | 209.716740 s |
-| 500 | 1 | 5024 | 5024.00 | 438.584894 s |
-| 600 | 1 | 6598 | 6598.00 | 0.091089 s |
+- Each sweep samples one shuffled rank permutation per size, not every permutation.
+- This total is spread across 599 sizes, not 8,592 tests at size 100 or 500.
+- These are valid-input performance tests, not a substitute for invalid-input,
+  signed-boundary, allocation-failure or Valgrind checks.
+- Successful-run averages do not establish that no failed or interrupted attempts
+  occurred; the summary does not supply an all-attempt failure count.
 
-Both 100-value winners are below 700 moves; the 500-value winner is below
-5500. Those are two and one observations respectively, not hundreds of trials
-at those exact sizes. Size 600 is an extra local test outside the 500-value
-benchmark; it uses the three-element local strategy directly.
+| Input size | Successful trials | Mean winning moves | Observed min–max | Mean total solver wall time |
+| --- | ---: | ---: | --- | ---: |
+| 100 | 15 | 501.733 | 475–523 | 214.649074 s |
+| 500 | 14 | 4955.857 | 4855–5093 | 313.745134 s |
 
-This session uses up to 11 concurrent single-threaded solver processes with
-per-input memory admission. Each solver still runs its candidates sequentially.
-The times below include contention and are not isolated speed comparisons
-against the earlier single-worker sessions. All 930 records identify profiling
-executable SHA-256
+All sampled winners at these two sizes are below 700 and 5500 moves respectively.
+These are observed results, not worst-case guarantees. Above 500, the solver
+switches to the three-element local candidate, so the plot's change there is
+also a strategy change.
+
+![Benchmark overview: winning move spread, timing, candidates and sampling coverage](tests/debug/results/random_tests/20261002_122609_output/plots/overview.png)
+
+- [Saved summary and per-run links](tests/debug/results/random_tests/20261002_122609_output/20261002_122609_output_summary.md)
+- [Full plots and interpretation report (PDF)](tests/debug/results/random_tests/20261002_122609_output/plots/summary_report.pdf)
+- [Lossless source-table snapshot (JSON)](tests/debug/results/random_tests/20261002_122609_output/plots/summary_data.json)
+- [Plot generator](tests/debug/plot_summary.py)
+
+The overview and report describe this saved snapshot, not live progress.
+The shaded winning-move bands show observed min–max and P25–P75 spread, not
+confidence intervals or guarantees. Candidate comparisons are grouped by
+executable hash, settings and input size; missing candidates are not zero-move
+solutions. Cross-size aggregate candidate means are not directly comparable
+when their eligible size ranges differ.
+
+The session uses up to **11 concurrent single-threaded solver processes**.
+Each solver runs candidates sequentially. Wall times include contention and
+are not isolated speed comparisons. The runner validates the selected winning
+stream with the reference checker, not every candidate independently.
+Process peak RSS is cumulative process-wide memory, not memory owned by a
+particular candidate.
+
+All 8,592 records identify profiling executable SHA-256
 `08460e7ad94ba0ef385b18a4a656cb97d6b4c2181feadbbe895df321ae44d32d`.
-The saved settings are continuation depth/execution 12/10 through size 100,
-7/5 through size 500, and opening depth/execution 12/5, with `DEBUG=0` and
-all eligible candidates enabled.
-
-| Input size | Candidate | Trials | Mean moves | Mean candidate wall time | Mean candidate CPU time |
-| --- | --- | ---: | ---: | ---: | ---: |
-| 100 | Three-element seed + local greedy | 2 | 567.50 | 0.001197 s | 0.001196 s |
-| 100 | Circular LIS + local greedy | 2 | 535.50 | 0.008098 s | 0.008097 s |
-| 100 | Circular LIS + lookahead | 2 | 515.50 | 73.057587 s | 73.049657 s |
-| 100 | Circular LIS + opening-one lookahead | 2 | 530.50 | 60.340986 s | 60.339148 s |
-| 100 | Circular LIS + opening-batch lookahead | 2 | 536.50 | 76.305427 s | 76.303361 s |
-| 500 | Three-element seed + local greedy | 1 | 5370.00 | 0.060856 s | 0.060849 s |
-| 500 | Circular LIS + local greedy | 1 | 5024.00 | 0.772574 s | 0.772508 s |
-| 500 | Circular LIS + lookahead | 1 | 5096.00 | 69.761300 s | 69.746677 s |
-| 500 | Circular LIS + opening-one lookahead | 1 | 5372.00 | 204.427964 s | 204.416685 s |
-| 500 | Circular LIS + opening-batch lookahead | 1 | 5313.00 | 163.550626 s | 163.547889 s |
-
-On the one 500-value input, plain LIS local produced the winning 5024 moves
-in about 0.773 seconds; running every eligible candidate brought total solver
-wall time to 438.585 seconds. That is a useful example of the cost of selecting
-among candidates, not evidence that local LIS always wins. The runner checks
-the winning stream, not each candidate independently, and these runs did not
-perform Valgrind checks. The detailed inputs, moves and profiling records remain
-in the local, Git-ignored session directory; this table records the completed
-snapshot rather than claiming the ongoing session is finished.
+Saved settings are continuation depth/execution 12/10 through size 100,
+7/5 through size 500, opening depth/execution 12/5, `DEBUG=0`, and all
+eligible candidates enabled. The detailed session data and plots are now
+tracked in this public repository, outside the school submission.
 
 <a id="showcase-setup"></a>
 
@@ -2436,7 +2455,9 @@ of `0..size-1`; SHA-256 hashes use normalised ranks, so different integer values
 with identical relative order would deduplicate. Rotations remain distinct.
 Small input sizes stop when every unique permutation has been tested.
 
-Files live in the git-ignored `tests/debug/results/random_tests/` directory:
+Files live in `tests/debug/results/random_tests/`. The saved loop session
+linked in [the benchmark snapshot](#latest-loop-benchmark) is now tracked in
+Git; generated files should still stay outside the school submission:
 
 - `YYYYMMDD_HHMMSS_output_summary.md`: Markdown summary with averages/minimum/maximum tables, atomically replaced
   after every successful run. Includes master seed, next generation ID, move and
@@ -3112,7 +3133,8 @@ that considers a complete solution.
 
 ## Future research — ideas not implemented
 
-**Status: proposed experiments, not completed work or performance guarantees.**
+**Status: proposed experiments, except the post-submission plotting update below;
+not performance guarantees.**
 These directions record my design ideas and discussions with AI, including my
 earlier interest in weighted heuristics from machine learning. AI helped explain
 related techniques and edit this discussion. No Optuna study, learned scoring
@@ -3124,23 +3146,23 @@ are separate work.
 
 ### Plot moves against input size and compare repeated sweeps
 
-**WIP / future work:** the runner already generates statistical tables; an
-automatic graph generator is not implemented. I want to use Matplotlib, drawing
-on my previous experience with it, to plot input size on the x-axis and emitted
-moves on the y-axis, with separate series for each candidate and the selected
-answer. Repeated loop sweeps would let me show the distribution at each size,
-using individual samples, quantiles or a clearly labelled spread band.
+**Post-submission update: plotting is now implemented.**
+[`plot_summary.py`](tests/debug/plot_summary.py) reads saved summary tables
+without rerunning the solver and produces an overview PNG, a multi-page PDF
+and a lossless JSON snapshot. The [latest saved benchmark](#latest-loop-benchmark)
+links the outputs, with winning-move spread, candidate comparisons, timing
+and sampling coverage. Further controlled comparisons remain future work.
 
-I also want statistical summaries of variability across inputs and uncertainty
+The summaries include variability across inputs and uncertainty
 in estimated mean performance. Sample SD describes observed spread; SEM measures
 estimated precision of the mean under sampling assumptions. Neither is a
 worst-case bound, and an uncertainty band must state what it represents.
 Repeated identical permutations are not new independent evidence. I would keep
 executable hashes and settings separate, report sample counts and failures,
 and mark sizes where a candidate is unavailable instead of plotting zero moves.
-Timing plots would be separate from move-count plots and identify concurrent
-versus light-mode runs. These plans extend the existing tables; they are not
-claims of completed graphs or new performance guarantees.
+Timing plots are separate from move-count plots; the linked snapshot uses
+concurrent runs, not isolated light-mode timings. Future controlled studies
+would extend these plots, not establish new performance guarantees by themselves.
 
 [Back to the full-range showcase](#showcase-public)
 
