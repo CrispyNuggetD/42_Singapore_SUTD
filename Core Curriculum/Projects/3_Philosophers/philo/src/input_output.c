@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_input.c                                      :+:      :+:    :+:   */
+/*   input_output.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -63,5 +63,24 @@ t_status	ft_pos_atoi_status(const char *nptr, int *out_value)
 	if (number == 0)
 		return (ERR_NON_POSITIVE);
 	*out_value = number;
+	return (STATUS_OK);
+}
+
+/*
+** Adapted from my Push_swap ft_printf helper, without its print context.
+** Finish partial writes; report failure if write errors or makes no progress.
+*/
+t_status	write_guaranteed(int fd, const char *buffer, size_t length)
+{
+	ssize_t	written;
+
+	while (length > 0)
+	{
+		written = write(fd, buffer, length);
+		if (written <= 0)
+			return (ERR_WRITE);
+		buffer += written;
+		length -= (size_t)written;
+	}
 	return (STATUS_OK);
 }

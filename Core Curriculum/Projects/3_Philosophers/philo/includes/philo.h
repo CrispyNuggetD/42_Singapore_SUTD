@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 18:06:27 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 22:13:57 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@
 typedef enum e_status
 {
 	STATUS_OK,
+	STATUS_STOPPED,
 	ERR_USAGE,
 	ERR_NEGATIVE,
 	ERR_INVALID_INTEGER,
@@ -51,11 +52,21 @@ typedef enum e_status
 	ERR_TOTAL
 }	t_status;
 
-typedef struct s_locked_var
+typedef enum e_philo_state
 {
-	void			*var;
+	LOG_FORK,
+	LOG_EATING,
+	LOG_SLEEPING,
+	LOG_THINKING,
+	LOG_DIED,
+	LOG_TOTAL
+}	t_philo_state;
+
+typedef struct s_mutexed_flag
+{
+	int				value;
 	pthread_mutex_t	lock;
-}	t_locked_var;
+}	t_mutexed_flag;
 
 /*
 ** The configuration below is populated by parse_input:
@@ -106,7 +117,7 @@ typedef struct s_philo
 typedef struct s_runtime
 {
 	long			start_time;
-	t_locked_var	is_stop;
+	t_mutexed_flag	pls_stop;
 	pthread_mutex_t	print_mutex;
 }	t_runtime;
 
@@ -115,7 +126,7 @@ typedef struct s_runtime
 ** forks, philos: allocated arrays, each with config.count elements.
 ** forks_init, meals_init: mutexes safe to destroy.
 ** threads_to_join: count of started threads still needing a join.
-** init_sim initializes resources; start_philos tracks started threads.
+** init_sim initializes resources; start_sim starts threads and runs the monitor.
 ** cleanup_resources joins threads, destroys mutexes, and frees arrays.
 */
 typedef struct s_resources
@@ -149,8 +160,11 @@ t_status	init_sim(t_sim *sim);
 int			cleanup_resources(t_resources *res, t_status status);
 t_status	prepare_to_eat(t_philo *philo);
 t_status	philo_eat(t_philo *philo);
-t_status	philo_wait(t_philo *philo, long duration_ms);
-t_status	start_philos(t_sim *sim);
+t_status	check_sim_running(t_sim *sim);
+t_status	philo_wait(t_sim *sim, long duration_ms);
+t_status	start_sim(t_sim *sim);
+t_status	monitor_sim(t_sim *sim);
+t_status	log_philo_state(t_philo *philo, t_philo_state state);
 t_status	join_philos(t_resources *res);
 void		*philo_routine(void *argument);
 long		now_ms(void);

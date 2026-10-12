@@ -49,7 +49,7 @@ int	cleanup_resources(t_resources *res, t_status status)
 	free(res->forks);
 	res->philos = NULL;
 	res->forks = NULL;
-	return (print_return_error(status) != STATUS_OK);
+	return (print_return_error(status) > STATUS_STOPPED);
 }
 
 /*
@@ -59,6 +59,7 @@ int	cleanup_resources(t_resources *res, t_status status)
 static const char	*error_message(t_status status)
 {
 	static const char	*messages[] = {
+		"",
 		"",
 		("Usage: ./philo <number_of_philosophers> <time_to_die> "
 			"<time_to_eat> <time_to_sleep> [optional_meal_goal]\n"),
@@ -85,7 +86,7 @@ t_status	print_return_error(t_status status)
 	const char	*message;
 	size_t		length;
 
-	if (status > STATUS_OK && status < ERR_TOTAL)
+	if (status > STATUS_STOPPED && status < ERR_TOTAL)
 	{
 		message = error_message(status);
 		length = 0;

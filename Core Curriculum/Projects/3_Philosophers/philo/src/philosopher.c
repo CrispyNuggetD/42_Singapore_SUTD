@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 18:25:01 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 23:20:49 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,40 +14,23 @@
 
 void	*philo_routine(void *argument)
 {
-	t_philo	*philo;
+	t_philo		*philo;
+	t_status	status;
 
 	philo = argument;
-	if (philo->id % 2 == 0)
-		philo_eat(philo);
-	printf("Hello from philosopher %d\n", philo->id);
+	status = check_sim_running(philo->sim);
+	if (status == STATUS_OK && philo->id % 2 == 1)
+		status = philo_wait(philo->sim, philo->sim->config.time_to_eat / 2);
+	if (status == STATUS_OK)
+		status = philo_eat(philo);
+	if (status == STATUS_OK)
+		status = log_philo_state(philo, LOG_SLEEPING);
+	if (status > STATUS_STOPPED)
+		print_return_error(status);
 	return (NULL);
 }
 
-t_status	philo_wait(t_philo *philo, long duration_ms)
-{
-	long	start_time;
-	long	current_time;
-	long	elapsed;
-
-	(void)philo;
-	start_time = now_ms();
-	if (start_time == -1)
-		return (ERR_TIME);
-	while (1)
-	{
-		current_time = now_ms();
-		if (current_time == -1)
-			return (ERR_TIME);
-		elapsed = current_time - start_time;
-		if (elapsed >= duration_ms)
-			break ;
-		if (usleep(WAIT_CHECK_MICROSECONDS) == -1)
-			return (ERR_SLEEP);
-	}
-	return (STATUS_OK);
-}
-
-t_status	start_philos(t_sim *sim)
+t_status	start_sim(t_sim *sim)
 {
 	t_resources	*res;
 	t_philo		*next_philo;
@@ -61,5 +44,5 @@ t_status	start_philos(t_sim *sim)
 			return (ERR_THREAD_CREATE);
 		res->threads_to_join++;
 	}
-	return (STATUS_OK);
+	return (monitor_sim(sim));
 }

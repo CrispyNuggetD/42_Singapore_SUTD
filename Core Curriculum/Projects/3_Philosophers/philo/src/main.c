@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 13:56:11 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 22:15:33 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,6 @@ int	main(int argc, char **argv)
 	if (status == STATUS_OK)
 		status = init_sim(&sim);
 	if (status == STATUS_OK)
-		status = start_philos(&sim);
+		status = start_sim(&sim);
 	return (cleanup_resources(&sim.resources, status));
 }

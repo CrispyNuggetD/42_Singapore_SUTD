@@ -72,7 +72,7 @@ t_status	philo_eat(t_philo *philo)
 	status = prepare_to_eat(philo);
 	if (status != STATUS_OK)
 		return (status);
-	status = philo_wait(philo, philo->sim->config.time_to_eat);
+	status = philo_wait(philo->sim, philo->sim->config.time_to_eat);
 	if (release_forks(philo) != STATUS_OK)
 		return (ERR_MUTEX);
 	if (status != STATUS_OK)

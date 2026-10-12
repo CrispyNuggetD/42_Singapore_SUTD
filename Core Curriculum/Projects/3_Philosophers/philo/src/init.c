@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 17:34:54 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 22:15:28 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,11 @@ t_status	init_sim(t_sim *sim)
 	sim->runtime.start_time = now_ms();
 	if (sim->runtime.start_time == -1)
 		return (ERR_TIME);
+	sim->runtime.pls_stop.value = 0;
+	if (pthread_mutex_init(&sim->runtime.pls_stop.lock, NULL) != 0)
+		return (ERR_MUTEX_INIT);
+	if (pthread_mutex_init(&sim->runtime.print_mutex, NULL) != 0)
+		return (ERR_MUTEX_INIT);
 	res = &sim->resources;
 	res->forks = malloc(sizeof(pthread_mutex_t) * sim->config.count);
 	if (res->forks == NULL)
