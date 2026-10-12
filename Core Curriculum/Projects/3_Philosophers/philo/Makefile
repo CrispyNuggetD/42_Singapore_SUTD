@@ -4,7 +4,11 @@ CFLAGS := -Wall -Wextra -Werror -pthread
 CPPFLAGS := -Iincludes
 SRC_DIR := src
 OBJ_DIR := obj
-SRCS := $(SRC_DIR)/main.c
+SRCS := $(SRC_DIR)/main.c \
+	$(SRC_DIR)/parse_input.c \
+	$(SRC_DIR)/time.c \
+	$(SRC_DIR)/philosopher.c \
+	$(SRC_DIR)/init_error_cleanup.c
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 

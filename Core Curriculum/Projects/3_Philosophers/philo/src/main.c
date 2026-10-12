@@ -1,101 +1,27 @@
-#include "philo.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
+/*   Updated: 2026/10/12 13:56:11 by hnah             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-/*
-** Allowed external functions (subject v13.0; not all are required).
-** Memory: memset(), malloc(), free()
-** Output: printf(), write()
-** Time: usleep(), gettimeofday()
-** Threads: pthread_create(), pthread_detach(), pthread_join()
-** Mutexes: pthread_mutex_init(), pthread_mutex_destroy(),
-** pthread_mutex_lock(), pthread_mutex_unlock()
-*/
+#include "philo.h"
 
 int	main(int argc, char **argv)
 {
 	t_sim		sim;
-	t_error		error;
-	pthread_t	*threads;
+	t_status	status;
 
-	error = parse_input(argc, argv, &sim);
-	if (error != ERR_NONE)
-	{
-		print_error(error);
-		return (EXIT_FAILURE);
-	}
-	sim.start_time = now_ms();
-	threads = malloc(sizeof(pthread_t) * sim.count);
-	while (1)
-	{
-		current_time - last_meal >= time_to_die? printf("Philosopher %d has died\n", i), exit(1) : 0;
-	}
-	create_threads(threads);
-	// Add fork acquisition and the eating cycle.
-	// Add protected meal tracking and death monitoring.
-	// Add coordinated stopping, responsive sleeps, and cleanup.
-	cleanup(threads);
-	return (0);
+	memset(&sim, 0, sizeof(sim));
+	status = parse_input(argc, argv, &sim.config);
+	if (status == STATUS_OK)
+		status = init_sim(&sim);
+	if (status == STATUS_OK)
+		status = start_philos(&sim);
+	return (cleanup(&sim, status));
 }
-
-// Use the same clock basis for start_time and last_meal. Initialize mutexes with pthread_mutex_init() before using them; don’t copy initialized mutexes.
-
-/* Philosopher updating their meal time */
-pthread_mutex_lock(&philo->meal_mutex);
-philo->last_meal = current_time;
-pthread_mutex_unlock(&philo->meal_mutex);
-
-/* Monitor reading it */
-pthread_mutex_lock(&philo->meal_mutex);
-last_meal = philo->last_meal;
-pthread_mutex_unlock(&philo->meal_mutex);
-
-
-#include <pthread.h>
-#include <stdio.h>
-
-typedef struct s_worker
-{
-	int	id;
-}	t_worker;
-
-void	*routine(void *argument)
-{
-	t_worker	*worker;
-
-	worker = argument;
-	printf("Hello from worker %d\n", worker->id);
-	return (NULL);
-}
-
-int	main(void)
-{
-	pthread_t	thread;
-	t_worker	worker;
-
-	worker.id = 1;
-	if (pthread_create(&thread, NULL, routine, &worker) != 0)
-		return (1);
-	printf("Hello from main\n");
-	if (pthread_join(thread, NULL) != 0)
-		return (1);
-	return (0);
-}
-
-/* Inside a loop, after initializing the philosopher array */
-pthread_create(&philos[i].thread, NULL,
-	routine, &philos[i]);
-
-	pthread_mutex_t	lock;
-
-	pthread_mutex_init(&lock, NULL);
-
-pthread_mutex_lock(&lock);
-/* Critical section: protected work */
-pthread_mutex_unlock(&lock);
-
-pthread_mutex_destroy(&lock);
-
-
-
-timestamp = now_ms() - sim->start_time;
-
-usleep(1000); /* Request about 1 millisecond */

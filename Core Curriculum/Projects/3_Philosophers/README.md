@@ -2,16 +2,29 @@
 
 # Philosophers
 
+## Contents
+
+1. [Description](#description)
+2. [Instructions](#instructions)
+3. [Resources](#resources)
+4. [Appendix: my learning points](#appendix-my-learning-points)
+
 ## Description
 
 A C project about threads, mutexes, and the dining philosophers problem.
 The mandatory program will model philosophers eating, sleeping, and thinking,
 while protecting shared forks and monitoring starvation.
 
-This is an initial scaffold only. `philo/src/main.c` contains an empty main
-function; argument parsing and the simulation are not implemented yet.
+This is a work in progress. Argument parsing, resource initialization,
+and a thread greeting scaffold exist; the eating cycle and monitoring are
+not implemented yet.
 The mandatory sources, header, and Makefile are in `philo/`, as required by
 subject version 13.0. Libft is not used.
+
+This README is long because I learned way more than I expected from Philo lol.
+The project description, build instructions, and resources come first; the
+thread, pointer, mutex, and time rabbit holes are in the linked learning
+appendix below.
 
 ## Instructions
 
@@ -29,15 +42,63 @@ The eventual command format is:
     [number_of_times_each_philosopher_must_eat]
 ```
 
-The current empty executable does not process arguments or run a simulation.
+The current executable parses arguments and starts greeting threads; it does
+not yet run the dining philosophers simulation.
 
-## Learning notes: coming from Pipex
+## Resources
 
-I did Pipex, so `fork()`, processes, pipes, and `waitpid()` are familiar.
-Philo introduces threads and shared memory. These are my planning notes;
-the simulation is still not implemented.
+- Philosophers subject, version 13.0 (provided locally).
+- Local manual pages: `man pthread_create`, `man pthread_mutex_init`,
+  `man pthread_join`, `man gettimeofday`, and `man usleep`.
+- AI assistance helped explain concepts and write these learning notes.
+  It also helped implement argument parsing, initialization, the thread
+  greeting scaffold, and cleanup. The full simulation is not implemented.
 
-### Threads
+## Appendix: my learning points
+
+Push_swap taught me to model state with structs, pointers, and arrays.
+Pipex introduced processes, `fork()`, pipes, and `waitpid()`. In Philo I am
+learning how threads share memory and how to coordinate their access to it.
+
+These notes are separate from the mandatory project description and build
+instructions above. Examples may be exercises or plans rather than implemented
+simulation features. The numbered links jump to each learning point.
+
+<a id="learning-points"></a>
+
+1. [Threads](#learning-point-1)
+2. [Mutexes](#learning-point-2)
+3. [Semaphores](#learning-point-3)
+4. [Deadlock and starvation](#learning-point-4)
+5. [How I plan to build it](#learning-point-5)
+6. [Do I need a static variable?](#learning-point-6)
+7. [A process contains threads](#learning-point-7)
+8. [Concurrency versus parallelism](#learning-point-8)
+9. [Creating and joining a thread](#learning-point-9)
+10. [Why I call `pthread_create()` for each philosopher](#learning-point-10)
+11. [Why the argument is `void *`](#learning-point-11)
+12. [Mutex lifecycle and critical sections](#learning-point-12)
+13. [Why counter++ needs synchronization](#learning-point-13)
+14. [Fork pointers: * versus **](#learning-point-14)
+15. [Fork locks versus meal locks](#learning-point-15)
+16. [Deadlock is different from starvation](#learning-point-16)
+17. [Measuring time and sleeping](#learning-point-17)
+18. [How my simulation structs fit together](#learning-point-18)
+19. [Reading the manual: mutex initialization can fail](#learning-point-19)
+20. [What mutexes do beneath the surface](#learning-point-20)
+21. [Exercises before the full simulation](#learning-point-21)
+22. [Thread handles are not the threads themselves](#learning-point-22)
+23. [Passing a pointer does not give a thread private memory](#learning-point-23)
+24. [Copy the mutex pointer, not the mutex object](#learning-point-24)
+25. [NULL arguments: defaults, omitted inputs, and ignored outputs](#learning-point-25)
+26. [Why I saw volatile in Minishell, but it is not a Philo lock](#learning-point-26)
+27. [What atomic means](#learning-point-27)
+28. [What the non-default pthread settings actually configure](#learning-point-28)
+29. [Recursive mutex use case and the caller-held-lock alternative](#learning-point-29)
+
+<a id="learning-point-1"></a>
+
+### 1. Threads
 
 In Pipex, `fork()` created separate processes. Changing an ordinary variable
 in the child did not change the parent's copy.
@@ -62,7 +123,11 @@ take two forks -> eat -> release forks -> sleep -> think -> repeat
 The OS decides when threads run. I cannot assume philosopher 1 runs before
 philosopher 2 just because I created them in that order.
 
-### Mutexes
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-2"></a>
+
+### 2. Mutexes
 
 A mutex is a lock: one thread can hold it at a time. The name means
 "mutual exclusion". For mandatory Philo, each fork has its own mutex.
@@ -81,7 +146,11 @@ monitor:    lock -> read last_meal   -> unlock
 Both must use the same mutex. Just putting a mutex in the struct does not
 protect anything lol; the accesses actually have to follow the locking rule.
 
-### Semaphores
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-3"></a>
+
+### 3. Semaphores
 
 A semaphore keeps a count of available resources. For example, a fork pool
 could start with a count of 5:
@@ -97,7 +166,11 @@ The bonus uses a separate process per philosopher, so `fork()` comes back.
 All forks are in a shared pool represented by a semaphore. Mandatory uses
 threads and mutexes; semaphores are not in its allowed function list.
 
-### Deadlock and starvation
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-4"></a>
+
+### 4. Deadlock and starvation
 
 If everyone takes their left fork first, they could all end up holding one
 fork and waiting for their neighbour's fork. Nobody can eat or release
@@ -112,7 +185,11 @@ One philosopher needs special handling. There is only one fork, so they
 can take it but cannot eat. Trying to lock the same mutex twice is not
 the solution; they wait until they die.
 
-### How I plan to build it
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-5"></a>
+
+### 5. How I plan to build it
 
 Keep the data in structs and pass pointers to the threads:
 
@@ -149,7 +226,11 @@ At the end, join the threads before destroying the mutexes and freeing
 the data they use. Also handle partial initialization or thread creation
 failures properly.
 
-### Do I need a static variable?
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-6"></a>
+
+### 6. Do I need a static variable?
 
 My friends used one, but no, the subject does not require it.
 
@@ -167,31 +248,11 @@ I can keep things like the start time and stop flag in the simulation
 struct instead. That makes it easier to see what is shared and which
 mutex protects it.
 
-## Resources
+[Back to appendix index](#learning-points)
 
-- Philosophers subject, version 13.0 (provided locally).
-- Local manual pages: `man pthread_create`, `man pthread_mutex_init`,
-  `man pthread_join`, `man gettimeofday`, and `man usleep`.
-- AI assistance was used to prepare the directory structure, Makefiles,
-  header imports, empty main function, shell project setting, and ignore rules.
-  It was also used to explain the Makefiles and discuss threads, mutexes,
-  semaphores, static variables, and an implementation plan in relation to
-  my completed Pipex project. Those explanations were adapted into the
-  learning notes and the theoretical background appendix, including standalone
-  thread and mutex examples. No simulation implementation has been generated.
+<a id="learning-point-7"></a>
 
-## Appendix: theoretical background
-
-These are lecture notes on what I learnt in this project, coming from
-Push_swap and Pipex. Push_swap taught me to model state with structs,
-pointers, and arrays. Pipex introduced independently running processes.
-Philo combines those ideas: several execution paths access the same data,
-and I have to coordinate those accesses.
-
-The examples below are separate learning exercises or illustrative snippets,
-not a complete simulation or a statement that these features are implemented.
-
-### A process contains threads
+### 7. A process contains threads
 
 A process is a running program with resources such as an address space and
 open file descriptors. A thread is an execution path inside that process.
@@ -218,7 +279,11 @@ inaccessible to other threads. I can pass the address of a local variable
 to a thread, provided the variable stays alive until that thread finishes
 using it. Shared access still needs synchronization where appropriate.
 
-### Concurrency versus parallelism
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-8"></a>
+
+### 8. Concurrency versus parallelism
 
 Threading does not require multiple CPU cores.
 
@@ -248,7 +313,11 @@ Threads sleeping or blocked on a mutex generally do not need to keep
 executing instructions. In this simulation, eating means holding two forks
 while time passes, not keeping a CPU busy with an eating calculation.
 
-### Creating and joining a thread
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-9"></a>
+
+### 9. Creating and joining a thread
 
 A thread routine takes a `void *` argument and returns a `void *`:
 
@@ -309,7 +378,60 @@ Returning from `main` terminates the process, including its other threads.
 resources are reclaimed when it finishes, and it cannot subsequently be
 joined. Detaching does not make shared data safe to free early.
 
-### Why the argument is `void *`
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-10"></a>
+
+### 10. Why I call `pthread_create()` for each philosopher
+
+I already initialized an array of `t_philo` records in
+`sim.resources.philos`. I do **not** need to create another philosopher
+object to start a thread. I can use an element of that array directly:
+
+```c
+if (pthread_create(&res->philos[res->threads_to_join].thread_handle,
+        NULL, philo_routine, &res->philos[res->threads_to_join]) != 0)
+    return (ERR_THREAD_CREATE);
+res->threads_to_join++;
+```
+
+`res` is only a short pointer to `sim->resources`. Replacing `res->` with
+`sim->resources.` would refer to the same array. In a loop with `i`, I
+could use `&sim->resources.philos[i]` instead. This version uses
+`threads_to_join` as the index because it also records how many threads
+cleanup must join; I increment it only after creation succeeds. The planned
+total is `sim->config.count`. If creation fails partway through, these two
+numbers differ. During cleanup, the counter decreases after each join.
+
+`thread_handle` has type `pthread_t`. It is a library-provided handle used
+to join a thread later, not a philosopher number. `philos[i].id` is the
+human-facing philosopher number (`i + 1`).
+
+| Expression | What it points to |
+| --- | --- |
+| `res->philos[res->threads_to_join]` | The existing `t_philo` struct at this array index |
+| `&res->philos[res->threads_to_join]` | That whole struct, passed to `philo_routine()` as its argument |
+| `&res->philos[res->threads_to_join].thread_handle` | Its `pthread_t` handle field, where `pthread_create()` stores the new handle |
+
+The middle and last expressions are different addresses. The new thread
+needs the whole philosopher record to find **its own** ID and forks. It
+can then follow the record's `sim` pointer to shared simulation settings.
+Passing only `sim` would give every thread the same pointer, with no
+separate array index supplied by `pthread_create()`. I could design an
+extra argument struct containing both `sim` and an index, but my existing
+`t_philo` already carries that information. `pthread_create()` passes the
+pointer value; it does not copy the record. The array and `sim` must stay
+alive until the threads finish and are joined.
+
+A local `t_philo *next_philo` would merely be an alias for
+`&res->philos[res->threads_to_join]`; it is optional. My routine currently
+only prints a greeting. The eating cycle is still to be written.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-11"></a>
+
+### 11. Why the argument is `void *`
 
 `void *` is a generic object pointer. The routine converts it back to the
 appropriate pointer type. C permits this assignment without an explicit cast:
@@ -343,13 +465,17 @@ Instead, initialize separate philosopher structs before launching their
 threads, then pass each thread its own element:
 
 ```c
-pthread_create(&philos[i].thread, NULL, routine, &philos[i]);
+pthread_create(&philos[i].thread_handle, NULL, routine, &philos[i]);
 ```
 
 Check the return value in the actual implementation. The new thread can
 start immediately, so its required data must already be initialized.
 
-### Mutex lifecycle and critical sections
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-12"></a>
+
+### 12. Mutex lifecycle and critical sections
 
 A mutex implements mutual exclusion. The protected region is called a
 critical section:
@@ -384,7 +510,11 @@ The mutex does not know which variable it protects. All relevant accesses
 must follow the agreed locking rule. A thread that ignores the mutex can
 still access the variable and cause a race.
 
-### Why counter++ needs synchronization
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-13"></a>
+
+### 13. Why counter++ needs synchronization
 
 An increment conceptually reads a value, calculates a new value, and writes
 it back. Two threads could both read 0 and both write 1. More fundamentally,
@@ -453,7 +583,11 @@ Main reads the counter after both joins, when neither worker can modify it.
 The example handles initialization and creation failures; a full application
 also needs an error policy for the remaining pthread operations.
 
-### Fork pointers: * versus **
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-14"></a>
+
+### 14. Fork pointers: * versus **
 
 Threading does not require a pointer to a pointer. The type depends on the
 memory layout. A flat array of fork mutexes only needs one pointer:
@@ -530,7 +664,11 @@ In that layout, `forks[i]` is already a pointer, so the call would be
 array. Also, declaring `**forks` alone allocates neither the pointer array
 nor the mutexes it would point to.
 
-### Fork locks versus meal locks
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-15"></a>
+
+### 15. Fork locks versus meal locks
 
 A fork mutex stays locked for the whole time the philosopher holds that
 fork, including eating. A meal mutex protects brief accesses to meal data:
@@ -556,7 +694,11 @@ the stop state with meal updates; a copied timestamp can become stale if the
 philosopher starts another meal before the monitor acts on it. Establish a
 consistent lock order whenever an operation needs multiple mutexes.
 
-### Deadlock is different from starvation
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-16"></a>
+
+### 16. Deadlock is different from starvation
 
 If everyone locks their left fork and then waits for their right fork,
 a circular chain of waiting can form. This is deadlock.
@@ -577,7 +719,13 @@ With one philosopher, the two pointers from the earlier mapping refer to
 the same sole fork. Handle that case separately: take one fork, wait for
 death, and release it rather than locking the same mutex twice.
 
-### Measuring time and sleeping
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-17"></a>
+
+### 17. Measuring time and sleeping
+
+How `gettimeofday()` works: Here I need milliseconds to measure philosopher timings.
 
 The project arguments use milliseconds, while `usleep()` takes microseconds.
 A basic conversion helper using `gettimeofday()` looks like this:
@@ -592,6 +740,54 @@ long	now_ms(void)
 	return (tv.tv_sec * 1000L + tv.tv_usec / 1000);
 }
 ```
+
+I wrote the return formula as `tv.tv_sec * 1000L + tv.tv_usec / 1000`
+because `gettimeofday()` splits one timestamp into two parts, while my
+Philo timings need a single value in milliseconds:
+
+| Part of the formula | What it contains | Why this conversion? |
+| --- | --- | --- |
+| `tv.tv_sec * 1000L` | Whole seconds since the Unix epoch | Multiply by 1,000: each second contains 1,000 milliseconds |
+| `tv.tv_usec / 1000` | Remaining microseconds within the current second | Divide by 1,000: each millisecond contains 1,000 microseconds |
+| `+` | The two converted parts | Add them to get the complete timestamp in milliseconds |
+
+The `L` in `1000L` makes that integer literal a `long`; it is not a cast.
+A cast would look like `(long)value`. Using `1000L` makes the multiplication
+use at least `long` integer arithmetic, rather than relying on an `int`
+literal. The exact resulting type also depends on the type of `tv_sec`.
+
+For example, if `tv_sec` is `2` and `tv_usec` is `500000`, the formula means
+`2 * 1000 + 500000 / 1000`, which gives `2500` milliseconds. I multiply the
+seconds part but divide the microseconds part.
+
+The division is integer division, so `500999 / 1000` gives `500`, not
+`500.999`. This discards the fraction of a millisecond rather than rounding
+it. The returned value is a timestamp; subtracting `sim->start_time` gives
+elapsed milliseconds since my simulation started.
+
+In `gettimeofday(&tv, NULL)`, `&tv` gives the function a place to store
+seconds and microseconds since the Unix epoch. The second argument is an
+old timezone-output parameter. `NULL` means no timezone output object is
+provided; it does not mean "use my default timezone". It does not affect
+the timestamp stored in `tv`.
+
+So we need to keep `NULL` as the second argument for this project. Historically, some
+systems accepted `&tz`, where `tz` was a `struct timezone`, to receive
+system-wide timezone information. That interface is obsolete and its
+behavior is not portable; GNU systems do not support it as a useful
+source of timezone information. Obsolete means outdated, not necessarily
+removed: the function can remain available while an old feature is no
+longer useful. See the [GNU C Library time documentation](https://www.sourceware.org/glibc/manual/2.41/html_node/Getting-the-Time.html)
+and [Gnulib portability notes](https://www.gnu.org/software/gnulib/manual/html_node/gettimeofday.html).
+
+| Purpose | Function or call | Allowed in mandatory Philo? |
+| --- | --- | --- |
+| Get the current timestamp | `gettimeofday(&tv, NULL)` | Yes; convert the result to milliseconds |
+| Measure elapsed time with a monotonic clock | `clock_gettime(CLOCK_MONOTONIC, &ts)` | No; useful outside this project |
+| Convert a timestamp to local date/time | `localtime()` or `localtime_r()` | No; useful outside this project |
+
+For Philo, use `gettimeofday(&tv, NULL)` and subtract the start timestamp
+to calculate elapsed milliseconds.
 
 The caller must handle `-1` rather than using it as a timestamp. This uses
 `long` for the project's 64-bit Linux environment; do not assume it has
@@ -615,7 +811,77 @@ philosopher can die while eating if that deadline is reached.
 clock adjustments. General applications often use a monotonic clock for
 elapsed time; this subject's mandatory function list allows `gettimeofday()`.
 
-### What mutexes do beneath the surface
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-18"></a>
+
+### 18. How my simulation structs fit together
+
+`t_sim` holds three groups so I can distinguish settings from state and
+owned resources without guessing which function last touched a field.
+
+| Group in `t_sim` | Contents | Functions that use it |
+| --- | --- | --- |
+| `config` (`t_config`) | Validated count, durations, and meal goal | `parse_input()` writes it; setup and threads read it |
+| `runtime` (`t_runtime`) | Start timestamp, stop state, and print mutex | `init_sim()` sets the timestamp; stop/logging setup is still unfinished |
+| `resources` (`t_resources`) | Fork/philosopher arrays and successful initialization/thread counters | Setup and thread creation update it; `cleanup()` releases it |
+
+For example, `sim.config.count` is a setting,
+`sim.runtime.start_time` is state, and `sim.resources.philos` is an owned
+array. Inside resource helpers, `res = &sim->resources` is a short pointer
+alias to that same group; it does not copy it or allocate another object.
+
+`init_sim()` reads the start time, allocates forks and philosophers,
+initializes the fork mutexes, then initializes philosopher records and
+meal mutexes. Cleanup uses the counters to handle partial initialization.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-19"></a>
+
+### 19. Reading the manual: mutex initialization can fail
+
+`pthread_mutex_init(&mutex, NULL)` initializes the object at `&mutex`
+with default attributes. It returns an `int`, even if my wrapper used to
+return `void`. Ignoring that integer would hide a possible failure.
+
+| Return value | Meaning | My wrapper's result |
+| --- | --- | --- |
+| `0` | The mutex was initialized successfully | Continue; return `STATUS_OK` after all philosophers are initialized |
+| Nonzero error number | Initialization failed | Stop and return `ERR_MUTEX_INIT` |
+
+The [POSIX manual](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_destroy.html)
+includes resource failures such as `EAGAIN` and `ENOMEM`. Pthread functions
+return their error number directly; I should check `!= 0`, rather than
+assuming a `-1` return or looking in `errno`. My project enum groups these
+failures under one message: "Error: Mutex initialization failed."
+
+```c
+if (pthread_mutex_init(&sim->resources.philos[i].meal_mutex, NULL) != 0)
+    return (ERR_MUTEX_INIT);
+```
+
+That is why `init_philos()` returns `t_status` now. In `main`, I save that
+status and report failure before creating any philosopher threads:
+
+```c
+status = init_philos(&sim);
+if (status != STATUS_OK)
+    return (print_return_error(status) != STATUS_OK);
+```
+
+This check reports failure; it does not perform cleanup. If initialization
+fails at index `i`, the earlier meal mutexes at indexes `0` through `i - 1`
+remain initialized. Later cleanup work must track those successful
+initializations and destroy only initialized mutexes. The philosopher
+array and fork array must already be allocated, and fork mutexes initialized,
+before calling this helper.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-20"></a>
+
+### 20. What mutexes do beneath the surface
 
 Mutex synchronization also establishes memory ordering and visibility.
 Compilers and CPUs may reorder operations where permitted, and CPU cores
@@ -637,7 +903,11 @@ On Linux, mutex implementations commonly use atomic operations for an
 uncontended lock and a kernel mechanism called a futex when they need to
 park a waiting thread. The pthread API handles those details for me.
 
-### Exercises before the full simulation
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-21"></a>
+
+### 21. Exercises before the full simulation
 
 1. Start two threads with separate IDs and join them.
 2. Increment one shared counter from two threads under a mutex.
@@ -647,12 +917,22 @@ These isolate argument lifetime, shared memory, and locking. The full
 project then combines fork ownership, meal timing, monitoring, logging,
 and shutdown without data races or deadlock.
 
-### Thread handles are not the threads themselves
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-22"></a>
+
+### 22. Thread handles are not the threads themselves
+
+I learnt from AI that a *handle* is apparently a technical term for a
+value an API gives me so I can refer to something it manages later. For
+threads, `pthread_create()` stores that value in a `pthread_t` variable;
+I pass it to `pthread_join()` to wait for that same thread. It is not the
+philosopher's `id`, a loop index, or necessarily a pointer to the thread.
 
 On this Linux system, the system header defines `pthread_t` as an alias
-for `unsigned long int`. That is a type definition, not a variable.
-Its representation is platform-dependent, so I treat it as an opaque
-thread handle rather than a number to calculate myself.
+for `unsigned long int`. That is a type definition, not a variable. Its
+representation can differ on other systems, so I treat the handle as an
+opaque value: I store and pass it back, but do not calculate a new one.
 
 ```c
 pthread_t	*threads;
@@ -671,16 +951,20 @@ pthread_join(threads[i], NULL);
 
 These are illustrative calls; actual code must check their results and
 handle allocation failure. My philosopher struct already has a
-`pthread_t thread` member, so a separate handle array is unnecessary:
+`pthread_t thread_handle` member, so a separate handle array is unnecessary:
 
 ```c
-pthread_create(&philos[i].thread, NULL, routine, &philos[i]);
-pthread_join(philos[i].thread, NULL);
+pthread_create(&philos[i].thread_handle, NULL, routine, &philos[i]);
+pthread_join(philos[i].thread_handle, NULL);
 ```
 
 `thread_t` is not the POSIX type used here; the name is `pthread_t`.
 
-### Passing a pointer does not give a thread private memory
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-23"></a>
+
+### 23. Passing a pointer does not give a thread private memory
 
 The wrong loop-argument example passes `&i` to every thread. All arguments
 point to one loop counter, not to separate philosopher objects:
@@ -733,7 +1017,11 @@ modifying another philosopher's changing meal data still requires the
 mutex that protects it. Immutable data initialized before thread creation
 can be read without adding a mutex for every read.
 
-### Copy the mutex pointer, not the mutex object
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-24"></a>
+
+### 24. Copy the mutex pointer, not the mutex object
 
 A mutex contains synchronization state. Its implementation can track lock
 state, ownership, and waiting threads. Copying its bytes does not create
@@ -778,7 +1066,11 @@ philos[1] = philos[0]; /* Also copies meal_mutex: do not use that copy. */
 Initialize the structs in their final storage, then initialize each mutex
 there. Keep that storage alive until all threads using it have finished.
 
-### NULL arguments: defaults, omitted inputs, and ignored outputs
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-25"></a>
+
+### 25. NULL arguments: defaults, omitted inputs, and ignored outputs
 
 `NULL` is a null pointer constant: it represents a pointer that does not
 point to an object or function. It does not universally mean "default".
@@ -792,6 +1084,7 @@ and what that means. Dereferencing a null pointer is undefined behavior.
 | `pthread_join(thread, NULL)` | Wait, but do not collect the routine's returned pointer |
 | `pthread_create(&thread, NULL, routine, NULL)` | Also pass a null argument pointer to the routine |
 | `return (NULL)` in a thread routine | Return no result object |
+| `gettimeofday(&tv, NULL)` | Store the time in `tv`; provide no timezone output object |
 
 #### Default thread attributes
 
@@ -901,7 +1194,11 @@ optional and what NULL means for each. The local references for this section
 are `man pthread_create`, `man pthread_mutex_init`, and `man pthread_join`.
 A pointer parameter alone does not imply that NULL is accepted.
 
-### Why I saw volatile in Minishell, but it is not a Philo lock
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-26"></a>
+
+### 26. Why I saw volatile in Minishell, but it is not a Philo lock
 
 I read other Minishell teams' code and saw `volatile` used for signal
 handling. That made me wonder whether it could also protect Philo's stop
@@ -992,7 +1289,11 @@ project's proposed implementation uses the allowed pthread mutex API.
 The signal example uses a global to illustrate the Minishell pattern;
 Philo's subject forbids globals, so its state stays in the simulation struct.
 
-### What atomic means
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-27"></a>
+
+### 27. What atomic means
 
 An atomic operation is indivisible with respect to other relevant operations:
 other threads cannot observe it half-completed. This does not mean the CPU
@@ -1066,7 +1367,11 @@ and compound decisions. `volatile` does not provide these guarantees.
 The earlier `sig_atomic_t` discussion concerns simple signal-handler
 accesses, not a general guarantee for synchronization between threads.
 
-### What the non-default pthread settings actually configure
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-28"></a>
+
+### 28. What the non-default pthread settings actually configure
 
 `pthread_t` is a thread handle, not its settings object. The settings types
 are `pthread_attr_t` for thread creation and `pthread_mutexattr_t` for mutex
@@ -1158,7 +1463,11 @@ ordering, and return-value handling remain my responsibility.
 that pointer instead. Likewise, the fourth argument of `pthread_create()`
 is the routine's input pointer, not a configuration object.
 
-### Recursive mutex use case and the caller-held-lock alternative
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-29"></a>
+
+### 29. Recursive mutex use case and the caller-held-lock alternative
 
 A recursive mutex can help when a function already holding a lock calls
 another function that also acquires the same lock. For example, a document
@@ -1243,3 +1552,5 @@ the lock before calling the helper and releases it afterward. Fork ownership
 still lasts through eating. Recursive locking cannot turn the sole fork in
 the one-philosopher case into two forks, and recursive attribute setters are
 not in this subject's allowed list.
+
+[Back to appendix index](#learning-points)

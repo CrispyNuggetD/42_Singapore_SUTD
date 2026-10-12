@@ -1,0 +1,47 @@
+create_threads(philos);
+	// Add fork acquisition and the eating cycle.
+	// Add protected meal tracking and death monitoring.
+	// Add coordinated stopping, responsive sleeps, and cleanup.
+	cleanup(philos);
+	return (0);
+}
+
+// Use the same clock basis for start_time and last_meal. Initialize mutexes with pthread_mutex_init() before using them; don’t copy initialized mutexes.
+
+/* Philosopher updating their meal time */
+pthread_mutex_lock(&philo->meal_mutex);
+philo->last_meal = current_time;
+pthread_mutex_unlock(&philo->meal_mutex);
+
+/* Monitor reading it */
+pthread_mutex_lock(&philo->meal_mutex);
+last_meal = philo->last_meal;
+pthread_mutex_unlock(&philo->meal_mutex);
+
+while (1)
+	{
+		current_time - last_meal >= time_to_die? printf("Philosopher %d has died\n", i), exit(1) : 0;
+	}
+
+
+
+
+
+
+
+
+	pthread_mutex_t	lock;
+
+	pthread_mutex_init(&lock, NULL);
+
+pthread_mutex_lock(&lock);
+/* Critical section: protected work */
+pthread_mutex_unlock(&lock);
+
+pthread_mutex_destroy(&lock);
+
+
+
+timestamp = now_ms() - sim->start_time;
+
+usleep(1000); /* Request about 1 millisecond */

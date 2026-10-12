@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
+/*   Updated: 2026/10/12 16:42:29 by hnah             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 
@@ -9,15 +21,28 @@
 # include <sys/time.h>
 # include <unistd.h>
 
-typedef enum e_error
+/*
+ * EAT_FOREVER below disables the meal quota.
+ * Their stomachs are a while (1); they forgot the
+ * break; (get it?)
+ */
+# define EAT_FOREVER -1
+
+typedef enum e_status
 {
-	ERR_NONE,
+	STATUS_OK,
 	ERR_USAGE,
 	ERR_NEGATIVE,
 	ERR_INVALID_INTEGER,
 	ERR_INTEGER_OVERFLOW,
-	ERR_NON_POSITIVE
-}	t_error;
+	ERR_NON_POSITIVE,
+	ERR_MALLOC,
+	ERR_MUTEX_INIT,
+	ERR_TIME,
+	ERR_THREAD_CREATE,
+	ERR_THREAD_JOIN,
+	ERR_TOTAL
+}	t_status;
 
 typedef struct s_locked_var
 {
@@ -25,37 +50,97 @@ typedef struct s_locked_var
 	pthread_mutex_t	lock;
 }	t_locked_var;
 
+/*
+** The configuration below is populated by parse_input:
+** count: number of philosophers and forks.
+** time_to_die: maximum time since meal start, in milliseconds.
+** time_to_eat, time_to_sleep: activity durations, in milliseconds.
+** optional_meal_goal: meal quota; EAT_FOREVER means omitted.
+*/
+typedef struct s_config
+{
+	int		count;
+	long	time_to_die;
+	long	time_to_eat;
+	long	time_to_sleep;
+	int		optional_meal_goal;
+}	t_config;
+
 typedef struct s_sim	t_sim;
 
+/*
+** Below describe one philosopher:
+** id: philosopher number, from 1 to N.
+** thread_handle: handle used by pthread_create and pthread_join.
+** left_fork, right_fork: pointers to mutexes in the fork array.
+** last_meal: LAST meal START time, in milliseconds.
+** meals_eaten: number of completed meals.
+** meal_mutex: to protect last_meal and meals_eaten.
+** sim: pointer to the shared simulation.
+*/
 typedef struct s_philo
 {
-	int				id; // Philosopher number: 1 to N
-	pthread_t		thread; // Handle used for pthread_create/join
-	pthread_mutex_t	*left_fork; // Points to a mutex in the fork array
-	pthread_mutex_t	*right_fork; // Points to the other fork mutex
-	long			last_meal; // Last meal start time, in milliseconds
-	int				meals_eaten; // Number of completed meals
-	pthread_mutex_t	meal_mutex; // Protects last_meal and meals_eaten
-	t_sim			*sim; // Pointer to the shared simulation
+	int				id;
+	pthread_t		thread_handle;
+	pthread_mutex_t	*left_fork;
+	pthread_mutex_t	*right_fork;
+	long			last_meal;
+	int				meals_eaten;
+	pthread_mutex_t	meal_mutex;
+	t_sim			*sim;
 }	t_philo;
 
+/*
+** The runtime fields below hold shared simulation state:
+** start_time: simulation start timestamp, in milliseconds.
+** is_stop: locked stop flag; 0 while running, 1 when stopping.
+** print_mutex: coordinates logging.
+*/
+typedef struct s_runtime
+{
+	long			start_time;
+	t_locked_var	is_stop;
+	pthread_mutex_t	print_mutex;
+}	t_runtime;
+
+/*
+** The resources below are owned by the simulation:
+** forks, philos: allocated arrays, each with config.count elements.
+** forks_init, meals_init: mutexes safe to destroy.
+** threads_to_join: count of started threads still needing a join.
+** init_sim initializes resources; start_philos tracks started threads.
+** cleanup joins threads, destroys initialized mutexes, and frees arrays.
+*/
+typedef struct s_resources
+{
+	pthread_mutex_t	*forks;
+	t_philo			*philos;
+	int				forks_init;
+	int				meals_init;
+	int				threads_to_join;
+}	t_resources;
+
+/*
+** The simulation below groups settings, shared state, and owned resources:
+** config: validated settings populated by parse_input.
+** runtime: clock and shared state; init_sim sets start_time.
+** resources: arrays and counters used by setup, threads, and cleanup.
+*/
 typedef struct s_sim
 {
-	int				count; // Number of philosophers and forks
-	long			time_to_die; // Maximum time since meal start, in ms
-	long			time_to_eat; // Eating duration, in ms
-	long			time_to_sleep; // Sleeping duration, in ms
-	int				meal_goal; // Optional meal quota; -1 means omitted
-	long			start_time; // Shared simulation start time, in ms
-	t_locked_var	is_stop; // 0 while running, 1 when stopping
-	pthread_mutex_t	print_mutex; // Coordinates logging
-	pthread_mutex_t	*forks; // Allocated array of count fork mutexes
-	t_philo			*philos; // Allocated array of count philosophers
+	t_config	config;
+	t_runtime	runtime;
+	t_resources	resources;
 }	t_sim;
 
-t_error	parse_input(int argc, char **argv, t_sim *sim);
-t_error	ft_pos_atoi_status(const char *nptr, int *out_value);
-void	print_error(t_error error);
-long	now_ms(void);
+t_status	parse_input(int argc, char **argv, t_config *config);
+t_status	ft_pos_atoi_status(const char *nptr, int *out_value);
+t_status	print_return_error(t_status status);
+t_status	init_philos(t_sim *sim);
+t_status	init_sim(t_sim *sim);
+int			cleanup(t_sim *sim, t_status status);
+t_status	start_philos(t_sim *sim);
+void		*philo_routine(void *argument);
+long		now_ms(void);
 
 #endif
