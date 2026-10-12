@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 16:42:29 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 18:06:27 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@
  */
 # define EAT_FOREVER -1
 
+/* Wait between checks: 100 microseconds = 0.1 milliseconds. */
+# define WAIT_CHECK_MICROSECONDS 100
+
 typedef enum e_status
 {
 	STATUS_OK,
@@ -41,6 +44,10 @@ typedef enum e_status
 	ERR_TIME,
 	ERR_THREAD_CREATE,
 	ERR_THREAD_JOIN,
+	ERR_MUTEX_DESTROY,
+	ERR_MUTEX,
+	ERR_SLEEP,
+	ERR_WRITE,
 	ERR_TOTAL
 }	t_status;
 
@@ -109,7 +116,7 @@ typedef struct s_runtime
 ** forks_init, meals_init: mutexes safe to destroy.
 ** threads_to_join: count of started threads still needing a join.
 ** init_sim initializes resources; start_philos tracks started threads.
-** cleanup joins threads, destroys initialized mutexes, and frees arrays.
+** cleanup_resources joins threads, destroys mutexes, and frees arrays.
 */
 typedef struct s_resources
 {
@@ -136,10 +143,15 @@ typedef struct s_sim
 t_status	parse_input(int argc, char **argv, t_config *config);
 t_status	ft_pos_atoi_status(const char *nptr, int *out_value);
 t_status	print_return_error(t_status status);
+t_status	write_guaranteed(int fd, const char *buffer, size_t length);
 t_status	init_philos(t_sim *sim);
 t_status	init_sim(t_sim *sim);
-int			cleanup(t_sim *sim, t_status status);
+int			cleanup_resources(t_resources *res, t_status status);
+t_status	prepare_to_eat(t_philo *philo);
+t_status	philo_eat(t_philo *philo);
+t_status	philo_wait(t_philo *philo, long duration_ms);
 t_status	start_philos(t_sim *sim);
+t_status	join_philos(t_resources *res);
 void		*philo_routine(void *argument);
 long		now_ms(void);
 

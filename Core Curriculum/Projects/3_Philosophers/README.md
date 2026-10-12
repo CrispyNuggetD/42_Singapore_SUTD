@@ -16,8 +16,8 @@ The mandatory program will model philosophers eating, sleeping, and thinking,
 while protecting shared forks and monitoring starvation.
 
 This is a work in progress. Argument parsing, resource initialization,
-and a thread greeting scaffold exist; the eating cycle and monitoring are
-not implemented yet.
+and a thread scaffold exist. Meal setup and waiting are being developed;
+the full eating cycle and monitoring are not implemented yet.
 The mandatory sources, header, and Makefile are in `philo/`, as required by
 subject version 13.0. Libft is not used.
 
@@ -385,47 +385,49 @@ joined. Detaching does not make shared data safe to free early.
 ### 10. Why I call `pthread_create()` for each philosopher
 
 I already initialized an array of `t_philo` records in
-`sim.resources.philos`. I do **not** need to create another philosopher
-object to start a thread. I can use an element of that array directly:
+`sim.resources.philos`. I need one thread per philosopher, and I pass each
+thread its own existing record. This is what `start_philos()` currently does:
 
 ```c
-if (pthread_create(&res->philos[res->threads_to_join].thread_handle,
-        NULL, philo_routine, &res->philos[res->threads_to_join]) != 0)
-    return (ERR_THREAD_CREATE);
-res->threads_to_join++;
+res = &sim->resources;
+while (res->threads_to_join < sim->config.count)
+{
+    next_philo = &res->philos[res->threads_to_join];
+    if (pthread_create(&next_philo->thread_handle, NULL,
+            philo_routine, next_philo) != 0)
+        return (ERR_THREAD_CREATE);
+    res->threads_to_join++;
+}
 ```
 
-`res` is only a short pointer to `sim->resources`. Replacing `res->` with
-`sim->resources.` would refer to the same array. In a loop with `i`, I
-could use `&sim->resources.philos[i]` instead. This version uses
-`threads_to_join` as the index because it also records how many threads
-cleanup must join; I increment it only after creation succeeds. The planned
-total is `sim->config.count`. If creation fails partway through, these two
-numbers differ. During cleanup, the counter decreases after each join.
+`res` points to `sim->resources`; `next_philo` points to one record already
+in that array. Neither pointer creates or copies a philosopher. I could
+write the call without `next_philo`, but I would repeat the longer array
+expression in both arguments:
 
-`thread_handle` has type `pthread_t`. It is a library-provided handle used
-to join a thread later, not a philosopher number. `philos[i].id` is the
-human-facing philosopher number (`i + 1`).
+```c
+pthread_create(&res->philos[i].thread_handle, NULL,
+    philo_routine, &res->philos[i]);
+```
 
-| Expression | What it points to |
+The two pointer arguments have different jobs:
+
+| Argument | Meaning |
 | --- | --- |
-| `res->philos[res->threads_to_join]` | The existing `t_philo` struct at this array index |
-| `&res->philos[res->threads_to_join]` | That whole struct, passed to `philo_routine()` as its argument |
-| `&res->philos[res->threads_to_join].thread_handle` | Its `pthread_t` handle field, where `pthread_create()` stores the new handle |
+| `&next_philo->thread_handle` | Where `pthread_create()` stores the new thread's `pthread_t` handle |
+| `next_philo` | The whole philosopher record passed to `philo_routine()` |
 
-The middle and last expressions are different addresses. The new thread
-needs the whole philosopher record to find **its own** ID and forks. It
-can then follow the record's `sim` pointer to shared simulation settings.
-Passing only `sim` would give every thread the same pointer, with no
-separate array index supplied by `pthread_create()`. I could design an
-extra argument struct containing both `sim` and an index, but my existing
-`t_philo` already carries that information. `pthread_create()` passes the
-pointer value; it does not copy the record. The array and `sim` must stay
-alive until the threads finish and are joined.
+The handle lets cleanup join this thread later. The record lets the routine
+read this philosopher's `id` and forks and follow its `sim` pointer to
+shared settings. Passing only `sim` would give every routine the same
+pointer without saying which philosopher it represents.
 
-A local `t_philo *next_philo` would merely be an alias for
-`&res->philos[res->threads_to_join]`; it is optional. My routine currently
-only prints a greeting. The eating cycle is still to be written.
+`sim->config.count` is the planned number of philosophers. The
+`threads_to_join` counter starts at zero, selects the next record, and
+increments only after `pthread_create()` succeeds. If creation fails
+partway through, cleanup joins exactly the threads that started. Cleanup
+then decrements the counter after each join. My routine currently prints
+a greeting; the eating cycle is still to be written.
 
 [Back to appendix index](#learning-points)
 
@@ -509,6 +511,35 @@ unlock
 The mutex does not know which variable it protects. All relevant accesses
 must follow the agreed locking rule. A thread that ignores the mutex can
 still access the variable and cause a race.
+
+I initially checked every lock/unlock return because "it returns an error
+code, so I should check it," lol. Then I learnt that with my successfully
+initialized default mutexes, valid ownership, and correct lifetime, locking
+normally succeeds or waits. A busy mutex does not make `pthread_mutex_lock()`
+return an error. Those checks do not prevent deadlock or reliably catch
+misuse such as touching an uninitialized or destroyed mutex.
+
+So some of my error plumbing is more than this configuration needs. I kept
+it as a starting template for explicit error propagation if I change the
+mutex configuration later. That does not make it automatically future-proof:
+a robust mutex can return `EOWNERDEAD` while granting ownership, so treating
+every nonzero result as "I did not acquire the lock" would be wrong. I would
+have to review the handling when changing the mutex type. See the
+[POSIX lock documentation](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_lock.html).
+
+The useful distinction I learnt: checks for initialization/resource failures
+and releasing held locks on later errors still matter. Lock/unlock checks
+are a separate design choice based on the mutex configuration and what the
+caller guarantees. Writing more checks is not the same as preventing more
+bugs; I need to understand what each operation can actually report.
+
+I also reused my Push_swap `write_guaranteed()` idea for error messages.
+Here it takes a file descriptor directly, without linking libft or using
+my printf context. It keeps writing the remaining bytes after a partial
+write, and returns `ERR_WRITE` if `write()` fails or makes no progress.
+The name describes finishing partial writes; it cannot guarantee that a
+broken output stream will work. If printing an error itself fails, I return
+`ERR_WRITE` rather than recursively trying to print another error there.
 
 [Back to appendix index](#learning-points)
 
@@ -824,7 +855,7 @@ owned resources without guessing which function last touched a field.
 | --- | --- | --- |
 | `config` (`t_config`) | Validated count, durations, and meal goal | `parse_input()` writes it; setup and threads read it |
 | `runtime` (`t_runtime`) | Start timestamp, stop state, and print mutex | `init_sim()` sets the timestamp; stop/logging setup is still unfinished |
-| `resources` (`t_resources`) | Fork/philosopher arrays and successful initialization/thread counters | Setup and thread creation update it; `cleanup()` releases it |
+| `resources` (`t_resources`) | Fork/philosopher arrays and successful initialization/thread counters | Setup and thread creation update it; `cleanup_resources()` releases it |
 
 For example, `sim.config.count` is a setting,
 `sim.runtime.start_time` is state, and `sim.resources.philos` is an owned
@@ -834,6 +865,40 @@ alias to that same group; it does not copy it or allocate another object.
 `init_sim()` reads the start time, allocates forks and philosophers,
 initializes the fork mutexes, then initializes philosopher records and
 meal mutexes. Cleanup uses the counters to handle partial initialization.
+
+My realization: "what do I clean up if something errors here???" is exactly
+what `t_resources` helps me answer lol. It holds the arrays I own and the
+counts of successful setup steps. I do not need to guess how far a failed
+function got or pass a growing list of unrelated pointers to cleanup.
+
+| Resource information | What cleanup can do with it |
+| --- | --- |
+| `threads_to_join` and each `thread_handle` | Join the threads that successfully started |
+| `meals_init` | Destroy that many initialized meal mutexes |
+| `forks_init` | Destroy that many initialized fork mutexes |
+| `philos` and `forks` | Free the allocated arrays after joining and destruction succeed |
+
+The function name and parameter now say what it operates on:
+
+```c
+int cleanup_resources(t_resources *res, t_status status);
+
+/* In main, after successful work or an earlier error: */
+return (cleanup_resources(&sim.resources, status));
+```
+
+I pass `&sim.resources` because cleanup needs the address of my actual
+resource group. One `*` is enough: it lets the function update counters
+and set `res->philos` and `res->forks` to `NULL`. A `t_resources **` would
+be useful if the function needed to replace a caller's `t_resources *`
+variable; that is not what this call does.
+
+Cleanup joins threads before destroying mutexes and freeing the arrays.
+It decreases counters only after each operation succeeds. If joining or
+mutex destruction fails, it reports the error and retains the arrays.
+The existing `status` tells it whether to report an earlier setup error
+or return success after normal cleanup. As I add more owned resources,
+I must also add their initialization tracking and cleanup handling.
 
 [Back to appendix index](#learning-points)
 

@@ -23,5 +23,5 @@ int	main(int argc, char **argv)
 		status = init_sim(&sim);
 	if (status == STATUS_OK)
 		status = start_philos(&sim);
-	return (cleanup(&sim, status));
+	return (cleanup_resources(&sim.resources, status));
 }

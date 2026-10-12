@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   init_error_cleanup.c                               :+:      :+:    :+:   */
+/*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 14:33:18 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/12 17:34:54 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,66 +72,4 @@ t_status	init_sim(t_sim *sim)
 	if (status != STATUS_OK)
 		return (status);
 	return (init_philos(sim));
-}
-
-/*
-** Join started threads before destroying mutexes or freeing their data.
-** On join failure, retain resources that a running thread could still use.
-*/
-int	cleanup(t_sim *sim, t_status status)
-{
-	t_resources	*res;
-
-	res = &sim->resources;
-	while (res->threads_to_join > 0)
-	{
-		if (pthread_join(res->philos[res->threads_to_join - 1].thread_handle,
-				NULL) != 0)
-			return (print_return_error(ERR_THREAD_JOIN) != STATUS_OK);
-		res->threads_to_join--;
-	}
-	while (res->meals_init > 0)
-	{
-		res->meals_init--;
-		pthread_mutex_destroy(&res->philos[res->meals_init].meal_mutex);
-	}
-	while (res->forks_init > 0)
-		pthread_mutex_destroy(&res->forks[--res->forks_init]);
-	free(res->philos);
-	free(res->forks);
-	res->philos = NULL;
-	res->forks = NULL;
-	return (print_return_error(status) != STATUS_OK);
-}
-
-/*
-** printf writes to stdout, so I use write to send errors to stderr here.
-** This function reports the error and returns its status.
-*/
-t_status	print_return_error(t_status status)
-{
-	static const char	*messages[] = {
-		"",
-		("Usage: ./philo <number_of_philosophers> <time_to_die> "
-			"<time_to_eat> <time_to_sleep> [optional_meal_goal]\n"),
-		"Error: Negative integers are not allowed.\n",
-		"Error: Invalid integer input.\n",
-		"Error: Integer input exceeds INT_MAX.\n",
-		"Error: Arguments must be greater than zero.\n",
-		"Error: Memory allocation failed.\n",
-		"Error: Mutex initialization failed.\n",
-		"Error: Failed to read the current time.\n",
-		"Error: Thread creation failed.\n",
-		"Error: Thread join failed.\n"
-	};
-	size_t				length;
-
-	if (status > STATUS_OK && status < ERR_TOTAL)
-	{
-		length = 0;
-		while (messages[status][length])
-			length++;
-		write(STDERR_FILENO, messages[status], length);
-	}
-	return (status);
 }

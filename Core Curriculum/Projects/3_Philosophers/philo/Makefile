@@ -8,7 +8,10 @@ SRCS := $(SRC_DIR)/main.c \
 	$(SRC_DIR)/parse_input.c \
 	$(SRC_DIR)/time.c \
 	$(SRC_DIR)/philosopher.c \
-	$(SRC_DIR)/init_error_cleanup.c
+	$(SRC_DIR)/meal.c \
+	$(SRC_DIR)/init.c \
+	$(SRC_DIR)/cleanup_error.c \
+	$(SRC_DIR)/write_guaranteed.c
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
