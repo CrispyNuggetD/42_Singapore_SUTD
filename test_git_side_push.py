@@ -70,6 +70,18 @@ class SidePushTests(unittest.TestCase):
         self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD~1').decode().strip(), 'README.md')
         self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD').decode().strip(), 'Core Curriculum/Projects/current/main.c')
 
+    def test_auto_push_scan_excludes_submission_and_classmate_repositories(self):
+        root = Path(self.tmp.name)
+        mailbox = root / 'mac-remote'
+        excluded = [root / 'Projects', root / "Darren's 42 Repo", mailbox]
+        for directory in excluded:
+            for location in (directory, directory / 'nested'):
+                (location / '.git').mkdir(parents=True)
+        self.assertEqual(leaveschool.repositories(root, mailbox), [self.repo])
+        self.assertEqual(leaveschool.repositories(root / 'Projects', mailbox), [])
+        with patch.dict('os.environ', {'DOCUMENTS_PUSH_EXCLUDE': str(self.repo)}):
+            self.assertEqual(leaveschool.repositories(root, mailbox), [])
+
     def test_break_wip_context_runs_after_side_commit(self):
         (self.project / 'main.c').write_text('unfinished project')
         (self.repo / 'README.md').write_text('midday notes')

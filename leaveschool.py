@@ -18,12 +18,22 @@ def git(repo, *args, capture=False):
 
 
 def repositories(root, mailbox):
+    # These contain classmates' work and submission clones, not personal backups.
+    excluded = {mailbox.resolve()}
+    scan_root = Path(root).resolve()
+    excluded.update(directory for directory in (scan_root, *scan_root.parents)
+                    if directory.name in ("Darren's 42 Repo", 'Projects'))
+    for base in (Path(root), Path.home() / 'Documents'):
+        excluded.update((base / name).resolve() for name in ("Darren's 42 Repo", 'Projects'))
+    excluded.update(Path(path).expanduser().resolve()
+                    for path in os.environ.get('DOCUMENTS_PUSH_EXCLUDE', '').split(os.pathsep) if path)
     found = []
     def scan_error(error):
         raise error
     for current, dirs, files in os.walk(root, onerror=scan_error, followlinks=False):
         path = Path(current)
-        if path.resolve() == mailbox:
+        resolved = path.resolve()
+        if any(resolved == directory or directory in resolved.parents for directory in excluded):
             dirs[:] = []
             continue
         if '.git' in dirs or '.git' in files:
