@@ -70,5 +70,38 @@ class SidePushTests(unittest.TestCase):
         self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD~1').decode().strip(), 'README.md')
         self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD').decode().strip(), 'Core Curriculum/Projects/current/main.c')
 
+    def test_break_wip_context_runs_after_side_commit(self):
+        (self.project / 'main.c').write_text('unfinished project')
+        (self.repo / 'README.md').write_text('midday notes')
+        def context(repo):
+            self.assertEqual(git(repo, 'log', '-1', '--format=%s').decode().strip(),
+                             'Update debug output and non-project files')
+            self.assertEqual(git(repo, 'diff', '--cached', '--name-only').decode().strip(),
+                             'Core Curriculum/Projects/current/main.c')
+            return 'Project implementation remains in progress.'
+        with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
+                patch('leaveschool.wip_body', side_effect=context) as summarizer, \
+                contextlib.redirect_stdout(io.StringIO()):
+            leaveschool.push(self.repo, wip=True)
+        summarizer.assert_called_once()
+        message = git(self.repo, 'log', '-1', '--format=%B').decode()
+        self.assertTrue(message.startswith('WIP: break checkpoint '))
+        self.assertIn('Project implementation remains in progress.', message)
+        self.assertEqual(git(self.repo, 'rev-parse', 'HEAD'), git(self.remote, 'rev-parse', 'HEAD'))
+
+    def test_break_records_even_without_changes_and_continues_after_failure(self):
+        state = Path(self.tmp.name) / 'state'
+        with patch.dict('os.environ', {'XDG_STATE_HOME': str(state)}), \
+                patch('leaveschool.backup', side_effect=ValueError('backup failed')), \
+                patch('leaveschool.repositories', return_value=[self.repo]), \
+                patch('leaveschool.push') as push, contextlib.redirect_stdout(io.StringIO()):
+            result = leaveschool.break_checkpoint(self.repo.parent, self.repo, self.repo)
+        import json
+        entries = [json.loads(line) for line in (state / '42-shell/breaks.jsonl').read_text().splitlines()]
+        self.assertEqual([entry['event'] for entry in entries], ['break-start', 'checkpoint-finished'])
+        self.assertEqual(entries[-1]['failures'], 1)
+        self.assertEqual(result, 1)
+        push.assert_called_once_with(self.repo, wip=True)
+
 if __name__ == '__main__':
     unittest.main()
