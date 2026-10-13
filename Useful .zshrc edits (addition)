@@ -80,7 +80,7 @@
 # syncproj first runs gitpushswap for debug/non-project changes, then pulls
 # --ff-only and displays status. Remaining changes are staged for a separate
 # project commit; it asks for a title/body and stops on Git failures.
-# leaveschool uses the same side-push before its main-repo project commit.
+# leavesch uses the same side-push before its main-repo project commit.
 # syncdocs pulls repositories with configured upstreams using --ff-only; it
 # never commits/pushes. It excludes MAIN_REPO_ROOT and scans nested repositories,
 # including Vogsphere clones and worktrees. It pulls the mailbox clone but skips
@@ -217,31 +217,40 @@ quithidden() {
 }
 
 # Save work and private chats before closing ALL tmux sessions (attached too).
-# Failures keep terminals open so you can fix the reported repositories and retry.
-leaveschool() {
-  local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
-  local failed=0
-  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-    command python3 "$helper" backup || return 1
-  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-    command python3 "$helper" push-all || failed=1
-  # Cover a private clone configured outside the Documents scan as well.
-  local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
-  local docs="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
-  if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
-    command python3 "$helper" push-private || failed=1
-  fi
-  if (( failed )); then
-    print -u2 -- 'leaveschool: some pushes failed; tmux kept open. Fix the errors and retry.'
-    return 1
-  fi
-  print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
-  command -v tmux >/dev/null 2>&1 || return 0
-  local -a tmux_args
-  tmux_args=()
-  [[ -n "${DAILY_TMUX_SOCKET:-}" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
-  command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1 || return 0
-  command tmux "${tmux_args[@]}" kill-server
+# Failures keep terminals open; ft_lock is always attempted last, even on failure.
+# Remove the previous name when reloading this configuration in an existing shell.
+unfunction leaveschool 2>/dev/null || true
+leavesch() {
+  setopt localoptions localtraps
+  {
+    local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
+    local failed=0
+    DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+      command python3 "$helper" backup || return 1
+    DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+      command python3 "$helper" push-all || failed=1
+    # Cover a private clone configured outside the Documents scan as well.
+    local private="${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}"
+    local docs="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
+    if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
+      command python3 "$helper" push-private || failed=1
+    fi
+    if (( failed )); then
+      print -u2 -- 'leavesch: some pushes failed; tmux kept open. Fix the errors and retry.'
+      return 1
+    fi
+    print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
+    command -v tmux >/dev/null 2>&1 || return 0
+    local -a tmux_args
+    tmux_args=()
+    [[ -n "${DAILY_TMUX_SOCKET:-}" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
+    command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1 || return 0
+    # Keep this shell alive after its tmux terminal closes so the lock runs.
+    trap '' HUP
+    command tmux "${tmux_args[@]}" kill-server
+  } always {
+    ft_lock
+  }
 }
 
 # Pull private Mac returns, then register separate resumable Ubuntu chat copies.
