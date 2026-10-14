@@ -30,8 +30,9 @@ def repository_exclusions(root, mailbox):
     return excluded
 
 
-def repositories(root, mailbox):
-    excluded = repository_exclusions(root, mailbox)
+def repositories(root, mailbox, excluded=None):
+    if excluded is None:
+        excluded = repository_exclusions(root, mailbox)
     found = []
     def scan_error(error):
         raise error

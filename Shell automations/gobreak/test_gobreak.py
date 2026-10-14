@@ -65,15 +65,20 @@ class GoBreakTests(unittest.TestCase):
         one = self.repo('one')
         two = self.repo('two')
         nested = self.repo('one/nested')
-        for name in ('Projects/submission', "Darren's 42 Repo/friend", 'mac-remote'):
-            self.repo(name)
+        personal_exclusions = [self.repo(name) for name in ('Projects/submission', "Darren's 42 Repo/friend", 'mac-remote')]
         self.assertEqual(gobreak.select_repositories({'repo': str(one)})[0], [one])
         os.environ['GOBREAK_REPOS_ROOT'] = str(self.docs)
-        os.environ['GOBREAK_EXCLUDE_REPOS'] = str(two)
+        os.environ['GOBREAK_EXCLUDE_REPOS'] = os.pathsep.join(map(str, [two, *personal_exclusions]))
         os.environ['GOBREAK_INCLUDE_REPOS'] = str(two)
         self.assertEqual(gobreak.select_repositories({})[0], [nested, one])
         os.environ['DOCUMENTS_PUSH_EXCLUDE'] = str(one)
         self.assertEqual(gobreak.select_repositories({})[0], [])
+
+    def test_friends_have_no_folder_name_exclusions(self):
+        for name in ("Darren's 42 Repo", 'Projects', 'mac-remote'):
+            repo = self.repo(name)
+            self.assertEqual(gobreak.select_repositories({'repo': str(repo)})[0], [repo])
+        self.assertEqual(len(gobreak.select_repositories({'scan_root': str(self.docs)})[0]), 3)
 
     def test_real_checkpoint_and_lock_after_failure(self):
         repo = self.repo('space repo')

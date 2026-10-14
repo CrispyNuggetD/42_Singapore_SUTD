@@ -71,6 +71,8 @@ def install(source, repo=None, shared_runtime=None, check=False, automatic=False
     if codex_context is not None:
         config['codex_context'] = codex_context
     config.setdefault('codex_context', True)
+    config.setdefault('include_repos', [])
+    config.setdefault('exclude_repos', [])
     if shared_runtime is not None:
         config['shared_runtime'] = str(Path(shared_runtime).resolve())
     if repo is not None:

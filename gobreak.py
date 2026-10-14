@@ -8,7 +8,7 @@ import json
 import subprocess
 import sys
 
-from leaveschool import break_checkpoint, git, wip_body, repositories, repository_exclusions
+from leaveschool import break_checkpoint, git, wip_body, repositories
 from git_side_push import changed_groups, validate_paths, side_push, stage_project
 
 
@@ -55,13 +55,13 @@ def select_repositories(config, full_shell=False):
         root_value = os.environ.get('DOCUMENTS_REPOS_ROOT', str(home / 'Documents'))
     root = Path(root_value).expanduser().resolve() if root_value else None
     mailbox = Path(os.environ.get('MAC_REMOTE_ROOT', home / 'Documents/mac-remote')).expanduser().resolve()
-    excluded = repository_exclusions(root or home / 'Documents', mailbox)
-    excluded.update(configured_paths('GOBREAK_EXCLUDE_REPOS', config.get('exclude_repos', [])))
+    excluded = set(configured_paths('GOBREAK_EXCLUDE_REPOS', config.get('exclude_repos', [])))
+    excluded.update(configured_paths('DOCUMENTS_PUSH_EXCLUDE'))
     candidates = []
     if root:
         if not root.is_dir():
             raise ValueError(f'Missing repository search folder: {root}')
-        candidates.extend(repositories(root, mailbox))
+        candidates.extend(repositories(root, mailbox, excluded=excluded))
     if config.get('repo'):
         candidates.append(Path(config['repo']).expanduser().resolve())
     candidates.extend(configured_paths('GOBREAK_INCLUDE_REPOS', config.get('include_repos', [])))

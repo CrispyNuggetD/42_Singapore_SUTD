@@ -101,8 +101,10 @@ python3 install_gobreak.py --repo "$HOME/my-project" \
 Repeat `--include-repo` or `--exclude-repo` for several paths. Add
 `--scan-root "$HOME/Documents"` to discover repositories beneath a folder.
 Excluded folders and all their descendants are skipped. Exclusions win over
-includes; the existing mailbox, submission `Documents/Projects`,
-`Documents/Darren's 42 Repo` and `DOCUMENTS_PUSH_EXCLUDE` exclusions still apply.
+includes. A fresh installation selects only your chosen repo root, with no
+additional includes or exclusions. There are no special folder-name exclusions:
+even `Documents/Darren's 42 Repo` works if that is your own selected repo.
+Only exclusions you configure apply, including `DOCUMENTS_PUSH_EXCLUDE` if set.
 These selections persist across shell syncs and installer updates.
 
 Each checkpoint stages all saved tracked changes, deletions and non-ignored new
