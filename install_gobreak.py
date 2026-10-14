@@ -10,6 +10,8 @@ import shlex
 import shutil
 import subprocess
 
+from gobreak import print_greeting
+
 HELPERS = ('gobreak.py', 'leaveschool.py', 'git_side_push.py')
 DESKTOP_ID = 'local.42-gobreak.desktop'
 
@@ -56,10 +58,7 @@ def install(source, repo=None, shared_runtime=None, check=False, automatic=False
             mode_override=None, scan_root=None, include_repos=None, exclude_repos=None,
             pin=None, codex_context=None):
     """Refresh both installations; automatic shell sync preserves icon scope."""
-    print('\nGo Break — Git push + screen lock', flush=True)
-    print('By hnah (Christopher Nah), 42SG Cohort 4', flush=True)
-    print('Public repo: https://github.com/CrispyNuggetD/42_Singapore_SUTD', flush=True)
-    print('Questions or feedback? Contact hnah on 42SG Slack.\n', flush=True)
+    print_greeting()
     source = Path(source).resolve()
     data = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share'))
     runtime = data / '42-gobreak'

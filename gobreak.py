@@ -81,6 +81,13 @@ def select_repositories(config, full_shell=False):
     return sorted(selected, key=lambda p: (-len(p.parts), str(p))), root or home / 'Documents', private
 
 
+def print_greeting():
+    print('\nGo Break — Git push + screen lock', flush=True)
+    print('By hnah (Christopher Nah), 42SG Cohort 4', flush=True)
+    print('Public repo: https://github.com/CrispyNuggetD/42_Singapore_SUTD', flush=True)
+    print('Questions or feedback? Contact hnah on 42SG Slack.\n', flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     scope = parser.add_mutually_exclusive_group(required=True)
@@ -88,6 +95,7 @@ def main():
     scope.add_argument('--all-repos', action='store_true', help='Use the full shell repository scan and private chat backup')
     scope.add_argument('--config', type=Path, help='Installed standalone selection settings')
     args = parser.parse_args()
+    print_greeting()
     failed = 0
     original_codex = os.environ.get('GOBREAK_CODEX_CONTEXT')
     try:

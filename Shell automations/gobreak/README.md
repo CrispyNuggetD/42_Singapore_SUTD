@@ -55,6 +55,8 @@ by this script. Zsh and tmux are not needed for standalone mode.
 
 By **hnah (Christopher Nah), 42SG Cohort 4**. Questions or feedback?
 Contact **hnah** on **42SG Slack**.
+This greeting appears during installation and at the start of every Go Break
+run, whether launched from the dock, `git gobreak`, or the main shell command.
 
 - [Full .zshrc automation I personally use](../README.md): daily-login helpers,
   tmux workspace, configurable repository syncing and private lock backups.
