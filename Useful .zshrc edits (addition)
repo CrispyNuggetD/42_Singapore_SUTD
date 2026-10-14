@@ -84,7 +84,7 @@
 # --ff-only and displays status. Remaining changes are staged for a separate
 # project commit; it asks for a title/body and stops on Git failures.
 # leavesch uses the same side-push before its main-repo project commit.
-# leavesch/gobreak never auto-push the Mac mailbox, Documents/Projects submission
+# leavesch never auto-pushes the Mac mailbox, Documents/Projects submission
 # clones, or Documents/Darren's 42 Repo (including nested repositories).
 # DOCUMENTS_PUSH_EXCLUDE can add absolute excluded folders separated by colons.
 # syncdocs pulls repositories with configured upstreams using --ff-only; it
@@ -264,7 +264,7 @@ leavesch() {
 # Codex context is optional (GOBREAK_CODEX_CONTEXT=FALSE disables it), main repo only.
 # The automatic screen-lock/idle private backup remains independent.
 # Folder scan plus colon-separated additional/excluded repository paths.
-# Existing DOCUMENTS_PUSH_EXCLUDE and built-in exclusions are also respected.
+# DOCUMENTS_PUSH_EXCLUDE is also respected; Go Break has no built-in exclusions.
 GOBREAK_REPOS_ROOT="${GOBREAK_REPOS_ROOT-${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}}"
 GOBREAK_INCLUDE_REPOS="${GOBREAK_INCLUDE_REPOS:-}"
 GOBREAK_EXCLUDE_REPOS="${GOBREAK_EXCLUDE_REPOS:-}"

@@ -46,7 +46,7 @@ with `privatebackup=FALSE`; disable the final script with `loginitems=FALSE`.
 
 The full installer also installs and pins the Go Break icon; `--no-pin` skips
 pinning. Clicking the full-shell icon scans `~/Documents` by default, respecting
-the existing exclusions. Configure `GOBREAK_REPOS_ROOT`, `GOBREAK_INCLUDE_REPOS`
+only your configured exclusions. Configure `GOBREAK_REPOS_ROOT`, `GOBREAK_INCLUDE_REPOS`
 and `GOBREAK_EXCLUDE_REPOS` for your repos, or use the standalone installer for
 one repo by default. Unlike the private lock-backup service, Go Break commits
 and pushes the selected repos' current upstream branches. Installation itself
