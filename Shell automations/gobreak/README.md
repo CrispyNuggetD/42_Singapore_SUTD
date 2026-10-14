@@ -162,7 +162,46 @@ backup remains a separate step. Reload `.zshrc` after changing shell settings.
 `python3 install_gobreak.py --shell` explicitly switches the icon to full-shell
 mode; ordinary shell sync preserves its current mode.
 
-To uninstall, run `git config --local --unset alias.gobreak` in each configured
-repo and delete only `~/.local/share/42-gobreak/` and
-`~/.local/share/applications/local.42-gobreak.desktop`. If `XDG_DATA_HOME` is set,
-these files live beneath that directory instead.
+## Uninstall or remove
+
+Deleting the downloaded `~/42-gobreak` folder alone **does not uninstall** the
+icon, installed helpers, or Git alias. To remove the standalone installation:
+
+1. Right-click **Go Break (Git push + lock)** on the dock and choose
+   **Remove from Favorites**.
+2. In each repo where you installed Go Break, run this to remove its Git alias
+   (a subdirectory of that repo also works):
+
+```sh
+git config --local --unset-all alias.gobreak
+```
+
+If the alias is already absent, that command makes no change. Repeat it for
+each configured repo before deleting the helpers, so aliases do not point at
+a missing launcher.
+
+3. Copy and paste this removal chunk to delete the installed helpers, saved
+   selections and application icon. It respects `XDG_DATA_HOME` if you use it:
+
+```sh
+if [ -d "${XDG_DATA_HOME:-$HOME/.local/share}/42-gobreak" ]; then
+  rm -r -- "${XDG_DATA_HOME:-$HOME/.local/share}/42-gobreak"
+fi
+rm -f -- "${XDG_DATA_HOME:-$HOME/.local/share}/applications/local.42-gobreak.desktop"
+```
+
+4. Optionally delete the downloaded helpers clone too, if you no longer want it:
+
+```sh
+rm -r -- "$HOME/42-gobreak"
+```
+
+Check for any edits you want to keep in that clone before deleting it.
+Removal does not undo existing commits or pushes, or remove your project repos.
+
+**Using the full shell setup too?** This removes only the standalone installation.
+The main shell's `gobreak` function remains, and the next `synczshrc` reinstalls
+the standalone helpers and icon automatically. Its saved selections and opt-outs
+were deleted above, so that reinstall uses the full-shell scope and default
+pinning/Codex preferences. See the [full shell guide](../README.md) if you want
+to remove the main shell setup as well.
