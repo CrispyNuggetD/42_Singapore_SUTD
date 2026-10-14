@@ -17,7 +17,7 @@ def git(repo, *args, capture=False):
                           env=env, text=True, stdout=subprocess.PIPE if capture else None)
 
 
-def repositories(root, mailbox):
+def repository_exclusions(root, mailbox):
     # These contain classmates' work and submission clones, not personal backups.
     excluded = {mailbox.resolve()}
     scan_root = Path(root).resolve()
@@ -27,6 +27,11 @@ def repositories(root, mailbox):
         excluded.update((base / name).resolve() for name in ("Darren's 42 Repo", 'Projects'))
     excluded.update(Path(path).expanduser().resolve()
                     for path in os.environ.get('DOCUMENTS_PUSH_EXCLUDE', '').split(os.pathsep) if path)
+    return excluded
+
+
+def repositories(root, mailbox):
+    excluded = repository_exclusions(root, mailbox)
     found = []
     def scan_error(error):
         raise error
@@ -49,6 +54,7 @@ def wip_body(repo):
         return ''
     codex = shutil.which('codex')
     if not codex:
+        print('Debug: Codex CLI not found; using the fallback title. Configure Codex, or disable summaries with --no-codex at installation or GOBREAK_CODEX_CONTEXT=FALSE.', flush=True)
         return ''
     try:
         subprocess.run([codex, 'login', 'status'], check=True, timeout=10,
@@ -78,6 +84,12 @@ def wip_body(repo):
 
 def push(repo, wip=False):
     print(f'\nSaving and pushing: {repo}', flush=True)
+    if wip:
+        # Shared with the standalone icon; do not duplicate WIP Git behavior here.
+        from gobreak import checkpoint
+        main = Path(os.environ.get('MAIN_REPO_ROOT', str(Path.home() / 'Documents/42_Singapore_SUTD'))).resolve()
+        is_main = repo.resolve() == main
+        return checkpoint(repo, project_scope=is_main, codex_context=is_main)
     git(repo, 'symbolic-ref', '--quiet', 'HEAD', capture=True)
     remote = git(repo, 'rev-parse', '--symbolic-full-name', '@{upstream}', capture=True).stdout.strip()
     if not remote.startswith('refs/remotes/'):
@@ -100,9 +112,8 @@ def push(repo, wip=False):
     else:
         git(repo, 'add', '--all')
     if git(repo, 'diff', '--cached', '--name-only', capture=True).stdout:
-        title = ('WIP: break checkpoint ' if wip else 'leaveschool: save work ') + datetime.now().astimezone().isoformat(timespec='seconds')
-        body = wip_body(repo) if wip and repo.resolve() == main_repo else ''
-        git(repo, 'commit', '-m', title, *(['-m', body] if body else []))
+        title = 'leaveschool: save work ' + datetime.now().astimezone().isoformat(timespec='seconds')
+        git(repo, 'commit', '-m', title)
     # Explicit upstream push: no force, merges, or automatic branch creation.
     tracking = remote.removeprefix('refs/remotes/')
     remote_name, branch = tracking.split('/', 1)
@@ -144,7 +155,7 @@ def backup(source, private, main):
     print(f'Copied {copied} new/updated chats to {target}', flush=True)
 
 
-def break_checkpoint(root, private, main_repo):
+def break_checkpoint(root, private, main_repo, repos=None):
     state = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state'))) / '42-shell'
     state.mkdir(parents=True, exist_ok=True)
     log = state / 'breaks.jsonl'
@@ -162,9 +173,10 @@ def break_checkpoint(root, private, main_repo):
         print(f'Chat backup needs attention: {error}', flush=True)
         failed += 1
     mailbox = Path(os.environ.get('MAC_REMOTE_ROOT', Path.home() / 'Documents/mac-remote')).resolve()
-    repos = repositories(root, mailbox)
-    if private.is_dir() and private.resolve() not in [repo.resolve() for repo in repos]:
-        repos.append(private)
+    if repos is None:
+        repos = repositories(root, mailbox)
+        if private.is_dir() and private.resolve() not in [repo.resolve() for repo in repos]:
+            repos.append(private)
     for repo in repos:
         try:
             push(repo, wip=True)

@@ -1,5 +1,18 @@
 # Shell automations
 
+Reusable 42 Ubuntu shell helpers for your own repositories, with public setup
+instructions and defaults below. The bottom section describes the fuller
+workflow **I personally use**; those personal settings are not copied to you.
+
+## Public setup and defaults
+
+**Only want an icon that Git pushes and locks?**
+[Install standalone Go Break](gobreak/README.md). It works with or without Codex
+and does not change your `.zshrc`. It commits and pushes your chosen repos'
+current upstream branches, separately from the private backup setup below.
+The full shell installer includes the same feature and keeps both copies
+updated on each sync; existing standalone selections are preserved.
+
 **Forgot to push before leaving on Friday?** Back up saved work when you lock your
 screen, then retrieve it over the weekend. You still need to share it with teammates.
 
@@ -17,7 +30,7 @@ screen, then retrieve it over the weekend. You still need to share it with teamm
 6. ✅ **User-level setup** — core installation and backups need no sudo.
    Existing shell content is preserved and backed up.
 
-**It does NOT:**
+**Private lock-backup scope:**
 
 - ❌ Upload on clone/install: private backups require a separate setup step.
 - ❌ Push to your team's `main`, grant teammates access, or capture unsaved buffers
@@ -30,6 +43,14 @@ screen, then retrieve it over the weekend. You still need to share it with teamm
 **Defaults:** `dli` prints reports, opens a tmux shell, reminds you to configure
 backups and runs your initially empty personal script. Disable the reminder/backups
 with `privatebackup=FALSE`; disable the final script with `loginitems=FALSE`.
+
+The full installer also installs and pins the Go Break icon; `--no-pin` skips
+pinning. Clicking the full-shell icon scans `~/Documents` by default, respecting
+the existing exclusions. Configure `GOBREAK_REPOS_ROOT`, `GOBREAK_INCLUDE_REPOS`
+and `GOBREAK_EXCLUDE_REPOS` for your repos, or use the standalone installer for
+one repo by default. Unlike the private lock-backup service, Go Break commits
+and pushes the selected repos' current upstream branches. Installation itself
+does not commit or push.
 
 > ⚠️ **Warning**
 >
@@ -71,6 +92,8 @@ dli                          # run selected tasks
 Installs a marked block in `~/.zshrc`, code in `~/.local/share/42-shell/`, mouse
 scrolling in `~/.tmux.conf`, choices in `~/.42-shell-settings.zsh`, and a commented
 `~/.42-login-items.sh`. Existing configuration is backed up; your script is preserved.
+Also installs the shared Go Break helpers and dock icon; an existing standalone
+repo selection is preserved. Use `python3 sync_zshrc.py --no-pin` to skip pinning.
 Installing/sourcing the helpers does not automatically run `dli`.
 
 ### Enable private lock backups
@@ -103,18 +126,29 @@ then run `source ~/.zshrc`. Update with `git pull --ff-only`, then
 
 Project opening runs `make fclean`; Git sync can stage/commit/push; Codex startup
 enables full access. `setupclipboard` can invoke sudo for dependencies. The separate
-`leaveschool` command closes all tmux sessions after successful syncing; lock backups
+`leavesch` command closes all tmux sessions after successful syncing; lock backups
 do not. A configured private chat-return clone is checked/pulled by `dli`; otherwise
 that task is skipped.
 
 </details>
 
-## Optional: my setup and reference
+## Full automation I personally use
 
 My setup additionally enables helper updates, project clean/open, Codex, LAN42,
 my enrolled mailbox and brightness adjustment. Separate local hooks run `dli` once
 per desktop login and restore brightness after unlock. My optional chat backups go
 to a separate private repo; these settings are not installed for friends.
+
+My Go Break scans `~/Documents` and keeps the mailbox, submission
+`Documents/Projects`, and `Documents/Darren's 42 Repo` exclusions. Includes and
+extra exclusions live in my personal `~/.42-shell-settings.zsh`. The implementation
+is shared with standalone Go Break; only the configured scope and full-workflow
+steps differ.
+
+[My main public 42 repository](https://github.com/CrispyNuggetD/42_Singapore_SUTD)
+and [42SG Campus LAN](https://github.com/CrispyNuggetD/42sg-campus-lan) are separate
+clones. Questions or feedback: **hnah (Christopher Nah), 42SG Cohort 4**, on
+**42SG Slack**.
 
 **Stayon is not allowed at 42SG for meeting attendance requirements. It is off in
 my own setup (`startstayon=FALSE`) too.** Campus forced logout still applies.

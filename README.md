@@ -4,6 +4,10 @@
 
 42 Singapore SUTD.
 
+Want a dock icon that commits, pushes and locks your screen?
+[Go Break quick start](Shell%20automations/gobreak/README.md#quick-start)
+installs just that feature, with optional Codex commit bodies.
+
 ## Terminal setup after cloning
 
 With Python 3 and zsh installed, open a **zsh** terminal and run these commands
@@ -15,7 +19,9 @@ source ~/.zshrc
 setupzshrc
 ```
 
-`sync_zshrc.py` installs the shared terminal helpers. `setupzshrc` opens the
+`sync_zshrc.py` installs the shared terminal helpers and installs or refreshes
+the [Go Break icon](Shell%20automations/gobreak/README.md), preserving any
+standalone repo selection. `setupzshrc` opens the
 setup wizard: enter your own email, repository paths, and current project, then
 choose which tasks to enable and save. Optional services and automatic updates
 default to off. The installer also enables mouse scrolling in `~/.tmux.conf`.

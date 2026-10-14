@@ -2,6 +2,7 @@
 """Install/update the shared zshrc block and local helpers, preserving settings."""
 import argparse
 import ast
+import importlib.util
 from datetime import datetime
 import os
 from pathlib import Path
@@ -13,10 +14,10 @@ import tempfile
 BEGIN = '# >>> 42 shared zshrc >>>'
 END = '# <<< 42 shared zshrc <<<'
 RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py',
-                 'git_side_push.py', 'lock_backup.py', 'lock_backup_watch.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'Useful .zshrc edits (addition)')
+                 'git_side_push.py', 'lock_backup.py', 'lock_backup_watch.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'gobreak.py', 'install_gobreak.py', 'Useful .zshrc edits (addition)')
 
 
-def install_runtime(source_dir, runtime, check=False):
+def install_runtime(source_dir, runtime, check=False, pin=None, codex_context=None):
     """Install all helper dependencies locally, including the updater itself."""
     payloads = {}
     for name in RUNTIME_FILES:
@@ -24,7 +25,12 @@ def install_runtime(source_dir, runtime, check=False):
         if name.endswith('.py'):
             ast.parse(payload, filename=name)
         payloads[name] = payload
+    icon = source_dir / 'Shell automations/gobreak/gobreak.png'
+    if not icon.exists():
+        icon = source_dir / 'gobreak.png'
+    payloads['gobreak.png'] = icon.read_bytes()
     if check:
+        refresh_gobreak(source_dir, runtime, check=True, pin=pin, codex_context=codex_context)
         return
     runtime.mkdir(parents=True, exist_ok=True)
     for name, payload in payloads.items():
@@ -40,6 +46,15 @@ def install_runtime(source_dir, runtime, check=False):
         finally:
             if temporary:
                 temporary.unlink(missing_ok=True)
+    refresh_gobreak(source_dir, runtime, pin=pin, codex_context=codex_context)
+
+
+def refresh_gobreak(source_dir, runtime, check=False, pin=None, codex_context=None):
+    # Load the update clone's installer, rather than a possibly older runtime copy.
+    spec = importlib.util.spec_from_file_location('gobreak_installer', source_dir / 'install_gobreak.py')
+    installer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installer)
+    installer.install(source_dir, shared_runtime=runtime, check=check, automatic=True, pin=pin, codex_context=codex_context)
 
 
 def bounds(text):
@@ -85,7 +100,7 @@ def install_tmux_mouse(path, check=False):
     print(f'Enabled mouse scrolling in {path} (applies to new tmux servers).')
 
 
-def sync(source, target, check=False, runtime=None):
+def sync(source, target, check=False, runtime=None, pin=None, codex_context=None):
     source = source.expanduser().resolve(strict=True)
     runtime = (runtime or Path.home() / '.local/share/42-shell').expanduser().resolve()
     target = target.expanduser().resolve()
@@ -118,7 +133,7 @@ def sync(source, target, check=False, runtime=None):
     else:
         updated = original[:extent[0]] + block + original[extent[1]:]
     if updated == original:
-        install_runtime(source.parent, runtime, check)
+        install_runtime(source.parent, runtime, check, pin=pin, codex_context=codex_context)
         print('Shared zshrc helpers are already up to date.')
         return
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +143,7 @@ def sync(source, target, check=False, runtime=None):
             temporary = Path(candidate.name)
             candidate.write(updated.encode('utf-8'))
         subprocess.run(['zsh', '-n', str(temporary)], check=True)
-        install_runtime(source.parent, runtime, check)
+        install_runtime(source.parent, runtime, check, pin=pin, codex_context=codex_context)
         if check:
             print('Shared zshrc update available; syntax check passed. No changes made.')
             return
@@ -155,11 +170,13 @@ def main():
     parser.add_argument('--source', type=Path, default=Path(__file__).resolve().with_name('Useful .zshrc edits (addition)'))
     parser.add_argument('--target', type=Path, default=Path(os.environ.get('ZDOTDIR') or Path.home()) / '.zshrc')
     parser.add_argument('--check', action='store_true', help='Check for an update and validate syntax without replacing the target')
+    parser.add_argument('--no-codex', action='store_true', help='Disable Go Break Codex summaries and remember this preference')
+    parser.add_argument('--no-pin', action='store_true', help='Skip Go Break dock pinning and remember this preference')
     parser.add_argument('--runtime', type=Path, default=Path(os.environ.get('ZSHRC_RUNTIME_ROOT', str(Path.home() / '.local/share/42-shell'))))
     parser.add_argument('--tmux-config', type=Path, default=Path.home() / '.tmux.conf')
     args = parser.parse_args()
     try:
-        sync(args.source, args.target, args.check, args.runtime)
+        sync(args.source, args.target, args.check, args.runtime, pin=False if args.no_pin else None, codex_context=False if args.no_codex else None)
         install_tmux_mouse(args.tmux_config, args.check)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f'zshrc sync failed: {error}\n')
