@@ -128,3 +128,9 @@ Update with `git pull --ff-only`, then `python3 sync_zshrc.py`. To stop an insta
 backup service immediately: `systemctl --user stop 42-lock-backup.service`; also
 save `privatebackup=FALSE`. To unload shell helpers, remove their marked `.zshrc`
 block or restore its pre-install backup. Configuration files remain on disk.
+
+The main checkpoint stages project paths explicitly after the side-push. Debug
+reports and non-project files written during plotting or pushing remain pending
+for the next side-push, even if another process stages them. Codex receives only
+the staged project diff; a debug-only update does not create a main WIP commit.
+Renames involving project code keep both paths together in the main commit.

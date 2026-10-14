@@ -37,6 +37,25 @@ def validate_paths(paths):
         if name == '.env' or name.startswith('.env.') and not name.endswith(('example', 'sample')) or name in {'auth.json', 'credentials.json', '.git-credentials', 'id_rsa', 'id_ed25519'} or name.endswith(('.key', '.p12', '.pfx')):
             raise ValueError('Credential-like file found; side-push stopped for local review')
 
+def stage_project(repo, project_root='Core Curriculum/Projects'):
+    """Stage project work only; debug writers may still run after side-push."""
+    project_root = str(PurePosixPath(project_root)).rstrip('/')
+    if PurePosixPath(project_root).is_absolute() or '..' in PurePosixPath(project_root).parts or project_root in ('', '.'):
+        raise ValueError('PROJECTS_ROOT must be a nonempty relative project directory')
+    groups = changed_groups(repo)
+    # Keep both ends of a rename involving project code in the main commit.
+    project = sorted({path for group in groups
+                      if any(inside(path, project_root) and not inside(path, DEBUG_PATH)
+                             for path in group) for path in group})
+    side = sorted({path for group in groups for path in group} - set(project))
+    validate_paths(project)
+    if side:
+        git(repo, 'reset', '--quiet', 'HEAD', '--', *side)
+    if project:
+        git(repo, 'add', '--all', '--', *project)
+    return project
+
+
 def side_push(repo, project_root='Core Curriculum/Projects', message='Update debug output and non-project files', push=True):
     repo = Path(repo).resolve(strict=True)
     project_root = str(PurePosixPath(project_root)).rstrip('/')
@@ -83,10 +102,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', default=os.environ.get('MAIN_REPO_ROOT'))
     parser.add_argument('--projects-root', default=os.environ.get('PROJECTS_ROOT', 'Core Curriculum/Projects'))
+    parser.add_argument('--stage-project', action='store_true')
     parser.add_argument('message', nargs='*')
     args = parser.parse_args()
     try:
-        side_push(args.repo or '.', args.projects_root, ' '.join(args.message) or 'Update debug output and non-project files')
+        if args.stage_project:
+            stage_project(args.repo or '.', args.projects_root)
+        else:
+            side_push(args.repo or '.', args.projects_root, ' '.join(args.message) or 'Update debug output and non-project files')
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print('gitpushswap failed: ' + str(error), flush=True)
         if isinstance(error, subprocess.CalledProcessError) and error.stderr:

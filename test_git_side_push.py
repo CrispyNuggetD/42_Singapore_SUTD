@@ -101,6 +101,47 @@ class SidePushTests(unittest.TestCase):
         self.assertIn('Project implementation remains in progress.', message)
         self.assertEqual(git(self.repo, 'rev-parse', 'HEAD'), git(self.remote, 'rev-parse', 'HEAD'))
 
+    def test_live_debug_updates_do_not_enter_main_commit_or_context(self):
+        (self.project / 'main.c').write_text('project WIP')
+        (self.debug / 'result.txt').write_text('side snapshot')
+        original = git_side_push.side_push
+        def side_then_writer(*args, **kwargs):
+            result = original(*args, **kwargs)
+            (self.debug / 'result.txt').write_text('live update after side push')
+            (self.debug / 'new.txt').write_text('new live report')
+            (self.repo / 'README.md').write_text('late nonproject update')
+            git(self.repo, 'add', '.')
+            return result
+        def context(repo):
+            self.assertEqual(git(repo, 'diff', '--cached', '--name-only').decode().strip(),
+                             'Core Curriculum/Projects/current/main.c')
+            return 'Update project implementation.'
+        with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
+                patch('git_side_push.side_push', side_effect=side_then_writer), \
+                patch('leaveschool.wip_body', side_effect=context), \
+                contextlib.redirect_stdout(io.StringIO()):
+            leaveschool.push(self.repo, wip=True)
+        self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD').decode().strip(),
+                         'Core Curriculum/Projects/current/main.c')
+        self.assertEqual(git(self.repo, 'show', 'HEAD:' + git_side_push.DEBUG_PATH + '/result.txt'),
+                         b'side snapshot')
+        self.assertIn(b'new.txt', git(self.repo, 'status', '--porcelain'))
+
+    def test_debug_only_after_side_push_skips_main_commit_and_codex(self):
+        original = git_side_push.side_push
+        def side_then_writer(*args, **kwargs):
+            result = original(*args, **kwargs)
+            (self.debug / 'result.txt').write_text('late debug update')
+            return result
+        before = git(self.repo, 'rev-parse', 'HEAD')
+        with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
+                patch('git_side_push.side_push', side_effect=side_then_writer), \
+                patch('leaveschool.wip_body') as context, \
+                contextlib.redirect_stdout(io.StringIO()):
+            leaveschool.push(self.repo, wip=True)
+        context.assert_not_called()
+        self.assertEqual(git(self.repo, 'rev-parse', 'HEAD'), before)
+
     def test_break_records_even_without_changes_and_continues_after_failure(self):
         state = Path(self.tmp.name) / 'state'
         with patch.dict('os.environ', {'XDG_STATE_HOME': str(state)}), \

@@ -94,7 +94,11 @@ def push(repo, wip=False):
     if repo.resolve() == main_repo:
         from git_side_push import side_push
         side_push(repo, os.environ.get('PROJECTS_ROOT', 'Core Curriculum/Projects'))
-    git(repo, 'add', '--all')
+    if repo.resolve() == main_repo:
+        from git_side_push import stage_project
+        stage_project(repo, os.environ.get('PROJECTS_ROOT', 'Core Curriculum/Projects'))
+    else:
+        git(repo, 'add', '--all')
     if git(repo, 'diff', '--cached', '--name-only', capture=True).stdout:
         title = ('WIP: break checkpoint ' if wip else 'leaveschool: save work ') + datetime.now().astimezone().isoformat(timespec='seconds')
         body = wip_body(repo) if wip and repo.resolve() == main_repo else ''

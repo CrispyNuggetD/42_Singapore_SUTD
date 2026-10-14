@@ -544,8 +544,13 @@ syncproj() {
     return 0
   fi
 
-  # 4) Stage everything (tracked + untracked + deletions)
-  git add -A || return $?
+  # 4) Stage project work; live debug output stays for the next side-push.
+  command python3 "$ZSHRC_RUNTIME_ROOT/git_side_push.py" \
+    --repo "$MAIN_REPO_ROOT" --projects-root "$PROJECTS_ROOT" --stage-project || return $?
+  if git diff --cached --quiet; then
+    echo "No project changes to commit; debug/non-project updates remain for the next side-push."
+    return 0
+  fi
 
   # show status so you see what will be committed
   echo
