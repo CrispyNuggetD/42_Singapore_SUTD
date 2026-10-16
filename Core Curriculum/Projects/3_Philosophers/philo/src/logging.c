@@ -6,31 +6,11 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 23:22:15 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 23:20:43 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-/*
-** Caller holds printing_lock. Return STATUS_STOPPED if output is suppressed.
-** An allowed death message also sets stopping before releasing the stop lock.
-*/
-static t_status	check_message_allowed(t_sim *sim, t_philo_state state)
-{
-	int	stopped;
-
-	if (pthread_mutex_lock(&sim->runtime.all_stop_lock) != 0)
-		return (ERR_MUTEX);
-	stopped = sim->runtime.all_stop;
-	if (!stopped && state == LOG_DIED)
-		sim->runtime.all_stop = 1;
-	if (pthread_mutex_unlock(&sim->runtime.all_stop_lock) != 0)
-		return (ERR_MUTEX);
-	if (stopped)
-		return (STATUS_STOPPED);
-	return (STATUS_OK);
-}
 
 static t_status	print_message(t_philo *philo, t_philo_state state)
 {
@@ -53,18 +33,36 @@ static t_status	print_message(t_philo *philo, t_philo_state state)
 }
 
 /*
-** All state output uses print -> stop lock order.
-** Death publishes stopping before printing; later messages are suppressed.
+** Log one state supplied by the caller; this function does not detect death.
+** The monitor calls LOG_DIED only after confirming an expired deadline.
+** Other callers use LOG_FORK, LOG_EATING, LOG_SLEEPING, or LOG_THINKING.
+**
+** request is an INPUT to check_or_stop_sim, not an operation result:
+** ordinary messages pass STATUS_OK (check only); LOG_DIED passes
+** STATUS_STOPPED (publish global stopping before printing this death).
+** status is the OUTPUT: STATUS_OK permits this message; STATUS_STOPPED
+** suppresses it because global stopping was already set. ERR_* is failure.
+** The first death request returns STATUS_OK so its message can print.
+**
+** Lock order is printing_lock then all_stop_lock. The helper releases the
+** stop lock before output; this function releases the print lock afterward.
+** Local STATUS_STOPPED results from workers do not call this logger as death.
+** Return failures to the caller; this function does not record sim_status
+** for its own time/output errors, join threads, or clean up resources.
 */
 t_status	log_philo_state(t_philo *philo, t_philo_state state)
 {
 	t_status	status;
+	t_status	request;
 
+	request = STATUS_OK;
+	if (state == LOG_DIED)
+		request = STATUS_STOPPED;
 	if (state < LOG_FORK || state >= LOG_TOTAL)
 		return (ERR_INVALID_LOG_STATE);
 	if (pthread_mutex_lock(&philo->sim->runtime.printing_lock) != 0)
 		return (ERR_MUTEX);
-	status = check_message_allowed(philo->sim, state);
+	status = check_or_stop_sim(philo->sim, request);
 	if (status == STATUS_OK)
 		status = print_message(philo, state);
 	if (pthread_mutex_unlock(&philo->sim->runtime.printing_lock) != 0)

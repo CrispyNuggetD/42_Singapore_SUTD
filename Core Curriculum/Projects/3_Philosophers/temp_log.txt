@@ -1,0 +1,112 @@
+WIP: add shared state logging and connect death monitoring
+
+Shared logging:
+- Add logging.c and t_philo_state templates for fork, eating, sleeping,
+  thinking, and death messages with elapsed milliseconds and philosopher ID.
+- log_philo_state serializes state output with print_mutex, reads the stop
+  flag under its mutex, and suppresses messages once stopping begins.
+- A death event sets stopping before output and releases the stop mutex so
+  other threads can observe it. Later death events are also suppressed.
+- Release print_mutex on time-read or printf failure and propagate ERR_TIME,
+  ERR_WRITE, or ERR_MUTEX.
+- Route the monitor's death announcement and current sleeping message through
+  this logger. Fork/eating/thinking templates are available for later calls.
+
+Monitoring and startup:
+- Add monitor.c: check each last_meal under meal_mutex, detect the deadline,
+  call the logger for death, and unlock meal_mutex before returning.
+- Rename start_philos to start_sim and run monitor_sim in main's calling
+  thread after creating philosopher threads.
+- Update main, header declarations, and the Makefile for these functions.
+- Replace the generic void-pointer stop representation with an integer
+  t_mutexed_flag named pls_stop; initialize stop and print mutexes.
+
+Waits and current routine:
+- Move philo_wait to time.c with now_ms.
+- Add check_sim_running and STATUS_STOPPED. Interrupt waits when stopping is
+  requested, distinguish interruption from completion, and check clock/sleep
+  errors.
+- Pass t_sim directly to philo_wait and preserve meal error/stop results so
+  interrupted eating releases forks without counting an unfinished meal.
+- Treat STATUS_STOPPED as a normal exit and keep enum/message indexing aligned.
+- Make philo_routine return NULL rather than integer statuses, report operation
+  errors separately, and replace its mixed-unit odd-ID delay with an
+  interruptible time_to_eat / 2 millisecond wait.
+
+File organization:
+- Merge parse_input.c and write_guaranteed.c into input_output.c; preserve
+  their functions and update its 42 header and the Makefile source list.
+
+Validation:
+- make passes; all compiled project source/header files pass norminette.
+- Logger checks cover all five formats, concurrent messages, exactly one
+  death, suppression after death, and lock release on clock/output failure.
+- Wait checks cover completion, interruption, fork release, unfinished meal
+  counts, and error-message alignment.
+
+WIP limitations:
+- The routine still performs one meal and logs sleeping; the repeating
+  eat/sleep/think cycle and meal-quota stopping are unfinished.
+- One-philosopher handling, deadlock prevention, and propagating worker
+  failures into global shutdown still need implementation.
+- Cleanup does not yet track/destroy the new shared stop and print mutexes.
+
+2026-10-16 EOD update: completion priorities and additional edits
+
+This update supersedes the historical WIP limitations above where marked DONE.
+The earlier log is preserved verbatim; old names describe that earlier snapshot.
+
+Completion priorities:
+1. TODO: Make fork acquisition deadlock-free. All workers still take left then
+   right; the initial odd-ID stagger is not a deadlock-prevention guarantee.
+2. TODO: Handle one philosopher explicitly: take/log one fork, wait for death,
+   release that owned fork, and never try to lock the same fork twice.
+3. TODO: Stop normally when every philosopher reaches optional_meal_goal.
+   Read meal counters under their meal-state mutexes.
+4. PARTIAL: First worker ERR_* is now saved under all_stop_lock and requests
+   stopping. Monitor must observe stopping and the saved error; startup/monitor
+   failures must request shutdown before joins. Consume/report the saved worker
+   error after joining, before destroying the shared locks. This is not wired
+   end-to-end yet; monitor can currently continue after a worker error.
+5. DONE: Track successful stop/printing mutex initialization in t_resources.
+   Initialize through init_shared_locks; destroy only initialized shared locks
+   in reverse order, clear flags on success, and support partial-init cleanup.
+   Update cleanup_resources to accept t_runtime and update main/header/README.
+6. TODO: Finish Norm and systematic runtime/race validation after the above.
+   Current build passes; philo_routine still exceeds 25 lines. Do not treat
+   successful compilation or targeted helper checks as a finished simulation.
+
+Additional implementation, clarity and error-checking work:
+7. DONE: Repeat eat/sleep/think, with the initial odd-ID stagger only once.
+   Preserve non-success results instead of overwriting them with later steps.
+   Only genuine ERR_* results publish worker failure; local STATUS_STOPPED
+   exits the worker without automatically publishing a new global stop.
+8. DONE: Protect meal-start time/deadline checks with meal_state_lock. Preserve
+   the old last_meal when already expired so the monitor can still detect death.
+   Connect eating/fork/thinking logs to the existing shared logger. The monitor
+   separates successful checking (STATUS_OK) from its died output parameter.
+9. DONE: take_fork_check_stop groups acquisition, stop checking and fork logging.
+   It releases its own fork on a stop/logging failure; preparation releases the
+   first fork if the second step fails. Meal failure paths release owned forks.
+   This rollback does not solve blocked acquisition or the single-philo case.
+10. DONE: Consolidate shared stop checking/updating into check_or_stop_sim with
+    a t_status request. STATUS_OK checks; STATUS_STOPPED requests normal stopping;
+    ERR_* saves only the first error and stops. Its return reports whether the
+    simulation was already stopped before the request, allowing first death
+    output while suppressing later messages under the printing mutex.
+11. DONE: Clarify request versus returned status, local versus global stopping,
+    monitor death ownership, and logger scope in enum/function comments. Keep
+    explicit names such as already_stopped, philo_index and take_fork_check_stop.
+    Remove the stale report_sim_error prototype and completed cleanup TODOs;
+    retain the remaining startup/monitor/error-consumption TODOs.
+12. DONE: Keep initialization separate from cleanup/error helpers, align manual
+    declarations/call sites with the runtime-aware cleanup API, and remove
+    trailing whitespace. Preserve the existing detailed learning appendix.
+
+Validation for this EOD checkpoint:
+- make passes; git diff --check passes.
+- Norm passes for the compiled header/sources except philo_routine's line limit.
+- Session checks exercised injected mutex-init failures at each of six init
+  steps, pre-init cleanup, destruction counts, reset flags and freed pointers.
+- Targeted fork rollback and shared stop/logger checks were exercised during
+  the session; comprehensive final simulation/race testing remains outstanding.

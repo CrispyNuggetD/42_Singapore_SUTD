@@ -883,10 +883,10 @@ function got or pass a growing list of unrelated pointers to cleanup.
 The function name and parameter now say what it operates on:
 
 ```c
-int cleanup_resources(t_resources *res, t_status status);
+int cleanup_resources(t_resources *res, t_runtime *run, t_status status);
 
 /* In main, after successful work or an earlier error: */
-return (cleanup_resources(&sim.resources, status));
+return (cleanup_resources(&sim.resources, &sim.runtime, status));
 ```
 
 I pass `&sim.resources` because cleanup needs the address of my actual

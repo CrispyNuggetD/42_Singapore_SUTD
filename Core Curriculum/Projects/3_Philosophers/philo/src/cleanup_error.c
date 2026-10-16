@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 17:25:39 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 23:23:40 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,29 @@ t_status	join_philos(t_resources *res)
 	return (STATUS_OK);
 }
 
+/* Destroy only initialized shared locks, reversing their setup order. */
+static t_status	destroy_shared_locks(t_resources *res, t_runtime *run)
+{
+	if (res->printing_lock_initialized == 1)
+	{
+		if (pthread_mutex_destroy(&run->printing_lock) != 0)
+			return (ERR_MUTEX_DESTROY);
+		res->printing_lock_initialized = 0;
+	}
+	if (res->stop_lock_initialized == 1)
+	{
+		if (pthread_mutex_destroy(&run->all_stop_lock) != 0)
+			return (ERR_MUTEX_DESTROY);
+		res->stop_lock_initialized = 0;
+	}
+	return (STATUS_OK);
+}
+
 /*
 ** Join started threads before destroying mutexes or freeing their data.
 ** Retain arrays if joining a thread or destroying a mutex fails.
 */
-int	cleanup_resources(t_resources *res, t_status status)
+int	cleanup_resources(t_resources *res, t_runtime *run, t_status status)
 {
 	if (join_philos(res) != STATUS_OK)
 		return (print_return_error(ERR_THREAD_JOIN) != STATUS_OK);
@@ -46,12 +64,8 @@ int	cleanup_resources(t_resources *res, t_status status)
 			return (print_return_error(ERR_MUTEX_DESTROY) != STATUS_OK);
 		res->forks_init_count--;
 	}
-	// TODO: Destroy printing_lock and all_stop_lock here, after all threads are joined.
-	// WRONG NOW: Cleanup destroys meal/fork mutexes but skips both shared runtime mutexes.
-	// This leaks their lifecycle/resources, including on partial initialization failures.
-	// They live in t_runtime, so this t_resources-only parameter cannot reach them yet.
-	// Pass runtime too (or store owned locks in resources), and track each successful init.
-	// Destroy only initialized locks; zero-filled mutex bytes do not count as initialization.
+	if (destroy_shared_locks(res, run) != STATUS_OK)
+		return (print_return_error(ERR_MUTEX_DESTROY) != STATUS_OK);
 	free(res->philos);
 	free(res->all_forks_mutexes);
 	res->philos = NULL;

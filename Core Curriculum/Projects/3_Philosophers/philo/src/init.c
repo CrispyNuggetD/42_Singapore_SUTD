@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 22:15:28 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 23:22:31 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,22 @@ static t_status	init_forks(t_sim *sim)
 	return (STATUS_OK);
 }
 
+/* Initialize shared locks in order; flags support partial-failure cleanup. */
+static t_status	init_shared_locks(t_sim *sim)
+{
+	t_resources	*res;
+
+	sim->runtime.all_stop = 0;
+	res = &sim->resources;
+	if (pthread_mutex_init(&sim->runtime.all_stop_lock, NULL) != 0)
+		return (ERR_MUTEX_INIT);
+	res->stop_lock_initialized = 1;
+	if (pthread_mutex_init(&sim->runtime.printing_lock, NULL) != 0)
+		return (ERR_MUTEX_INIT);
+	res->printing_lock_initialized = 1;
+	return (STATUS_OK);
+}
+
 t_status	init_sim(t_sim *sim)
 {
 	t_status	status;
@@ -62,15 +78,9 @@ t_status	init_sim(t_sim *sim)
 	sim->runtime.start_time = now_ms();
 	if (sim->runtime.start_time == -1)
 		return (ERR_TIME);
-	// TODO: Track successful initialization of all_stop_lock and printing_lock.
-	// WRONG NOW: If printing_lock initialization fails, all_stop_lock remains initialized.
-	// Later allocation/setup failures also leave these shared mutexes initialized.
-	// Add success flags to t_resources; set each only after its mutex init succeeds.
-	sim->runtime.all_stop = 0;
-	if (pthread_mutex_init(&sim->runtime.all_stop_lock, NULL) != 0)
-		return (ERR_MUTEX_INIT);
-	if (pthread_mutex_init(&sim->runtime.printing_lock, NULL) != 0)
-		return (ERR_MUTEX_INIT);
+	status = init_shared_locks(sim);
+	if (status != STATUS_OK)
+		return (status);
 	res = &sim->resources;
 	res->all_forks_mutexes = malloc(sizeof(*res->all_forks_mutexes)
 			* sim->config.count);

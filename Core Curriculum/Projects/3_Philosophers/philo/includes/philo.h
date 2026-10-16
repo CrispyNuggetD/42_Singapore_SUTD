@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 18:47:44 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 23:13:01 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,12 @@
 /* Wait between checks: 100 microseconds = 0.1 milliseconds. */
 # define WAIT_CHECK_MICROSECONDS 100
 
+/*
+** STATUS_OK: operation succeeded; STATUS_STOPPED: normal early completion.
+** A returned STATUS_STOPPED does not itself change the shared all_stop flag.
+** Passing it as a request to check_or_stop_sim DOES request global stopping.
+** ERR_* values describe operation failures; sim_status keeps the first one.
+*/
 typedef enum e_status
 {
 	STATUS_OK,
@@ -107,13 +113,15 @@ typedef struct s_philo
 ** The runtime fields below hold shared simulation state:
 ** start_time: simulation start timestamp, in milliseconds.
 ** all_stop: shared stop flag; 0 while running, 1 when stopping.
-** all_stop_lock: protects every read and write of all_stop.
+** sim_status: first recorded ERR_*; STATUS_OK means no error recorded.
+** all_stop_lock: protects all_stop and sim_status.
 ** printing_lock: coordinates logging.
 */
 typedef struct s_runtime
 {
 	long			start_time;
 	int				all_stop;
+	t_status		sim_status;
 	pthread_mutex_t	all_stop_lock;
 	pthread_mutex_t	printing_lock;
 }	t_runtime;
@@ -124,6 +132,7 @@ typedef struct s_runtime
 ** philos: allocated array of config.count philosopher records.
 ** forks_init_count: number of initialized fork mutexes safe to destroy.
 ** meals_init_count: number of initialized meal mutexes safe to destroy.
+** stop_lock_initialized, printing_lock_initialized: shared-lock success flags.
 ** threads_to_join: count of started threads still needing a join.
 ** init_sim initializes resources; start_sim starts threads and runs the monitor.
 ** cleanup_resources joins threads, destroys mutexes, and frees arrays.
@@ -134,6 +143,8 @@ typedef struct s_resources
 	t_philo			*philos;
 	int				forks_init_count;
 	int				meals_init_count;
+	int				stop_lock_initialized;
+	int				printing_lock_initialized;
 	int				threads_to_join;
 }	t_resources;
 
@@ -156,10 +167,11 @@ t_status	print_return_error(t_status status);
 t_status	write_guaranteed(int fd, const char *buffer, size_t length);
 t_status	init_philos(t_sim *sim);
 t_status	init_sim(t_sim *sim);
-int			cleanup_resources(t_resources *res, t_status status);
+int			cleanup_resources(t_resources *res, t_runtime *run,
+				t_status status);
 t_status	prepare_to_eat(t_philo *philo);
 t_status	philo_eat(t_philo *philo);
-t_status	check_sim_running(t_sim *sim);
+t_status	check_or_stop_sim(t_sim *sim, t_status request);
 t_status	philo_wait(t_sim *sim, long duration_ms);
 t_status	start_sim(t_sim *sim);
 t_status	monitor_sim(t_sim *sim);

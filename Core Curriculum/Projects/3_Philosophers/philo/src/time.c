@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 19:59:05 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 23:11:29 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 23:00:23 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,23 +22,42 @@ long	now_ms(void)
 }
 
 /*
-** Copy the shared stop flag while locked; return only after unlocking.
-** STATUS_STOPPED is a normal interrupted wait, not a completed duration.
+** Shared stop/error bookkeeping only: no death detection or printing here.
+** Protect both all_stop and sim_status with all_stop_lock.
+**
+** INPUT request: STATUS_OK reads only; STATUS_STOPPED requests global stop;
+** ERR_* records the first genuine error and requests global stop.
+** Do not forward a worker's local STATUS_STOPPED here unless a global stop
+** is intended: it could suppress the monitor's still-pending death message.
+**
+** OUTPUT reports the state BEFORE this request: STATUS_OK means previously
+** running, including when this call first sets stopping. STATUS_STOPPED means
+** already stopped. Mutex failures return ERR_MUTEX. Read sim_status separately
+** under the lock to obtain the recorded error; this return is not that error.
 */
-t_status	check_sim_running(t_sim *sim)
+t_status	check_or_stop_sim(t_sim *sim, t_status request)
 {
-	int	stop;
+	int	already_stopped;
 
 	if (pthread_mutex_lock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
-	stop = sim->runtime.all_stop;
+	if (request > STATUS_STOPPED && sim->runtime.sim_status == STATUS_OK)
+		sim->runtime.sim_status = request;
+	already_stopped = sim->runtime.all_stop;
+	if (!already_stopped && request != STATUS_OK)
+		sim->runtime.all_stop = 1;
 	if (pthread_mutex_unlock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
-	if (stop)
+	if (already_stopped)
 		return (STATUS_STOPPED);
 	return (STATUS_OK);
 }
 
+/*
+** Return STATUS_OK only when the requested duration has elapsed.
+** STATUS_STOPPED means global stopping interrupted the wait; ERR_* is failure.
+** No locks/forks are released here; the caller handles what it owns.
+*/
 t_status	philo_wait(t_sim *sim, long duration_ms)
 {
 	long		start_time;
@@ -50,7 +69,7 @@ t_status	philo_wait(t_sim *sim, long duration_ms)
 		return (ERR_TIME);
 	while (1)
 	{
-		status = check_sim_running(sim);
+		status = check_or_stop_sim(sim, 0);
 		if (status != STATUS_OK)
 			return (status);
 		current_time = now_ms();
