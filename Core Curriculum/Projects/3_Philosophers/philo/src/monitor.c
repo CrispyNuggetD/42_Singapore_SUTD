@@ -40,12 +40,12 @@ t_status	monitor_sim(t_sim *sim)
 		while (i < sim->config.count)
 		{
 			check_philo = &sim->resources.philos[i];
-			if (pthread_mutex_lock(&check_philo->meal_mutex) != 0)
+			if (pthread_mutex_lock(&check_philo->meal_state_lock) != 0)
 				return (ERR_MUTEX);
 			status = check_death_locked(check_philo, sim, &died);
 			if (status == STATUS_OK && died == 1)
 				status = log_philo_state(check_philo, LOG_DIED);
-			if (pthread_mutex_unlock(&check_philo->meal_mutex) != 0)
+			if (pthread_mutex_unlock(&check_philo->meal_state_lock) != 0)
 				return (ERR_MUTEX);
 			if (status != STATUS_OK || died == 1)
 				return (status);

@@ -12,17 +12,20 @@
 
 #include "philo.h"
 
-/* Caller holds print_mutex; release the stop lock before writing output. */
-static t_status	allow_message(t_sim *sim, t_philo_state state)
+/*
+** Caller holds printing_lock. Return STATUS_STOPPED if output is suppressed.
+** An allowed death message also sets stopping before releasing the stop lock.
+*/
+static t_status	check_message_allowed(t_sim *sim, t_philo_state state)
 {
 	int	stopped;
 
-	if (pthread_mutex_lock(&sim->runtime.pls_stop.lock) != 0)
+	if (pthread_mutex_lock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
-	stopped = sim->runtime.pls_stop.value;
+	stopped = sim->runtime.all_stop;
 	if (!stopped && state == LOG_DIED)
-		sim->runtime.pls_stop.value = 1;
-	if (pthread_mutex_unlock(&sim->runtime.pls_stop.lock) != 0)
+		sim->runtime.all_stop = 1;
+	if (pthread_mutex_unlock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
 	if (stopped)
 		return (STATUS_STOPPED);
@@ -58,13 +61,13 @@ t_status	log_philo_state(t_philo *philo, t_philo_state state)
 	t_status	status;
 
 	if (state < LOG_FORK || state >= LOG_TOTAL)
-		return (ERR_WRITE);
-	if (pthread_mutex_lock(&philo->sim->runtime.print_mutex) != 0)
+		return (ERR_INVALID_LOG_STATE);
+	if (pthread_mutex_lock(&philo->sim->runtime.printing_lock) != 0)
 		return (ERR_MUTEX);
-	status = allow_message(philo->sim, state);
+	status = check_message_allowed(philo->sim, state);
 	if (status == STATUS_OK)
 		status = print_message(philo, state);
-	if (pthread_mutex_unlock(&philo->sim->runtime.print_mutex) != 0)
+	if (pthread_mutex_unlock(&philo->sim->runtime.printing_lock) != 0)
 		return (ERR_MUTEX);
 	return (status);
 }

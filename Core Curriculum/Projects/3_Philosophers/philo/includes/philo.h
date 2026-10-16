@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/12 22:13:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/16 18:47:44 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ typedef enum e_status
 	ERR_MUTEX,
 	ERR_SLEEP,
 	ERR_WRITE,
+	ERR_INVALID_LOG_STATE,
 	ERR_TOTAL
 }	t_status;
 
@@ -61,12 +62,6 @@ typedef enum e_philo_state
 	LOG_DIED,
 	LOG_TOTAL
 }	t_philo_state;
-
-typedef struct s_mutexed_flag
-{
-	int				value;
-	pthread_mutex_t	lock;
-}	t_mutexed_flag;
 
 /*
 ** The configuration below is populated by parse_input:
@@ -90,51 +85,55 @@ typedef struct s_sim	t_sim;
 ** Below describe one philosopher:
 ** id: philosopher number, from 1 to N.
 ** thread_handle: handle used by pthread_create and pthread_join.
-** left_fork, right_fork: pointers to mutexes in the fork array.
+** left_fork_lock, right_fork_lock: pointers to mutexes in the fork array.
+** meal_state_lock: protects reads and writes of the next two fields.
 ** last_meal: LAST meal START time, in milliseconds.
 ** meals_eaten: number of completed meals.
-** meal_mutex: to protect last_meal and meals_eaten.
 ** sim: pointer to the shared simulation.
 */
 typedef struct s_philo
 {
 	int				id;
 	pthread_t		thread_handle;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
+	pthread_mutex_t	*left_fork_lock;
+	pthread_mutex_t	*right_fork_lock;
+	pthread_mutex_t	meal_state_lock;
 	long			last_meal;
 	int				meals_eaten;
-	pthread_mutex_t	meal_mutex;
 	t_sim			*sim;
 }	t_philo;
 
 /*
 ** The runtime fields below hold shared simulation state:
 ** start_time: simulation start timestamp, in milliseconds.
-** is_stop: locked stop flag; 0 while running, 1 when stopping.
-** print_mutex: coordinates logging.
+** all_stop: shared stop flag; 0 while running, 1 when stopping.
+** all_stop_lock: protects every read and write of all_stop.
+** printing_lock: coordinates logging.
 */
 typedef struct s_runtime
 {
 	long			start_time;
-	t_mutexed_flag	pls_stop;
-	pthread_mutex_t	print_mutex;
+	int				all_stop;
+	pthread_mutex_t	all_stop_lock;
+	pthread_mutex_t	printing_lock;
 }	t_runtime;
 
 /*
 ** The resources below are owned by the simulation:
-** forks, philos: allocated arrays, each with config.count elements.
-** forks_init, meals_init: mutexes safe to destroy.
+** all_forks_mutexes: allocated array of config.count fork mutexes.
+** philos: allocated array of config.count philosopher records.
+** forks_init_count: number of initialized fork mutexes safe to destroy.
+** meals_init_count: number of initialized meal mutexes safe to destroy.
 ** threads_to_join: count of started threads still needing a join.
 ** init_sim initializes resources; start_sim starts threads and runs the monitor.
 ** cleanup_resources joins threads, destroys mutexes, and frees arrays.
 */
 typedef struct s_resources
 {
-	pthread_mutex_t	*forks;
+	pthread_mutex_t	*all_forks_mutexes;
 	t_philo			*philos;
-	int				forks_init;
-	int				meals_init;
+	int				forks_init_count;
+	int				meals_init_count;
 	int				threads_to_join;
 }	t_resources;
 

@@ -95,6 +95,8 @@ simulation features. The numbered links jump to each learning point.
 27. [What atomic means](#learning-point-27)
 28. [What the non-default pthread settings actually configure](#learning-point-28)
 29. [Recursive mutex use case and the caller-held-lock alternative](#learning-point-29)
+30. [Main as monitor versus a separate monitor thread](#learning-point-30)
+31. [Why I use separate stop and printing locks](#learning-point-31)
 
 <a id="learning-point-1"></a>
 
@@ -659,17 +661,17 @@ pthread_mutex_lock(&forks[i]);
 A philosopher can store pointers into that array:
 
 ```c
-philos[i].left_fork = &forks[i];
-philos[i].right_fork = &forks[(i + 1) % count];
+philos[i].left_fork_lock = &forks[i];
+philos[i].right_fork_lock = &forks[(i + 1) % count];
 ```
 
 Then use the stored pointer directly:
 
 ```c
-pthread_mutex_lock(philos[i].left_fork);
+pthread_mutex_lock(philos[i].left_fork_lock);
 ```
 
-There is no extra `&` because `left_fork` is already a mutex pointer.
+There is no extra `&` because `left_fork_lock` is already a mutex pointer.
 For three philosophers, using array indices rather than displayed IDs:
 
 ```text
@@ -706,14 +708,14 @@ fork, including eating. A meal mutex protects brief accesses to meal data:
 
 ```c
 /* Philosopher */
-pthread_mutex_lock(&philo->meal_mutex);
+pthread_mutex_lock(&philo->meal_state_lock);
 philo->last_meal = now_ms();
-pthread_mutex_unlock(&philo->meal_mutex);
+pthread_mutex_unlock(&philo->meal_state_lock);
 
 /* Monitor */
-pthread_mutex_lock(&philo->meal_mutex);
+pthread_mutex_lock(&philo->meal_state_lock);
 last_meal = philo->last_meal;
-pthread_mutex_unlock(&philo->meal_mutex);
+pthread_mutex_unlock(&philo->meal_state_lock);
 ```
 
 `now_ms()` is a helper I write, not a library function. Do not hold the meal
@@ -874,8 +876,8 @@ function got or pass a growing list of unrelated pointers to cleanup.
 | Resource information | What cleanup can do with it |
 | --- | --- |
 | `threads_to_join` and each `thread_handle` | Join the threads that successfully started |
-| `meals_init` | Destroy that many initialized meal mutexes |
-| `forks_init` | Destroy that many initialized fork mutexes |
+| `meals_init_count` | Destroy that many initialized meal mutexes |
+| `forks_init_count` | Destroy that many initialized fork mutexes |
 | `philos` and `forks` | Free the allocated arrays after joining and destruction succeed |
 
 The function name and parameter now say what it operates on:
@@ -889,7 +891,7 @@ return (cleanup_resources(&sim.resources, status));
 
 I pass `&sim.resources` because cleanup needs the address of my actual
 resource group. One `*` is enough: it lets the function update counters
-and set `res->philos` and `res->forks` to `NULL`. A `t_resources **` would
+and set `res->philos` and `res->all_forks_mutexes` to `NULL`. A `t_resources **` would
 be useful if the function needed to replace a caller's `t_resources *`
 variable; that is not what this call does.
 
@@ -922,7 +924,7 @@ assuming a `-1` return or looking in `errno`. My project enum groups these
 failures under one message: "Error: Mutex initialization failed."
 
 ```c
-if (pthread_mutex_init(&sim->resources.philos[i].meal_mutex, NULL) != 0)
+if (pthread_mutex_init(&sim->resources.philos[i].meal_state_lock, NULL) != 0)
     return (ERR_MUTEX_INIT);
 ```
 
@@ -1110,14 +1112,14 @@ pthread_mutex_init(&b, NULL);
 For two philosophers sharing one fork, store pointers to the same object:
 
 ```c
-philo_a.right_fork = &forks[1];
-philo_b.left_fork = &forks[1];
+philo_a.right_fork_lock = &forks[1];
+philo_b.left_fork_lock = &forks[1];
 ```
 
 ```text
-philo_a.right_fork --+
+philo_a.right_fork_lock --+
                     +--> same mutex: forks[1]
-philo_b.left_fork ---+
+philo_b.left_fork_lock ---+
 ```
 
 Copying a mutex pointer is fine. Copying an initialized mutex with
@@ -1125,7 +1127,7 @@ assignment or `memcpy()` is not. This also applies indirectly when copying
 a struct containing an initialized mutex:
 
 ```c
-philos[1] = philos[0]; /* Also copies meal_mutex: do not use that copy. */
+philos[1] = philos[0]; /* Also copies meal_state_lock: do not use that copy. */
 ```
 
 Initialize the structs in their final storage, then initialize each mutex
@@ -1617,5 +1619,111 @@ the lock before calling the helper and releases it afterward. Fork ownership
 still lasts through eating. Recursive locking cannot turn the sole fork in
 the one-philosopher case into two forks, and recursive attribute setters are
 not in this subject's allowed list.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-30"></a>
+
+### 30. Main as monitor versus a separate monitor thread
+
+I thought a "monitor" had to be another thread, but main is already a
+thread lol. After it creates the philosopher threads, it can run the
+monitor loop itself. Creating another monitor thread is another valid
+design; the difference is where the monitoring function runs.
+
+| Design choice | Main monitors (my current design) | Separate monitor thread |
+| --- | --- | --- |
+| Execution paths for N philosophers | N philosopher threads plus main | N philosopher threads, a monitor thread, and main |
+| What main does | Starts philosophers, monitors, then joins and cleans up | Starts philosophers and monitor, then coordinates joins and cleanup |
+| Main advantage | Uses the existing main thread; fewer handles and failure paths to manage | Leaves main available for other orchestration while monitoring runs independently |
+| Main tradeoff | Main cannot block on another task while it is responsible for death checks | Extra thread creation, stack resources, a handle, and another join to manage |
+| Startup failures | Handle partial philosopher creation | Also handle monitor creation failing after philosophers have started |
+| Shared-data protection | Lock meal data, stopping, and logging as appropriate | Needs the same protections; a separate monitor does not remove races |
+| Death-detection timing | Depends on scan duration, polling pauses, lock contention, and scheduling | Depends on those same factors; an extra thread does not guarantee faster detection |
+
+For my implementation of this project, I chose main as the monitor because
+it is the better fit: once philosopher threads are started, main has no
+other job that needs to run concurrently with monitoring. Joining and cleanup
+come afterward. Creating a separate monitor just to leave main waiting would
+add a thread, a handle, a creation-failure path, and a join without adding a
+capability I need. Main is already there, so I give it the monitoring work lol.
+That makes this design simpler and less redundant for my program; it is a
+design choice, not a requirement that every Philo implementation use main:
+
+```text
+main: initialize -> create philosophers -> monitor -> join -> cleanup
+philosopher threads: run their routines concurrently
+```
+
+With a separate monitor, a possible arrangement is:
+
+```text
+main: initialize -> create philosophers -> create monitor -> join -> cleanup
+monitor thread: check death/quota -> publish stopping -> return
+philosopher threads: run their routines concurrently
+```
+
+Either design needs a stop request on startup/runtime errors so joins do
+not wait forever for routines that have no reason to finish. All threads
+that might touch the shared objects must finish and be joined before I
+destroy those objects. The extra monitor's creation can also fail from
+resource shortages, as documented in the
+[pthread_create manual](https://www.man7.org/linux/man-pages/man3/pthread_create.3.html).
+
+Neither design creates a dedicated printing thread. A philosopher calls
+`log_philo_state()` for its own messages; the thread running the monitor
+calls it for death. They execute the same logger on their own threads,
+and `printing_lock` lets one through at a time. A state struct stores data;
+it does not execute the monitor or replace a thread.
+
+These are design tradeoffs, not a claim that either layout automatically
+satisfies the subject's timing requirements. My complete lifecycle and
+shutdown handling still need to be finished and tested.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-31"></a>
+
+### 31. Why I use separate stop and printing locks
+
+At first glance I thought I only needed one mutex for stopping and printing.
+Then I realized my philosophers check stopping much more often than they
+print anything lol. During a 200 ms eating wait, `philo_wait()` repeatedly
+checks the flag between short sleeps. Those checks do not print messages.
+If stopping is requested, the philosopher releases its forks and returns
+without printing another normal state message.
+
+One mutex could protect both the flag and output correctly. My two-lock
+solution separates a brief flag check from potentially slower output:
+
+| Lock | Work while it is held | Why keep it separate? |
+| --- | --- | --- |
+| `all_stop_lock` | Copy or update the integer stop flag | Frequent stop checks need only a short critical section |
+| `printing_lock` | Coordinate state logging, read the time, and call `printf()` | Output can take longer or block, especially when its destination is slow |
+
+If both jobs shared one mutex, a tiny stop check could queue behind an
+output operation. With two, a philosopher can check the stop flag while
+another thread holds `printing_lock`, except during that logger's brief
+access to `all_stop_lock`. It does not need to wait for the whole output
+operation to finish. That is the practical reason for keeping two locks.
+
+"Fast mutex flag" is my intuition, but the mutexes themselves are the same
+kind. The difference is the work inside their critical sections. Even the
+brief flag check can wait because of contention or scheduling; I have not
+benchmarked a speed difference. This design avoids tying that check to
+output latency rather than guaranteeing a particular response time.
+
+I would not call the output mutex `printing_block`: "block" could mean a
+code block or a blocked thread, and does not tell me its expected duration.
+`printing_lock` describes its job. `all_stop_lock` describes the flag it
+protects; `stop_flag_lock` would also be clear. I can explain their different
+hold times in comments without naming one "fast" and the other "slow".
+
+The logger still acquires locks in the order `printing_lock` then
+`all_stop_lock`, releases the stop lock, and completes output before
+releasing the print lock. Once death publishes the stop flag, wait loops
+can observe it while the death message is being printed. Publishing death
+itself can still wait to acquire `printing_lock`; two locks do not make a
+blocked output destination harmless or guarantee the death-message deadline.
 
 [Back to appendix index](#learning-points)

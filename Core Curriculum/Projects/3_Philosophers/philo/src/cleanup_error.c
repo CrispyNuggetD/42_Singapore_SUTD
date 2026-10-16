@@ -32,23 +32,30 @@ int	cleanup_resources(t_resources *res, t_status status)
 {
 	if (join_philos(res) != STATUS_OK)
 		return (print_return_error(ERR_THREAD_JOIN) != STATUS_OK);
-	while (res->meals_init > 0)
+	while (res->meals_init_count > 0)
 	{
 		if (pthread_mutex_destroy(
-				&res->philos[res->meals_init - 1].meal_mutex) != 0)
+				&res->philos[res->meals_init_count - 1].meal_state_lock) != 0)
 			return (print_return_error(ERR_MUTEX_DESTROY) != STATUS_OK);
-		res->meals_init--;
+		res->meals_init_count--;
 	}
-	while (res->forks_init > 0)
+	while (res->forks_init_count > 0)
 	{
-		if (pthread_mutex_destroy(&res->forks[res->forks_init - 1]) != 0)
+		if (pthread_mutex_destroy(
+				&res->all_forks_mutexes[res->forks_init_count - 1]) != 0)
 			return (print_return_error(ERR_MUTEX_DESTROY) != STATUS_OK);
-		res->forks_init--;
+		res->forks_init_count--;
 	}
+	// TODO: Destroy printing_lock and all_stop_lock here, after all threads are joined.
+	// WRONG NOW: Cleanup destroys meal/fork mutexes but skips both shared runtime mutexes.
+	// This leaks their lifecycle/resources, including on partial initialization failures.
+	// They live in t_runtime, so this t_resources-only parameter cannot reach them yet.
+	// Pass runtime too (or store owned locks in resources), and track each successful init.
+	// Destroy only initialized locks; zero-filled mutex bytes do not count as initialization.
 	free(res->philos);
-	free(res->forks);
+	free(res->all_forks_mutexes);
 	res->philos = NULL;
-	res->forks = NULL;
+	res->all_forks_mutexes = NULL;
 	return (print_return_error(status) > STATUS_STOPPED);
 }
 
@@ -75,7 +82,8 @@ static const char	*error_message(t_status status)
 		"Error: Mutex destruction failed.\n",
 		"Error: Mutex operation failed.\n",
 		"Error: Sleep failed.\n",
-		"Error: Output write failed.\n"
+		"Error: Output write failed.\n",
+		"Error: Invalid philosopher log state.\n"
 	};
 
 	return (messages[status]);

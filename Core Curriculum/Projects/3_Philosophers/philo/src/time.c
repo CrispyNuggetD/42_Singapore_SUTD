@@ -29,10 +29,10 @@ t_status	check_sim_running(t_sim *sim)
 {
 	int	stop;
 
-	if (pthread_mutex_lock(&sim->runtime.pls_stop.lock) != 0)
+	if (pthread_mutex_lock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
-	stop = sim->runtime.pls_stop.value;
-	if (pthread_mutex_unlock(&sim->runtime.pls_stop.lock) != 0)
+	stop = sim->runtime.all_stop;
+	if (pthread_mutex_unlock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
 	if (stop)
 		return (STATUS_STOPPED);
