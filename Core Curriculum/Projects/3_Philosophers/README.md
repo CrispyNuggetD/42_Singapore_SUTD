@@ -1911,6 +1911,8 @@ modulo three for the initial wait? But waiting for a fork can swallow that
 initial timing advantage. I need to define what my clock actually guarantees
 before trying to encode it lol.
 
+[My ELI5 moving-stencil analogy and why I am exploring algebra](#clock-eli5)
+
 These are mathematical designs and analysis of my experiments, not a claim
 that the current simulation implements an enforced clock. I use zero-based
 indices in equations and P1-based IDs in the example tables.
@@ -2074,6 +2076,197 @@ $$
 Since gcd(n,m) = 1, n divides L. Therefore n phases is the shortest possible
 equal-service cycle made entirely of maximum-size sets, and it gives r = m.
 My five-phase construction is not an arbitrary choice of ten meals.
+
+
+
+<a id="clock-eli5"></a>
+
+#### My shower analogy: extra meal tickets, not extra philosophers
+
+I was thinking about this while showering lol. What if I stop picturing only
+the people and start picturing their meal opportunities? With three people,
+I can label six opportunities and map them back onto the original table:
+
+| Meal opportunity | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Person who eats | P1 | P2 | P3 | P1 | P2 | P3 |
+
+There are still three people. Opportunities 4, 5, and 6 are their next meals.
+Modulo is the wrapping rule that brings me back to the same people:
+
+$
+\operatorname{person}(q)=1+((q-1)\bmod3),
+\qquad q=1,2,\ldots
+$
+
+This captures my intuition about preserving turns: after P1, P2, P3, I return
+to P1. Mirroring the sequence would instead begin P1, P2, P3, P2, P1, ...
+and give different people different gaps. That could miss a deadline, although
+the sequence alone does not prove death without specifying the timings.
+
+The analogy is useful, but I need to distinguish that serial meal-number
+formula from my formula for a whole group eating together:
+
+$
+A_t=\{(t+2j)\bmod n:\;j=0,\ldots,m-1\},
+\qquad m=(n-1)/2.
+$
+
+The 2j does **not** mean "double the number of people" or "give everyone two
+meals." It means "move two seats for each additional eater in this phase."
+With three people, m = 1, so j is always zero: 2j is always zero too.
+The schedule reduces to A_t = {t mod 3}. The movement and repetition in my
+three-person example come entirely from t and modulo.
+
+#### ELI5: move a stencil around a circular table
+
+Imagine my friends sitting around a circular table. I have a stencil with
+holes over every other seat. A hole means "you may eat this turn."
+
+For five friends, the stencil has two holes: one at its starting seat and
+one two seats farther around the table. I move the entire stencil one seat
+forward after each phase. I keep moving in the same direction; I do not
+bounce backward at the end.
+
+| Equation part | What I picture |
+| --- | --- |
+| t | Where I place the stencil's first hole this phase |
+| j = 0, 1, ..., m - 1 | Which hole I am placing; there are m holes |
+| 2j | Place each additional hole two seats farther along |
+| t + 2j | Start at t, then add that hole's offset |
+| modulo n | If I pass the last seat, wrap around the same table |
+| A_t | Everyone underneath a hole during this phase |
+
+Here t is a phase number, not elapsed time and not an odd/even correction.
+If I want a time-based implementation, a separate rule must map elapsed time
+to a phase. If I want completion-based phases, a separate protocol advances t
+when the permitted group has finished.
+
+Using ordinary IDs rather than zero-based indices, my five-person picture is:
+
+| Phase | Starting seat | First hole (j = 0) | Second hole (j = 1) |
+| --- | --- | --- | --- |
+| 0 | P1 | P1 | P3 |
+| 1 | P2 | P2 | P4 |
+| 2 | P3 | P3 | P5 |
+| 3 | P4 | P4 | P1 |
+| 4 | P5 | P5 | P2 |
+| 5 | P1 again | P1 | P3 |
+
+I can read this without doing algebra: **pick someone, skip their neighbour,
+pick the next person; next phase, move the whole selection one seat.**
+For larger odd tables I keep placing holes every other seat until I have
+m holes.
+
+The selection stops before it wraps into a conflicting neighbour. With
+n = 2m + 1, the gaps between holes are two seats, except for the final
+wraparound gap of three seats. That is why every selected pair of neighbours
+in the circular ordering has at least one unselected person between them.
+
+The stencil is an explanation of the rotating schedule, not an illustration
+of what my current threads automatically do. Fork mutexes still protect fork
+ownership; a scheduling protocol must make workers obey the stencil.
+
+#### Where my "multiply by two" intuition fits
+
+For five people, at most two eat together. Giving everyone one meal amounts
+to 5 / 2 = 2.5 fully occupied phases' worth of work. I cannot execute half a
+discrete phase. One valid option is three phases with group sizes 2, 2, 1.
+That clock is not inherently unstable; its last phase simply has spare
+capacity.
+
+If I want every phase full, I can give everyone two meals instead:
+
+$
+5\text{ people}\times2\text{ meals}=10\text{ meal opportunities},
+\qquad 10/2=5\text{ full phases}.
+$
+
+So my doubling picture is exactly the capacity arithmetic for n = 5. It
+explains why I considered a longer cycle. It is not the meaning of the 2
+inside 2j, and it does not mean mirroring the first cycle.
+
+For other odd sizes, doubling is not the general construction:
+
+| People n | Eaters per full phase m | Meals per person in this rotating cycle | Total meals | Phases |
+| --- | ---: | ---: | ---: | ---: |
+| 3 | 1 | 1 | 3 | 3 |
+| 5 | 2 | 2 | 10 | 5 |
+| 7 | 3 | 3 | 21 | 7 |
+| 9 | 4 | 4 | 36 | 9 |
+
+The general arithmetic is n people times m meals, packed into n full phases.
+For seven people, there are 21 opportunities, which is still odd. I am making
+the number of opportunities divisible by the capacity per phase; I do not
+need to make the total even.
+
+Also, once several people eat together, there is no unique serial order of
+their meal opportunities within a phase. My three-person "first and fourth
+meal belong to P1" picture does not generalize to "every n-th output line
+belongs to the same person." The group schedule and the order in which its
+threads print are different things.
+
+#### Why this rotating picture is fair
+
+For five people, I can track P1 without looking at anyone else's timestamps.
+P1 appears in phases 0 and 3, then 5 and 8, and so on. Its gaps alternate
+between three and two phases. Everyone gets the same pattern, shifted.
+
+For general odd n, each person gets m appearances in n phases. Their cyclic
+gaps are m - 1 gaps of two and one gap of three. I therefore know both how
+much service everyone receives and the longest phase gap before their next
+opportunity. I do not have to infer fairness from a pleasing-looking trace.
+
+That is why the equation is more useful to me than the instruction "wait a
+little and try again." It specifies a schedule I can reason about. Whether
+my implementation preserves it is a further question.
+
+#### Why I am looking for algebra instead of reaching for a queue
+
+My motivation is to exploit the shape of this particular problem. The people
+form a fixed ring, each needs the same pair of adjacent forks, and I already
+know that non-neighbours can eat together. That regular structure lets me
+generate compatible groups with a small formula.
+
+A queue records who arrived and applies an admission policy to those requests.
+My equation generates a predetermined eligibility schedule from the table
+geometry. For the schedule I am exploring, I would rather express that
+structure directly than maintain an arrival order I do not actually need.
+That feels neater to me, and understanding why it works is part of what I
+want to learn from the project.
+
+This is a design preference, not a claim that queues are inherently wasteful
+or that my friends' simpler implementations are wrong. A ring-buffer queue
+can enqueue and dequeue in constant time, and an admission policy can allow
+compatible people to eat concurrently. It can also accommodate changing
+arrival patterns that my fixed clock does not attempt to optimize.
+
+Likewise, a delay derived from a timing budget is different from an arbitrary
+delay, even if both use the same sleep call. I need to judge the guarantee
+and measured behaviour, not just how short or mathematical the code looks.
+
+The odd/even split simplifies the table's geometry, but it does not reduce
+the running program to two states. Fork ownership, blocked threads, meal
+deadlines, sleeping, and phase transitions still produce many possible
+interleavings. A formula compresses the intended schedule; it does not erase
+that concurrency.
+
+The two-adjacent-fork constraint is what makes this particular construction
+convenient. If I changed the resource requirements or conflict pattern, I
+would need to derive a new grouping rule. It might still have useful algebra,
+but I could not simply assume that stepping by two remains correct.
+
+My short explanation to a friend would be:
+
+> I am treating the table like a circle with a moving stencil. Its holes pick
+> people who are far enough apart to eat together. Each turn I slide the
+> stencil one seat forward, so everybody receives the same opportunities and
+> nobody waits more than three phases. The equation describes where the holes
+> are. My synchronization code still has to make the threads follow those turns.
+
+That is the mathematical design I am working toward, not a claim that the
+latest delay-and-fork-reversal implementation already enforces it.
+
 
 #### Why my startup delay and fork reversal did not implement either clock
 
