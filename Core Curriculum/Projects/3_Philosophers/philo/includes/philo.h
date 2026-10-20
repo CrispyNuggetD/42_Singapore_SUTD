@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:13:01 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 16:52:55 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 ** STATUS_OK: operation succeeded; STATUS_STOPPED: normal early completion.
 ** A returned STATUS_STOPPED does not itself change the shared all_stop flag.
 ** Passing it as a request to check_or_stop_sim DOES request global stopping.
-** ERR_* values describe operation failures; sim_status keeps the first one.
+** ERR_* values describe operation failures; first_error keeps the first one.
 */
 typedef enum e_status
 {
@@ -91,7 +91,7 @@ typedef struct s_sim	t_sim;
 ** Below describe one philosopher:
 ** id: philosopher number, from 1 to N.
 ** thread_handle: handle used by pthread_create and pthread_join.
-** left_fork_lock, right_fork_lock: pointers to mutexes in the fork array.
+** first_fork_lock, second_fork_lock: fork pointers in acquisition order.
 ** meal_state_lock: protects reads and writes of the next two fields.
 ** last_meal: LAST meal START time, in milliseconds.
 ** meals_eaten: number of completed meals.
@@ -101,8 +101,8 @@ typedef struct s_philo
 {
 	int				id;
 	pthread_t		thread_handle;
-	pthread_mutex_t	*left_fork_lock;
-	pthread_mutex_t	*right_fork_lock;
+	pthread_mutex_t	*first_fork_lock;
+	pthread_mutex_t	*second_fork_lock;
 	pthread_mutex_t	meal_state_lock;
 	long			last_meal;
 	int				meals_eaten;
@@ -113,17 +113,19 @@ typedef struct s_philo
 ** The runtime fields below hold shared simulation state:
 ** start_time: simulation start timestamp, in milliseconds.
 ** all_stop: shared stop flag; 0 while running, 1 when stopping.
-** sim_status: first recorded ERR_*; STATUS_OK means no error recorded.
-** all_stop_lock: protects all_stop and sim_status.
+** first_error: first recorded ERR_*; STATUS_OK means no error recorded.
+** all_stop_lock: protects all_stop and first_error.
 ** printing_lock: coordinates logging.
 */
 typedef struct s_runtime
 {
 	long			start_time;
 	int				all_stop;
-	t_status		sim_status;
+	int				completed_meals;
+	t_status		first_error;
 	pthread_mutex_t	all_stop_lock;
 	pthread_mutex_t	printing_lock;
+	pthread_mutex_t	completed_meals_lock;
 }	t_runtime;
 
 /*
@@ -145,6 +147,7 @@ typedef struct s_resources
 	int				meals_init_count;
 	int				stop_lock_initialized;
 	int				printing_lock_initialized;
+	int				completed_meals_lock_initialized;
 	int				threads_to_join;
 }	t_resources;
 
@@ -169,6 +172,11 @@ t_status	init_philos(t_sim *sim);
 t_status	init_sim(t_sim *sim);
 int			cleanup_resources(t_resources *res, t_runtime *run,
 				t_status status);
+t_status	release_forks(t_philo *philo);
+t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
+				pthread_mutex_t *second);
+t_status	swap_fork_if_even_round(t_philo *philo,
+				pthread_mutex_t **first, pthread_mutex_t **second);
 t_status	prepare_to_eat(t_philo *philo);
 t_status	philo_eat(t_philo *philo);
 t_status	check_or_stop_sim(t_sim *sim, t_status request);

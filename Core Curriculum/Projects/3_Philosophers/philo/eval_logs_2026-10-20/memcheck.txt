@@ -1,0 +1,15 @@
+==150456== Memcheck, a memory error detector
+==150456== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==150456== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==150456== Command: ./philo/philo 3 10000 100 100 2
+==150456== Parent PID: 150455
+==150456== 
+==150456== 
+==150456== HEAP SUMMARY:
+==150456==     in use at exit: 0 bytes in 0 blocks
+==150456==   total heap usage: 6 allocs, 6 frees, 5,320 bytes allocated
+==150456== 
+==150456== All heap blocks were freed -- no leaks are possible
+==150456== 
+==150456== For lists of detected and suppressed errors, rerun with: -s
+==150456== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

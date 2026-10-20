@@ -1,0 +1,51 @@
+# Run these commands from the philo directory (beside the executable).
+# Paste individual commands or the whole list into a Bash terminal.
+# Logs go to /tmp/philo-debug; rerunning a case overwrites its log.
+# Each .log captures stdout and stderr; the terminal shows its exit code.
+# Exit 124 means timeout stopped the run. Other nonzero codes need inspection.
+# These are smoke tests, not proof of race freedom or 10 ms death reporting.
+
+mkdir -p /tmp/philo-debug
+
+# SINGLE PHILOSOPHER: one fork message, one death near 200 ms, then exit 0.
+timeout 5s ./philo 1 200 100 100 > /tmp/philo-debug/01_single.log 2>&1; echo "01 exit=$?"
+
+# TWO PHILOSOPHERS: everyone completes at least 5 meals, no death, exit 0.
+timeout 10s ./philo 2 1000 100 100 5 > /tmp/philo-debug/02_two_goal.log 2>&1; echo "02 exit=$?"
+
+# EVEN COUNT: inspect the initial odd/even grouping; at least 5 meals each.
+# Exact ordering and strict alternating groups are not guaranteed.
+timeout 10s ./philo 6 2000 200 200 5 > /tmp/philo-debug/03_six_goal.log 2>&1; echo "03 exit=$?"
+
+# ODD COUNT: inspect how neighbours compete; at least 5 meals each, no death.
+timeout 10s ./philo 5 2000 200 200 5 > /tmp/philo-debug/04_five_goal.log 2>&1; echo "04 exit=$?"
+timeout 10s ./philo 3 2000 200 200 5 > /tmp/philo-debug/05_three_goal.log 2>&1; echo "05 exit=$?"
+
+# LOW MEAL GOAL: exit normally once everyone completes at least one meal.
+# Extra meals/state messages before the monitor observes completion can occur.
+timeout 5s ./philo 5 2000 100 100 1 > /tmp/philo-debug/06_one_meal.log 2>&1; echo "06 exit=$?"
+
+# DEATH DURING EATING: die time is shorter than eating; one death then exit 0.
+# Death is a normal simulation result, not a program error.
+timeout 5s ./philo 2 150 300 100 > /tmp/philo-debug/07_death_eating.log 2>&1; echo "07 exit=$?"
+
+# DEATH DURING A LONG SLEEP: expect one death, then normal shutdown.
+timeout 5s ./philo 2 300 100 500 > /tmp/philo-debug/08_death_sleeping.log 2>&1; echo "08 exit=$?"
+
+# NO MEAL GOAL: observe for 5 seconds. Expected exit 124 if nobody dies.
+# Timeout termination does not test the program's normal cleanup.
+timeout 5s ./philo 6 2000 100 100 > /tmp/philo-debug/09_continuous.log 2>&1; echo "09 exit=$?"
+
+# LARGER COUNT: roomy timings; expect meal completion and exit 0.
+# Heavy machine load can still affect timing-sensitive outcomes.
+timeout 15s ./philo 100 5000 100 100 3 > /tmp/philo-debug/10_large_goal.log 2>&1; echo "10 exit=$?"
+
+# INVALID INPUT: each should report an error and exit nonzero promptly.
+timeout 5s ./philo > /tmp/philo-debug/11_missing_args.log 2>&1; echo "11 exit=$?"
+timeout 5s ./philo 0 800 200 200 > /tmp/philo-debug/12_zero_count.log 2>&1; echo "12 exit=$?"
+timeout 5s ./philo 5 -800 200 200 > /tmp/philo-debug/13_negative.log 2>&1; echo "13 exit=$?"
+timeout 5s ./philo 5 abc 200 200 > /tmp/philo-debug/14_non_numeric.log 2>&1; echo "14 exit=$?"
+timeout 5s ./philo 2147483648 800 200 200 > /tmp/philo-debug/15_overflow.log 2>&1; echo "15 exit=$?"
+
+# Inspect a log after running its command:
+cat /tmp/philo-debug/04_five_goal.log

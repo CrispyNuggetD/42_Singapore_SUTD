@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:22:31 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 14:50:55 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,25 @@
 /*
 ** Caller must allocate philos and initialize fork mutexes first.
 ** Initialize all philosopher records before starting any threads.
+** Odd IDs take right then left; even IDs take left then right.
+** Store acquisition order; modulo wraps the fork indices around the table.
 */
 t_status	init_philos(t_sim *sim)
 {
 	t_resources	*res;
 	t_philo		*philo;
+	int			is_odd;
 
 	res = &sim->resources;
 	while (res->meals_init_count < sim->config.count)
 	{
 		philo = &res->philos[res->meals_init_count];
 		philo->id = res->meals_init_count + 1;
-		philo->left_fork_lock = &res->all_forks_mutexes[res->meals_init_count];
-		philo->right_fork_lock = &res->all_forks_mutexes[philo->id
-			% sim->config.count];
+		is_odd = philo->id % 2;
+		philo->first_fork_lock = &res->all_forks_mutexes[
+			(res->meals_init_count + is_odd) % sim->config.count];
+		philo->second_fork_lock = &res->all_forks_mutexes[
+			(philo->id - is_odd) % sim->config.count];
 		if (pthread_mutex_init(&philo->meal_state_lock, NULL) != 0)
 			return (ERR_MUTEX_INIT);
 		philo->last_meal = sim->runtime.start_time;
@@ -67,6 +72,9 @@ static t_status	init_shared_locks(t_sim *sim)
 	if (pthread_mutex_init(&sim->runtime.printing_lock, NULL) != 0)
 		return (ERR_MUTEX_INIT);
 	res->printing_lock_initialized = 1;
+	if (pthread_mutex_init(&sim->runtime.completed_meals_lock, NULL) != 0)
+		return (ERR_MUTEX_INIT);
+	res->completed_meals_lock_initialized = 1;
 	return (STATUS_OK);
 }
 

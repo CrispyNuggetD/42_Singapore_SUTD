@@ -47,7 +47,7 @@ static t_status	print_message(t_philo *philo, t_philo_state state)
 ** Lock order is printing_lock then all_stop_lock. The helper releases the
 ** stop lock before output; this function releases the print lock afterward.
 ** Local STATUS_STOPPED results from workers do not call this logger as death.
-** Return failures to the caller; this function does not record sim_status
+** Return failures to the caller; this function does not record first_error
 ** for its own time/output errors, join threads, or clean up resources.
 */
 t_status	log_philo_state(t_philo *philo, t_philo_state state)

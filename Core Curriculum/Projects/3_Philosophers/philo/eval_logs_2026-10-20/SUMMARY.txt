@@ -1,0 +1,89 @@
+Evaluation of alternating fork order — 2026-10-20 (Singapore)
+
+VERDICT: Not evaluation-ready. All eight native N=5 runs starved a philosopher.
+The new order can rescue P1 in the old handoff, but shifts starvation elsewhere.
+
+Sheet: https://github.com/Dsite42/philosophers/blob/master/philosophers%20eval%20sheet.pdf
+Scope: mandatory cases, repeated N=5 cases, extra N=2/3/6 checks, sampled
+Helgrind/memory checks and an abstract fork-order interleaving model.
+Project algorithm unchanged during this evaluation. Old logs preserved.
+
+METHOD
+Native tests ran sequentially. No intentional scheduler pauses or debugger.
+stdbuf -oL enabled line-buffered stdout to preserve logs if timeout killed a run.
+Observation windows are finite; a survival pass does not prove indefinite survival.
+Exit 124 is expected for the no-goal survival tests; all death/goal tests must exit.
+Meal starts are counted from output, not direct instrumentation of completed meals.
+A death timestamp comparison is not proof of physical output delivery within 10 ms.
+
+RESULTS
+single: PASS | 1 800 200 200 | exit 0 | 0.805 s | deaths: ['800 1 died']
+five_survival_1: FAIL | 5 800 200 200 | exit 0 | 0.802 s | deaths: ['800 3 died']
+five_survival_2: FAIL | 5 800 200 200 | exit 0 | 1.002 s | deaths: ['1000 2 died']
+five_survival_3: FAIL | 5 800 200 200 | exit 0 | 1.203 s | deaths: ['1200 3 died']
+five_goal_1: FAIL | 5 800 200 200 7 | exit 0 | 1.402 s | deaths: ['1400 5 died']
+five_goal_2: FAIL | 5 800 200 200 7 | exit 0 | 0.803 s | deaths: ['800 3 died']
+five_goal_3: FAIL | 5 800 200 200 7 | exit 0 | 2.203 s | deaths: ['2200 3 died']
+five_goal_4: FAIL | 5 800 200 200 7 | exit 0 | 1.804 s | deaths: ['1800 3 died']
+five_goal_5: FAIL | 5 800 200 200 7 | exit 0 | 1.404 s | deaths: ['1400 4 died']
+four_survival_1: PASS | 4 410 200 200 | exit 124 | 8.004 s | deaths: []
+four_survival_2: PASS | 4 410 200 200 | exit 124 | 8.002 s | deaths: []
+four_death: PASS | 4 310 200 100 | exit 0 | 0.312 s | deaths: ['310 1 died']
+two_death: PASS | 2 310 200 100 | exit 0 | 0.313 s | deaths: ['310 1 died']
+two_goal: PASS | 2 800 200 200 7 | exit 0 | 2.802 s | deaths: []
+six_goal: PASS | 6 800 200 200 7 | exit 0 | 2.803 s | deaths: []
+three_goal: FAIL | 3 800 200 200 7 | exit 0 | 1.001 s | deaths: ['1000 1 died']
+
+WHAT CHANGED IN THE FIVE-PHILOSOPHER SCHEDULE
+Each timestamp groups meal starts, not an atomic synchronized batch.
+OLD, no meal goal
+0ms [1, 3] -> 200ms [2, 5] -> 400ms [1, 4] -> 600ms [3, 5] -> 800ms [2, 4] -> 1000ms [3, 5]
+Death: 1200 1 died
+
+NEW, no meal goal, run 1
+0ms [1, 3] -> 200ms [2, 5] -> 400ms [1, 4] -> 600ms [2, 5]
+Death: 800 3 died
+
+NEW, goal 7, run 1
+0ms [1, 3] -> 200ms [2, 5] -> 400ms [1, 4] -> 600ms [3, 5] -> 800ms [2, 4] -> 1000ms [1, 3] -> 1200ms [2, 4]
+Death: 1400 5 died
+
+In new five_goal_1, P1 eats at 1000 ms alongside P3: the proposed handoff
+does occur. But P5 last ate at 600 ms, misses another meal, and dies at 1400 ms.
+Thus fixing the P1/P5 handoff does not establish fair repeating phases.
+
+MATHEMATICAL ISSUE WITH THE CURRENT POLICY
+The helper selects order from floor(completed_meals / N) modulo 2 once
+before acquiring forks. Waiting workers retain their old selected pointers.
+A change in the total does not make those workers reselect, nor establish
+that every philosopher completed one meal. Multiple order generations coexist.
+
+order_counterexample.txt gives a reachable abstract interleaving ending in:
+P1 holds F1 -> needs F2
+P2 holds F2 -> needs F3
+P3 holds F3 -> needs F4
+P4 holds F4 -> needs F5
+P5 holds F5 -> needs F1
+
+P2/P4 selected the old order; P1/P3/P5 selected the reversed order.
+At this state the total is 6 and individual counts are [2, 1, 2, 0, 1].
+The model omits timing and death detection: it disproves an unconditional
+fork-order deadlock guarantee, not claims a deadlock occurred in native tests.
+No native run in this set hung after reporting death; those failures were starvation.
+
+OTHER CHECKS
+- Build passed. All ten compiled C sources and philo.h passed installed Norm.
+- The separate, uncompiled study-example C file was not included in that Norm pass.
+- Helgrind (5 10000 100 100 3): 10 lock-order errors across 5 contexts.
+  No Possible data race diagnostics in this sample. Lock-order warnings are not
+  the same as observed data races or observed deadlock; see helgrind.txt.
+- Memcheck (3 10000 100 100 2): zero errors, zero bytes left allocated at exit.
+- Sampled deaths matched logged meal-start deadlines within 0..10 ms.
+- Failure injection, exhaustive timing/race coverage and submission cleanup are
+  outside this run. This is not a claim of a complete evaluation pass.
+
+NEXT DECISION
+The alternating-order experiment did not solve starvation and removed the
+fixed-order deadlock argument. Restore a fixed safe order before treating the
+program as submission-ready; any replacement needs its own admission/order proof.
+No algorithm was reverted or replaced automatically.

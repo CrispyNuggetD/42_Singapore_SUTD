@@ -1,0 +1,535 @@
+[
+  {
+    "name": "single",
+    "args": [
+      "1",
+      "800",
+      "200",
+      "200"
+    ],
+    "expected": "death",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 0.805,
+    "pass_basic": true,
+    "deaths": [
+      "800 1 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {},
+    "sleeping_counts": {},
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_survival_1",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200"
+    ],
+    "expected": "survive",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 0.802,
+    "pass_basic": false,
+    "deaths": [
+      "800 3 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 2,
+      "3": 1,
+      "2": 2,
+      "5": 2,
+      "4": 1
+    },
+    "sleeping_counts": {
+      "1": 2,
+      "3": 1,
+      "2": 2,
+      "5": 2,
+      "4": 1
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_survival_2",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200"
+    ],
+    "expected": "survive",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.002,
+    "pass_basic": false,
+    "deaths": [
+      "1000 2 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 2,
+      "3": 3,
+      "2": 1,
+      "4": 2,
+      "5": 2
+    },
+    "sleeping_counts": {
+      "3": 2,
+      "1": 2,
+      "4": 2,
+      "2": 1,
+      "5": 2
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_survival_3",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200"
+    ],
+    "expected": "survive",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.203,
+    "pass_basic": false,
+    "deaths": [
+      "1200 3 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "3": 2,
+      "1": 3,
+      "2": 2,
+      "4": 3,
+      "5": 2
+    },
+    "sleeping_counts": {
+      "3": 2,
+      "1": 2,
+      "4": 3,
+      "2": 2,
+      "5": 2
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_goal_1",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.402,
+    "pass_basic": false,
+    "deaths": [
+      "1400 5 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 3,
+      "3": 3,
+      "2": 3,
+      "5": 2,
+      "4": 3
+    },
+    "sleeping_counts": {
+      "3": 3,
+      "1": 3,
+      "2": 2,
+      "5": 2,
+      "4": 2
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_goal_2",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 0.803,
+    "pass_basic": false,
+    "deaths": [
+      "800 3 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 2,
+      "3": 1,
+      "5": 2,
+      "2": 2,
+      "4": 1
+    },
+    "sleeping_counts": {
+      "1": 2,
+      "3": 1,
+      "5": 1,
+      "2": 2,
+      "4": 1
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_goal_3",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 2.203,
+    "pass_basic": false,
+    "deaths": [
+      "2200 3 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 5,
+      "3": 4,
+      "4": 5,
+      "2": 4,
+      "5": 4
+    },
+    "sleeping_counts": {
+      "3": 4,
+      "1": 4,
+      "2": 4,
+      "4": 4,
+      "5": 4
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_goal_4",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.804,
+    "pass_basic": false,
+    "deaths": [
+      "1800 3 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 4,
+      "3": 3,
+      "5": 4,
+      "2": 4,
+      "4": 3
+    },
+    "sleeping_counts": {
+      "1": 4,
+      "3": 3,
+      "2": 3,
+      "5": 3,
+      "4": 3
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "five_goal_5",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.404,
+    "pass_basic": false,
+    "deaths": [
+      "1400 4 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 3,
+      "3": 3,
+      "4": 2,
+      "2": 3,
+      "5": 3
+    },
+    "sleeping_counts": {
+      "3": 3,
+      "1": 3,
+      "2": 2,
+      "4": 2,
+      "5": 2
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "four_survival_1",
+    "args": [
+      "4",
+      "410",
+      "200",
+      "200"
+    ],
+    "expected": "survive",
+    "exit": 124,
+    "timed_out": true,
+    "elapsed": 8.004,
+    "pass_basic": true,
+    "deaths": [],
+    "death_timestamp_lateness_ms": [],
+    "eating_counts": {
+      "1": 20,
+      "3": 20,
+      "4": 20,
+      "2": 20
+    },
+    "sleeping_counts": {
+      "1": 20,
+      "3": 20,
+      "2": 19,
+      "4": 19
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "four_survival_2",
+    "args": [
+      "4",
+      "410",
+      "200",
+      "200"
+    ],
+    "expected": "survive",
+    "exit": 124,
+    "timed_out": true,
+    "elapsed": 8.002,
+    "pass_basic": true,
+    "deaths": [],
+    "death_timestamp_lateness_ms": [],
+    "eating_counts": {
+      "1": 20,
+      "3": 20,
+      "2": 20,
+      "4": 20
+    },
+    "sleeping_counts": {
+      "3": 20,
+      "1": 20,
+      "2": 19,
+      "4": 19
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "four_death",
+    "args": [
+      "4",
+      "310",
+      "200",
+      "100"
+    ],
+    "expected": "death",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 0.312,
+    "pass_basic": true,
+    "deaths": [
+      "310 1 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 1,
+      "3": 1,
+      "4": 1,
+      "2": 1
+    },
+    "sleeping_counts": {
+      "3": 1,
+      "1": 1
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "two_death",
+    "args": [
+      "2",
+      "310",
+      "200",
+      "100"
+    ],
+    "expected": "death",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 0.313,
+    "pass_basic": true,
+    "deaths": [
+      "310 1 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "1": 1,
+      "2": 1
+    },
+    "sleeping_counts": {
+      "1": 1
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "two_goal",
+    "args": [
+      "2",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 2.802,
+    "pass_basic": true,
+    "deaths": [],
+    "death_timestamp_lateness_ms": [],
+    "eating_counts": {
+      "1": 8,
+      "2": 7
+    },
+    "sleeping_counts": {
+      "1": 7,
+      "2": 7
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "six_goal",
+    "args": [
+      "6",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 2.803,
+    "pass_basic": true,
+    "deaths": [],
+    "death_timestamp_lateness_ms": [],
+    "eating_counts": {
+      "1": 8,
+      "3": 8,
+      "5": 8,
+      "2": 7,
+      "6": 7,
+      "4": 7
+    },
+    "sleeping_counts": {
+      "5": 7,
+      "3": 7,
+      "1": 7,
+      "4": 7,
+      "2": 7,
+      "6": 7
+    },
+    "malformed": [],
+    "after_death": 0
+  },
+  {
+    "name": "three_goal",
+    "args": [
+      "3",
+      "800",
+      "200",
+      "200",
+      "7"
+    ],
+    "expected": "goal",
+    "exit": 0,
+    "timed_out": false,
+    "elapsed": 1.001,
+    "pass_basic": false,
+    "deaths": [
+      "1000 1 died"
+    ],
+    "death_timestamp_lateness_ms": [
+      0
+    ],
+    "eating_counts": {
+      "3": 2,
+      "1": 1,
+      "2": 2
+    },
+    "sleeping_counts": {
+      "3": 2,
+      "1": 1,
+      "2": 1
+    },
+    "malformed": [],
+    "after_death": 0
+  }
+]

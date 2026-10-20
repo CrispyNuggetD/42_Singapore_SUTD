@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 19:59:05 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:00:23 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/19 18:14:48 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ long	now_ms(void)
 
 /*
 ** Shared stop/error bookkeeping only: no death detection or printing here.
-** Protect both all_stop and sim_status with all_stop_lock.
+** Protect both all_stop and first_error with all_stop_lock.
 **
 ** INPUT request: STATUS_OK reads only; STATUS_STOPPED requests global stop;
 ** ERR_* records the first genuine error and requests global stop.
@@ -32,7 +32,7 @@ long	now_ms(void)
 **
 ** OUTPUT reports the state BEFORE this request: STATUS_OK means previously
 ** running, including when this call first sets stopping. STATUS_STOPPED means
-** already stopped. Mutex failures return ERR_MUTEX. Read sim_status separately
+** already stopped. Mutex failures return ERR_MUTEX. Read first_error separately
 ** under the lock to obtain the recorded error; this return is not that error.
 */
 t_status	check_or_stop_sim(t_sim *sim, t_status request)
@@ -41,8 +41,8 @@ t_status	check_or_stop_sim(t_sim *sim, t_status request)
 
 	if (pthread_mutex_lock(&sim->runtime.all_stop_lock) != 0)
 		return (ERR_MUTEX);
-	if (request > STATUS_STOPPED && sim->runtime.sim_status == STATUS_OK)
-		sim->runtime.sim_status = request;
+	if (request > STATUS_STOPPED && sim->runtime.first_error == STATUS_OK)
+		sim->runtime.first_error = request;
 	already_stopped = sim->runtime.all_stop;
 	if (!already_stopped && request != STATUS_OK)
 		sim->runtime.all_stop = 1;

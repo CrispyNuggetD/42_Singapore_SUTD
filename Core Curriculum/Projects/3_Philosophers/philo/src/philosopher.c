@@ -6,11 +6,25 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:05:53 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 17:05:29 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+/* Stop or failure skips the remaining sleep/think steps. */
+static t_status	sleep_and_think(t_philo *philo)
+{
+	t_status	status;
+
+	status = log_philo_state(philo, LOG_SLEEPING);
+	if (status != STATUS_OK)
+		return (status);
+	status = philo_wait(philo->sim, philo->sim->config.time_to_sleep);
+	if (status != STATUS_OK)
+		return (status);
+	return (log_philo_state(philo, LOG_THINKING));
+}
 
 /*
 ** The initial stagger runs once; the cycle then repeats while status is OK.
@@ -24,26 +38,17 @@ void	*philo_routine(void *argument)
 	t_philo		*philo;
 	t_status	status;
 
+
 	philo = argument;
-	if (philo->id % 2 == 1)
-	{
-		status = philo_wait(philo->sim, philo->sim->config.time_to_eat / 2);
-		if (status > STATUS_STOPPED)
-		{
-			check_or_stop_sim(philo->sim, status);
-			return (NULL);
-		}
-	}
-	status = check_or_stop_sim(philo->sim, 0);
+	status = check_or_stop_sim(philo->sim, STATUS_OK);
+	if (status == STATUS_OK && (philo->id % 2 == 0 || (philo->sim->config.count % 2  == 1 && philo->id % 3 != 0)))
+		status = philo_wait(philo->sim,
+				philo->sim->config.time_to_eat / 2);
 	while (status == STATUS_OK)
 	{
 		status = philo_eat(philo);
 		if (status == STATUS_OK)
-			status = log_philo_state(philo, LOG_SLEEPING);
-		if (status == STATUS_OK)
-			status = philo_wait(philo->sim, philo->sim->config.time_to_sleep);
-		if (status == STATUS_OK)
-			status = log_philo_state(philo, LOG_THINKING);
+			status = sleep_and_think(philo);
 		if (status != STATUS_OK)
 			break ;
 		status = check_or_stop_sim(philo->sim, 0);
@@ -56,7 +61,7 @@ void	*philo_routine(void *argument)
 /*
 ** Start workers, then monitor in main. This function does not join workers.
 ** TODO: Request stopping on startup/monitor failure before cleanup joins.
-** TODO: Main must consume the first shared sim_status after joining workers.
+** TODO: Main must consume the first shared first_error after joining workers.
 */
 t_status	start_sim(t_sim *sim)
 {

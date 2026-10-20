@@ -6,24 +6,11 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 21:09:23 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 15:05:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-// Must always release owned forks, even after stopping
-static t_status	release_forks(t_philo *philo)
-{
-	t_status	status;
-
-	status = STATUS_OK;
-	if (pthread_mutex_unlock(philo->right_fork_lock) != 0)
-		status = ERR_MUTEX;
-	if (pthread_mutex_unlock(philo->left_fork_lock) != 0)
-		status = ERR_MUTEX;
-	return (status);
-}
 
 /*
 ** Caller owns both forks; protect the deadline test and meal-start update.
@@ -57,42 +44,24 @@ static t_status	record_meal_start_time_protected(t_philo *philo)
 }
 
 /*
-** Success leaves this fork held. On stopping/error, release it if acquired.
-** Caller must not already own this fork; blocking lock is not interruptible.
-*/
-static t_status	take_fork_check_stop(t_philo *philo, pthread_mutex_t *fork_lock)
-{
-	t_status	status;
-
-	if (pthread_mutex_lock(fork_lock) != 0)
-		return (ERR_MUTEX);
-	status = check_or_stop_sim(philo->sim, 0);
-	if (status == STATUS_OK)
-		status = log_philo_state(philo, LOG_FORK);
-	if (status != STATUS_OK && pthread_mutex_unlock(fork_lock) != 0)
-		return (ERR_MUTEX);
-	return (status);
-}
-
-/*
-** Success leaves both forks held and meal_state_lock released.
-** Failure attempts to release every fork acquired here.
-** Caller must handle the single-philosopher case before calling this.
+** Choose the attempted order, acquire forks, then record the meal start.
+** Success owns both forks. Failure attempts to release all acquired forks.
+** take_forks handles the single-philosopher case without a second lock.
 */
 t_status	prepare_to_eat(t_philo *philo)
 {
-	t_status	status;
+	t_status		status;
+	pthread_mutex_t	*first;
+	pthread_mutex_t	*second;
 
-	status = take_fork_check_stop(philo, philo->left_fork_lock);
+	first = philo->first_fork_lock;
+	second = philo->second_fork_lock;
+	status = swap_fork_if_even_round(philo, &first, &second);
 	if (status != STATUS_OK)
 		return (status);
-	status = take_fork_check_stop(philo, philo->right_fork_lock);
+	status = take_forks(philo, first, second);
 	if (status != STATUS_OK)
-	{
-		if (pthread_mutex_unlock(philo->left_fork_lock) != 0)
-			return (ERR_MUTEX);
 		return (status);
-	}
 	status = record_meal_start_time_protected(philo);
 	if (status != STATUS_OK && release_forks(philo) != STATUS_OK)
 		return (ERR_MUTEX);
@@ -118,6 +87,11 @@ t_status	philo_eat(t_philo *philo)
 		return (ERR_MUTEX);
 	philo->meals_eaten++;
 	if (pthread_mutex_unlock(&philo->meal_state_lock) != 0)
+		return (ERR_MUTEX);
+	if (pthread_mutex_lock(&philo->sim->runtime.completed_meals_lock) != 0)
+		return (ERR_MUTEX);
+	philo->sim->runtime.completed_meals++;
+	if (pthread_mutex_unlock(&philo->sim->runtime.completed_meals_lock) != 0)
 		return (ERR_MUTEX);
 	return (STATUS_OK);
 }

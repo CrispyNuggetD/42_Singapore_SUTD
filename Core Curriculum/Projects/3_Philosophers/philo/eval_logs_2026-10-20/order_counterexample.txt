@@ -1,0 +1,49 @@
+ABSTRACT LOCK-ORDER COUNTEREXAMPLE
+Not a native runtime trace. No sleep/death clock is modeled.
+An interleaving permitted by the order-selection and fork-locking rules.
+Forks below are one-based; machine-readable JSON indices are zero-based.
+
+1. P2 snapshots total=0; order F2->F3
+2. P1 snapshots total=0; order F2->F1
+3. P1 acquires F2
+4. P3 snapshots total=0; order F4->F3
+5. P1 acquires F1
+6. P5 snapshots total=0; order F1->F5
+7. P3 acquires F4
+8. P3 acquires F3
+9. P3 finishes and releases both; total=1
+10. P1 finishes and releases both; total=2
+11. P2 acquires F2
+12. P3 snapshots total=2; order F4->F3
+13. P1 snapshots total=2; order F2->F1
+14. P3 acquires F4
+15. P4 snapshots total=2; order F4->F5
+16. P5 acquires F1
+17. P2 acquires F3
+18. P5 acquires F5
+19. P2 finishes and releases both; total=3
+20. P2 snapshots total=3; order F2->F3
+21. P5 finishes and releases both; total=4
+22. P3 acquires F3
+23. P1 acquires F2
+24. P1 acquires F1
+25. P3 finishes and releases both; total=5
+26. P5 snapshots total=5; order F5->F1
+27. P1 finishes and releases both; total=6
+28. P2 acquires F2
+29. P4 acquires F4
+30. P5 acquires F5
+31. P1 snapshots total=6; order F1->F2
+32. P1 acquires F1
+33. P3 snapshots total=6; order F3->F4
+34. P3 acquires F3
+
+Final circular wait:
+P1 holds F1, waits F2
+P2 holds F2, waits F3
+P3 holds F3, waits F4
+P4 holds F4, waits F5
+P5 holds F5, waits F1
+
+Completed meals per philosopher: [2, 1, 2, 0, 1]
+P2/P4 selected the old order, P1/P3/P5 selected the reversed order.

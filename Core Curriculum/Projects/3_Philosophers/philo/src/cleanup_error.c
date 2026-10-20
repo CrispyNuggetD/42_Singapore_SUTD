@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:06:49 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:23:40 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 14:52:12 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,12 @@ t_status	join_philos(t_resources *res)
 /* Destroy only initialized shared locks, reversing their setup order. */
 static t_status	destroy_shared_locks(t_resources *res, t_runtime *run)
 {
+	if (res->completed_meals_lock_initialized == 1)
+	{
+		if (pthread_mutex_destroy(&run->completed_meals_lock) != 0)
+			return (ERR_MUTEX_DESTROY);
+		res->completed_meals_lock_initialized = 0;
+	}
 	if (res->printing_lock_initialized == 1)
 	{
 		if (pthread_mutex_destroy(&run->printing_lock) != 0)
@@ -50,6 +56,8 @@ int	cleanup_resources(t_resources *res, t_runtime *run, t_status status)
 {
 	if (join_philos(res) != STATUS_OK)
 		return (print_return_error(ERR_THREAD_JOIN) != STATUS_OK);
+	if (status <= STATUS_STOPPED && run->first_error > STATUS_STOPPED)
+		status = run->first_error;
 	while (res->meals_init_count > 0)
 	{
 		if (pthread_mutex_destroy(
