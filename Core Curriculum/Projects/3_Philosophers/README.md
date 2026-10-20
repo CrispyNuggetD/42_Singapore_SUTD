@@ -97,6 +97,7 @@ simulation features. The numbered links jump to each learning point.
 29. [Recursive mutex use case and the caller-held-lock alternative](#learning-point-29)
 30. [Main as monitor versus a separate monitor thread](#learning-point-30)
 31. [Why I use separate stop and printing locks](#learning-point-31)
+32. [My mathematical rabbit hole: fairness, odd counts, and eating clocks](#learning-point-32)
 
 <a id="learning-point-1"></a>
 
@@ -1725,5 +1726,355 @@ releasing the print lock. Once death publishes the stop flag, wait loops
 can observe it while the death message is being printed. Publishing death
 itself can still wait to acquire `printing_lock`; two locks do not make a
 blocked output destination harmless or guarantee the death-message deadline.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-32"></a>
+
+### 32. My mathematical rabbit hole: fairness, odd counts, and eating clocks
+
+I started with odd/even startup delays, then tried reversing fork acquisition
+order. My next thought was: if an odd table needs three phases, why not use
+modulo three for the initial wait? But waiting for a fork can swallow that
+initial timing advantage. I need to define what my clock actually guarantees
+before trying to encode it lol.
+
+These are mathematical designs and analysis of my experiments, not a claim
+that the current simulation implements an enforced clock. I use zero-based
+indices in equations and P1-based IDs in the example tables.
+
+#### What do I mean by "fair"?
+
+I was using "fair" for several different properties:
+
+| Property | What I actually need to establish |
+| --- | --- |
+| Mutual exclusion | Neighbours never eat together. |
+| Deadlock freedom | Fork acquisition cannot leave a circular wait with nobody able to release. |
+| Starvation freedom | Every philosopher who keeps requesting eventually gets to eat, under stated progress assumptions. |
+| Bounded waiting | There is a bound on how long, or how many admissions, a philosopher can wait. |
+| Equal service | Everyone gets the same number of meals per repeating cycle, or the same long-run rate. |
+| Deadline survival | Every first meal and subsequent meal starts before that philosopher's death deadline. |
+| Throughput | How many meals the table completes per unit time. |
+
+Equal service does not automatically give a useful waiting bound. I could give
+everyone ten meals per huge cycle, but cluster someone's meals at one end and
+leave a fatal gap before their next turn. Likewise, "eventually" is not enough
+when my philosopher has 800 ms to live.
+
+Let \(a_{i,k}\) be philosopher \(i\)'s \(k\)-th meal-start time and \(D\) be
+time_to_die. My survival target is:
+
+$$
+a_{i,k+1}-a_{i,k}<D.
+$$
+
+Before the first meal, I measure from simulation start instead. The strict
+inequality matters because my deadline check treats elapsed time >= D as
+expired. Eating and sleeping both consume that interval; the timer does not
+restart when sleeping finishes.
+
+FIFO admission, equal meals per round, and earliest-deadline priority are
+different fairness policies. A FIFO queue can admit compatible eaters together;
+it does not inherently mean serializing the whole table.
+
+#### My table is an odd cycle
+
+Write the philosopher count as \(n=2m+1\), with \(n\ge3\). Philosopher \(i\)
+conflicts with \(i-1\) and \(i+1\), modulo \(n\). A valid phase \(A\) is an
+independent set of this cycle:
+
+$$
+i\in A \Longrightarrow (i+1)\bmod n\notin A.
+$$
+
+At most \(m=(n-1)/2\) philosophers can eat together. If I mark each eater and
+the following non-eater, each eater needs two distinct positions, giving
+\(2|A|\le n\). Alternating positions attains the bound.
+
+A periodic clock is a sequence of valid sets \(A_0,\ldots,A_{L-1}\), repeated.
+I must specify whether membership is fixed, whether phases have equal duration,
+whether consecutive phases may share eaters, and when a phase may advance.
+Otherwise "how many clocks?" has no single finite answer.
+
+#### Clock one: three fixed groups, one meal each per cycle
+
+An odd ring cannot be coloured with just two alternating colours: closing the
+ring makes its first and last positions conflict. Three colours suffice.
+
+One explicit assignment is:
+
+$$
+c(i)=
+\begin{cases}
+i\bmod2,&0\le i<n-1,\\
+2,&i=n-1.
+\end{cases}
+$$
+
+At phase \(t\), only philosophers with \(c(i)=t\bmod3\) are eligible.
+
+| Phase | Five philosophers | Seven philosophers |
+| --- | --- | --- |
+| A | P1, P3 | P1, P3, P5 |
+| B | P2, P4 | P2, P4, P6 |
+| C | P5 | P7 |
+
+I repeat A, B, C in the same order. I do not have to mirror the next cycle:
+each philosopher keeps their phase and returns every three phase intervals.
+
+In an ideal schedule with phase interval \(T\), eating duration \(E\), and
+sleep duration \(S\), this requires:
+
+$$
+T\ge E,\qquad 3T-E\ge S,\qquad 3T<D.
+$$
+
+These are timing conditions for the prescribed schedule, not a proof that
+ordinary threads will hit their slots. With E = S = T = 200 ms, each meal-start
+gap is 600 ms. The last group's first start is at 400 ms.
+
+The tradeoff is utilization. For five philosophers, the three groups have
+sizes 2, 2, 1: five meals per three phases, with an unused eating slot in the
+last phase. It is fair in equal service and phase-gap terms even though it
+does not fill every phase.
+
+#### Clock two: rotate maximum eating sets
+
+My "2.5 + 2.5" idea can instead be expressed as a five-phase clock for five
+philosophers. More generally, for every odd n:
+
+$$
+\boxed{
+A_t=\{(t+2j)\bmod n:\;j=0,\ldots,m-1\},
+\qquad t=0,\ldots,n-1.
+}
+$$
+
+| Phase | Five philosophers | Seven philosophers |
+| --- | --- | --- |
+| 0 | P1, P3 | P1, P3, P5 |
+| 1 | P2, P4 | P2, P4, P6 |
+| 2 | P3, P5 | P3, P5, P7 |
+| 3 | P4, P1 | P4, P6, P1 |
+| 4 | P5, P2 | P5, P7, P2 |
+| 5 | Repeat phase 0 | P6, P1, P3 |
+| 6 | — | P7, P2, P4 |
+
+Why this works as a schedule:
+
+1. Each set contains m non-neighbours: its circular gaps are 2, except for
+   one gap of 3.
+2. Consecutive sets are disjoint, including the last-to-first transition.
+3. Each philosopher appears m times in n phases, so service is equal.
+4. For a fixed philosopher i, its phase numbers are i - 2j modulo n.
+   Their cyclic gaps consist of m - 1 gaps of 2 and one gap of 3.
+
+For n = 3, m = 1, there is just one gap of 3. For larger odd counts,
+the maximum meal-start gap is still three phases, even though the average is:
+
+$$
+\frac{n}{m}T=\left(2+\frac1m\right)T.
+$$
+
+The ideal timing requirements for n >= 5 are:
+
+$$
+T\ge E,\qquad 2T-E\ge S,\qquad 3T<D.
+$$
+
+The sleep condition uses the shortest start gap, 2T. For n = 3, use
+3T - E >= S instead. At E = S = T = 200 ms, the gaps are 400 or 600 ms.
+Every philosopher's first eligible phase is among phases 0, 1, and 2.
+
+This clock fills all m eating slots per phase. At T = E it reaches the
+fork-capacity upper bound m/E meals per unit time, provided sleeping permits
+that schedule. That is an ideal capacity statement; synchronization overhead
+and longer sleeping can lower achievable throughput.
+
+There is also a useful divisibility argument. If every phase has m eaters
+and each philosopher gets r meals in an L-phase cycle:
+
+$$
+Lm=nr.
+$$
+
+Since gcd(n,m) = 1, n divides L. Therefore n phases is the shortest possible
+equal-service cycle made entirely of maximum-size sets, and it gives r = m.
+My five-phase construction is not an arbitrary choice of ten meals.
+
+#### Why my startup delay and fork reversal did not implement either clock
+
+A delay based on id % 3 only affects when someone first attempts acquisition.
+It does not establish a persistent three-colour assignment or a phase barrier.
+
+Without enforced timing, the interval between meal starts includes:
+
+$$
+E+S+\text{thinking delay}+\text{fork waiting}.
+$$
+
+Fork waiting is variable. An earlier wake-up does not grant priority across
+two different mutexes, and an ordinary mutex is not a FIFO reservation system.
+
+My experimental reversal used:
+
+~~~c
+is_even_round = (completed_meals / count) % 2;
+~~~
+
+That counts batches of completed meals, not completed rounds containing one
+meal from every philosopher. For example, counts [2,1,1,1,0] sum to five,
+although one philosopher has never eaten.
+
+Each worker also selected its local first/second pointers before blocking.
+Crossing the counter boundary did not update those waiting workers' choices.
+Old and new acquisition orders could coexist.
+
+In the recorded five-philosopher goal-7 experiment, the intended P1 rescue
+actually happened:
+
+| Time (ms) | New run: meal starts |
+| --- | --- |
+| 0 | P1, P3 |
+| 200 | P2, P5 |
+| 400 | P1, P4 |
+| 600 | P3, P5 |
+| 800 | P2, P4 |
+| 1000 | P1, P3 |
+| 1200 | P2, P4 |
+| 1400 | P5 died |
+
+P5's last meal started at 600 ms, so its deadline was 600 + 800 = 1400 ms.
+I changed which philosopher missed a turn; I did not establish repeating fair
+phases. All eight sampled five-philosopher runs in that evaluation failed.
+
+The separate abstract interleaving model also found a reachable circular
+fork wait with mixed acquisition orders. That was a counterexample to an
+unconditional deadlock guarantee, not an observed native deadlock. The native
+failures above were missed meal deadlines.
+
+#### How many genuinely different three-group clocks exist?
+
+I do not want to count the same structure again just because I moved the
+pivot, reflected the table, or renamed A/B/C.
+
+First I count proper colourings of the labelled cycle with three colours.
+For completeness, fix the first colour and let u_k and v_k count valid
+length-k paths ending in that colour or a different colour respectively:
+
+$$
+u_1=1,\quad v_1=0,\quad
+u_{k+1}=v_k,\quad v_{k+1}=2u_k+v_k.
+$$
+
+To close the cycle, the last colour must differ from the first, giving
+3v_n = 2^n + 2(-1)^n colourings. For odd n this is 2^n - 2.
+All three colours are necessary, so removing the six colour renamings gives:
+
+$$
+\frac{2^n-2}{6}
+$$
+
+partitions of the labelled table into three unnamed independent groups.
+
+Removing table rotations and reflections as well gives the following small
+cases, checked by exhaustive enumeration and canonicalization:
+
+| Odd n | Partitions before table symmetries | Structurally distinct groupings |
+| --- | ---: | ---: |
+| 3 | 1 | 1 |
+| 5 | 5 | 1 |
+| 7 | 21 | 3 |
+| 9 | 85 | 8 |
+| 11 | 341 | 21 |
+
+I cannot just divide by 2n to remove table symmetries: some groupings have
+symmetries of their own. The last column counts group membership with phase
+names interchangeable, not every possible ordering, duration, or direction
+of a timed clock.
+
+For seven philosophers, representatives of the three structures are:
+
+| Structure | Group A | Group B | Group C |
+| --- | --- | --- | --- |
+| 1 | P1, P3, P5 | P2, P4, P6 | P7 |
+| 2 | P1, P3, P6 | P2, P4 | P5, P7 |
+| 3 | P1, P3, P5 | P2, P6 | P4, P7 |
+
+The last two both have sizes 3,2,2, but their placement around the ring is
+different. So genuinely different patterns do appear as n grows.
+
+For five philosophers, P1/P4 is not a new pair structure compared with P1/P3:
+a rotation maps one pair to the other. This equivalence does not generalize
+to every skip distance on every larger ring; rotations and reflections
+preserve circular separation.
+
+#### Is the fully occupied rotating clock unique?
+
+Under a narrower set of rules, yes, up to starting point and direction:
+
+- Every phase has m eaters.
+- Consecutive phases share no eater, including across the cycle boundary.
+- Every maximum eating set is visited exactly once per cycle.
+
+There are n maximum independent sets. To see this, the m gaps between eaters
+must each be at least 2 and sum to 2m + 1, so exactly one gap is 3 and all
+others are 2. Choosing that exceptional gap's position determines a set.
+
+For the sets A_t above, the only maximum sets disjoint from A_t are A_(t-1)
+and A_(t+1), with subscripts modulo n. Their compatibility graph is another
+n-cycle. Visiting every set exactly once therefore means walking around that
+cycle in either direction.
+
+If I allow smaller phases, repeated sets, or different cycle lengths, this
+uniqueness claim no longer applies. "There is only one fair clock" would be
+far too broad.
+
+#### What would I actually need to implement and prove?
+
+A mutex can protect shared phase state, but mutual exclusion alone does not
+supply phase semantics. An event-driven design would need a phase generation,
+the eligible group, and exactly-once completion tracking for that generation.
+
+My intended protocol would have to ensure:
+
+1. A worker waits for eligibility while holding no forks.
+2. Only the current group's members acquire forks; their pairs are disjoint.
+3. Each eligible member finishes once and releases both forks.
+4. The phase advances only after every required member finishes.
+5. Waiting workers check stopping, and cannot confuse an old generation with
+   a later phase using the same modulo value.
+6. Sleep readiness is respected before the next permitted meal.
+
+I must release the phase-state mutex while waiting or eating so other workers
+can make progress. A completed-meal total alone cannot enforce these rules.
+
+An absolute-time clock is another design: phase = floor((now - start)/T)
+modulo L. But I would still need to handle a late worker, prevent old-phase
+fork ownership from overlapping new admissions, and decide whether missed
+slots are skipped or delay the clock. Reading a clock is not itself a safe
+phase-transition protocol.
+
+Finally, fairness in phase counts and survival in milliseconds are separate
+proof obligations. Suppose successive phase admissions are at most B apart and every eligible
+worker starts eating within J of its phase admission. Since appearances are
+at most three phases apart, a conservative meal-start gap is 3B + J.
+Starting with phase 0 at simulation start, the first-meal bound is 2B + J.
+I need those bounds below D, and must separately establish enough spacing
+for sleep. Bounding phase duration alone does not eliminate within-phase
+start jitter. If B or J is unbounded, the wall-clock guarantee does not follow. General
+OS scheduling does not provide an unconditional bound just because my
+combinatorial schedule is correct.
+
+I also need to check whether an explicit shared admission/phase protocol fits
+my subject's "philosophers do not communicate" requirement. This appendix
+explores the mathematics; it does not settle that interpretation or claim
+these designs are submission-approved.
+
+What I was missing was not another modulo trick. I needed to separate the
+valid schedule, the protocol that enforces it, and the timing assumptions
+under which it keeps everyone alive.
 
 [Back to appendix index](#learning-points)
