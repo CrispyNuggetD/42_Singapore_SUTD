@@ -363,14 +363,68 @@ def parse_records(text):
     return records
 
 
+REPORTS_PER_BUCKET = 100
+RUNS_PER_REPORT = 10
+
+
+def detail_path(folder, prefix, number, extension='.md'):
+    """Base-100 hierarchy: <=100 reports and <=100 child buckets per directory."""
+    if number < 1:
+        raise ValueError('Report numbers start at one')
+    group = (number - 1) // REPORTS_PER_BUCKET
+    digits = [f'{group % 100:02d}']
+    while group >= 100:
+        group //= 100
+        digits.append(f'{group % 100:02d}')
+    while len(digits) < 2:
+        digits.append('00')
+    return folder.joinpath('details', *reversed(digits),
+                           f'{prefix}_output_{number:06d}{extension}')
+
+
+def detail_paths(folder, prefix):
+    """Read legacy flat and bucketed sessions; never silently mask duplicates."""
+    pattern = re.compile(re.escape(prefix) + r'_output_([0-9]+)\.(md|txt)$')
+    paths = {}
+    candidates = list(folder.glob(f'{prefix}_output_*'))
+    if (folder / 'details').is_dir():
+        candidates.extend((folder / 'details').rglob(f'{prefix}_output_*'))
+    for path in candidates:
+        match = pattern.fullmatch(path.name)
+        if not match or not path.is_file():
+            continue
+        number = int(match[1])
+        if number < 1:
+            raise ValueError(f'Invalid report number: {path}')
+        key = (number, path.suffix)
+        if key in paths:
+            raise ValueError(f'Duplicate report: {paths[key]} and {path}')
+        paths[key] = path
+    # Markdown supersedes legacy JSONL TXT for the same report.
+    return {number: paths.get((number, '.md'), path)
+            for (number, extension), path in paths.items()}
+
+
+def migrate_details(folder, prefix):
+    """Called only with the session lock held; each move is atomic and resumable."""
+    detail_paths(folder, prefix)  # Reject ambiguous duplicates before moving anything.
+    pattern = re.compile(re.escape(prefix) + r'_output_([0-9]+)\.(md|txt)$')
+    for source in folder.glob(f'{prefix}_output_*'):
+        match = pattern.fullmatch(source.name)
+        if not match or not source.is_file():
+            continue
+        destination = detail_path(folder, prefix, int(match[1]), source.suffix)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists():
+            raise ValueError(f'Refusing to overwrite report: {destination}')
+        source.rename(destination)
+
+
 def load_records(folder, prefix):
     """Atomic Markdown batches are authoritative; old JSONL logs remain readable."""
-    paths = {}
-    for extension in ('txt', 'md'):
-        for path in folder.glob(f'{prefix}_output_[0-9][0-9][0-9][0-9][0-9][0-9].{extension}'):
-            paths[path.stem] = path
+    paths = detail_paths(folder, prefix)
     records = []
-    for path in sorted(paths.values()):
+    for number, path in sorted(paths.items()):
         if path.suffix == '.md':
             batch = parse_records(path.read_text())
         else:
@@ -387,14 +441,16 @@ def load_records(folder, prefix):
 
 
 def save_detail(folder, config, records, record):
-    batch = (record['run_id'] - 1) // 10
-    selected = records[batch * 10:] + [record]
-    text = f"# Test runs {batch * 10 + 1}–{batch * 10 + len(selected)}\n\n"
+    batch = (record['run_id'] - 1) // RUNS_PER_REPORT
+    selected = records[batch * RUNS_PER_REPORT:] + [record]
+    text = f"# Test runs {batch * RUNS_PER_REPORT + 1}–{batch * RUNS_PER_REPORT + len(selected)}\n\n"
     text += table(['Run', 'Generation', 'Checker', 'Moves', 'Seconds', 'Rank hash (short)'],
                   [(r['run_id'], r['generation_id'], r['checker'], r['move_count'],
                     r['solver_seconds'], r['rank_sha256'][:12]) for r in selected])
     text += ''.join(render_record(r, config) for r in selected)
-    atomic_text(folder / f"{config['prefix']}_output_{batch+1:06d}.md", text)
+    destination = detail_path(folder, config['prefix'], batch + 1)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    atomic_text(destination, text)
 
 
 def read_config(path):
@@ -464,10 +520,12 @@ def save_summary(path, config, records, status):
                    *['Total seconds ' + x for x in labels]], size_rows)
     text += analysis_tables(records, config['size'])
     text += '\n## Saved runs\n\n'
-    for i in range(0, len(records), 10):
-        name = f"{config['prefix']}_output_{i//10+1:06d}"
-        extension = '.md' if (path.parent / (name + '.md')).exists() else '.txt'
-        text += f'- [Runs {i+1}–{min(i+10, len(records))}]({name}{extension})\n'
+    saved_paths = detail_paths(path.parent, config['prefix'])
+    for i in range(0, len(records), RUNS_PER_REPORT):
+        number = i // RUNS_PER_REPORT + 1
+        target = saved_paths.get(number, detail_path(path.parent, config['prefix'], number))
+        relative = target.relative_to(path.parent).as_posix()
+        text += f'- [Runs {i+1}–{min(i+RUNS_PER_REPORT, len(records))}]({relative})\n'
     text += '\n## Executable versions\n\n'
     text += table(['Binary SHA-256', 'Runs'], [(digest, sum(r['binary_sha256']==digest for r in records))
                   for digest in sorted({r['binary_sha256'] for r in records})])
@@ -653,6 +711,7 @@ def main():
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         records = load_records(folder, config['prefix'])
+        migrate_details(folder, config['prefix'])
         save_summary(summary, config, records, 'building')
         # Serialize runner builds through snapshot creation across sessions.
         build_key = hashlib.sha256(str(ROOT).encode()).hexdigest()[:16]

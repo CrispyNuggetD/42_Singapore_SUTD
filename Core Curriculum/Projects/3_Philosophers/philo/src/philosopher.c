@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/20 17:05:29 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 22:53:36 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,12 @@ void	*philo_routine(void *argument)
 
 	philo = argument;
 	status = check_or_stop_sim(philo->sim, STATUS_OK);
-	if (status == STATUS_OK && (philo->id % 2 == 0 || (philo->sim->config.count % 2  == 1 && philo->id % 3 != 0)))
-		status = philo_wait(philo->sim,
-				philo->sim->config.time_to_eat / 2);
 	while (status == STATUS_OK)
 	{
+		if (philo->id % 2 == 1 && (philo->sim->config.count % 2 == 1
+			&& !is_even_round(philo)))
+		status = philo_wait(philo->sim,
+				philo->sim->config.time_to_eat / 2);
 		status = philo_eat(philo);
 		if (status == STATUS_OK)
 			status = sleep_and_think(philo);

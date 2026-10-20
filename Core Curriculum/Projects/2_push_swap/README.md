@@ -2462,11 +2462,24 @@ Git; generated files should still stay outside the school submission:
 - `YYYYMMDD_HHMMSS_output_summary.md`: Markdown summary with averages/minimum/maximum tables, atomically replaced
   after every successful run. Includes master seed, next generation ID, move and
   runtime averages/min/max, per-algorithm move statistics and detail filenames.
-- `YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
+- `details/00/00/YYYYMMDD_HHMMSS_output_000001.md`, etc.: Markdown reports with a ten-run overview table and one section per test.
   Each section includes the ranked input,
   seed, generation ID, rank hash, binary hash, captured settings, checker result,
   complete winning moves and full solution-debug dump in collapsible details.
   The current ten-run file is atomically refreshed after each success.
+
+Report directories rotate after **100 files (1,000 runs)**. Reports 1–100 live
+in `details/00/00/`, 101–200 in `details/00/01/`, and 10,001 starts
+`details/01/00/`. The hierarchy grows in base 100, adding levels as needed;
+each directory has at most 100 report files and 100 child buckets, even beyond
+one million reports. Report numbers remain global and are not limited to six digits.
+The summary stays at the session root and links to each report's relative path.
+
+Resuming a flat session automatically moves its detail reports into these buckets
+while holding the session lock, then refreshes the summary links. Moves preserve
+file contents and are restartable after interruption. Readers accept flat,
+bucketed, and partially migrated sessions, including legacy TXT reports; duplicate
+copies of the same report and format are rejected rather than silently overwritten.
 
 Thus 100 successful tests produce **one summary plus ten detail files**.
 FD 1 is captured and passed to `checker_linux`; FD 2 remains visible for

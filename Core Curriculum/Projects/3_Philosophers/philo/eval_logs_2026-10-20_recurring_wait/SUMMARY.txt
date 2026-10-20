@@ -1,0 +1,63 @@
+RECURRING WAIT EVALUATION — 2026-10-20 (Singapore)
+
+Tested policy: inside the meal loop, odd IDs wait E/2 when is_even_round()
+returns 0. The fork swap is ENABLED when is_even_round() returns 1.
+The wait applies to odd IDs in even-count simulations too.
+
+16 sequential native runs: 10 passed the bounded checks, 6 failed.
+No intentional scheduling pauses. stdbuf -oL used to retain complete lines.
+Timeout 124 is expected for finite observation of an infinite survival run.
+No production code changed by this test run; prior results/logs preserved.
+
+COMPARISON
+- N=5 without goal: 2/3 survived 8 seconds; previous experiment 0/3.
+- N=5 goal 7: 3/5 completed without death; previous experiment 0/5.
+- N=4, 410/200/200: 0/2 survived; previous experiment 2/2.
+- N=3 goal 7: failed again.
+These small samples show variation, not a measured long-term probability.
+
+RESULTS
+single: PASS | 1 800 200 200 | exit=0 | deaths=['800 1 died']
+five_survival_1: PASS | 5 800 200 200 | exit=124 | deaths=[]
+five_survival_2: FAIL | 5 800 200 200 | exit=0 | deaths=['1000 3 died']
+five_survival_3: PASS | 5 800 200 200 | exit=124 | deaths=[]
+five_goal_1: PASS | 5 800 200 200 7 | exit=0 | deaths=[]
+five_goal_2: PASS | 5 800 200 200 7 | exit=0 | deaths=[]
+five_goal_3: FAIL | 5 800 200 200 7 | exit=0 | deaths=['800 2 died']
+five_goal_4: PASS | 5 800 200 200 7 | exit=0 | deaths=[]
+five_goal_5: FAIL | 5 800 200 200 7 | exit=0 | deaths=['800 2 died']
+four_survival_1: FAIL | 4 410 200 200 | exit=0 | deaths=['1010 1 died']
+four_survival_2: FAIL | 4 410 200 200 | exit=0 | deaths=['1010 1 died']
+four_death: PASS | 4 310 200 100 | exit=0 | deaths=['310 2 died']
+two_death: PASS | 2 310 200 100 | exit=0 | deaths=['310 2 died']
+two_goal: PASS | 2 800 200 200 7 | exit=0 | deaths=[]
+six_goal: PASS | 6 800 200 200 7 | exit=0 | deaths=[]
+three_goal: FAIL | 3 800 200 200 7 | exit=0 | deaths=['1200 1 died']
+
+WHY THE FOUR-PHILOSOPHER CASE NOW FAILS
+In four_survival_1.log P1 starts eating at 600 ms, sleeps from 800 ms,
+and logs thinking at 1000 ms. It dies at 1010 ms.
+The recurring 100 ms wait can defer its next attempt to 1100 ms:
+200 eating + 200 sleeping + 100 extra delay = 500 ms > 410 ms deadline.
+This is a timing-budget problem even if forks were immediately available.
+The condition tests odd ID, not odd philosopher count.
+
+OTHER FINDINGS
+- Build passed.
+- Norm fails in philosopher.c: extra blank line and under-indented wait.
+- philo_wait result is overwritten by unconditional philo_eat afterward.
+- !is_even_round(philo) converts its -1 mutex error to false rather than
+  preserving it as an operation failure.
+- Alternating order still has no synchronized transition between batches;
+  the earlier mixed-order deadlock counterexample is not resolved.
+- Sampled death timestamps matched logged deadlines (0 ms difference).
+  This is not a physical-output latency proof.
+- No malformed output or messages after death in these native samples.
+- No native death case hung on shutdown in this set.
+- Helgrind/memory checks were not rerun in this batch; previous reports
+  describe their earlier snapshots, not a new validation of this code.
+
+VERDICT: some N=5 runs improved, but mandatory still fails and N=4 regressed.
+Next decision: avoid additional delay exceeding the death budget; preserve
+non-success statuses and handle helper errors. A timing adjustment alone
+does not establish fair admission or safe changing acquisition orders.

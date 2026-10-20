@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/20 16:50:52 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/20 22:46:50 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,21 +73,18 @@ t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
 ** Human round numbering starts at 1; quotient 1 represents round 2.
 ** The total does not enforce once-per-round eating or synchronized changes.
 ** Mixed acquisition orders still need a deadlock-prevention argument.
+** Swapping is currently disabled by the experimental if (0) below.
 */
 t_status	swap_fork_if_even_round(t_philo *philo,
 		pthread_mutex_t **first, pthread_mutex_t **second)
 {
-	int				completed_meals;
-	int				is_even_round;
+	int				even_round;
 	pthread_mutex_t	*temp;
 
-	if (pthread_mutex_lock(&philo->sim->runtime.completed_meals_lock) != 0)
+	even_round = is_even_round(philo);
+	if (even_round == -1)
 		return (ERR_MUTEX);
-	completed_meals = philo->sim->runtime.completed_meals;
-	if (pthread_mutex_unlock(&philo->sim->runtime.completed_meals_lock) != 0)
-		return (ERR_MUTEX);
-	is_even_round = (completed_meals / philo->sim->config.count) % 2;
-	if (0)
+	if (even_round)
 	{
 		temp = *first;
 		*first = *second;

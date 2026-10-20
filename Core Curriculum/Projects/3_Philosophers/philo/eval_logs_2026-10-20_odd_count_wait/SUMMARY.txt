@@ -1,0 +1,47 @@
+EVALUATION RERUN: odd-count-only recurring delay — 2026-10-20
+
+Build passed. Tested saved source snapshots are included beside this report.
+Odd IDs delay E/2 only when count is odd and is_even_round returns zero.
+Alternating fork order remains enabled for both odd and even counts.
+Native runs were sequential, bounded by timeout, with line-buffered stdout.
+A survival pass means no death during an 8-second observation only.
+
+Results: 9/16 passed bounded checks.
+
+CASE RESULTS
+single: PASS | 1 800 200 200 | exit=0 | deaths=['800 1 died']
+five_survival_1: FAIL | 5 800 200 200 | exit=0 | deaths=['1001 3 died']
+five_survival_2: PASS | 5 800 200 200 | exit=124 | deaths=[]
+five_survival_3: FAIL | 5 800 200 200 | exit=0 | deaths=['800 2 died']
+five_goal_1: FAIL | 5 800 200 200 7 | exit=0 | deaths=['800 2 died']
+five_goal_2: PASS | 5 800 200 200 7 | exit=0 | deaths=[]
+five_goal_3: FAIL | 5 800 200 200 7 | exit=0 | deaths=['800 2 died']
+five_goal_4: FAIL | 5 800 200 200 7 | exit=0 | deaths=['800 2 died']
+five_goal_5: PASS | 5 800 200 200 7 | exit=0 | deaths=[]
+four_survival_1: FAIL | 4 410 200 200 | exit=0 | deaths=['6610 2 died']
+four_survival_2: PASS | 4 410 200 200 | exit=124 | deaths=[]
+four_death: PASS | 4 310 200 100 | exit=0 | deaths=['310 1 died']
+two_death: PASS | 2 310 200 100 | exit=0 | deaths=['310 1 died']
+two_goal: PASS | 2 800 200 200 7 | exit=0 | deaths=[]
+six_goal: PASS | 6 800 200 200 7 | exit=0 | deaths=[]
+three_goal: FAIL | 3 800 200 200 7 | exit=0 | deaths=['801 2 died']
+
+COMPARISON WITH PREVIOUS RECURRING-WAIT BATCH
+N=5 no goal: 1/3 survived (previous 2/3).
+N=5 goal 7: 2/5 completed (previous 3/5).
+N=4, 410/200/200: 1/2 survived (previous 0/2).
+N=3 goal 7 failed again. Single/expected-death and N=2/6 goal tests passed.
+These small samples do not establish probabilities or reliable improvement.
+
+REMAINING ISSUES
+- The deterministic extra-delay budget problem on even counts is removed.
+  However, one N=4 run still starved P2 at 6610 ms.
+- Fork-order switching remains enabled; the shared batch counter does not
+  synchronize acquisition order changes or ensure once-per-round meals.
+- philo_wait status is still overwritten by philo_eat unconditionally.
+- !is_even_round still treats -1 (mutex error) as false rather than an error.
+- philosopher.c fails Norm: blank line and condition/wait indentation.
+- No implementation edits made. No race/leak-tool rerun in this batch.
+- Timestamp checks are based on logged meal starts, not actual output latency.
+
+VERDICT: mandatory is not consistently passing. See individual logs and results.json.

@@ -12,6 +12,7 @@ SRCS := $(SRC_DIR)/main.c \
 	$(SRC_DIR)/logging.c \
 	$(SRC_DIR)/meal.c \
 	$(SRC_DIR)/forks.c \
+	$(SRC_DIR)/utils.c \
 	$(SRC_DIR)/init.c \
 	$(SRC_DIR)/cleanup_error.c
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)

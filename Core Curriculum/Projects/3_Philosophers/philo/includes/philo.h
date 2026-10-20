@@ -175,6 +175,7 @@ int			cleanup_resources(t_resources *res, t_runtime *run,
 t_status	release_forks(t_philo *philo);
 t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
 				pthread_mutex_t *second);
+int			is_even_round(t_philo *philo);
 t_status	swap_fork_if_even_round(t_philo *philo,
 				pthread_mutex_t **first, pthread_mutex_t **second);
 t_status	prepare_to_eat(t_philo *philo);
