@@ -661,17 +661,23 @@ pthread_mutex_lock(&forks[i]);
 A philosopher can store pointers into that array:
 
 ```c
-philos[i].left_fork_lock = &forks[i];
-philos[i].right_fork_lock = &forks[(i + 1) % count];
+is_odd = philos[i].id % 2; /* IDs start at 1; i starts at 0. */
+philos[i].first_fork_lock = &forks[(i + is_odd) % count];
+philos[i].second_fork_lock = &forks[(i + 1 - is_odd) % count];
 ```
+
+First/second describes acquisition order, not physical left/right. Odd IDs
+take right first; even IDs take left first. Modulo wraps the indices.
+The eating routine needs no further parity check. One philosopher still
+needs special handling.
 
 Then use the stored pointer directly:
 
 ```c
-pthread_mutex_lock(philos[i].left_fork_lock);
+pthread_mutex_lock(philos[i].first_fork_lock);
 ```
 
-There is no extra `&` because `left_fork_lock` is already a mutex pointer.
+There is no extra `&` because `first_fork_lock` is already a mutex pointer.
 For three philosophers, using array indices rather than displayed IDs:
 
 ```text
@@ -743,6 +749,170 @@ needs forks 0 and 1 -> lock 0, then 1
 needs forks 1 and 2 -> lock 1, then 2
 needs forks 2 and 0 -> lock 0, then 2
 ```
+
+My odd/even "heartbeat" idea has some maths behind it lol. For an **even**
+number `N` of philosophers, there are `N` forks and each eater needs two:
+
+```text
+maximum simultaneous eaters = N / 2
+ideal throughput ceiling    = N / (2 * time_to_eat)
+```
+
+For six philosophers, `1, 3, 5` can eat together, then `2, 4, 6` can eat
+together. Within each group, nobody shares a fork. If the groups alternate
+without gaps, this reaches the ideal ceiling: three philosophers eating at
+once. Required sleeping and scheduling delays can reduce actual throughput.
+
+My thought was: before grabbing ANY fork, let one group sleep for
+`time_to_eat`, giving the other group time to acquire both forks. That can
+encourage this rhythm. The other group does **not** have to finish eating
+before the sleepers wake: if it already holds both forks, it can finish and
+release them while its neighbours wait.
+
+The correctness condition for a clean handoff is:
+
+```text
+latest second-fork acquisition < earliest returning neighbour's fork attempt
+```
+
+With a synchronized release, a buffer `B`, and an upper bound `L` on the
+other group's time to acquire both forks, `L < B` is sufficient for that
+handoff. So acquiring both at 600 ms within a 1000 ms buffer is fine!
+However, `usleep` does not guarantee that the other threads run within that
+buffer, and each thread starts its own later sleeps independently. I need
+the condition to hold at every handoff; the initial stagger alone does not
+establish it forever. A large buffer may make failure unlikely, but that
+is different from proving deadlock impossible.
+
+I can keep staggering for the alternating rhythm **and** use ascending
+fork order for deadlock prevention. Fork order does not force everyone to
+eat one at a time: `N / 2` can still eat together when their forks are free.
+It prevents a circular wait if the expected timing breaks down. My implementation now uses opposite odd/even acquisition orders, another
+way to break circular waiting without relying on timing.
+
+**Walking through my actual fork order: N = 6 and N = 5**
+
+I needed a concrete sequence to see this lol. For these examples I assume a
+lightly loaded machine, prompt scheduling without unusual pauses, and that
+the earlier odd threads get their forks first. I also assume
+`time_to_sleep = time_to_eat`, a generous `time_to_die`, and no meal-goal stop
+during the sequence. My code delays even IDs by `time_to_eat / 2` **once**
+at startup. These are possible timelines under those assumptions, not a
+measured "normal order" or a scheduler guarantee: even low load does not
+force a particular winner.
+
+Here F1 means array element `forks[0]`. The arrows show acquisition order;
+odd IDs take right then left, even IDs take left then right.
+
+| Philosopher | N = 6 | N = 5 |
+|---|---|---|
+| P1 | F2 -> F1 | F2 -> F1 |
+| P2 | F2 -> F3 | F2 -> F3 |
+| P3 | F4 -> F3 | F4 -> F3 |
+| P4 | F4 -> F5 | F4 -> F5 |
+| P5 | F6 -> F5 | F1 -> F5 |
+| P6 | F6 -> F1 | — |
+
+For **N = 6**, let `T = time_to_eat`. Ignoring small startup/logging delays,
+this is the alternating rhythm I had in mind:
+
+| Approximate time | Eating | What the other group does |
+|---|---|---|
+| 0 to T/2 | P1, P3, P5 | P2, P4, P6 do their initial delay |
+| T/2 to T | P1, P3, P5 | P2 waits for F2; P4 for F4; P6 for F6 |
+| T to 2T | P2, P4, P6 | Odds released both forks and sleep |
+| 2T to 3T | P1, P3, P5 | Evens released both forks and sleep |
+
+Each group's pairs are disjoint, so three can eat together: `6 / 2 = 3`.
+The later alternation is an ideal timing pattern, not an enforced group turn.
+
+For **N = 5**, P1 and P5 share F1 despite both being odd. Assume P1 and P3
+start first, P1 releases slightly before P3, and P5 gets F5 before P4:
+
+| Stage | Eating / progressing | Waiting |
+|---|---|---|
+| 1 | P1 holds F2+F1; P3 holds F4+F3 | P5 waits for F1; P2/P4 initially delay |
+| 2 | P1 and P3 continue eating | After their delay, P2 waits for F2 and P4 for F4 |
+| 3 | P1 releases; P5 gets F1+F5 and eats | P2 gets F2, then waits for P3's F3 |
+| 4 | P3 releases; P2 gets F3 and eats alongside P5 | P4 gets F4, then waits for P5's F5 |
+| 5 | P5 releases; P4 gets F5 and starts eating | Others are sleeping or approaching their next meal |
+
+So yes, P2 can eat while P4 waits for P5. If P4 wins F5 earlier instead,
+P4 eats before P5. At most `floor(5 / 2) = 2` can eat together; I cannot
+make all three odd philosophers eat simultaneously. I do not need an
+explicit three-tick clock for deadlock prevention: the acquisition order
+breaks circular waiting, and the fork mutexes resolve the remaining
+competition. Fairness and survival with tight timings still need testing.
+
+**Investigating the odd-count starvation bug: can I flip the fork order?**
+
+My `5 800 200 200` test exposed the difference between preventing deadlock
+and keeping everyone fed. The forks kept moving, but P1 died. The recorded
+meal starts were:
+
+```text
+Time (ms):  0       200      400      600      800      1000      1200
+Eating:   [1,3] -> [2,5] -> [1,4] -> [3,5] -> [2,4] -> [3,5] -> P1 dies
+```
+
+P1 last started eating at 400 ms; `1200 - 400 = 800`, its death deadline.
+I thought: P1 woke earlier, so why didn't it get to eat before P5?!
+The issue is that being first to wait for one mutex does not reserve a
+*different* mutex. P1 requests F2 before F1; P5 requests F1 before F5.
+
+| At the 800 ms handoff | P1 | P5 |
+|---|---|---|
+| Current order | F2 -> F1 | F1 -> F5 |
+| Situation | Awake, waiting for P2's F2 | Sleeping until 1000 ms |
+| F1 | Free, but P1 cannot request it yet | P5 can request it first when it wakes |
+
+At 1000 ms, the log shows P5 taking its first fork before P1 takes its
+first fork. With this fixed mapping, those are F1 and F2 respectively.
+P5 gets both and eats; P1 finally gets F2 but must wait for P5's F1.
+The log timestamps are rounded to milliseconds and do not record every
+lock attempt, so the waiting states are inferred from the acquisition code.
+
+Reversing the order gives a concrete alternative for that same starting
+situation, assuming P1 runs and takes free F1 before P5 wakes:
+
+```text
+P1: F1 -> F2     P1 reserves F1 at 800 ms, then waits for F2.
+P5: F5 -> F1     P5 wakes at 1000 ms and cannot reserve F1 ahead of P1.
+P2 releases F2  -> P1 can eat.
+```
+
+So my reversal idea changes *who can reserve the shared fork*, rather than
+just adding a random pause. But this is a conditional explanation of one
+handoff, not proof that changing the code preserves the earlier timeline
+or fixes starvation for every philosopher. Another recorded run starved P4.
+
+I also thought of combining two rounds into five full phases:
+
+```text
+[1,3] -> [2,4] -> [3,5] -> [4,1] -> [5,2] -> repeat
+```
+
+Five philosophers eating twice means ten meals; two simultaneous eaters
+need five phases. In this ideal schedule, each philosopher's meal-start
+intervals alternate between `2 * time_to_eat` and `3 * time_to_eat`.
+With eating and sleeping both 200 ms, those gaps are 400/600 ms, below
+an 800 ms death deadline before scheduling overhead. This fills every
+phase, unlike a strict once-each round of `[1,3] -> [2,5] -> [4]`.
+It is a feasible target schedule, not something fork-order reversal alone
+forces the threads to follow.
+
+The distinction I need to keep straight:
+
+| Proposed change | What I can conclude |
+|---|---|
+| Reverse everyone's fixed odd/even acquisition pattern | Still breaks circular fork waiting for counts above one; changes the bias, not a fairness guarantee |
+| Alternate acquisition order using each philosopher's meal count | Needs a new deadlock analysis: philosophers can be on different local rounds and use mixed orders |
+| Enforce the five-phase sequence | Needs actual phase coordination; the subject's no-communication rule needs consideration |
+
+This investigation is not a completed starvation fix. The next proof/test
+must cover the whole repeating schedule, including different handoffs,
+rather than only rescuing P1 in this one trace. The single-philosopher case
+still requires its separate handling whichever acquisition rule I choose.
 
 Use indices to define the order. Relational comparisons between pointers to
 unrelated allocations are not a valid general ordering strategy in C.
@@ -1109,17 +1279,18 @@ pthread_mutex_init(&a, NULL);
 pthread_mutex_init(&b, NULL);
 ```
 
-For two philosophers sharing one fork, store pointers to the same object:
+For neighbouring philosophers with IDs 1 and 2, both first-fork pointers
+refer to the same object:
 
 ```c
-philo_a.right_fork_lock = &forks[1];
-philo_b.left_fork_lock = &forks[1];
+philo_a.first_fork_lock = &forks[1];
+philo_b.first_fork_lock = &forks[1];
 ```
 
 ```text
-philo_a.right_fork_lock --+
+philo_a.first_fork_lock --+
                     +--> same mutex: forks[1]
-philo_b.left_fork_lock ---+
+philo_b.first_fork_lock ---+
 ```
 
 Copying a mutex pointer is fine. Copying an initialized mutex with
