@@ -1,10 +1,5 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
-Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
-or jump straight to [the code-flow diagram](#clock-code).
-These diagrams and their walkthrough are **AI-generated** from my ideas and
-code; feel free to skip them if that is not your thing lol.
-
 ```text
 42 FELINES: THE FELI-O-SO-FURRR PROJECT
                                                           --:
@@ -43,6 +38,43 @@ One hungry philosopher just lost their chance to eat.
 
 Summary of my philosopher project and the 1 problem I tried to solve for weeks: A hungry (odd-id) cat.
 
+**My solution to making the cat stop stealing the fork:**
+
+```math
+\boxed{
+\begin{aligned}
+W(n,i,k;E,S)&=\max\!\left\{0,\;E\bigl(1+\delta_{n,i,k}\bigr)-S\right\},\\[4pt]
+\delta_{n,i,k}&=
+\begin{cases}
+1,&
+\begin{gathered}
+n\ge3,\quad n\equiv1\pmod2,\quad k\ge1,\\
+1+\bigl((k-1)\bmod\lfloor n/2\rfloor\bigr)
+=\min\!\left\{\lceil i/2\rceil,\lfloor n/2\rfloor\right\},
+\end{gathered}\\[4pt]
+0,&\text{otherwise}.
+\end{cases}
+\end{aligned}
+}
+```
+
+The cat is innocent. The modulo arithmetic is not.
+
+Here, $n$ is the philosopher count, $i$ is the **1-based ID**, $k$ is that
+philosopher's completed-meal count, and $E,S$ are the eating/sleeping durations
+in milliseconds. $W$ is exactly what
+[`thinking_wait_ms()`](philo/src/time.c) returns: the additional wait **after
+sleeping**, relative to that philosopher's own progress. For odd tables,
+$\delta=1$ rotates the extra rest slot between ID pairs; the last odd ID
+shares the final pair's position. Otherwise, $\delta=0$.
+
+The separate `initial_wait_slots()` starts odd IDs at 0 eating slots, even
+IDs at 1, and the last ID of an odd table at 2 (a lone philosopher starts
+at 0). After that, the formula above takes over. Cute cat; mathematically
+assigned turns. See [how the clock maps to the code](#clock-code) for the
+reasoning and timing limits: these local waits encourage the intended
+rhythm; they do not enforce a global clock or guarantee OS scheduling.
+
 # Philosophers
 
 ## Contents
@@ -53,6 +85,11 @@ Summary of my philosopher project and the 1 problem I tried to solve for weeks: 
 4. [Appendix: my learning points](#appendix-my-learning-points)
 
 ## Description
+
+Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
+or jump straight to [the code-flow diagram](#clock-code).
+These diagrams and their walkthrough are **AI-generated** from my ideas and
+code; feel free to skip them if that is not your thing lol.
 
 A C project about threads, mutexes, and the dining philosophers problem.
 The mandatory program will model philosophers eating, sleeping, and thinking,
