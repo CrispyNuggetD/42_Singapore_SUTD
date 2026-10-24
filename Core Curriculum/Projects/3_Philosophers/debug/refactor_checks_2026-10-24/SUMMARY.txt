@@ -1,0 +1,9 @@
+File regrouping validation, 2026-10-24
+
+make re: passed
+Norminette src includes: passed
+Bash command-list syntax: passed
+Python syntax: 8 files passed
+Four native smoke cases: passed (see smoke_results.json)
+Three moved function bodies match pre-refactor HEAD exactly.
+Full evaluation and Valgrind were not repeated for this file regrouping.

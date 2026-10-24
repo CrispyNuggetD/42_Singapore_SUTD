@@ -60,7 +60,7 @@ while protecting shared forks and monitoring starvation.
 
 The mandatory implementation is complete: argument parsing, resource
 initialization, the eating/sleeping/thinking cycle, monitoring, meal quotas,
-and cleanup. The [final validation report](philo/eval_logs_2026-10-24_final/SUMMARY.md)
+and cleanup. The [final validation report](debug/eval_logs_2026-10-24_final/SUMMARY.md)
 records the passing checks and their timing/coverage limits.
 The mandatory sources, header, and Makefile are in `philo/`, as required by
 subject version 13.0. Libft is not used.
@@ -2992,7 +2992,7 @@ on top of 200 ms eating and 400 ms sleeping: exactly the 800 ms deadline.
 Subtracting the sleep already completed fixed that unnecessary delay in both
 runs. I did not need to blame the parameters for that bug lol.
 
-[Recorded results and individual run logs](philo/eval_logs_2026-10-24_long_sleep/summary.json)
+[Recorded results and individual run logs](debug/eval_logs_2026-10-24_long_sleep/summary.json)
 are saved with the project. These finite runs support the change; they are not
 an unconditional starvation-freedom or real-time scheduling proof. The earlier
 full evaluation report describes the pre-adjustment code, so its two long-sleep

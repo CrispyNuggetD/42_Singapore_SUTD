@@ -1,0 +1,104 @@
+# Run from philo/ (beside ./philo). Paste one command or the whole list into Bash.
+# The previous list was mostly custom smoke tests, not the sheet's exact cases.
+# A = exact named eval cases; B = chosen two-philosopher checks requested by eval;
+# C = eval build/Norm/memory/thread checks; D = optional extra/appendix tests.
+# Sheet: https://github.com/Dsite42/philosophers/blob/master/philosophers%20eval%20sheet.pdf
+# Valid simulation tests stay at <= 200 philosophers and all durations >= 60 ms.
+# Invalid-input tests deliberately check rejected arguments separately.
+# Logs contain stdout + stderr. Rerunning a command overwrites its log.
+# stdbuf makes native log output line-buffered; it is an external test helper.
+# Expected exits: 0 = normal completion/death, 124 = observation timeout.
+# Invalid inputs should exit nonzero, but not 124. Valgrind errors use exit 99.
+# A timed-out survival run does NOT test normal cleanup or prove endless survival.
+
+mkdir -p ../debug/eval ../debug/extra
+make
+
+# A. EVAL: EXACT NAMED CASES FROM THE SHEET
+
+# A1. One fork message, no eating, one death near 800 ms; exit 0.
+timeout 5s stdbuf -oL ./philo 1 800 200 200 > ../debug/eval/01_single.log 2>&1; echo "A1 exit=$?"
+
+# A2. Nobody should die. Observe 10 seconds; expected exit 124.
+timeout 10s stdbuf -oL ./philo 5 800 200 200 > ../debug/eval/02_five_survival.log 2>&1; echo "A2 exit=$?"
+
+# A3. Everyone completes at least 7 meals; no death; exit 0.
+# Log entries show meal starts; the actual completed count is updated later.
+timeout 10s stdbuf -oL ./philo 5 800 200 200 7 > ../debug/eval/03_five_goal.log 2>&1; echo "A3 exit=$?"
+
+# A4. Nobody should die. Observe 10 seconds; expected exit 124.
+timeout 10s stdbuf -oL ./philo 4 410 200 200 > ../debug/eval/04_four_survival.log 2>&1; echo "A4 exit=$?"
+
+# A5. One philosopher should die; no later state messages; exit 0.
+timeout 5s stdbuf -oL ./philo 4 310 200 100 > ../debug/eval/05_four_death.log 2>&1; echo "A5 exit=$?"
+
+# B. EVAL: TWO-PHILOSOPHER TIMING CHECKS
+# The sheet requests different timings but does not prescribe these numbers.
+# Death should be announced within 10 ms of its actual deadline.
+# Compare with last meal start + time_to_die (or simulation start if never ate).
+# Log timestamps help inspect this; they do not independently prove display latency.
+
+# B1. Expected death near 310 ms; exit 0.
+timeout 5s stdbuf -oL ./philo 2 310 200 100 > ../debug/eval/06_two_death.log 2>&1; echo "B1 exit=$?"
+
+# B2. Death during eating: die time shorter than eating; exit 0.
+timeout 5s stdbuf -oL ./philo 2 150 300 100 > ../debug/eval/07_two_death_eating.log 2>&1; echo "B2 exit=$?"
+
+# B3. Death during a long sleep; exit 0.
+timeout 5s stdbuf -oL ./philo 2 300 100 500 > ../debug/eval/08_two_death_sleeping.log 2>&1; echo "B3 exit=$?"
+
+# B4. No death; both complete at least 5 meals; exit 0.
+timeout 10s stdbuf -oL ./philo 2 1000 100 100 5 > ../debug/eval/09_two_goal.log 2>&1; echo "B4 exit=$?"
+
+# C. EVAL: BUILD, NORM, LEAKS AND THREAD ERRORS
+# The sheet requires these properties; the tool commands/arguments below are chosen.
+# Run separately from timing tests. Instrumentation changes scheduling and speed.
+
+# Clean rebuild, then make again: second make should not compile or relink.
+make re > ../debug/eval/build.log 2>&1; echo "build exit=$?"
+make > ../debug/eval/no_relink.log 2>&1; echo "no-relink exit=$?"
+norminette src includes > ../debug/eval/norm.log 2>&1; echo "norm exit=$?"
+
+# Use terminating runs for cleanup checks; expected exit 0 and zero errors/leaks.
+timeout 30s valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./philo 5 10000 100 100 3 > ../debug/eval/memcheck_goal.log 2>&1; echo "memcheck-goal exit=$?"
+timeout 30s valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 ./philo 1 800 200 200 > ../debug/eval/memcheck_death.log 2>&1; echo "memcheck-death exit=$?"
+timeout 30s valgrind --tool=helgrind --error-exitcode=99 ./philo 5 10000 100 100 3 > ../debug/eval/helgrind.log 2>&1; echo "helgrind exit=$?"
+timeout 30s valgrind --tool=drd --error-exitcode=99 ./philo 5 10000 100 100 3 > ../debug/eval/drd.log 2>&1; echo "drd exit=$?"
+
+# D. EXTRA / APPENDIX TESTS: NOT EXACT NAMED SHEET CASES
+# Optional exploration of the clock, edge cases and input handling.
+# The sheet also permits evaluator-chosen cases; these extras can be useful there.
+
+# D1. Alternate single-philosopher timing: death near 200 ms; exit 0.
+timeout 5s stdbuf -oL ./philo 1 200 100 100 > ../debug/extra/01_single_short.log 2>&1; echo "D1 exit=$?"
+
+# D2-D4. Even/odd clocks with roomy deadlines; quotas complete; exit 0.
+# Exact ordering and strict alternating groups are not guaranteed.
+timeout 10s stdbuf -oL ./philo 6 2000 200 200 5 > ../debug/extra/02_six_goal.log 2>&1; echo "D2 exit=$?"
+timeout 10s stdbuf -oL ./philo 5 2000 200 200 5 > ../debug/extra/03_five_goal.log 2>&1; echo "D3 exit=$?"
+timeout 10s stdbuf -oL ./philo 3 2000 200 200 5 > ../debug/extra/04_three_goal.log 2>&1; echo "D4 exit=$?"
+
+# D5. Everyone completes at least one meal; exit 0.
+# Extra meals may start before the monitor observes that everyone reached quota.
+timeout 5s stdbuf -oL ./philo 5 2000 100 100 1 > ../debug/extra/05_one_meal.log 2>&1; echo "D5 exit=$?"
+
+# D6. No quota: survive the 5-second observation; expected exit 124.
+timeout 5s stdbuf -oL ./philo 6 2000 100 100 > ../debug/extra/06_continuous.log 2>&1; echo "D6 exit=$?"
+
+# D7. Larger count with roomy timings; quota completion; exit 0.
+timeout 15s stdbuf -oL ./philo 100 5000 100 100 3 > ../debug/extra/07_large_goal.log 2>&1; echo "D7 exit=$?"
+
+# D8-D10. Long-sleep regressions / README what-ifs; quota completion; exit 0.
+timeout 10s stdbuf -oL ./philo 3 800 200 400 3 > ../debug/extra/08_three_long_sleep.log 2>&1; echo "D8 exit=$?"
+timeout 10s stdbuf -oL ./philo 5 800 200 400 3 > ../debug/extra/09_five_long_sleep.log 2>&1; echo "D9 exit=$?"
+timeout 10s stdbuf -oL ./philo 7 1210 200 1000 3 > ../debug/extra/10_seven_long_sleep.log 2>&1; echo "D10 exit=$?"
+
+# D11-D15. Invalid inputs: prompt error and nonzero exit, not timeout 124.
+timeout 5s ./philo > ../debug/extra/11_missing_args.log 2>&1; echo "D11 exit=$?"
+timeout 5s ./philo 0 800 200 200 > ../debug/extra/12_zero_count.log 2>&1; echo "D12 exit=$?"
+timeout 5s ./philo 5 -800 200 200 > ../debug/extra/13_negative.log 2>&1; echo "D13 exit=$?"
+timeout 5s ./philo 5 abc 200 200 > ../debug/extra/14_non_numeric.log 2>&1; echo "D14 exit=$?"
+timeout 5s ./philo 2147483648 800 200 200 > ../debug/extra/15_overflow.log 2>&1; echo "D15 exit=$?"
+
+# Inspect the named sheet quota test after running it:
+cat ../debug/eval/03_five_goal.log

@@ -1,6 +1,6 @@
 from pathlib import Path
 import subprocess,json,re,collections,time
-root=Path.cwd(); out=root/'philo/eval_logs_2026-10-20_odd_count_wait'; results=[]
+root=Path(__file__).resolve().parents[2]; out=Path(__file__).resolve().parent; results=[]
 cases=[('single','1 800 200 200',3,'death'),*[('five_survival_'+str(i),'5 800 200 200',8,'survive') for i in range(1,4)],*[('five_goal_'+str(i),'5 800 200 200 7',10,'goal') for i in range(1,6)],*[('four_survival_'+str(i),'4 410 200 200',8,'survive') for i in range(1,3)],('four_death','4 310 200 100',3,'death'),('two_death','2 310 200 100',3,'death'),('two_goal','2 800 200 200 7',8,'goal'),('six_goal','6 800 200 200 7',8,'goal'),('three_goal','3 800 200 200 7',8,'goal')]
 for name,argline,limit,expected in cases:
  args=argline.split();start=time.monotonic(); timed=False

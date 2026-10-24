@@ -1,0 +1,48 @@
+[
+  {
+    "case": "single",
+    "args": [
+      1,
+      800,
+      200,
+      200
+    ],
+    "exit": 0,
+    "passed": true
+  },
+  {
+    "case": "five_goal",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "exit": 0,
+    "passed": true
+  },
+  {
+    "case": "long_sleep",
+    "args": [
+      3,
+      800,
+      200,
+      400,
+      3
+    ],
+    "exit": 0,
+    "passed": true
+  },
+  {
+    "case": "four_death",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "exit": 0,
+    "passed": true
+  }
+]

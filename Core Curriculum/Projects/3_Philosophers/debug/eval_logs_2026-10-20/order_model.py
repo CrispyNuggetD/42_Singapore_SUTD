@@ -12,7 +12,7 @@ for trial in range(10000):
    if s in (0,3) or (s in (1,2) and owners[orders[i][s-1]] is None):enabled.append(i)
   if not enabled:
    data=dict(note='Abstract possible interleaving, not a measured runtime trace. Timing and death monitor omitted.',total=total,meals=meals,orders=orders,owners=owners,trace=trace)
-   Path('philo/eval_logs_2026-10-20/order_counterexample.json').write_text(json.dumps(data,indent=2))
+   Path(__file__).resolve().with_name('order_counterexample.json').write_text(json.dumps(data,indent=2))
    print('Found circular wait: total',total,'meals',meals,'orders',orders,'owners',owners,'steps',len(trace));raise SystemExit
   i=rng.choice(enabled);s=stages[i]
   if s==0:

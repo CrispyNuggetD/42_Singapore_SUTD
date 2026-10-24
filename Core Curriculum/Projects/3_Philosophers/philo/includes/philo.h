@@ -172,7 +172,6 @@ int			cleanup_resources(t_resources *res, t_runtime *run,
 t_status	release_forks(t_philo *philo);
 t_status	take_forks(t_philo *philo);
 int			initial_wait_slots(t_philo *philo);
-int			needs_extra_wait(t_philo *philo);
 t_status	prepare_to_eat(t_philo *philo);
 t_status	philo_eat(t_philo *philo);
 t_status	check_or_stop_sim(t_sim *sim, t_status request);
