@@ -1,0 +1,350 @@
+[
+  {
+    "args": [
+      3,
+      190,
+      60,
+      90,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      5,
+      190,
+      60,
+      90,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      7,
+      190,
+      60,
+      90,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      7,
+      6,
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      9,
+      190,
+      60,
+      90,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      6,
+      6,
+      7,
+      6,
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      3,
+      190,
+      60,
+      120,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      5,
+      190,
+      60,
+      120,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      7,
+      190,
+      60,
+      120,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      7,
+      6,
+      7,
+      6,
+      7,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      9,
+      190,
+      60,
+      120,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 180,
+    "eating_starts": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      3,
+      370,
+      60,
+      300,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 360,
+    "eating_starts": [
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      5,
+      370,
+      60,
+      300,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 360,
+    "eating_starts": [
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      7,
+      370,
+      60,
+      300,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 360,
+    "eating_starts": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      9,
+      370,
+      60,
+      300,
+      6
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 360,
+    "eating_starts": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      3,
+      800,
+      200,
+      400,
+      3
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 600,
+    "eating_starts": [
+      3,
+      3,
+      3
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      5,
+      800,
+      200,
+      400,
+      3
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 600,
+    "eating_starts": [
+      4,
+      3,
+      4,
+      3,
+      3
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      5,
+      1210,
+      200,
+      1000,
+      3
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 1201,
+    "eating_starts": [
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "stderr": ""
+  },
+  {
+    "args": [
+      7,
+      1210,
+      200,
+      1000,
+      3
+    ],
+    "result": "PASS",
+    "deaths": [],
+    "timeout": false,
+    "max_logged_meal_gap_ms": 1200,
+    "eating_starts": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "stderr": ""
+  }
+]

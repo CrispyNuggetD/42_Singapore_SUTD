@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/20 16:52:55 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/24 18:44:46 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,11 +121,9 @@ typedef struct s_runtime
 {
 	long			start_time;
 	int				all_stop;
-	int				completed_meals;
 	t_status		first_error;
 	pthread_mutex_t	all_stop_lock;
 	pthread_mutex_t	printing_lock;
-	pthread_mutex_t	completed_meals_lock;
 }	t_runtime;
 
 /*
@@ -147,7 +145,6 @@ typedef struct s_resources
 	int				meals_init_count;
 	int				stop_lock_initialized;
 	int				printing_lock_initialized;
-	int				completed_meals_lock_initialized;
 	int				threads_to_join;
 }	t_resources;
 
@@ -173,11 +170,9 @@ t_status	init_sim(t_sim *sim);
 int			cleanup_resources(t_resources *res, t_runtime *run,
 				t_status status);
 t_status	release_forks(t_philo *philo);
-t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
-				pthread_mutex_t *second);
-int			is_even_round(t_philo *philo);
-t_status	swap_fork_if_even_round(t_philo *philo,
-				pthread_mutex_t **first, pthread_mutex_t **second);
+t_status	take_forks(t_philo *philo);
+int			initial_wait_slots(t_philo *philo);
+int			needs_extra_wait(t_philo *philo);
 t_status	prepare_to_eat(t_philo *philo);
 t_status	philo_eat(t_philo *philo);
 t_status	check_or_stop_sim(t_sim *sim, t_status request);
@@ -188,5 +183,6 @@ t_status	log_philo_state(t_philo *philo, t_philo_state state);
 t_status	join_philos(t_resources *res);
 void		*philo_routine(void *argument);
 long		now_ms(void);
+long		thinking_wait_ms(t_philo *philo);
 
 #endif

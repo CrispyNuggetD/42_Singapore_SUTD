@@ -1,0 +1,1557 @@
+[
+  {
+    "name": "input_invalid_00",
+    "category": "input",
+    "args": [],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.002,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_01",
+    "category": "input",
+    "args": [
+      "5",
+      "800",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_02",
+    "category": "input",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "7",
+      "extra"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.004,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_03",
+    "category": "input",
+    "args": [
+      "0",
+      "800",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_04",
+    "category": "input",
+    "args": [
+      "-1",
+      "800",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_05",
+    "category": "input",
+    "args": [
+      "5",
+      "0",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_06",
+    "category": "input",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "0"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_07",
+    "category": "input",
+    "args": [
+      "5",
+      "800",
+      "200",
+      "200",
+      "-1"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_08",
+    "category": "input",
+    "args": [
+      "five",
+      "800",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_09",
+    "category": "input",
+    "args": [
+      "5",
+      "800x",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_10",
+    "category": "input",
+    "args": [
+      "5",
+      "",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_11",
+    "category": "input",
+    "args": [
+      "5",
+      "+",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_12",
+    "category": "input",
+    "args": [
+      "5",
+      "2147483648",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_invalid_13",
+    "category": "input",
+    "args": [
+      "5",
+      "999999999999999999999999",
+      "200",
+      "200"
+    ],
+    "kind": "invalid",
+    "result": "PASS",
+    "returncode": 1,
+    "timed_out": false,
+    "elapsed_s": 0.005,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [],
+    "problems": []
+  },
+  {
+    "name": "input_plus",
+    "category": "input",
+    "args": [
+      "+2",
+      "+800",
+      "+60",
+      "+60",
+      "+2"
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.266,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      2,
+      2
+    ],
+    "problems": []
+  },
+  {
+    "name": "single",
+    "category": "sheet",
+    "args": [
+      1,
+      800,
+      200,
+      200
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.818,
+    "deaths": [
+      [
+        800,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      0
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_survive_1",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.001,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_survive_2",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.001,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_survive_3",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.001,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_goal_1",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      7,
+      7,
+      8,
+      7,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_goal_2",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      7,
+      7,
+      8,
+      7,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_goal_3",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      8,
+      7,
+      8,
+      8,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_goal_4",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      7,
+      7,
+      8,
+      8,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_goal_5",
+    "category": "sheet",
+    "args": [
+      5,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      8,
+      7,
+      8,
+      8,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_survive_1",
+    "category": "sheet",
+    "args": [
+      4,
+      410,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.001,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      25,
+      25,
+      25,
+      25
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_survive_2",
+    "category": "sheet",
+    "args": [
+      4,
+      410,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.001,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      25,
+      25,
+      25,
+      25
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_survive_3",
+    "category": "sheet",
+    "args": [
+      4,
+      410,
+      200,
+      200
+    ],
+    "kind": "survive",
+    "result": "PASS",
+    "returncode": -9,
+    "timed_out": true,
+    "elapsed_s": 10.002,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      25,
+      25,
+      25,
+      25
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_die_1",
+    "category": "sheet",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.315,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_die_2",
+    "category": "sheet",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.315,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "four_die_3",
+    "category": "sheet",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.315,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_310_200_100_1",
+    "category": "sheet",
+    "args": [
+      2,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.315,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_310_200_100_2",
+    "category": "sheet",
+    "args": [
+      2,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.316,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_310_200_100_3",
+    "category": "sheet",
+    "args": [
+      2,
+      310,
+      200,
+      100
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.315,
+    "deaths": [
+      [
+        310,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_250_150_150_1",
+    "category": "sheet",
+    "args": [
+      2,
+      250,
+      150,
+      150
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.265,
+    "deaths": [
+      [
+        251,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_250_150_150_2",
+    "category": "sheet",
+    "args": [
+      2,
+      250,
+      150,
+      150
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.265,
+    "deaths": [
+      [
+        250,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_250_150_150_3",
+    "category": "sheet",
+    "args": [
+      2,
+      250,
+      150,
+      150
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.265,
+    "deaths": [
+      [
+        250,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      1
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_60_120_60_1",
+    "category": "sheet",
+    "args": [
+      2,
+      60,
+      120,
+      60
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.064,
+    "deaths": [
+      [
+        60,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      0
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_60_120_60_2",
+    "category": "sheet",
+    "args": [
+      2,
+      60,
+      120,
+      60
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.065,
+    "deaths": [
+      [
+        60,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      0
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_die_60_120_60_3",
+    "category": "sheet",
+    "args": [
+      2,
+      60,
+      120,
+      60
+    ],
+    "kind": "death",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.064,
+    "deaths": [
+      [
+        60,
+        1,
+        "died"
+      ]
+    ],
+    "logged_death_lateness_ms": 0,
+    "eating_starts": [
+      1,
+      0
+    ],
+    "problems": []
+  },
+  {
+    "name": "two_goal",
+    "category": "sheet",
+    "args": [
+      2,
+      800,
+      200,
+      200,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 2.82,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      8,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "odd_3_goal",
+    "category": "extra",
+    "args": [
+      3,
+      800,
+      200,
+      200,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 1.818,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      3,
+      3,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "odd_7_goal",
+    "category": "extra",
+    "args": [
+      7,
+      800,
+      200,
+      200,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 1.417,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "odd_9_goal",
+    "category": "extra",
+    "args": [
+      9,
+      800,
+      200,
+      200,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 1.417,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      3,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "large_199_goal",
+    "category": "extra",
+    "args": [
+      199,
+      2000,
+      60,
+      60,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.466,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "large_200_goal",
+    "category": "extra",
+    "args": [
+      200,
+      2000,
+      60,
+      60,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 0.415,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_short_sleep",
+    "category": "extra",
+    "args": [
+      5,
+      800,
+      200,
+      100,
+      7
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 3.621,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      8,
+      7,
+      8,
+      8,
+      7
+    ],
+    "problems": []
+  },
+  {
+    "name": "five_long_sleep",
+    "category": "extra",
+    "args": [
+      5,
+      800,
+      200,
+      400,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 1.818,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      4,
+      3,
+      4,
+      3,
+      3
+    ],
+    "problems": []
+  },
+  {
+    "name": "three_long_sleep",
+    "category": "extra",
+    "args": [
+      3,
+      800,
+      200,
+      400,
+      3
+    ],
+    "kind": "goal",
+    "result": "PASS",
+    "returncode": 0,
+    "timed_out": false,
+    "elapsed_s": 1.818,
+    "deaths": [],
+    "logged_death_lateness_ms": null,
+    "eating_starts": [
+      3,
+      3,
+      3
+    ],
+    "problems": []
+  }
+]

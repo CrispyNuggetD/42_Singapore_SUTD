@@ -1,0 +1,15 @@
+==1489804== Memcheck, a memory error detector
+==1489804== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1489804== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==1489804== Command: /tmp/philo-failure-check-q6agu6hk/philo 5 10000 100 100 3
+==1489804==
+Error: Thread creation failed.
+==1489804==
+==1489804== HEAP SUMMARY:
+==1489804==     in use at exit: 0 bytes in 0 blocks
+==1489804==   total heap usage: 5 allocs, 5 frees, 5,320 bytes allocated
+==1489804==
+==1489804== All heap blocks were freed -- no leaks are possible
+==1489804==
+==1489804== For lists of detected and suppressed errors, rerun with: -s
+==1489804== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

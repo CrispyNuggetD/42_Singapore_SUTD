@@ -46,12 +46,16 @@ static t_status	take_fork_check_stop(t_philo *philo, pthread_mutex_t *fork_lock)
 /*
 ** Success owns both forks. On second-step failure, release the first fork.
 ** With one fork, wait for stopping/error and release it without relocking.
+** Use the fixed acquisition order assigned by init_philos on every meal.
 */
-t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
-		pthread_mutex_t *second)
+t_status	take_forks(t_philo *philo)
 {
-	t_status	status;
+	t_status		status;
+	pthread_mutex_t	*first;
+	pthread_mutex_t	*second;
 
+	first = philo->first_fork_lock;
+	second = philo->second_fork_lock;
 	status = take_fork_check_stop(philo, first);
 	if (status != STATUS_OK)
 		return (status);
@@ -66,29 +70,4 @@ t_status	take_forks(t_philo *philo, pthread_mutex_t *first,
 	if (status != STATUS_OK && pthread_mutex_unlock(first) != 0)
 		return (ERR_MUTEX);
 	return (status);
-}
-
-/*
-** Experimental: reverse local pointer order in alternate meal-count batches.
-** Human round numbering starts at 1; quotient 1 represents round 2.
-** The total does not enforce once-per-round eating or synchronized changes.
-** Mixed acquisition orders still need a deadlock-prevention argument.
-** Swapping is currently disabled by the experimental if (0) below.
-*/
-t_status	swap_fork_if_even_round(t_philo *philo,
-		pthread_mutex_t **first, pthread_mutex_t **second)
-{
-	int				even_round;
-	pthread_mutex_t	*temp;
-
-	even_round = is_even_round(philo);
-	if (even_round == -1)
-		return (ERR_MUTEX);
-	if (even_round)
-	{
-		temp = *first;
-		*first = *second;
-		*second = temp;
-	}
-	return (STATUS_OK);
 }

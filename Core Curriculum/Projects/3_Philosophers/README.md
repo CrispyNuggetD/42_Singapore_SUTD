@@ -1,10 +1,53 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
+or jump straight to [the code-flow diagram](#clock-code).
+These diagrams and their walkthrough are **AI-generated** from my ideas and
+code; feel free to skip them if that is not your thing lol.
+
+```text
+42 FELINES: THE FELI-O-SO-FURRR PROJECT
+                                                          --:
+                                                        -*+++=+
+                                                      -=*==*+*.
+                                                     +-   =+=
+                                                 .:-++-----:
+                                             .:--=+=:             ......:::::::.....
+                                     .+===+=-::--:            :=------:::::::::-------=:
+                        .=:         :#: :=%@*+*+-:::::::::::::=*+*+--::::::::::::--+*+*=::
+                 ..     %=+#:      .%.  #+-::-:::-:::::::::::::::--------------------:::::
+                =*===-:=%=-++++:   #:  *@
+                =+-*-:-:  .  .@#+.*=  :#*=:-::::::::---:::-::--:----:::::::::::::::--:::::
+                 %.+:    =@*  +=.@+   #- :::=%:::%=:::::::::::::::::::::::::::::::::::::::
+                 -*     . ::  :=*+   :#     -*   #.
+                  %. .--==    .+=    %.     =+   #
+    :-=--.        =*  .--    -+:    #-      +=  .#
+   +*. .-*-        -+=      .:    .#-       *=  :#
+   -+-=   %.        *+.          :#:        #-  -*
+      *+  %.     :=+-           -#.         #:  =+
+     .#. +*    =+=.             %.          #.  *=
+    .%: -#   =*-               +*           #   #:
+    #- .%. .#=                -#           .%   #.
+   =*  #- .#:         =.     +%            .#   #
+   *-  %  #-          .#.  .**#            :#  .#
+   ++  #- %            %  =*: #.           -*  :#
+    #-  ++#          :#=-+*+  =*           =*  -*
+    .++: ..        :=*+*#  #=  ===         ++  =+
+      .-===+-::::::-:.==@-  *=-++#.        =*--*-
+            :-----------.    ....           ....
+```
+
+THE FELI-O-SO-FURR IS STEALING THE FORK!
+
+One hungry philosopher just lost their chance to eat.
+
+Summary of my philosopher project and the 1 problem I tried to solve for weeks: A hungry (odd-id) cat.
+
 # Philosophers
 
 ## Contents
 
-1. [Description](#description)
+1. [Description](#description) — [see how the clock works](#see-how-it-works)
 2. [Instructions](#instructions)
 3. [Resources](#resources)
 4. [Appendix: my learning points](#appendix-my-learning-points)
@@ -15,9 +58,10 @@ A C project about threads, mutexes, and the dining philosophers problem.
 The mandatory program will model philosophers eating, sleeping, and thinking,
 while protecting shared forks and monitoring starvation.
 
-This is a work in progress. Argument parsing, resource initialization,
-and a thread scaffold exist. Meal setup and waiting are being developed;
-the full eating cycle and monitoring are not implemented yet.
+The mandatory implementation is complete: argument parsing, resource
+initialization, the eating/sleeping/thinking cycle, monitoring, meal quotas,
+and cleanup. The [final validation report](philo/eval_logs_2026-10-24_final/SUMMARY.md)
+records the passing checks and their timing/coverage limits.
 The mandatory sources, header, and Makefile are in `philo/`, as required by
 subject version 13.0. Libft is not used.
 
@@ -25,6 +69,39 @@ This README is long because I learned way more than I expected from Philo lol.
 The project description, build instructions, and resources come first; the
 thread, pointer, mutex, and time rabbit holes are in the linked learning
 appendix below.
+
+<a id="see-how-it-works"></a>
+
+### See how it works: my clock idea
+
+**AI-generated diagrams and walkthrough, based on my design and code.**
+The pictures show the intended rhythm with equal eating/sleeping durations
+and ideal handoffs. My local waits encourage this rhythm; actual thread
+scheduling and fork contention can shift it. One tick below means one
+`time_to_eat`, and the listed IDs are the philosophers eating together.
+
+```mermaid
+flowchart TB
+    N1["1 philosopher<br/>One fork: cannot eat, eventually dies"]
+    N2["2 philosophers<br/>P1 → P2 → repeat<br/>Two ticks, one meal each"]
+    N3["3 philosophers<br/>P1 → P2 → P3 → repeat<br/>Three ticks, one meal each"]
+    N4["4 philosophers<br/>P1 + P3 → P2 + P4 → repeat<br/>Two ticks, one meal each"]
+    N5["5 philosophers<br/>13 → 24 → 35 → 14 → 25 → repeat<br/>Five ticks, two meals each"]
+    N7["7 philosophers<br/>135 → 246 → 357 → 146 → 257 → 136 → 247 → repeat<br/>Seven ticks, three meals each"]
+    N1 --> N2 --> N3 --> N4 --> N5 --> N7
+    classDef death fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef even fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    classDef odd fill:#dcfce7,stroke:#15803d,color:#111827
+    class N1 death
+    class N2,N4 even
+    class N3,N5,N7 odd
+```
+
+The arrows between counts are a learning progression, not one simulation
+changing its number of philosophers. `13` means P1 and P3 together.
+The clock expands from alternating individuals to rotating groups.
+
+[Walk through the coloured diagrams, waits, and matching code step by step](#learning-point-34).
 
 ## Instructions
 
@@ -35,15 +112,15 @@ The executable is `philo/philo`.
 `make clean` removes object files, `make fclean` also removes the executable,
 and `make re` rebuilds. The root Makefile forwards these commands to `philo/`.
 
-The eventual command format is:
+The command format is:
 
 ```sh
 ./philo/philo number_of_philosophers time_to_die time_to_eat time_to_sleep \
     [number_of_times_each_philosopher_must_eat]
 ```
 
-The current executable parses arguments and starts greeting threads; it does
-not yet run the dining philosophers simulation.
+The simulation stops when a philosopher dies or everyone completes the
+optional meal quota.
 
 ## Resources
 
@@ -51,8 +128,8 @@ not yet run the dining philosophers simulation.
 - Local manual pages: `man pthread_create`, `man pthread_mutex_init`,
   `man pthread_join`, `man gettimeofday`, and `man usleep`.
 - AI assistance helped explain concepts and write these learning notes.
-  It also helped implement argument parsing, initialization, the thread
-  greeting scaffold, and cleanup. The full simulation is not implemented.
+  It also helped with implementation, refactoring, and checks throughout
+  the simulation, including initialization, logging, timing, and cleanup.
 
 ## Appendix: my learning points
 
@@ -98,6 +175,9 @@ simulation features. The numbered links jump to each learning point.
 30. [Main as monitor versus a separate monitor thread](#learning-point-30)
 31. [Why I use separate stop and printing locks](#learning-point-31)
 32. [My mathematical rabbit hole: fairness, odd counts, and eating clocks](#learning-point-32)
+33. [Removed experiments: what I tried, and why I took it out](#learning-point-33)
+34. [See the clock grow: 1, 2, 3, 4, 5, and 7 philosophers (AI-generated diagrams)](#learning-point-34)
+35. [What if the sleep is weirdly long? Valid inputs, different clocks](#learning-point-35)
 
 <a id="learning-point-1"></a>
 
@@ -847,6 +927,9 @@ competition. Fairness and survival with tight timings still need testing.
 
 **Investigating the odd-count starvation bug: can I flip the fork order?**
 
+This is the history of an experiment I have since removed. Its outcome and
+the code I deleted are collected in [removed experiments](#learning-point-33).
+
 My `5 800 200 200` test exposed the difference between preventing deadlock
 and keeping everyone fed. The forks kept moving, but P1 died. The recorded
 meal starts were:
@@ -863,7 +946,7 @@ The issue is that being first to wait for one mutex does not reserve a
 
 | At the 800 ms handoff | P1 | P5 |
 |---|---|---|
-| Current order | F2 -> F1 | F1 -> F5 |
+| Order in that recorded run | F2 -> F1 | F1 -> F5 |
 | Situation | Awake, waiting for P2's F2 | Sleeping until 1000 ms |
 | F1 | Free, but P1 cannot request it yet | P5 can request it first when it wakes |
 
@@ -910,7 +993,7 @@ The distinction I need to keep straight:
 | Alternate acquisition order using each philosopher's meal count | Needs a new deadlock analysis: philosophers can be on different local rounds and use mixed orders |
 | Enforce the five-phase sequence | Needs actual phase coordination; the subject's no-communication rule needs consideration |
 
-This investigation is not a completed starvation fix. The next proof/test
+Fork reversal did not provide a completed starvation fix. The next proof/test
 must cover the whole repeating schedule, including different handoffs,
 rather than only rescuing P1 in this one trace. The single-philosopher case
 still requires its separate handling whichever acquisition rule I choose.
@@ -2264,60 +2347,15 @@ My short explanation to a friend would be:
 > nobody waits more than three phases. The equation describes where the holes
 > are. My synchronization code still has to make the threads follow those turns.
 
-That is the mathematical design I am working toward, not a claim that the
-latest delay-and-fork-reversal implementation already enforces it.
+That is the mathematical design I am working toward, not a claim that my
+local delays already enforce it. I removed dynamic fork reversal and its
+shared meal-total counter and mutex. Fork acquisition now keeps the fixed
+odd/even order assigned at initialization; the extra-wait pattern uses each
+philosopher's own completed-meal count.
 
 
-#### Why my startup delay and fork reversal did not implement either clock
-
-A delay based on id % 3 only affects when someone first attempts acquisition.
-It does not establish a persistent three-colour assignment or a phase barrier.
-
-Without enforced timing, the interval between meal starts includes:
-
-$$
-E+S+\text{thinking delay}+\text{fork waiting}.
-$$
-
-Fork waiting is variable. An earlier wake-up does not grant priority across
-two different mutexes, and an ordinary mutex is not a FIFO reservation system.
-
-My experimental reversal used:
-
-~~~c
-is_even_round = (completed_meals / count) % 2;
-~~~
-
-That counts batches of completed meals, not completed rounds containing one
-meal from every philosopher. For example, counts [2,1,1,1,0] sum to five,
-although one philosopher has never eaten.
-
-Each worker also selected its local first/second pointers before blocking.
-Crossing the counter boundary did not update those waiting workers' choices.
-Old and new acquisition orders could coexist.
-
-In the recorded five-philosopher goal-7 experiment, the intended P1 rescue
-actually happened:
-
-| Time (ms) | New run: meal starts |
-| --- | --- |
-| 0 | P1, P3 |
-| 200 | P2, P5 |
-| 400 | P1, P4 |
-| 600 | P3, P5 |
-| 800 | P2, P4 |
-| 1000 | P1, P3 |
-| 1200 | P2, P4 |
-| 1400 | P5 died |
-
-P5's last meal started at 600 ms, so its deadline was 600 + 800 = 1400 ms.
-I changed which philosopher missed a turn; I did not establish repeating fair
-phases. All eight sampled five-philosopher runs in that evaluation failed.
-
-The separate abstract interleaving model also found a reachable circular
-fork wait with mixed acquisition orders. That was a counterexample to an
-unconditional deadlock guarantee, not an observed native deadlock. The native
-failures above were missed meal deadlines.
+The removed startup/reversal experiments and their recorded failure trace
+are collected in [learning point 33](#learning-point-33).
 
 #### How many genuinely different three-group clocks exist?
 
@@ -2440,5 +2478,524 @@ these designs are submission-approved.
 What I was missing was not another modulo trick. I needed to separate the
 valid schedule, the protocol that enforces it, and the timing assumptions
 under which it keeps everyone alive.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-33"></a>
+
+### 33. Removed experiments: what I tried, and why I took it out
+
+I am keeping these notes because otherwise future me might see an old snippet
+and think it is still part of the solution lol. These were real experiments,
+but more machinery did not automatically mean a better solution. Some changed
+who starved, some added error paths, and none of them enforced the repeating
+fair clock I was trying to create.
+
+| Removed or replaced | Why I took it out |
+| --- | --- |
+| `swap_fork_if_even_round()` and its prototype/call | Flipping fork order could rescue P1 in one handoff, but another philosopher could still starve. Workers could also use different batches' orders at the same time, introducing a circular-wait risk. |
+| `is_even_round()` | It classified shared meal-total batches, not each philosopher's own progress through a fair cycle. Its `-1` error result also needed separate handling before using it as a Boolean. |
+| Shared `completed_meals` counter | A total of five meals does not mean all five philosophers ate once. Once I removed swapping, this counter had no remaining job. |
+| `completed_meals_lock` and its initialization flag | Removed along with the counter: no more initialization, lock/unlock around every shared increment, destruction, or associated error branches for that experiment. |
+| Unused `phases_until_eating(philo, cur_phase)` proposal | It required a shared/advancing phase that my implementation did not have. I replaced that interface with helpers based on the ID and that philosopher's own completed meals. |
+| Startup staggering alone as the fairness solution | A head start can influence the first meal, but does not tell a philosopher when to yield on later meals. I kept an initial stagger and added a recurring local wait pattern. |
+
+The failure checks were not the reason the swapping algorithm failed.
+They existed because I had introduced more shared state and mutex operations.
+Removing that unused machinery removes its error paths too; I still check
+operations that remain necessary.
+
+#### What actually happened in the old five-philosopher run
+
+A delay based on id % 3 only affects when someone first attempts acquisition.
+It does not establish a persistent three-colour assignment or a phase barrier.
+
+Without enforced timing, the interval between meal starts includes:
+
+$$
+E+S+\text{thinking delay}+\text{fork waiting}.
+$$
+
+Fork waiting is variable. An earlier wake-up does not grant priority across
+two different mutexes, and an ordinary mutex is not a FIFO reservation system.
+
+My removed experimental reversal used:
+
+~~~c
+is_even_round = (completed_meals / count) % 2;
+~~~
+
+That counts batches of completed meals, not completed rounds containing one
+meal from every philosopher. For example, counts [2,1,1,1,0] sum to five,
+although one philosopher has never eaten.
+
+Each worker also selected its local first/second pointers before blocking.
+Crossing the counter boundary did not update those waiting workers' choices.
+Old and new acquisition orders could coexist.
+
+In the recorded five-philosopher goal-7 experiment, the intended P1 rescue
+actually happened:
+
+| Time (ms) | Historical fork-swapping run: meal starts |
+| --- | --- |
+| 0 | P1, P3 |
+| 200 | P2, P5 |
+| 400 | P1, P4 |
+| 600 | P3, P5 |
+| 800 | P2, P4 |
+| 1000 | P1, P3 |
+| 1200 | P2, P4 |
+| 1400 | P5 died |
+
+P5's last meal started at 600 ms, so its deadline was 600 + 800 = 1400 ms.
+I changed which philosopher missed a turn; I did not establish repeating fair
+phases. Compared with the earlier trace ending at 1200 ms, this one lasted
+200 ms longer, then P5 died instead. So yes, it sometimes bought more time,
+but that was not a fix lol. All eight sampled five-philosopher runs in that
+old evaluation failed; those are historical results, not tests of the current
+local-wait implementation.
+
+The separate abstract interleaving model also found a reachable circular
+fork wait with mixed acquisition orders. That was a counterexample to an
+unconditional deadlock guarantee, not an observed native deadlock. The native
+failures above were missed meal deadlines.
+
+#### What replaced it: a local repeating wait pattern
+
+My current idea is to deliberately leave room for the next philosopher by
+inserting waits at mathematically chosen points, instead of repeatedly
+changing which fork I grab first.
+
+- `initial_wait_slots(philo)` returns 0, 1, or 2 eating-duration slots before
+  the first meal. Ordinary odd IDs start immediately, even IDs wait one slot,
+  and the last ID of an odd count waits two. One philosopher starts immediately.
+- `needs_extra_wait(philo)` uses my own ID and `meals_eaten` to select the
+  ordinary or longer rest target. No shared meal total is needed.
+- `thinking_wait_ms(philo)` subtracts the required sleep from that target,
+  clamps at zero, and supplies the remaining thinking delay after sleeping.
+- Fork acquisition always follows the fixed odd/even order assigned in
+  `init.c`. That breaks circular fork waiting; the timing pattern addresses
+  a separate concern, which is giving everyone opportunities to eat.
+
+For five philosophers, the target is:
+
+```text
+[1,3] -> [2,4] -> [3,5] -> [4,1] -> [5,2] -> repeat
+```
+
+With equal eating and sleeping durations, P1/P2 wait extra after odd-numbered
+completed meals, while P3/P4/P5 wait extra after even-numbered completed meals.
+For seven or nine philosophers, the local pattern repeats every three or four
+meals instead. The extra wait is distributed around the table rather than
+always penalising the last philosopher.
+
+This is what I mean by my carefully inserted `usleep` calls allowing a
+mathematical pattern to emerge: the routine uses `philo_wait()`, which checks
+stopping and elapsed time between short `usleep()` calls. I am shaping when
+threads attempt forks, not maintaining a shared turn queue or phase barrier.
+With equal eating and sleeping durations, the longer turn adds one full
+`time_to_eat`. For unequal durations, the remaining delay is adjusted as
+explained in [the sleep what-ifs](#learning-point-35).
+
+I need to be precise with the word "enforce", though. The helper enforces
+**my own decision to wait**; it cannot enforce the exact global order in which
+threads acquire forks. Fork contention, wake-up delays, and unequal eating
+and sleeping durations can shift the intended rhythm. The neat two/three-slot
+meal-start gaps assume equal eating and sleeping durations and ideal handoffs.
+Passing tests is evidence that the implementation works in those runs, not a
+proof that relative sleeps guarantee fairness under every schedule.
+
+The individual `meals_eaten` field and `meal_state_lock` remain: the monitor
+still needs protected meal counts and last-meal timestamps. The stop and
+printing locks also still have their own jobs. Those were not redundant.
+
+Old evaluation logs and source snapshots preserve the removed experiment so
+I can compare what changed. Their references to swapping are historical.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-34"></a>
+
+### 34. See the clock grow: 1, 2, 3, 4, 5, and 7 philosophers
+
+**This section's Mermaid diagrams and explanations are AI-generated from my
+ideas and implementation, then added here as learning notes.**
+
+I wanted to see the pattern grow instead of trying to hold nine threads in
+my human RAM lol. Start with one philosopher and add the complication one
+step at a time:
+
+1. [One: why death is unavoidable](#clock-one).
+2. [Two: a red/blue two-tick clock](#clock-two).
+3. [Three: the first red/blue/green clock](#clock-three).
+4. [Four: the same two ticks, with pairs](#clock-four).
+5. [Five: distribute the extra wait fairly](#clock-five).
+6. [Seven: the same rule, a longer local pattern](#clock-seven).
+7. [How the helpers fit into my actual routine](#clock-code).
+
+These are **ideal eating slots**, not measured execution traces. Let
+`E = time_to_eat = time_to_sleep`. Within a slot, listed philosophers eat
+simultaneously; other philosophers sleep, think, or wait. A repeated colour
+is only a visual aid: philosopher IDs are the identities, and odd-count
+philosophers do not belong to permanent red/blue/green teams.
+
+<a id="clock-one"></a>
+
+#### 1. One philosopher: death
+
+There is one fork, but eating requires two distinct forks. Both stored fork
+pointers refer to the same mutex. I must not lock it twice.
+
+```mermaid
+flowchart LR
+    A["P1 starts<br/>Initial wait: 0"] --> B["Take the only fork<br/>Print: has taken a fork"]
+    B --> C["Cannot acquire a second fork<br/>Wait while monitor checks"]
+    C --> D["Death deadline reached<br/>Monitor prints: died"]
+    D --> F["Worker releases its fork<br/>Join and cleanup"]
+    classDef death fill:#fee2e2,stroke:#b91c1c,color:#111827
+    class D death
+```
+
+`take_forks()` handles the equal-pointer case. `monitor_sim()` detects death;
+the worker releases the fork when its wait observes stopping. No eating clock
+exists for this case.
+
+<a id="clock-two"></a>
+
+#### 2. Two philosophers: the red/blue two-tick clock
+
+Only one can eat at a time. P1 starts immediately; P2 initially waits `E`.
+After eating for `E`, each sleeps for `E`, leaving the other a turn.
+
+```mermaid
+flowchart LR
+    R["Tick 1 · RED<br/>P1 eats<br/>P2 waits / sleeps"]
+    B["Tick 2 · BLUE<br/>P2 eats<br/>P1 sleeps"]
+    R -->|next tick| B
+    B -->|repeat| R
+    classDef red fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    class R red
+    class B blue
+```
+
+Each philosopher starts a meal every `2E` in this ideal timeline.
+`needs_extra_wait()` returns false for even counts.
+
+<a id="clock-three"></a>
+
+#### 3. Three philosophers: a red/blue/green three-tick clock
+
+All pairs of philosophers are neighbours on a three-seat circle. Only one
+can eat at a time, so this is **three full ticks**, not 2.5 ticks.
+P1/P2/P3 initially wait `0E / 1E / 2E` respectively.
+
+```mermaid
+flowchart LR
+    R["Tick 1 · RED<br/>P1 eats"] --> B["Tick 2 · BLUE<br/>P2 eats"]
+    B --> G["Tick 3 · GREEN<br/>P3 eats"]
+    G -->|repeat| R
+    classDef red fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111827
+    class R red
+    class B blue
+    class G green
+```
+
+Each philosopher's own cycle is `eat E → sleep E → think/wait E`.
+Here `count / 2` is 1, so `needs_extra_wait()` returns true after every
+completed meal. Everyone gets one meal every `3E` in the ideal clock.
+The death deadline must leave room for that interval plus real overhead.
+
+<a id="clock-four"></a>
+
+#### 4. Four philosophers: scale the two-tick clock up to pairs
+
+This has the same two colours as the two-philosopher case. Each colour now
+contains two philosophers whose fork pairs are disjoint.
+
+```mermaid
+flowchart LR
+    R["Tick 1 · RED<br/>P1 + P3 eat<br/>P2 + P4 wait / sleep"]
+    B["Tick 2 · BLUE<br/>P2 + P4 eat<br/>P1 + P3 sleep"]
+    R -->|next tick| B
+    B -->|repeat| R
+    classDef red fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    class R red
+    class B blue
+```
+
+In this intended schedule, eaters within the same group never compete for a
+fork. At each ideal handoff, the previous group has released its forks.
+The fixed odd/even acquisition order still matters when actual handoffs
+are not simultaneous. Each philosopher gets one meal per two-tick loop.
+
+<a id="clock-five"></a>
+
+#### 5. Five philosophers: this is where my 2.5 intuition belongs
+
+Five meals divided by two simultaneous eaters is `5 / 2 = 2.5` ticks of
+capacity. But I cannot allocate half a discrete eating slot. If I insist on
+one meal each before restarting, I need three slots with one partly empty.
+Instead, the rotating clock fits **ten meals into five full slots**:
+every philosopher eats twice, so the average is 2.5 ticks per own meal.
+
+```mermaid
+flowchart LR
+    A["Tick 1<br/>P1 + P3"] --> B["Tick 2<br/>P2 + P4"]
+    B --> C["Tick 3<br/>P3 + P5"]
+    C --> D["Tick 4<br/>P1 + P4"]
+    D --> F["Tick 5<br/>P2 + P5"]
+    F -->|repeat| A
+    classDef red fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111827
+    classDef purple fill:#f3e8ff,stroke:#7e22ce,color:#111827
+    classDef amber fill:#fef3c7,stroke:#b45309,color:#111827
+    class A red
+    class B blue
+    class C green
+    class D purple
+    class F amber
+```
+
+The IDs inside each group are sorted for reading; P1 + P4 is the same group
+as P4 + P1. This is the rotating pattern, not two permanent odd/even teams.
+
+The extra wait travels around the table:
+
+| Tick | Eating | Whose expected two-tick return is postponed by one tick? |
+| --- | --- | --- |
+| 3 | P3, P5 | P1; P5 takes the available place |
+| 4 | P1, P4 | P2; P1 returns |
+| 5 | P2, P5 | P3; P2 returns |
+| 6, same group as tick 1 | P1, P3 | P4; P3 returns |
+| 7, same group as tick 2 | P2, P4 | P5; P4 returns |
+
+Locally, P1/P2 wait extra after completed meals 1, 3, 5, ... .
+P3/P4/P5 wait extra after completed meals 2, 4, 6, ... . Every philosopher's
+meal-start gaps alternate between two and three ticks. Nobody is permanently
+the unlucky last philosopher in the target schedule.
+
+A larger meal quota does not create a new clock. For example, quota 4 means
+two complete five-tick loops in this ideal picture: two meals per loop,
+four meals each after ten slots. An odd quota can finish partway through a
+later loop once everyone has completed enough meals. My monitor checks
+actual completed meals, not a predetermined tick number.
+
+<a id="clock-seven"></a>
+
+#### 6. Seven philosophers: three meals each over seven ticks
+
+Now three can eat together. The stencil still moves one seat each tick:
+
+```mermaid
+flowchart TB
+    A["Tick 1<br/>P1 + P3 + P5"] --> B["Tick 2<br/>P2 + P4 + P6"]
+    B --> C["Tick 3<br/>P3 + P5 + P7"]
+    C --> D["Tick 4<br/>P1 + P4 + P6"]
+    D --> F["Tick 5<br/>P2 + P5 + P7"]
+    F --> G["Tick 6<br/>P1 + P3 + P6"]
+    G --> H["Tick 7<br/>P2 + P4 + P7"]
+    H -->|repeat| A
+    classDef red fill:#fee2e2,stroke:#b91c1c,color:#111827
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111827
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111827
+    classDef purple fill:#f3e8ff,stroke:#7e22ce,color:#111827
+    classDef amber fill:#fef3c7,stroke:#b45309,color:#111827
+    classDef cyan fill:#cffafe,stroke:#0e7490,color:#111827
+    classDef pink fill:#fce7f3,stroke:#be185d,color:#111827
+    class A red
+    class B blue
+    class C green
+    class D purple
+    class F amber
+    class G cyan
+    class H pink
+```
+
+I can check fairness by counting appearances:
+
+| Philosopher | Eats on ticks | Gaps to the next appearances, including wraparound |
+| --- | --- | --- |
+| P1 | 1, 4, 6 | 3, 2, 2 |
+| P2 | 2, 5, 7 | 3, 2, 2 |
+| P3 | 1, 3, 6 | 2, 3, 2 |
+| P4 | 2, 4, 7 | 2, 3, 2 |
+| P5 | 1, 3, 5 | 2, 2, 3 |
+| P6 | 2, 4, 6 | 2, 2, 3 |
+| P7 | 3, 5, 7 | 2, 2, 3 |
+
+Every row has three meals and gaps adding up to seven. My local pattern is
+therefore three meals long: one extra wait per three meals, at the position
+assigned to that ID. For quota 6, the ideal seven-tick loop simply repeats
+twice. Increasing the quota repeats the pattern; it does not add new colours
+or a new scheduling rule.
+
+<a id="clock-code"></a>
+
+#### How those pictures map to my routine
+
+There is no shared tick variable in this implementation. Each worker runs
+the same routine and derives its initial offset and recurring extra wait
+from its ID, the total count, and its own completed meals.
+
+```mermaid
+flowchart TB
+    A["philo_routine<br/>Check simulation status"] --> Z{"Status OK?"}
+    Z -->|yes| B["initial_wait_slots(philo)<br/>Wait 0, 1 or 2 times E, once"]
+    B --> C{"Status OK?"}
+    C -->|yes| D["philo_eat<br/>Take fixed-order forks, eat, release<br/>Increment own completed meals"]
+    D --> F{"Status OK?"}
+    F -->|yes| G["sleep_and_think<br/>Log sleeping, wait S, log thinking"]
+    G --> H{"Status OK?"}
+    H -->|yes| J["thinking_wait_ms<br/>Choose rest target E or 2E<br/>Subtract S, clamp at zero<br/>philo_wait for the remainder"]
+    J --> L{"Status OK?"}
+    L -->|yes| K["Check simulation status"]
+    K --> C
+    C -->|no| X["Finish worker<br/>Publish genuine error if needed"]
+    Z -->|no| X
+    F -->|no| X
+    H -->|no| X
+    L -->|no| X
+    M["Main thread: monitor_sim<br/>Checks death and meal quota"] -.->|publishes stop| K
+    M -.->|wait helpers also observe stop| J
+```
+
+Every wait can also stop early when the monitor requests stopping.
+The diagram groups the internal error paths of the helpers to keep the
+main routine readable.
+
+Ordinary fork competition can also settle into a rhythm. What I have made
+explicit is my chosen timing pattern and when each philosopher deliberately
+yields; I cannot claim other implementations have no patterns, or that mine
+always follows these diagrams. The graphs explain the mathematics and the
+code's intention. Actual logs are how I check the behaviour.
+
+[Back to the introductory overview](#see-how-it-works) ·
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-35"></a>
+
+### 35. What if the sleep is weirdly long? Valid inputs, different clocks
+
+AI-assisted learning notes, checked against my implementation and the recorded
+runs below.
+
+I built the clock in my head using equal eating and sleeping times. Then I
+thought: what if someone sleeps for ages? Does returning zero from my thinking
+wait destroy the whole pattern? Thankfully, the adjusted code completed these
+tests lol. It can work with a different rhythm instead of forcing the original
+picture onto parameters that no longer fit it.
+
+These are edge cases relative to the timings I started with, **not invalid
+inputs**. The subject allows unequal durations. A large death budget still
+needs to cover eating, sleeping, and any additional delay; sleep alone is not
+the whole interval between meal starts.
+
+#### What if sleeping already did the waiting?
+
+Let `E = time_to_eat` and `S = time_to_sleep`. My desired rest after finishing
+a meal is `E` on an ordinary turn or `2E` on the longer turn selected by
+`needs_extra_wait()`. Since I already slept for `S`, the remaining thinking
+wait is:
+
+```text
+ordinary turn: max(0, E  - S)
+longer turn:   max(0, 2E - S)
+```
+
+Those are alternative delays. I do not add both, and I never shorten the
+required sleep. `thinking_wait_ms()` performs this calculation.
+
+For `E = 200 ms`:
+
+| Required sleep | Ordinary thinking wait | Longer-turn thinking wait | What changes? |
+| --- | --- | --- | --- |
+| 100 ms | 100 ms | 300 ms | Thinking fills the rest the short sleep did not provide. |
+| 200 ms | 0 ms | 200 ms | My original equal-duration rotating clock. |
+| 300 ms | 0 ms | 100 ms | Ordinary meal-start gaps stretch to 500 ms; longer ones target 600 ms. |
+| 400 ms | 0 ms | 0 ms | Sleeping already supplies the entire longer rest target. |
+| 1000 ms | 0 ms | 0 ms | Both kinds of turn are dominated by the required sleep. |
+
+These intervals describe ideal handoffs, before extra fork or scheduling
+waits. Returning zero means "enough rest has already happened", not "skip the
+required sleeping state".
+
+#### What if sleep is at least twice the eating time?
+
+When `S >= 2E`, both thinking delays are zero. In the ideal model, every
+philosopher now repeats after `E + S`. For an odd table, the initial groups
+start at `0`, `E`, and `2E`; the final group finishes by `3E`.
+
+Since `E + S >= 3E`, all three groups fit before the first group returns.
+That is why a long sleep does not inherently break the mathematics. Everyone
+can get one meal per repetition, even though it is no longer the fully occupied
+five-tick rotating picture.
+
+For five philosophers with `E = 200` and `S = 1000`:
+
+| Time | Eating group |
+| --- | --- |
+| 0 ms | P1, P3 |
+| 200 ms | P2, P4 |
+| 400 ms | P5 |
+| 600–1200 ms | Nobody needs to eat yet; all are in their required sleeps. |
+| 1200 ms | P1, P3 return |
+| 1400 ms | P2, P4 return |
+| 1600 ms | P5 returns |
+
+Each philosopher starts a meal every 1200 ms in this ideal timeline. The empty
+space is a consequence of the long required sleep, not a reason to add another
+wait. For seven philosophers the same three starting groups are P1/P3/P5,
+P2/P4/P6, and P7. Even counts need only their two initial groups.
+
+#### What if my death budget is only just large enough?
+
+For odd counts of at least three, the longest planned gap in the adjusted
+local schedule is:
+
+```text
+max(3 * E, E + S)
+```
+
+For even counts it is `max(2 * E, E + S)`. These assume the intended fork
+handoffs; actual delays must fit in the remaining death budget too.
+Adding 10 ms is a test margin, not a promise that the OS and mutex acquisition
+will always finish within it. A syntactically valid input can also describe
+an impossible survival deadline, such as one shorter than eating plus the
+required sleep.
+
+#### What actually passed after the adjustment?
+
+On 24 October 2026, all **16 native quota runs** completed without a death.
+Each parameter combination was run once, sequentially, with no injected
+thread pauses or artificial load. Output was line-buffered to files.
+
+| Parameters | Coverage / observed result |
+| --- | --- |
+| `n 190 60 90 6` | n = 3, 5, 7, 9: all passed; maximum logged meal-start gap 180 ms. |
+| `n 190 60 120 6` | n = 3, 5, 7, 9: all passed; maximum gap 180 ms. |
+| `n 370 60 300 6` | n = 3, 5, 7, 9: all passed; maximum gap 360 ms. |
+| `3 800 200 400 3` | Passed; maximum gap 600 ms. |
+| `5 800 200 400 3` | Passed; maximum gap 600 ms. |
+| `5 1210 200 1000 3` | Passed; maximum gap 1201 ms. |
+| `7 1210 200 1000 3` | Passed; maximum gap 1200 ms. |
+
+The `800 200 400` cases previously died because I added 200 ms of thinking
+on top of 200 ms eating and 400 ms sleeping: exactly the 800 ms deadline.
+Subtracting the sleep already completed fixed that unnecessary delay in both
+runs. I did not need to blame the parameters for that bug lol.
+
+[Recorded results and individual run logs](philo/eval_logs_2026-10-24_long_sleep/summary.json)
+are saved with the project. These finite runs support the change; they are not
+an unconditional starvation-freedom or real-time scheduling proof. The earlier
+full evaluation report describes the pre-adjustment code, so its two long-sleep
+failures are historical results now.
 
 [Back to appendix index](#learning-points)

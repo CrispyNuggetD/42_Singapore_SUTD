@@ -1,0 +1,35 @@
+[
+  {
+    "name": "build_re",
+    "cmd": [
+      "make",
+      "re"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "build_no_relink",
+    "cmd": [
+      "make"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "norm_submission",
+    "cmd": [
+      "norminette",
+      "philo/src",
+      "philo/includes"
+    ],
+    "returncode": 1
+  },
+  {
+    "name": "symbols",
+    "cmd": [
+      "nm",
+      "-u",
+      "philo/philo"
+    ],
+    "returncode": 0
+  }
+]

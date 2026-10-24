@@ -72,9 +72,6 @@ static t_status	init_shared_locks(t_sim *sim)
 	if (pthread_mutex_init(&sim->runtime.printing_lock, NULL) != 0)
 		return (ERR_MUTEX_INIT);
 	res->printing_lock_initialized = 1;
-	if (pthread_mutex_init(&sim->runtime.completed_meals_lock, NULL) != 0)
-		return (ERR_MUTEX_INIT);
-	res->completed_meals_lock_initialized = 1;
 	return (STATUS_OK);
 }
 

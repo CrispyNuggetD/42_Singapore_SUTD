@@ -60,8 +60,8 @@ static t_status	check_philo(t_philo *philo, int *eat_done)
 /*
 ** Main's monitoring loop, not a separately created thread.
 ** Scan once for both death and the meal goal; stop normally when all finish.
-** TODO: Observe worker-requested stopping and read first_error under its lock.
-** Currently worker errors are saved, but this loop does not consume them.
+** Observe worker-requested stopping before checking each philosopher.
+** Cleanup reads the first shared error after joining all started workers.
 */
 t_status	monitor_sim(t_sim *sim)
 {

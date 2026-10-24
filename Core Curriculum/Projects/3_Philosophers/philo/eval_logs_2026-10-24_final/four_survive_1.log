@@ -1,0 +1,494 @@
+1 1 has taken a fork
+1 1 has taken a fork
+1 1 is eating
+1 3 has taken a fork
+1 3 has taken a fork
+1 3 is eating
+201 3 is sleeping
+201 1 is sleeping
+201 4 has taken a fork
+201 4 has taken a fork
+201 4 is eating
+201 2 has taken a fork
+201 2 has taken a fork
+201 2 is eating
+401 3 is thinking
+401 1 is thinking
+401 4 is sleeping
+401 1 has taken a fork
+401 1 has taken a fork
+401 1 is eating
+401 3 has taken a fork
+401 3 has taken a fork
+401 3 is eating
+401 2 is sleeping
+601 2 is thinking
+601 3 is sleeping
+601 1 is sleeping
+601 2 has taken a fork
+601 2 has taken a fork
+601 2 is eating
+601 4 is thinking
+601 4 has taken a fork
+601 4 has taken a fork
+601 4 is eating
+801 1 is thinking
+801 1 has taken a fork
+801 1 has taken a fork
+801 1 is eating
+801 4 is sleeping
+801 3 is thinking
+801 3 has taken a fork
+801 2 is sleeping
+801 3 has taken a fork
+801 3 is eating
+1001 3 is sleeping
+1001 1 is sleeping
+1001 4 is thinking
+1001 4 has taken a fork
+1001 4 has taken a fork
+1001 4 is eating
+1001 2 is thinking
+1001 2 has taken a fork
+1001 2 has taken a fork
+1001 2 is eating
+1201 3 is thinking
+1201 2 is sleeping
+1201 4 is sleeping
+1201 3 has taken a fork
+1201 3 has taken a fork
+1201 3 is eating
+1201 1 is thinking
+1201 1 has taken a fork
+1201 1 has taken a fork
+1201 1 is eating
+1401 4 is thinking
+1401 4 has taken a fork
+1401 4 has taken a fork
+1401 4 is eating
+1401 1 is sleeping
+1401 2 is thinking
+1401 2 has taken a fork
+1401 2 has taken a fork
+1401 2 is eating
+1401 3 is sleeping
+1601 4 is sleeping
+1601 2 is sleeping
+1601 3 is thinking
+1601 3 has taken a fork
+1601 3 has taken a fork
+1601 3 is eating
+1601 1 is thinking
+1601 1 has taken a fork
+1601 1 has taken a fork
+1601 1 is eating
+1801 1 is sleeping
+1801 2 is thinking
+1801 2 has taken a fork
+1801 2 has taken a fork
+1801 4 is thinking
+1801 4 has taken a fork
+1801 4 has taken a fork
+1801 4 is eating
+1801 2 is eating
+1801 3 is sleeping
+2001 1 is thinking
+2001 1 has taken a fork
+2001 1 has taken a fork
+2001 1 is eating
+2001 2 is sleeping
+2001 4 is sleeping
+2001 3 is thinking
+2001 3 has taken a fork
+2001 3 has taken a fork
+2001 3 is eating
+2201 2 is thinking
+2201 3 is sleeping
+2201 2 has taken a fork
+2201 2 has taken a fork
+2201 2 is eating
+2201 1 is sleeping
+2201 4 is thinking
+2201 4 has taken a fork
+2201 4 has taken a fork
+2201 4 is eating
+2401 4 is sleeping
+2401 2 is sleeping
+2401 1 is thinking
+2401 1 has taken a fork
+2401 1 has taken a fork
+2401 1 is eating
+2401 3 is thinking
+2401 3 has taken a fork
+2401 3 has taken a fork
+2401 3 is eating
+2601 2 is thinking
+2601 2 has taken a fork
+2601 2 has taken a fork
+2601 2 is eating
+2601 1 is sleeping
+2601 3 is sleeping
+2601 4 is thinking
+2601 4 has taken a fork
+2601 4 has taken a fork
+2601 4 is eating
+2801 3 is thinking
+2801 3 has taken a fork
+2801 3 has taken a fork
+2801 3 is eating
+2801 1 is thinking
+2801 1 has taken a fork
+2801 1 has taken a fork
+2801 1 is eating
+2801 2 is sleeping
+2801 4 is sleeping
+3001 4 is thinking
+3001 4 has taken a fork
+3001 4 has taken a fork
+3001 4 is eating
+3001 1 is sleeping
+3001 2 is thinking
+3001 2 has taken a fork
+3001 3 is sleeping
+3001 2 has taken a fork
+3001 2 is eating
+3201 1 is thinking
+3201 1 has taken a fork
+3201 2 is sleeping
+3201 4 is sleeping
+3201 1 has taken a fork
+3201 1 is eating
+3201 3 is thinking
+3201 3 has taken a fork
+3201 3 has taken a fork
+3201 3 is eating
+3401 2 is thinking
+3401 1 is sleeping
+3401 2 has taken a fork
+3401 3 is sleeping
+3401 2 has taken a fork
+3401 2 is eating
+3401 4 is thinking
+3401 4 has taken a fork
+3401 4 has taken a fork
+3401 4 is eating
+3601 2 is sleeping
+3601 1 is thinking
+3601 1 has taken a fork
+3601 3 is thinking
+3601 4 is sleeping
+3601 1 has taken a fork
+3601 1 is eating
+3601 3 has taken a fork
+3601 3 has taken a fork
+3601 3 is eating
+3801 3 is sleeping
+3801 4 is thinking
+3801 4 has taken a fork
+3801 2 is thinking
+3801 1 is sleeping
+3801 4 has taken a fork
+3801 4 is eating
+3801 2 has taken a fork
+3801 2 has taken a fork
+3801 2 is eating
+4001 4 is sleeping
+4001 2 is sleeping
+4001 3 is thinking
+4001 3 has taken a fork
+4001 3 has taken a fork
+4001 3 is eating
+4001 1 is thinking
+4001 1 has taken a fork
+4001 1 has taken a fork
+4001 1 is eating
+4201 2 is thinking
+4201 2 has taken a fork
+4201 1 is sleeping
+4201 4 is thinking
+4201 2 has taken a fork
+4201 3 is sleeping
+4201 2 is eating
+4201 4 has taken a fork
+4201 4 has taken a fork
+4201 4 is eating
+4401 1 is thinking
+4401 1 has taken a fork
+4401 1 has taken a fork
+4401 1 is eating
+4401 2 is sleeping
+4401 3 is thinking
+4401 3 has taken a fork
+4401 3 has taken a fork
+4401 4 is sleeping
+4401 3 is eating
+4601 2 is thinking
+4601 2 has taken a fork
+4601 1 is sleeping
+4601 4 is thinking
+4601 3 is sleeping
+4601 2 has taken a fork
+4601 2 is eating
+4601 4 has taken a fork
+4601 4 has taken a fork
+4601 4 is eating
+4801 1 is thinking
+4801 1 has taken a fork
+4801 3 is thinking
+4801 3 has taken a fork
+4801 2 is sleeping
+4801 1 has taken a fork
+4801 1 is eating
+4801 3 has taken a fork
+4801 3 is eating
+4801 4 is sleeping
+5001 1 is sleeping
+5001 2 is thinking
+5001 2 has taken a fork
+5001 4 is thinking
+5001 3 is sleeping
+5001 2 has taken a fork
+5001 2 is eating
+5001 4 has taken a fork
+5001 4 has taken a fork
+5001 4 is eating
+5201 3 is thinking
+5201 2 is sleeping
+5201 4 is sleeping
+5201 3 has taken a fork
+5201 3 has taken a fork
+5201 3 is eating
+5201 1 is thinking
+5201 1 has taken a fork
+5201 1 has taken a fork
+5201 1 is eating
+5401 4 is thinking
+5401 3 is sleeping
+5401 4 has taken a fork
+5401 1 is sleeping
+5401 2 is thinking
+5401 2 has taken a fork
+5401 2 has taken a fork
+5401 2 is eating
+5401 4 has taken a fork
+5401 4 is eating
+5601 1 is thinking
+5601 3 is thinking
+5601 2 is sleeping
+5601 1 has taken a fork
+5601 1 has taken a fork
+5601 1 is eating
+5601 3 has taken a fork
+5601 3 has taken a fork
+5601 4 is sleeping
+5601 3 is eating
+5801 3 is sleeping
+5801 2 is thinking
+5801 1 is sleeping
+5801 2 has taken a fork
+5801 2 has taken a fork
+5801 4 is thinking
+5801 4 has taken a fork
+5801 2 is eating
+5801 4 has taken a fork
+5801 4 is eating
+6001 3 is thinking
+6001 1 is thinking
+6001 1 has taken a fork
+6001 1 has taken a fork
+6001 1 is eating
+6001 3 has taken a fork
+6001 3 has taken a fork
+6001 3 is eating
+6001 4 is sleeping
+6001 2 is sleeping
+6201 3 is sleeping
+6201 4 is thinking
+6201 4 has taken a fork
+6201 2 is thinking
+6201 1 is sleeping
+6201 4 has taken a fork
+6201 4 is eating
+6201 2 has taken a fork
+6201 2 has taken a fork
+6201 2 is eating
+6401 1 is thinking
+6401 3 is thinking
+6401 3 has taken a fork
+6401 4 is sleeping
+6401 2 is sleeping
+6401 3 has taken a fork
+6401 3 is eating
+6401 1 has taken a fork
+6401 1 has taken a fork
+6401 1 is eating
+6601 2 is thinking
+6601 1 is sleeping
+6601 2 has taken a fork
+6601 4 is thinking
+6601 4 has taken a fork
+6601 3 is sleeping
+6601 4 has taken a fork
+6601 4 is eating
+6601 2 has taken a fork
+6601 2 is eating
+6801 4 is sleeping
+6801 2 is sleeping
+6801 3 is thinking
+6801 3 has taken a fork
+6801 3 has taken a fork
+6801 3 is eating
+6801 1 is thinking
+6801 1 has taken a fork
+6801 1 has taken a fork
+6801 1 is eating
+7001 3 is sleeping
+7001 4 is thinking
+7001 4 has taken a fork
+7001 1 is sleeping
+7001 4 has taken a fork
+7001 4 is eating
+7001 2 is thinking
+7001 2 has taken a fork
+7001 2 has taken a fork
+7001 2 is eating
+7201 3 is thinking
+7201 2 is sleeping
+7201 4 is sleeping
+7201 3 has taken a fork
+7201 3 has taken a fork
+7201 3 is eating
+7201 1 is thinking
+7201 1 has taken a fork
+7201 1 has taken a fork
+7201 1 is eating
+7401 2 is thinking
+7401 4 is thinking
+7401 4 has taken a fork
+7401 3 is sleeping
+7401 1 is sleeping
+7401 2 has taken a fork
+7401 2 has taken a fork
+7401 2 is eating
+7401 4 has taken a fork
+7401 4 is eating
+7601 1 is thinking
+7601 4 is sleeping
+7601 3 is thinking
+7601 1 has taken a fork
+7601 1 has taken a fork
+7601 3 has taken a fork
+7601 2 is sleeping
+7601 3 has taken a fork
+7601 3 is eating
+7601 1 is eating
+7801 2 is thinking
+7801 2 has taken a fork
+7801 2 has taken a fork
+7801 2 is eating
+7801 4 is thinking
+7801 4 has taken a fork
+7801 4 has taken a fork
+7801 4 is eating
+7801 3 is sleeping
+7801 1 is sleeping
+8001 3 is thinking
+8001 3 has taken a fork
+8001 3 has taken a fork
+8001 3 is eating
+8001 4 is sleeping
+8001 1 is thinking
+8001 1 has taken a fork
+8001 1 has taken a fork
+8001 1 is eating
+8001 2 is sleeping
+8201 2 is thinking
+8201 2 has taken a fork
+8201 2 has taken a fork
+8201 2 is eating
+8201 4 is thinking
+8201 4 has taken a fork
+8201 1 is sleeping
+8201 4 has taken a fork
+8201 4 is eating
+8201 3 is sleeping
+8401 3 is thinking
+8401 4 is sleeping
+8401 3 has taken a fork
+8401 3 has taken a fork
+8401 3 is eating
+8401 1 is thinking
+8401 1 has taken a fork
+8401 1 has taken a fork
+8401 1 is eating
+8401 2 is sleeping
+8601 1 is sleeping
+8601 3 is sleeping
+8601 2 is thinking
+8601 2 has taken a fork
+8601 2 has taken a fork
+8601 2 is eating
+8601 4 is thinking
+8601 4 has taken a fork
+8601 4 has taken a fork
+8601 4 is eating
+8801 3 is thinking
+8801 3 has taken a fork
+8801 3 has taken a fork
+8801 3 is eating
+8801 4 is sleeping
+8801 2 is sleeping
+8801 1 is thinking
+8801 1 has taken a fork
+8801 1 has taken a fork
+8801 1 is eating
+9001 2 is thinking
+9001 3 is sleeping
+9001 1 is sleeping
+9001 2 has taken a fork
+9001 2 has taken a fork
+9001 2 is eating
+9001 4 is thinking
+9001 4 has taken a fork
+9001 4 has taken a fork
+9001 4 is eating
+9201 1 is thinking
+9201 2 is sleeping
+9201 1 has taken a fork
+9201 1 has taken a fork
+9201 1 is eating
+9201 3 is thinking
+9201 3 has taken a fork
+9201 3 has taken a fork
+9201 3 is eating
+9201 4 is sleeping
+9401 3 is sleeping
+9401 1 is sleeping
+9401 2 is thinking
+9401 2 has taken a fork
+9401 2 has taken a fork
+9401 2 is eating
+9401 4 is thinking
+9401 4 has taken a fork
+9401 4 has taken a fork
+9401 4 is eating
+9601 2 is sleeping
+9601 1 is thinking
+9601 1 has taken a fork
+9601 3 is thinking
+9601 3 has taken a fork
+9601 3 has taken a fork
+9601 3 is eating
+9601 4 is sleeping
+9601 1 has taken a fork
+9601 1 is eating
+9801 4 is thinking
+9801 4 has taken a fork
+9801 3 is sleeping
+9801 1 is sleeping
+9801 4 has taken a fork
+9801 4 is eating
+9801 2 is thinking
+9801 2 has taken a fork
+9801 2 has taken a fork
+9801 2 is eating

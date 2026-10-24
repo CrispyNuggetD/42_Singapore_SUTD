@@ -44,22 +44,15 @@ static t_status	record_meal_start_time_protected(t_philo *philo)
 }
 
 /*
-** Choose the attempted order, acquire forks, then record the meal start.
+** Acquire forks in the fixed init order, then record the meal start.
 ** Success owns both forks. Failure attempts to release all acquired forks.
 ** take_forks handles the single-philosopher case without a second lock.
 */
 t_status	prepare_to_eat(t_philo *philo)
 {
-	t_status		status;
-	pthread_mutex_t	*first;
-	pthread_mutex_t	*second;
+	t_status	status;
 
-	first = philo->first_fork_lock;
-	second = philo->second_fork_lock;
-	status = swap_fork_if_even_round(philo, &first, &second);
-	if (status != STATUS_OK)
-		return (status);
-	status = take_forks(philo, first, second);
+	status = take_forks(philo);
 	if (status != STATUS_OK)
 		return (status);
 	status = record_meal_start_time_protected(philo);
@@ -87,11 +80,6 @@ t_status	philo_eat(t_philo *philo)
 		return (ERR_MUTEX);
 	philo->meals_eaten++;
 	if (pthread_mutex_unlock(&philo->meal_state_lock) != 0)
-		return (ERR_MUTEX);
-	if (pthread_mutex_lock(&philo->sim->runtime.completed_meals_lock) != 0)
-		return (ERR_MUTEX);
-	philo->sim->runtime.completed_meals++;
-	if (pthread_mutex_unlock(&philo->sim->runtime.completed_meals_lock) != 0)
 		return (ERR_MUTEX);
 	return (STATUS_OK);
 }

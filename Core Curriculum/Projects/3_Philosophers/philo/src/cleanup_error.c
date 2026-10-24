@@ -27,12 +27,6 @@ t_status	join_philos(t_resources *res)
 /* Destroy only initialized shared locks, reversing their setup order. */
 static t_status	destroy_shared_locks(t_resources *res, t_runtime *run)
 {
-	if (res->completed_meals_lock_initialized == 1)
-	{
-		if (pthread_mutex_destroy(&run->completed_meals_lock) != 0)
-			return (ERR_MUTEX_DESTROY);
-		res->completed_meals_lock_initialized = 0;
-	}
 	if (res->printing_lock_initialized == 1)
 	{
 		if (pthread_mutex_destroy(&run->printing_lock) != 0)

@@ -1,0 +1,15 @@
+                 w __gmon_start__
+                 U __libc_start_main@GLIBC_2.34
+                 U free@GLIBC_2.2.5
+                 U gettimeofday@GLIBC_2.2.5
+                 U malloc@GLIBC_2.2.5
+                 U memset@GLIBC_2.2.5
+                 U printf@GLIBC_2.2.5
+                 U pthread_create@GLIBC_2.34
+                 U pthread_join@GLIBC_2.34
+                 U pthread_mutex_destroy@GLIBC_2.2.5
+                 U pthread_mutex_init@GLIBC_2.2.5
+                 U pthread_mutex_lock@GLIBC_2.2.5
+                 U pthread_mutex_unlock@GLIBC_2.2.5
+                 U usleep@GLIBC_2.2.5
+                 U write@GLIBC_2.2.5

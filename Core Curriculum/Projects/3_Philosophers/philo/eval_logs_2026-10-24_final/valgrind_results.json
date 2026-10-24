@@ -1,0 +1,280 @@
+[
+  {
+    "name": "memcheck_goal",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489270== All heap blocks were freed -- no leaks are possible",
+      "==1489270== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "memcheck_single_death",
+    "tool": "memcheck",
+    "args": [
+      1,
+      200,
+      60,
+      60
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489290== All heap blocks were freed -- no leaks are possible",
+      "==1489290== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "memcheck_multi_death",
+    "tool": "memcheck",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489311== All heap blocks were freed -- no leaks are possible",
+      "==1489311== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "memcheck_invalid",
+    "tool": "memcheck",
+    "args": [
+      0,
+      800,
+      200,
+      200
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489328== All heap blocks were freed -- no leaks are possible",
+      "==1489328== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "helgrind_goal",
+    "tool": "helgrind",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489347== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 125721 from 98)"
+    ]
+  },
+  {
+    "name": "helgrind_death",
+    "tool": "helgrind",
+    "args": [
+      4,
+      310,
+      200,
+      100
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489419== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 48836 from 67)"
+    ]
+  },
+  {
+    "name": "drd_goal",
+    "tool": "drd",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 0,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489442== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 2)"
+    ]
+  },
+  {
+    "name": "failure_malloc_1",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489542== All heap blocks were freed -- no leaks are possible",
+      "==1489542== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_malloc_2",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489564== All heap blocks were freed -- no leaks are possible",
+      "==1489564== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_mutex_init_1",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489576== All heap blocks were freed -- no leaks are possible",
+      "==1489576== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_mutex_init_2",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489738== All heap blocks were freed -- no leaks are possible",
+      "==1489738== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_mutex_init_5",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489752== All heap blocks were freed -- no leaks are possible",
+      "==1489752== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_mutex_init_10",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489772== All heap blocks were freed -- no leaks are possible",
+      "==1489772== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_thread_create_1",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489798== All heap blocks were freed -- no leaks are possible",
+      "==1489798== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  },
+  {
+    "name": "failure_thread_create_3",
+    "tool": "memcheck",
+    "args": [
+      5,
+      10000,
+      100,
+      100,
+      3
+    ],
+    "result": "PASS",
+    "returncode": 1,
+    "timeout": false,
+    "zero_errors": true,
+    "summary": [
+      "==1489804== All heap blocks were freed -- no leaks are possible",
+      "==1489804== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)"
+    ]
+  }
+]

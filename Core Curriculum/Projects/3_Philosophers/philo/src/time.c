@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 19:59:05 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/19 18:14:48 by hnah             ###   ########.fr       */
+/*   Updated: 2026/10/24 19:01:09 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,18 @@ t_status	philo_wait(t_sim *sim, long duration_ms)
 		if (usleep(WAIT_CHECK_MICROSECONDS) == -1)
 			return (ERR_SLEEP);
 	}
+}
+
+long	thinking_wait_ms(t_philo *philo)
+{
+	long	rest_target;
+	long	extra_wait;
+
+	rest_target = philo->sim->config.time_to_eat;
+	if (needs_extra_wait(philo))
+		rest_target *= 2;
+	extra_wait = rest_target - philo->sim->config.time_to_sleep;
+	if (extra_wait < 0)
+		return (0);
+	return (extra_wait);
 }
