@@ -82,6 +82,10 @@ and the host uses `/start`. My local setup points to this project's executable,
 so rebuilding Philo updates what the game runs. Browser pause/replay only affects
 the visualisation, not the running C simulation.
 
+There is also a publicly available
+[Philosophers visualiser by rom98759](https://rom98759.github.io/Philosophers-visualizer/)
+for viewing eating, sleeping and thinking activity as a chart.
+
 <a id="see-how-it-works"></a>
 
 ### See how it works: my clock idea
