@@ -1,0 +1,16 @@
+[
+  {
+    "implementation": "darren",
+    "failed_create_call": 4,
+    "role": "first monitor",
+    "exit": -9,
+    "timeout": true
+  },
+  {
+    "implementation": "ours",
+    "failed_create_call": 2,
+    "role": "second philosopher",
+    "exit": 1,
+    "timeout": false
+  }
+]

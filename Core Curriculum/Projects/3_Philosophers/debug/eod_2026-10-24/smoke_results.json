@@ -1,0 +1,10 @@
+[
+  {
+    "case": "missing",
+    "exit": 1
+  },
+  {
+    "case": "valid_scaffold",
+    "exit": 1
+  }
+]

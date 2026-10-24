@@ -1,0 +1,51 @@
+[
+  {
+    "test": "all_children_complete",
+    "exit": 0
+  },
+  {
+    "test": "death_from_nonlast_child",
+    "exit": 0
+  },
+  {
+    "test": "partial_fork_failure",
+    "exit": 0
+  },
+  {
+    "test": "signal_exit",
+    "exit": 0
+  },
+  {
+    "test": "missing_args",
+    "exit": 1,
+    "message": "Usage: ./philo_bonus <number_of_philosophers> <time_to_die> <time_to_eat> <time_to_sleep> [optional_meal_goal]"
+  },
+  {
+    "test": "valid_scaffold",
+    "exit": 1,
+    "message": "Bonus scaffold: simulation is not implemented yet."
+  },
+  {
+    "test": "overflow",
+    "exit": 1,
+    "message": "Error: Integer input exceeds INT_MAX."
+  },
+  {
+    "test": "empty",
+    "exit": 1,
+    "message": "Error: Invalid integer input."
+  },
+  {
+    "test": "negative",
+    "exit": 1,
+    "message": "Error: Negative integers are not allowed."
+  },
+  {
+    "test": "memcheck_process_mode_0",
+    "exit": 0
+  },
+  {
+    "test": "memcheck_process_mode_2",
+    "exit": 0
+  }
+]

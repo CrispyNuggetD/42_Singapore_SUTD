@@ -110,3 +110,59 @@ Validation for this EOD checkpoint:
   steps, pre-init cleanup, destruction counts, reset flags and freed pointers.
 - Targeted fork rollback and shared stop/logger checks were exercised during
   the session; comprehensive final simulation/race testing remains outstanding.
+
+
+2026-10-24 EOD: mandatory checkpoint complete; bonus assembly in progress
+
+This update supersedes the October 16 remaining-work list. Mandatory completion
+and its finite evaluation/Valgrind evidence were recorded in f33e969; eeb64bc
+regrouped functions and moved debug artifacts out of the mandatory directory.
+
+13. DONE: Start an independent philo_bonus build with the mandatory parser,
+    millisecond clock, polling wait, and write-based error reporting. No libft.
+14. DONE: Adapt Pipex process helpers, marking provenance with From pipex.
+    Track every child PID; wait for any child; retry interrupted waitpid;
+    distinguish function status from child exit code. Parent abort cleanup
+    kills only positive unreaped PIDs, then reaps children and frees storage.
+15. DONE: Initialize named forks, pair-acquisition and printing semaphores.
+    O_CREAT | O_EXCL prevents silently reusing an existing counter. Centralize
+    names and the repeated open logic; retain explicit errors.
+16. DONE: Wire main to zero sim, parse, initialize and always clean up.
+    Partial initialization closes/unlinks only successfully created resources;
+    existing semaphore names rejected by O_EXCL are not removed. Preserve the
+    original error and handle/report close/unlink failures.
+17. DONE: Match bonus organization to mandatory. Move the user's draft fork loop
+    into start_bonus in philosopher_bonus.c, with types and declarations.
+    Place supervise_children in monitor_bonus.c; remove start_bonus.c.
+    Add prototypes and Makefile entries. run_philo_bonus and supervise_children
+    are explicit TODO stubs, not completed behavior. Main retains its guard.
+18. DONE: Add learning appendix 36 explaining the pair gate versus mandatory
+    fork ordering. Add FORKNITE/LAN42 shoutout and save debug/forknite.png.
+19. DONE: Review Darren's local implementation with recorded source findings,
+    bounded native comparisons and separately labelled failure injection.
+    Findings concern this local copy, not other students or all executions.
+20. DONE: Keep reuse, cleanup, comparison and EOD test evidence under debug/.
+    The configured gitpushswap side workflow separates Push_swap debug and
+    non-project changes; Philosophers evidence stays with this project commit.
+
+Validation:
+- Bonus build and repeat make (no relink), all nine bonus C sources and header
+  pass Norm at EOD. Mandatory source implementation was not changed this session.
+- Earlier process checks: completion, nonlast-child outcome, partial fork failure,
+  signal decoding, and two Memcheck cases passed.
+- Semaphore checks: ten lifecycle/failure/collision cases and five Memcheck
+  cases passed. Tests use isolated names and wrappers, not live app semaphores.
+- These checks validate the scaffold/helpers, not a finished bonus simulation.
+
+Next, in order:
+1. Implement run_philo_bonus: local meal state, fork-token acquisition/release,
+   eating/sleeping/thinking, quota completion and child-owned cleanup.
+2. Implement child death monitoring with protected local meal state, plus
+   semaphore-serialized logging and a death/output ordering protocol.
+3. Implement supervise_children: continue on quota completion, stop normally on
+   death, propagate child/wait errors, and let main clean remaining children.
+4. Choose/initialize a common simulation time and any startup coordination.
+5. Replace main's ERR_NOT_IMPLEMENTED guard with start_bonus only when the child
+   routine and supervision are ready; remove temporary scaffold-only statuses.
+6. Evaluate single philosopher, partial failures, quotas, death timing, output
+   ordering, resource cleanup and repeated runs; do not claim bonus complete yet.

@@ -1,0 +1,44 @@
+[
+  {
+    "implementation": "darren",
+    "trial": 1,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  },
+  {
+    "implementation": "darren",
+    "trial": 2,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  },
+  {
+    "implementation": "darren",
+    "trial": 3,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  },
+  {
+    "implementation": "ours",
+    "trial": 1,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  },
+  {
+    "implementation": "ours",
+    "trial": 2,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  },
+  {
+    "implementation": "ours",
+    "trial": 3,
+    "timeout": true,
+    "exit": -9,
+    "deaths": []
+  }
+]

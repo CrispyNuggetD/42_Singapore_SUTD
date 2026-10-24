@@ -1,0 +1,4 @@
+make: Entering directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+rm -rf obj
+rm -f philo_bonus
+make: Leaving directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'

@@ -1,0 +1,70 @@
+#include "philo_bonus.h"
+
+static int fail_at;
+static int calls;
+pid_t __real_fork(void);
+pid_t __wrap_fork(void)
+{
+    if (++calls == fail_at)
+    {
+        errno = EAGAIN;
+        return (-1);
+    }
+    return (__real_fork());
+}
+
+int main(int argc, char **argv)
+{
+    t_children children;
+    t_status status;
+    pid_t pid;
+    int code;
+    int mode;
+    int i;
+
+    if (argc != 2)
+        return (10);
+    mode = atoi(argv[1]);
+    fail_at = mode == 2 ? 2 : 0;
+    if (init_children(&children, 3) != STATUS_OK)
+        return (11);
+    for (i = 0; i < 3; i++)
+    {
+        status = fork_philo(&children, i, &pid);
+        if (status != STATUS_OK)
+        {
+            if (mode != 2 || i != 1 || status != ERR_FORK)
+                return (12);
+            break;
+        }
+        if (pid == 0)
+        {
+            free(children.pids);
+            if (mode != 0 && i != 1)
+                usleep(500000);
+            if (mode == 3 && i == 1)
+                kill(getpid(), SIGTERM);
+            exit(mode == 1 && i == 1 ? CHILD_DIED : CHILD_DONE);
+        }
+    }
+    if (mode == 0)
+    {
+        while (children.alive > 0)
+            if (wait_next_child(&children, &code) != STATUS_OK
+                || code != CHILD_DONE)
+                return (13);
+    }
+    else if (mode != 2)
+    {
+        if (wait_next_child(&children, &code) != STATUS_OK
+            || code != (mode == 1 ? CHILD_DIED : 128 + SIGTERM)
+            || children.pids[1] != 0 || children.alive != 2)
+            return (14);
+    }
+    if (cleanup_children(&children) != STATUS_OK
+        || children.pids != NULL || children.alive != 0)
+        return (15);
+    if (waitpid(-1, &code, WNOHANG) != -1 || errno != ECHILD)
+        return (16);
+    return (0);
+}

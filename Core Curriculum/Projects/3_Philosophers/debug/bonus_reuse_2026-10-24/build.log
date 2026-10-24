@@ -1,0 +1,5 @@
+make: Entering directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/process_bonus.c -o obj/process_bonus.o
+cc -Wall -Wextra -Werror -pthread obj/main_bonus.o obj/input_output_bonus.o obj/time_bonus.o obj/process_bonus.o obj/cleanup_bonus.o obj/error_bonus.o -o philo_bonus
+make: Leaving directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'

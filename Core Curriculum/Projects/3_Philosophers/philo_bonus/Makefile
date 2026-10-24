@@ -1,0 +1,39 @@
+NAME := philo_bonus
+CC := cc
+CFLAGS := -Wall -Wextra -Werror -pthread
+CPPFLAGS := -Iincludes
+SRC_DIR := src
+OBJ_DIR := obj
+SRCS := $(SRC_DIR)/main_bonus.c \
+	$(SRC_DIR)/init_bonus.c \
+	$(SRC_DIR)/philosopher_bonus.c \
+	$(SRC_DIR)/monitor_bonus.c \
+	$(SRC_DIR)/input_output_bonus.c \
+	$(SRC_DIR)/time_bonus.c \
+	$(SRC_DIR)/process_bonus.c \
+	$(SRC_DIR)/cleanup_bonus.c \
+	$(SRC_DIR)/error_bonus.c
+OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+DEPS := $(OBJS:.o=.d)
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c Makefile
+	mkdir -p $(@D)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+clean:
+	rm -rf $(OBJ_DIR)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean
+	$(MAKE) all
+
+-include $(DEPS)
+
+.PHONY: all clean fclean re

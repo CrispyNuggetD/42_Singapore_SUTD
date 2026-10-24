@@ -1,0 +1,4 @@
+make -C philo_bonus all
+make[1]: Entering directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'

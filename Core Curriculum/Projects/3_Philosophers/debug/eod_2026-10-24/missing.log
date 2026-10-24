@@ -1,0 +1,1 @@
+Usage: ./philo_bonus <number_of_philosophers> <time_to_die> <time_to_eat> <time_to_sleep> [optional_meal_goal]

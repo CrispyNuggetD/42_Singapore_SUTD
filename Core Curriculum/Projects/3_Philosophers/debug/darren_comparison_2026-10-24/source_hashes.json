@@ -1,0 +1,25 @@
+{
+  "darren": {
+    "src/handles.c": "ec828056d03ac85e6f88d8b99b829f186c1f9a26119e40e73c2977ba892678df",
+    "src/init.c": "5d58668eb11f2e6e74e972cca184ec80afe214b00059f852c7928ddc9c297dee",
+    "src/main.c": "b00d98c95e47d3e73e8aaef26140384d2760090f4631daa89787ba701da5d71b",
+    "src/philo.c": "ac4da281e5f5ba7e0216fb83d2add3f154ead4a8b54908e01e27ce2034d220a8",
+    "src/print.c": "9e527ca2784fc96b97b7330744af362aeacf94dc596f877138016d68c2a4934f",
+    "src/timeval.c": "5271cf38e3a47dae91527b849ee67a787fa130f3ad15413aef0a348868b75056",
+    "src/utils.c": "8ba64a1552d16ca6d425c57098683a04be13ab660f4bc1b1780156164014746e",
+    "includes/h_philo.h": "1f9824b59d63cab6fd24d3f43ceeed7394df4570fb680bc60d6754f81c9c35eb"
+  },
+  "ours": {
+    "src/cleanup_error.c": "90efc8f07404ab9a5898d819e94213bcf0fca98f8c56883f250aad8d6c702ed8",
+    "src/forks.c": "e9fa0001160a8433eaf88a0c8163bf00093c9427a1044f07c1ce3168ba0c2efb",
+    "src/init.c": "8084a04f3114b7c241892da615d6a0f80591654b1c97c642951d05e6de76b926",
+    "src/input_output.c": "ba8bcf22bbe26b1e5287c60eabbf664091f954ade8d982a472ccb1b085174674",
+    "src/logging.c": "bdf57597feb38fb32b15dcfb0be41f275fce6118c0a1b527359b707660f099a9",
+    "src/main.c": "37bd1aa4c4f8be8de3736f88aebd80729fdcdded2e05979471ff667af139b6f6",
+    "src/meal.c": "8ad4ed72d09bc5d9241fb22f376c325f17b7eb48305b28240eec67facb939b46",
+    "src/monitor.c": "034c85fe1a6e3e35106fcd4a8366fe2e1c5776e5d164e1a68787d8085a194811",
+    "src/philosopher.c": "2704ae70fa7f427597fe4b256080cedd16ccbd7eb334e0696f30405a58dc88cf",
+    "src/time.c": "e0f120f6f9bede997d274e7eaf11203baa8695241613eafb556efad3f48afbfd",
+    "includes/philo.h": "85b1dbb12ba0ffb6e6d337951251ff9bb53ae00dd59f2c57d3d8558066914c39"
+  }
+}

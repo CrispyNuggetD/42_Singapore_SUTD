@@ -1,0 +1,14 @@
+==1765005== Memcheck, a memory error detector
+==1765005== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1765005== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==1765005== Command: /tmp/bonus-cleanup-check-544ghnr0/cleanup_harness 0
+==1765005==
+==1765005==
+==1765005== HEAP SUMMARY:
+==1765005==     in use at exit: 0 bytes in 0 blocks
+==1765005==   total heap usage: 7 allocs, 7 frees, 270 bytes allocated
+==1765005==
+==1765005== All heap blocks were freed -- no leaks are possible
+==1765005==
+==1765005== For lists of detected and suppressed errors, rerun with: -s
+==1765005== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

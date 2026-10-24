@@ -1,0 +1,138 @@
+#include "philo_bonus.h"
+#include <stdarg.h>
+
+static int mode;
+static char names[3][128];
+static int closes;
+void *__real_malloc(size_t size);
+sem_t *__real_sem_open(const char *, int, ...);
+int __real_sem_unlink(const char *);
+int __real_sem_close(sem_t *);
+
+void *__wrap_malloc(size_t size)
+{
+    if (mode == 1)
+        return (NULL);
+    return (__real_malloc(size));
+}
+
+static int name_index(const char *name)
+{
+    if (!strcmp(name, SEM_FORKS_NAME))
+        return (0);
+    if (!strcmp(name, SEM_PAIR_NAME))
+        return (1);
+    if (!strcmp(name, SEM_PRINT_NAME))
+        return (2);
+    abort();
+}
+
+sem_t *__wrap_sem_open(const char *name, int flags, ...)
+{
+    va_list ap;
+    int permissions;
+    unsigned int value;
+    int index = name_index(name);
+
+    va_start(ap, flags);
+    permissions = va_arg(ap, int);
+    value = va_arg(ap, unsigned int);
+    va_end(ap);
+    if (mode == index + 2)
+    {
+        errno = EMFILE;
+        return (SEM_FAILED);
+    }
+    return (__real_sem_open(names[index], flags, permissions, value));
+}
+
+int __wrap_sem_unlink(const char *name)
+{
+    int index = name_index(name);
+    if (mode == 8 && index == 2)
+    {
+        errno = EACCES;
+        return (-1);
+    }
+    return (__real_sem_unlink(names[index]));
+}
+
+int __wrap_sem_close(sem_t *sem)
+{
+    closes++;
+    if (mode == 9 && closes == 1)
+    {
+        errno = EINVAL;
+        return (-1);
+    }
+    return (__real_sem_close(sem));
+}
+
+int main(int argc, char **argv)
+{
+    t_sim_bonus sim;
+    t_status status;
+    t_status result;
+    t_status expected;
+    sem_t *existing = SEM_FAILED;
+    sem_t *probe;
+    int i;
+    int collision;
+    unsigned int count = 0;
+
+    if (argc != 2)
+        return (10);
+    mode = atoi(argv[1]);
+    collision = mode >= 5 && mode <= 7 ? mode - 5 : -1;
+    for (i = 0; i < 3; i++)
+        snprintf(names[i], sizeof(names[i]), "/philo_cleanup_test_%ld_%d",
+            (long)getpid(), i);
+    if (collision >= 0)
+    {
+        existing = __real_sem_open(names[collision], O_CREAT | O_EXCL, 0600, 7);
+        if (existing == SEM_FAILED)
+            return (11);
+    }
+    memset(&sim, 0, sizeof(sim));
+    sim.config.count = 3;
+    status = init_bonus(&sim);
+    expected = mode == 1 ? ERR_MALLOC : STATUS_OK;
+    if (mode >= 2 && mode <= 7)
+        expected = ERR_SEM_OPEN;
+    if (status != expected)
+        return (12);
+    result = cleanup_bonus(&sim, status);
+    if (mode == 8)
+        expected = ERR_SEM_UNLINK;
+    if (mode == 9)
+        expected = ERR_SEM_CLOSE;
+    if (result != expected || sim.children.pids != NULL)
+        return (13);
+    if (mode <= 7 && cleanup_bonus(&sim, result) != expected)
+        return (14);
+    for (i = 0; i < 3; i++)
+    {
+        probe = __real_sem_open(names[i], 0);
+        if (i == collision || ((mode == 8 || mode == 9) && i == 2))
+        {
+            if (probe == SEM_FAILED)
+                return (15);
+            if (i == collision)
+            {
+                int tokens;
+                if (sem_getvalue(probe, &tokens) || tokens != 7)
+                    return (16);
+            }
+            __real_sem_close(probe);
+            __real_sem_unlink(names[i]);
+        }
+        else if (probe != SEM_FAILED || errno != ENOENT)
+            return (17);
+        count++;
+    }
+    if (existing != SEM_FAILED)
+        __real_sem_close(existing);
+    if (mode == 9)
+        __real_sem_close(sim.printing);
+    return (count == 3 ? 0 : 18);
+}

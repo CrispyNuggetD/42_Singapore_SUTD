@@ -70,6 +70,18 @@ The project description, build instructions, and resources come first; the
 thread, pointer, mutex, and time rabbit holes are in the linked learning
 appendix below.
 
+Shoutout to [**FORKNITE**](https://github.com/CrispyNuggetD/42sg-campus-lan/tree/main/minigames/forknite),
+the browser game in my [LAN42](https://github.com/CrispyNuggetD/42sg-campus-lan)
+that became my de facto Philo visualiser lol. It runs my actual compiled
+`philo` executable and turns its output into something I can watch and replay.
+The philosophers are eating and dying according to this C program; I just gave
+the terminal logs a browser and an unnecessarily dramatic name.
+
+In LAN42, `/game forknite` creates a room, friends use `/join ROOM_NUMBER`,
+and the host uses `/start`. My local setup points to this project's executable,
+so rebuilding Philo updates what the game runs. Browser pause/replay only affects
+the visualisation, not the running C simulation.
+
 <a id="see-how-it-works"></a>
 
 ### See how it works: my clock idea
@@ -109,8 +121,14 @@ Build from this folder with `make`, or use `make -C philo`.
 The compiler uses `cc -Wall -Wextra -Werror -pthread`.
 The executable is `philo/philo`.
 
-`make clean` removes object files, `make fclean` also removes the executable,
-and `make re` rebuilds. The root Makefile forwards these commands to `philo/`.
+`make clean` removes object files and `make fclean` also removes executables
+from both `philo/` and `philo_bonus/`. `make re` rebuilds mandatory.
+
+`make bonus` builds the bonus scaffold. Bonus is still WIP: input parsing,
+process helpers and semaphore initialization/cleanup are in place, but the
+philosopher routine and parent supervision are TODO. Valid input currently
+initializes and cleans up resources, reports "not implemented", and exits with
+a nonzero status; it does not run the simulation yet.
 
 The command format is:
 
@@ -178,6 +196,7 @@ simulation features. The numbered links jump to each learning point.
 33. [Removed experiments: what I tried, and why I took it out](#learning-point-33)
 34. [See the clock grow: 1, 2, 3, 4, 5, and 7 philosophers (AI-generated diagrams)](#learning-point-34)
 35. [What if the sleep is weirdly long? Valid inputs, different clocks](#learning-point-35)
+36. [Bonus: why another semaphore just to take two forks?](#learning-point-36)
 
 <a id="learning-point-1"></a>
 
@@ -2997,5 +3016,88 @@ are saved with the project. These finite runs support the change; they are not
 an unconditional starvation-freedom or real-time scheduling proof. The earlier
 full evaluation report describes the pre-adjustment code, so its two long-sleep
 failures are historical results now.
+
+[Back to appendix index](#learning-points)
+
+
+---
+
+<a id="learning-point-36"></a>
+
+### 36. Bonus: why another semaphore just to take two forks?
+
+My first thought was: bonus lets everyone take ANY fork, so surely this is
+simpler? Why am I adding another semaphore just to take two things lol.
+
+The fork semaphore already counts the available forks. If its value is 1,
+two philosophers cannot both successfully take that last token. `sem_wait()`
+handles that safely. But **taking one fork safely is not the same as getting
+two forks without deadlocking**. Two separate waits are still two operations.
+
+With two philosophers, I can do this to myself:
+
+```text
+Available forks = 2
+P1 takes one -> 1 left
+P2 takes one -> 0 left
+P1 waits for a second fork.
+P2 waits for a second fork.
+Nobody can eat. Nobody returns anything. Great, we each own half a meal lol.
+```
+
+The same problem exists for N philosophers if everyone grabs one first.
+So my planned `take_pair` semaphore starts at **1**: only one philosopher
+can be in the process of acquiring a pair at a time. Everyone waiting at
+that gate holds zero forks.
+
+```c
+/* Planned flow only: logging and error handling omitted. */
+sem_wait(take_pair);
+sem_wait(forks);
+sem_wait(forks);
+sem_post(take_pair);
+
+/* Eat while holding the two fork tokens. */
+
+sem_post(forks);
+sem_post(forks);
+```
+
+The placement of that first `sem_post()` matters! I release the gate **before
+eating**, once I have both forks. Another philosopher can then acquire two
+remaining forks while I eat. This is not a "one philosopher eats at a time"
+semaphore. It only makes us finish collecting our pair before someone else
+starts collecting theirs.
+
+If the gate holder is waiting for another fork, the philosophers already
+eating can still return theirs: returning forks does not need `take_pair`.
+For at least two forks, this removes the everyone-holds-one circular wait,
+assuming eaters eventually release their forks. One philosopher still needs
+its own death path, because waiting cannot manufacture a second fork.
+
+This is where it connects back to my mandatory implementation:
+
+| What I need to prevent | Mandatory | Planned bonus |
+| --- | --- | --- |
+| Circular waiting for the second fork | Odd/even IDs acquire their specific forks in opposite orders | Only one philosopher acquires a pair at a time |
+| Everyone being stuck with an incomplete pair | Fixed fork ordering breaks the cycle | The acquisition gate prevents multiple incomplete pairs |
+| More than one philosopher eating | Allowed when their fork pairs do not overlap | Allowed after each releases the acquisition gate |
+
+I had mentally bundled my mandatory's fork ordering and calculated sleeps
+into one solution. They do different jobs: **the fixed order prevents
+deadlock; the waits encourage my eating pattern**. I do not need another
+"hopefully they wake at the right time" formula to prevent this bonus deadlock.
+The gate gives me a direct reason why that particular circular wait cannot form.
+
+The subject does not specifically demand a `take_pair` semaphore. This is
+one design choice for safely acquiring two tokens. It also does not promise
+FIFO order, equal turns, or that nobody can starve: deadlock prevention and
+fairness are still different questions. On an error, any acquired tokens and
+the gate need appropriate handling; killing a process does not automatically
+return semaphore tokens.
+
+This entry records the planned acquisition design. Semaphore setup and partial
+initialization cleanup are now implemented; the actual acquisition routine is
+still TODO in the bonus scaffold.
 
 [Back to appendix index](#learning-points)

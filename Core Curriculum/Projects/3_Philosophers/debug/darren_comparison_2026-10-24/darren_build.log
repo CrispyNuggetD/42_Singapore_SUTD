@@ -1,0 +1,8 @@
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/main.c -o main.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/init.c -o init.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/handles.c -o handles.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/print.c -o print.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/philo.c -o philo.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/utils.c -o utils.o
+gcc -Wall -Wextra -Werror -g -pthread  -I includes -c src/timeval.c -o timeval.o
+gcc -Wall -Wextra -Werror -g -pthread  main.o init.o handles.o print.o philo.o utils.o timeval.o -latomic -I includes -o philo

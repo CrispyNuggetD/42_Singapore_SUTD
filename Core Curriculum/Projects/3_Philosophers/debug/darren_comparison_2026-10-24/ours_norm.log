@@ -1,0 +1,12 @@
+Setting locale to en_US
+main.c: OK!
+time.c: OK!
+philosopher.c: OK!
+init.c: OK!
+cleanup_error.c: OK!
+meal.c: OK!
+input_output.c: OK!
+monitor.c: OK!
+logging.c: OK!
+forks.c: OK!
+philo.h: OK!

@@ -1,0 +1,26 @@
+make: Entering directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+rm -rf obj
+rm -f philo_bonus
+make all
+make[1]: Entering directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/main_bonus.c -o obj/main_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/init_bonus.c -o obj/init_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/philosopher_bonus.c -o obj/philosopher_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/monitor_bonus.c -o obj/monitor_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/input_output_bonus.c -o obj/input_output_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/time_bonus.c -o obj/time_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/process_bonus.c -o obj/process_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/cleanup_bonus.c -o obj/cleanup_bonus.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/error_bonus.c -o obj/error_bonus.o
+cc -Wall -Wextra -Werror -pthread obj/main_bonus.o obj/init_bonus.o obj/philosopher_bonus.o obj/monitor_bonus.o obj/input_output_bonus.o obj/time_bonus.o obj/process_bonus.o obj/cleanup_bonus.o obj/error_bonus.o -o philo_bonus
+make[1]: Leaving directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'
+make: Leaving directory '/home/hnah/Documents/42_Singapore_SUTD/Core Curriculum/Projects/3_Philosophers/philo_bonus'

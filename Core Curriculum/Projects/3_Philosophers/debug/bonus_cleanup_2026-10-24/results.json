@@ -1,0 +1,62 @@
+[
+  {
+    "case": "success",
+    "exit": 0
+  },
+  {
+    "case": "allocation_failure",
+    "exit": 0
+  },
+  {
+    "case": "forks_open_failure",
+    "exit": 0
+  },
+  {
+    "case": "pair_open_failure",
+    "exit": 0
+  },
+  {
+    "case": "printing_open_failure",
+    "exit": 0
+  },
+  {
+    "case": "existing_forks_name",
+    "exit": 0
+  },
+  {
+    "case": "existing_pair_name",
+    "exit": 0
+  },
+  {
+    "case": "existing_print_name",
+    "exit": 0
+  },
+  {
+    "case": "unlink_failure",
+    "exit": 0
+  },
+  {
+    "case": "close_failure",
+    "exit": 0
+  },
+  {
+    "case": "memcheck_success",
+    "exit": 0
+  },
+  {
+    "case": "memcheck_pair_open_failure",
+    "exit": 0
+  },
+  {
+    "case": "memcheck_existing_pair_name",
+    "exit": 0
+  },
+  {
+    "case": "memcheck_unlink_failure",
+    "exit": 0
+  },
+  {
+    "case": "memcheck_close_failure",
+    "exit": 0
+  }
+]

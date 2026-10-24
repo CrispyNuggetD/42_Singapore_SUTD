@@ -1,0 +1,10 @@
+Setting locale to en_US
+timeval.c: OK!
+philo.c: OK!
+init.c: Error!
+Error: TOO_MANY_LINES       (line:  62, col:   1):	Function has more than 25 lines
+main.c: OK!
+print.c: OK!
+utils.c: OK!
+handles.c: OK!
+h_philo.h: OK!
