@@ -211,6 +211,9 @@ def worker(force=False):
             print('A terminal relogin is already running.', flush=True)
             return 0
         closer, launcher = helper_paths()
+        if not force and active_terminal_jobs(closer):
+            print('New running work appeared; restart cancelled before stopping anything. Run relogin again to review it.',flush=True)
+            return 1
         targets = terminal_targets(closer) if force else []
         # Stop the complete old workspace before creating any replacement panes.
         workspace.stop(force=force)

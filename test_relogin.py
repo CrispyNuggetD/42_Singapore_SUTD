@@ -53,10 +53,20 @@ class Relogin(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp,patch.dict(os.environ,self.environment(tmp)), \
              patch.object(login.Path,'home',return_value=Path(tmp)), \
              patch.object(login,'helper_paths',return_value=(Path(tmp)/'close.py',None)), \
-             patch.object(workspace,'stop'),patch.object(login.subprocess,'run',return_value=Mock(returncode=1)), \
+             patch.object(workspace,'stop'),patch.object(login,'active_terminal_jobs',return_value=[]), \
+             patch.object(login.subprocess,'run',return_value=Mock(returncode=1)), \
              patch.object(workspace,'launch_login') as launch:
             self.assertEqual(login.worker(force=False),1)
             launch.assert_not_called()
+
+    def test_new_work_after_idle_preview_cancels_before_shutdown(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.dict(os.environ,self.environment(tmp)), \
+             patch.object(login.Path,'home',return_value=Path(tmp)), \
+             patch.object(login,'helper_paths',return_value=(Path(tmp)/'close.py',None)), \
+             patch.object(login,'active_terminal_jobs',return_value=[{'command':'new-job'}]), \
+             patch.object(workspace,'stop') as stop:
+            self.assertEqual(login.worker(force=False),1)
+            stop.assert_not_called()
 
     def test_tmux_jobs_now_count_as_running_work(self):
         rows=[dict(pid=10,ppid=1,sid=10,tty='pts/2',state='S',command='zsh'),
