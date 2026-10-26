@@ -95,3 +95,7 @@ action runner, not the portfolio’s browser JavaScript or the campus/Mac OS.
 Recheck official releases when updating actions. Keep Python 3.12 explicit and
 test an OS upgrade before changing the pinned runner. No insecure Node fallback
 or warning-suppression environment variable is used.
+
+The shared visual family is **Campus HQ**. Both portfolio page templates link
+the reusable cursor package; its persistent bottom-right dock keeps opt-out and
+source access available without scrolling to the footer.
