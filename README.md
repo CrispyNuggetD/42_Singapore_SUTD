@@ -220,7 +220,12 @@ force-killing anything. Go Break and ordinary screen locks keep apps running.
 
 LAN42 separates guest/game hosting from its approved authentication/API service.
 Guests keep chat and games; API-backed views require verified 42 Singapore
-membership. Singapore students can `/signin`, then `/clusters` or `/clusters 2`
+membership. **Someone must keep an approved host running on a campus workstation
+(currently hnah’s).** Installing or pulling LAN42 alone does not provide shared
+sign-in or API views. When that host is offline, guest chat/games remain usable,
+but shared sign-in and fresh cluster views are unavailable. Stable, always-on
+hosting is future work. With the campus host online, SG students can `/signin`,
+then `/clusters` or `/clusters 2`
 to see current API-reported logins and occupied campus seats—not just an empty
 floor plan. The approved host (currently hnah’s) shares a 30-second snapshot across
 its clients: ten simultaneous requests share one refresh, which may span multiple
