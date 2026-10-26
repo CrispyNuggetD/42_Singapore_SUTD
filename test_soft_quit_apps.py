@@ -72,7 +72,7 @@ class SoftQuit(unittest.TestCase):
                            ZSHRC_SETTINGS_FILE=str(root/'missing'), ZSHRC_PORTABLE_SETTINGS_FILE='',
                            ZSHRC_RUNTIME_ROOT=tmp, DOCUMENTS_REPOS_ROOT=tmp, CODEX_PRIVATE_REPO_ROOT=tmp,
                            closeappsonleave='TRUE')
-                script = 'source "$1"\nexport PATH="$2:$PATH"\nft_lock() { print LOCK >> "$EVIDENCE"; }\nleavesch'
+                script = 'source "$1"\nexport PATH="$2:$PATH"\n_42_lock_screen() { print LOCK >> "$EVIDENCE"; }\nleavesch'
                 result = subprocess.run(['zsh', '-f', '-c', script, 'test',
                                          str(Path(__file__).with_name('Useful .zshrc edits (addition)')), tmp],
                                         env=env, capture_output=True, text=True)
