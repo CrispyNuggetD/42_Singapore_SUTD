@@ -61,14 +61,17 @@ def managed_nodes():
     return found
 
 
-def pane_processes():
+def pane_processes(work_only=False):
     try:
-        result=subprocess.run(tmux_command()+['list-panes','-a','-F','#{pane_pid}\t#{pane_tty}'],capture_output=True,text=True)
+        result=subprocess.run(tmux_command()+['list-panes','-a','-F','#{pane_pid}\t#{pane_tty}\t#{@daily_role}\t#{pane_dead}'],capture_output=True,text=True)
     except FileNotFoundError:return [],set()
     roots=[];ttys=set()
     if result.returncode==0:
         for line in result.stdout.splitlines():
-            pid,_,tty=line.partition('\t')
+            fields=line.split('\t')
+            if len(fields)!=4:continue
+            pid,tty,role,dead=fields
+            if dead=='1' or work_only and role=='dailylogin':continue
             if pid.isdecimal():roots.append(int(pid))
             if tty:ttys.add(tty.removeprefix('/dev/'))
     return roots,ttys
@@ -101,7 +104,11 @@ def stop(force=False):
         if token:jobs.append((pid,token))
     nodes=managed_nodes()
     # A kill-server closes all managed panes and their terminal sessions, not just clients.
-    if roots:
+    has_server=bool(roots)
+    if not has_server:
+        try:has_server=subprocess.run(tmux_command()+['has-session'],capture_output=True).returncode==0
+        except FileNotFoundError:pass
+    if has_server:
         subprocess.run(tmux_command()+['kill-server'],check=True)
     for pid,token in remaining(nodes):
         if identity(pid)!=token:continue

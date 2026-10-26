@@ -115,7 +115,7 @@ def find_active_jobs(rows, terminal_pids, pane_ttys, current_pid):
 def active_terminal_jobs(closer):
     targets=terminal_targets(closer)
     rows=workspace.processes()
-    _,pane_ttys=workspace.pane_processes()
+    _,pane_ttys=workspace.pane_processes(work_only=True)
     jobs=find_active_jobs(rows,{pid for pid,_ in targets},pane_ttys,os.getpid())
     jobs.extend(dict(command='LAN42 managed node',tty='background') for _ in workspace.managed_nodes())
     return jobs

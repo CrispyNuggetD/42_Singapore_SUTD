@@ -68,6 +68,12 @@ class Relogin(unittest.TestCase):
             self.assertEqual(login.session_state().parent,Path('/tmp/example-mac'))
 
 class Workspace(unittest.TestCase):
+    def test_dead_pane_pids_and_read_only_log_are_not_active_work(self):
+        output='10\t/dev/pts/1\tdailylogin\t0\n11\t/dev/pts/2\told-job\t1\n12\t/dev/pts/3\tlan42\t0\n'
+        with patch.object(workspace.subprocess,'run',return_value=Mock(returncode=0,stdout=output)):
+            self.assertEqual(workspace.pane_processes(work_only=True),([12],{'pts/3'}))
+            self.assertEqual(workspace.pane_processes(),([10,12],{'pts/1','pts/3'}))
+
     def test_stop_kills_old_server_and_managed_node_not_worker(self):
         rows=[dict(pid=10,ppid=1),dict(pid=11,ppid=10),dict(pid=20,ppid=11)]
         with patch.object(workspace,'pane_processes',return_value=([10],{'pts/1'})), \
