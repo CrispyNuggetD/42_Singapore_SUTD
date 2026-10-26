@@ -218,6 +218,21 @@ Linux needs an X11 session and Python GObject support (`python3-gi` on Ubuntu);
 Wayland reports that automatic app-wide closing is unavailable rather than
 force-killing anything. Go Break and ordinary screen locks keep apps running.
 
+LAN42 separates guest/game hosting from its approved authentication/API service.
+Guests keep chat and games; API-backed views require verified 42 Singapore
+membership. The initial admin and API operator is hnah (numeric 42 ID 234449).
+Admins, API operators and trusted service machines have independent allowlists.
+Only API operators may explicitly cache/export/download Singapore-scoped data.
+Read-only Singapore scope is the owner's application-form promise; the upstream
+student credential may have broader permissions. Students never receive it.
+
+After updating an existing credential-bearing LAN42 host, explicitly run
+`python3 -m campus_lan.access enroll-local` inside its clone before starting the
+trusted service. Missing approval fails closed. The shell installer does not
+approve a host, grant admins, copy credentials or install Tailscale. Offsite local
+owner API views require no public forwarding; KoelDrop retains its physical
+campus checks. See the [LAN42 access policy and migration instructions](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/access-policy.md).
+
 Both shell installer entry points recommend LAN42 when it is missing, including
 a suggested path and short feature list sourced from the marked section of
 [LAN42's README](https://github.com/CrispyNuggetD/42sg-campus-lan#lan42-in-your-daily-workspace).
