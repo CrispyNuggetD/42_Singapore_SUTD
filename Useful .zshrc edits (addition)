@@ -1369,7 +1369,7 @@ _dailylogin_campus_report() {
 
 _dailylogin_tasks() {
   # Bootstrap newly added helpers after an older installed updater's first pass.
-  if [[ ! -f "$ZSHRC_RUNTIME_ROOT/soft_quit_apps.py" || ! -f "$ZSHRC_RUNTIME_ROOT/lan42_recommend.py" ]]; then
+  if [[ ! -f "$ZSHRC_RUNTIME_ROOT/soft_quit_apps.py" || ! -f "$ZSHRC_RUNTIME_ROOT/lan42_recommend.py" || ! -f "$ZSHRC_RUNTIME_ROOT/mac_mailbox.py" ]]; then
     _dailylogin_run 'Refresh newly added runtime helpers' - synczshrc || return 1
   fi
   _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
