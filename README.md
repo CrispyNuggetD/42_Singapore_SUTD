@@ -7,7 +7,7 @@
 [Candid 42 tips & how I work](docs/how-i-work.md)
 
 <!-- portfolio-current:start -->
-**Current project: [Philosophers](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/3_Philosophers/README.md)** · [Portfolio focus](https://crispynuggetd.github.io/42_Singapore_SUTD/#current-project)
+**Current project: [Philosophers](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/3_Philosophers/README.md)** · [What I’m working on now](https://crispynuggetd.github.io/42_Singapore_SUTD/#current-project)
 <!-- portfolio-current:end -->
 
 ## Start with these

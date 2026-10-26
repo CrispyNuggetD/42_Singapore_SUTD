@@ -28,7 +28,7 @@ def project_url(path):
     return REPO+('/blob/main/' if (ROOT/path/'README.md').exists() else '/tree/main/')+quote(path+('/README.md' if (ROOT/path/'README.md').exists() else ''),safe='/')
 def current_block(config):
     path=checked_path(config['current_project']);name=next((p['name'] for p in config['projects'] if p['path']==path),Path(path).name)
-    return START+'\n**Current project: ['+name+']('+project_url(path)+')** · [Portfolio focus]('+PAGES+'#current-project)\n'+END
+    return START+'\n**Current project: ['+name+']('+project_url(path)+')** · [What I’m working on now]('+PAGES+'#current-project)\n'+END
 
 def refresh(settings=None):
     config=load('config.json')
