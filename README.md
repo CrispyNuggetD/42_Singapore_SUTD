@@ -234,6 +234,12 @@ LAN42 web searches default to Ecosia; `/settings search` selects Google/custom
 engines or opts out of permanent aggregate impact counting. The host keeps a
 launch total and estimated unique-search sketch, with no query history or student
 identity records. Offline hosts do not block searches. [Search/privacy guide](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/web-search.md).
+LAN42 exam quiet is app-only: Wednesday 15–18 and every Saturday 13–16 SGT
+work offline, while the approved host shares a bounded cache of visible SG exam
+windows. Missing exam ends default to three hours. Dated changes are expiring
+settings, not executable/software updates; completed entries are pruned. Release
+popups coalesce for 30 minutes and are capped at one per 24 hours per computer.
+[Quiet-mode details and admin controls](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/exam-quiet.md).
 The clickable LAN42 footer offers F2 sign in/out (HQ), F3 system mute, F4
 output 0/30%, F5 uwu once and F6 automatic uwu on/off. Sound consent remains
 separate; terminal users may need Fn with the function keys.
