@@ -1,0 +1,111 @@
+{
+  "login": "hnah",
+  "observed_at": "2026-10-26T23:33:17.992431+00:00",
+  "source": "42 API, owner-authorized single-user read",
+  "projects": [
+    {
+      "slug": "exam-rank-03",
+      "name": "Exam Rank 03",
+      "mark": null,
+      "validated": null,
+      "status": "in_progress"
+    },
+    {
+      "slug": "42cursus-minishell",
+      "name": "minishell",
+      "mark": null,
+      "validated": null,
+      "status": "creating_group"
+    },
+    {
+      "slug": "42cursus-philosophers",
+      "name": "Philosophers",
+      "mark": null,
+      "validated": null,
+      "status": "in_progress"
+    },
+    {
+      "slug": "42cursus-push_swap",
+      "name": "push_swap",
+      "mark": 125,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 2,
+      "marked_at": "2026-10-02T14:12:06.946Z"
+    },
+    {
+      "slug": "pipex",
+      "name": "pipex",
+      "mark": 125,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 1,
+      "marked_at": "2026-09-29T09:16:35.646Z"
+    },
+    {
+      "slug": "42cursus-fdf",
+      "name": "FdF",
+      "mark": 125,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 1,
+      "marked_at": "2026-09-11T11:50:16.329Z"
+    },
+    {
+      "slug": "exam-rank-02",
+      "name": "Exam Rank 02",
+      "mark": 100,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 3,
+      "marked_at": "2026-07-08T09:14:55.964Z"
+    },
+    {
+      "slug": "born2beroot",
+      "name": "Born2beroot",
+      "mark": 125,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 1,
+      "marked_at": "2026-03-11T04:55:59.157Z"
+    },
+    {
+      "slug": "42cursus-get_next_line",
+      "name": "get_next_line",
+      "mark": 112,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 1,
+      "marked_at": "2026-03-10T12:51:05.325Z"
+    },
+    {
+      "slug": "42cursus-ft_printf",
+      "name": "ft_printf",
+      "mark": 125,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 2,
+      "marked_at": "2026-01-11T08:18:15.154Z"
+    },
+    {
+      "slug": "42cursus-libft",
+      "name": "Libft",
+      "mark": 100,
+      "validated": true,
+      "status": "finished",
+      "mark_basis": "Latest validated team attempt; failed retries do not erase a validated result",
+      "attempts_checked": 2,
+      "marked_at": "2025-12-19T10:42:50.646Z"
+    }
+  ],
+  "level": 3.44,
+  "begin_at": "2025-11-17T02:42:00.000Z",
+  "blackholed_at": "2027-01-18T02:42:00.000Z"
+}

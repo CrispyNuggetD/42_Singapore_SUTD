@@ -1,0 +1,66 @@
+{
+  "owner": "Christopher Nah",
+  "login": "hnah",
+  "github": "CrispyNuggetD",
+  "campus": "42 Singapore",
+  "current_project": "Core Curriculum/Projects/3_Philosophers",
+  "projects": [
+    {
+      "name": "Philosophers",
+      "slug": "42cursus-philosophers",
+      "path": "Core Curriculum/Projects/3_Philosophers",
+      "summary": "Threads, mutexes, process coordination and a dining-philosophers simulator.",
+      "max_mark": 125
+    },
+    {
+      "name": "push_swap",
+      "slug": "42cursus-push_swap",
+      "path": "Core Curriculum/Projects/2_push_swap",
+      "summary": "Sorting two stacks with a constrained instruction set; algorithms, measurement and a checker.",
+      "max_mark": 125
+    },
+    {
+      "name": "pipex",
+      "slug": "pipex",
+      "path": "Core Curriculum/Projects/2_pipex",
+      "summary": "Unix pipes, processes, file descriptors and command execution.",
+      "max_mark": 125
+    },
+    {
+      "name": "FdF",
+      "slug": "42cursus-fdf",
+      "path": "Core Curriculum/Projects/2_FDF",
+      "summary": "A wireframe terrain renderer: projection, graphics and interaction.",
+      "max_mark": 125
+    },
+    {
+      "name": "Born2beroot",
+      "slug": "born2beroot",
+      "path": "Core Curriculum/Projects/1_Born2beroot",
+      "summary": "Linux administration, system setup and service configuration.",
+      "max_mark": 125
+    },
+    {
+      "name": "get_next_line",
+      "slug": "42cursus-get_next_line",
+      "path": "Core Curriculum/Projects/1_get_next_line",
+      "summary": "Stateful line reading and memory ownership in C.",
+      "max_mark": 125
+    },
+    {
+      "name": "ft_printf",
+      "slug": "42cursus-ft_printf",
+      "path": "Core Curriculum/Projects/1_ft_printf",
+      "summary": "Formatted output, variadic arguments and parsing.",
+      "max_mark": 125
+    },
+    {
+      "name": "Libft",
+      "slug": "42cursus-libft",
+      "path": "Core Curriculum/Projects/0_libft",
+      "summary": "Core C library exercises; later reusable extensions are kept separately.",
+      "max_mark": 100,
+      "grading_note": "100 is the maximum for my submitted subject version; linked lists were mandatory (owner-provided subject-version context)."
+    }
+  ]
+}

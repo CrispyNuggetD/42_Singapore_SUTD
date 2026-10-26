@@ -1,0 +1,87 @@
+# Portfolio maintenance
+
+The public README is the concise project index. `TERMINAL-HANDBOOK.md` preserves
+the former detailed README at the repository root so its relative links still
+work. No project directories or helper entry points were moved. No one-time
+migration and no dailylogin change is required.
+
+## Sources and generated output
+
+- `config.json`: public owner identity, project catalogue and published current
+  project. Relative paths only, validated against existing project directories.
+- `progress.json`: selected, owner-authorized 42 API snapshot (hnah only), not
+  a campus export. No credentials, contact fields, teammates or raw profile.
+- Root `portfolio.py`: refresh the README focus, optionally read owner API data,
+  and build the static site. `_site` is ignored and contains only site output.
+- `index.html`: authored layout; source placeholders are filled at build time.
+- `docs/how-i-work.md`: candid personal tips and dated current toolkit.
+- `assets/brand.css`: LAN42 visual foundation copied 27 October 2026; portfolio
+  layout is `portfolio.css`. Reuse the navy/mint identity, not duplicated prose.
+- Adaptive cursor is vendored from the toolbox’s MIT-licensed component; keep
+  `POINTER-LICENSE`. The rest of this repository retains its existing GPL-3.0.
+
+## Current project: same setting, no shell disruption
+
+Keep `current_proj` and `PROJECTS_ROOT` in your existing personal
+`~/.42-shell-settings.zsh` (or `ZSHRC_SETTINGS_FILE`). Keep the shared helper file
+name and existing `setupzshrc` wizard; no renaming or replacement is needed.
+After changing your local focus, run in this owner clone:
+
+```sh
+python3 portfolio.py refresh --from-shell
+```
+
+This parses only those two exported assignments; it never sources/executes your
+settings or publishes other values. It writes the public relative path to
+`config.json` and refreshes the README markers. Review and commit both files.
+The build rejects a stale README marker rather than guessing a private setting
+on GitHub. Other contributors should edit the public config deliberately, not
+publish their own local setting as hnah’s focus. CI does not read personal files.
+
+Every page may link to `current-project.html`: it is generated from the same
+config and redirects to that project’s README, with a visible link fallback.
+Changing focus changes this stable destination at the next deployment.
+
+## Owner marks and deadline snapshot
+
+Refresh on the already approved owner computer with LAN42 installed:
+
+```sh
+python3 portfolio.py refresh-api --lan42 /path/to/42sg-campus-lan
+```
+
+Existing local operator approval and Singapore membership checks are required.
+Only hnah’s selected cursus/project fields are published. Completed projects
+are checked using their own detail records; choose the latest validated team
+attempt and keep failed retries from erasing validated work. Publish attempt
+counts and mark basis, not team identities or raw attempt records. Never put API keys,
+raw profile output, shell settings or student exports in GitHub Actions/secrets
+for this site. Review a snapshot before publishing it. No refresh happens during
+normal dailylogin and public visitors never query the API. Subject-version maxima live in config.json: Libft is 100/100 for Christopher’s
+submitted version, where linked lists were mandatory. That maximum is owner-
+provided context, not an API final_mark field. Do not compare all marks against
+125 or describe a 100/100 result as incomplete.
+
+The countdown runs
+locally from the published deadline, shows last checked time and flags snapshots
+older than three days. Freeze/deadline changes need another verified snapshot.
+No-JavaScript visitors see the actual deadline date instead of a live countdown.
+
+## Build, test and publish
+
+```sh
+python3 -m pip install Markdown==3.7
+python3 -m unittest test_portfolio
+python3 portfolio.py build
+python3 -m http.server 8766 --directory _site
+```
+
+`.github/workflows/portfolio-pages.yml` builds on main pushes and manual dispatch.
+Enable repository Actions and Settings → Pages → Source: GitHub Actions. The
+expected URL is https://crispynuggetd.github.io/42_Singapore_SUTD/ after successful
+deployment. A pushed workflow is not proof that Pages is enabled/live.
+
+Keep the README and HTML complementary: README offers concise links and prose;
+HTML emphasizes current focus, selected work, honest source-labelled progress,
+then tools/tips and contact. Test desktop/mobile, JavaScript on/off, real links,
+expanded disclosure, deadline staleness and cursor opt-out. Preserve candid tips.

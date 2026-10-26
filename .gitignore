@@ -22,3 +22,9 @@ bin/
 **/2_FDF/fdf
 **/2_push_swap/push_swap
 **/3_Philosophers/philo/philo
+
+# Generated public portfolio
+/_site/
+
+# Public portfolio agent instructions; private root agent notes remain ignored.
+!portfolio/AGENTS.md
