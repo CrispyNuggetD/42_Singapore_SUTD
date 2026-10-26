@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shlex
 import shutil
+import ssl
 import sys
 import urllib.request
 
@@ -41,7 +42,12 @@ def installed_path(settings=None):
 def feature_text():
     try:
         request = urllib.request.Request(README, headers={'User-Agent': '42-shell-installer'})
-        with urllib.request.urlopen(request, timeout=3) as response:
+        context = ssl.create_default_context()
+        # Pyenv builds may miss Ubuntu's CA bundle; retain verified TLS using OS trust.
+        for bundle in ('/etc/ssl/certs/ca-certificates.crt', '/etc/ssl/cert.pem'):
+            if Path(bundle).is_file():
+                context.load_verify_locations(cafile=bundle)
+        with urllib.request.urlopen(request, timeout=3, context=context) as response:
             raw = response.read(131073)
         if len(raw) > 131072:
             raise ValueError('LAN42 README exceeds installer limit')
