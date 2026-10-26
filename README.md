@@ -240,6 +240,10 @@ the host channel is enabled. Important host/broadcast/release/offline-warning
 alerts default to on; chat/DM/poke popups default to off. `/notify` lists channels,
 `/notify dms on` enables DMs, and `/notify all off` silences even important alerts.
 Existing explicit popup denials and OS permissions are respected.
+The approved campus host also starts a 42 Singapore KoelDrop flock. Eligible
+verified campus users choose join once, always join or never show again. Each
+join uses a fresh service subfolder; old local copies survive shutdown and are
+never automatically deleted. See [the flock guide](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/file-sharing.md).
 This polling uses LAN42 endpoints, not the 42 API;
 it never forces OAuth or plays a sound automatically. Missing trust is explained
 instead of silently waiting. The initial admin and API operator is hnah (numeric 42 ID 234449).
