@@ -229,7 +229,13 @@ then `/clusters` or `/clusters 2`
 to see current API-reported logins and occupied campus seats—not just an empty
 floor plan. The approved host (currently hnah’s) shares a 30-second snapshot across
 its clients: ten simultaneous requests share one refresh, which may span multiple
-API pages. Redrawing the display does not fetch again. The initial admin and API operator is hnah (numeric 42 ID 234449).
+API pages. Redrawing the display does not fetch again.
+On-campus guest HQs now explain availability at startup. With the owner-approved
+public trust installed, waiting clients check the pinned host every 120 seconds
+by default and show its return, with one desktop arrival alert per computer when
+notifications are permitted. This polling uses LAN42 endpoints, not the 42 API;
+it never forces OAuth or plays a sound automatically. Missing trust is explained
+instead of silently waiting. The initial admin and API operator is hnah (numeric 42 ID 234449).
 Admins, API operators and trusted service machines have independent allowlists.
 Only API operators may explicitly cache/export/download Singapore-scoped data.
 Read-only Singapore scope is the owner's application-form promise; the upstream
