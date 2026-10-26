@@ -291,6 +291,12 @@ leavesch() {
       print -u2 -- 'leavesch: some pushes failed; tmux kept open. Fix the errors and retry.'
       return 1
     fi
+    if _dailylogin_enabled "${closechromeonleave:-TRUE}"; then
+      command python3 "$ZSHRC_RUNTIME_ROOT/close_chrome.py" || {
+        print -u2 -- 'leavesch: Chrome has not finished closing; tmux kept open.'
+        return 1
+      }
+    fi
     print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
     command -v tmux >/dev/null 2>&1 || return 0
     local -a tmux_args

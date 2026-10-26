@@ -199,3 +199,8 @@ Week: 6 (By End 2025)
 - Learn finish what entails a good Parser
 - Finish looking through subject.pdf of ft\_printf
 - Finish Parser (1 of 3) of ft\_printf (Parser --> Dispatcher --> Handler)
+
+`leavesch` asks Chrome to quit cleanly and waits before closing tmux; it never
+force-kills the browser. If Chrome needs attention, tmux is kept and the screen
+still locks. Set `closechromeonleave=FALSE` in personal settings to leave Chrome
+running. This does not change Go Break or ordinary screen-lock behavior.
