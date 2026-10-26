@@ -23,6 +23,6 @@ I use AI as a teacher and coding assistant while building technical depth. I don
 
 ## Pace and perspective
 
-The graduation-speed leaderboard can be fun, but someone else’s pace is not your timetable. I’m choosing sustainable learning and practical tools that help me keep going. The longer, candid historical plan and weekly notes remain in the [full reference](../TERMINAL-HANDBOOK.md#my-42-plan); they are dated context, not current instructions or a race to imitate.
+The graduation-speed leaderboard can be fun, but someone else’s pace is not your timetable. I’m choosing sustainable learning and practical tools that help me keep going. The longer, candid historical plan and weekly notes remain in the [full reference](../README-ARCHIVE.md#my-42-plan); they are dated context, not current instructions or a race to imitate.
 
-[← Portfolio](../README.md) · [Full terminal setup and reference](../TERMINAL-HANDBOOK.md)
+[← Portfolio](../README.md) · [Archived README & setup reference](../README-ARCHIVE.md)

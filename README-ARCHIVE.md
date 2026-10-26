@@ -1,4 +1,4 @@
-> **Full reference, preserved from the previous README.** For the public portfolio and current project, start with [README](README.md). Existing paths and terminal workflows remain in place. [Current project ↗](https://crispynuggetd.github.io/42_Singapore_SUTD/current-project.html).
+> **Archived README: terminal setup, personal plans, tips and progress notes.** For the public portfolio and current project, start with [README](README.md). Existing paths and terminal workflows remain in place. [Current project ↗](https://crispynuggetd.github.io/42_Singapore_SUTD/current-project.html).
 
 > **Forgot to push before leaving for the weekend? [Get private backups on screen lock + zsh/tmux helpers](Shell%20automations/README.md).** Helpers-only download available. Requires setup; you still need to share changes with teammates.
 

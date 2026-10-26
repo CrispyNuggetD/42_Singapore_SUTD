@@ -1,6 +1,6 @@
 # Portfolio maintenance
 
-The public README is the concise project index. `TERMINAL-HANDBOOK.md` preserves
+The public README is the concise project index. `README-ARCHIVE.md` preserves
 the former detailed README at the repository root so its relative links still
 work. No project directories or helper entry points were moved. No one-time
 migration and no dailylogin change is required.

@@ -18,7 +18,7 @@
 | [push_swap](Core%20Curriculum/Projects/2_push_swap/README.md) | Sorting algorithms, constrained operations, a checker and measurement. |
 | [LAN42 BETA ↗](https://crispynuggetd.github.io/42sg-campus-lan/) | A student-built 42 Singapore community app: campus tools, chat, games and consent-based sharing. [Source](https://github.com/CrispyNuggetD/42sg-campus-lan). |
 | [FOSS Toolbox ↗](https://github.com/CrispyNuggetD/RykerTorch-FOSS-Toolbox) | Reusable tools, including the website’s adaptive cursor, with copy/paste instructions and a demo. |
-| [My terminal workspace](TERMINAL-HANDBOOK.md#terminal-setup-after-cloning) | zsh/tmux, dailylogin, optional apps, backup-on-lock and Mac/campus workflows. |
+| [My terminal workspace](README-ARCHIVE.md#terminal-setup-after-cloning) | zsh/tmux, dailylogin, optional apps, backup-on-lock and Mac/campus workflows. |
 
 [Browse all core project folders](Core%20Curriculum/Projects) ·
 [Verified marks & progress snapshot](portfolio/progress.json) ·
@@ -49,7 +49,7 @@ with an idea, question or useful feedback. Small improvements are welcome.
 
 ## Looking for the old README?
 
-The [full terminal handbook and historical notes](TERMINAL-HANDBOOK.md) preserve
+The [archived README and historical notes](README-ARCHIVE.md) preserve
 the detailed setup, personal plan, weekly notes and integrations. Project and
 script paths are unchanged; this is a new front door over the existing archive.
 No dailylogin migration or one-time script is needed.

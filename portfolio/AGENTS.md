@@ -6,7 +6,7 @@ Keep current-project links driven by config.json; on the owner clone use
 the two documented personal settings; never execute/source or publish the file.
 Other contributors should use public config, not import their own local focus.
 
-README is concise; TERMINAL-HANDBOOK.md preserves the full previous README.
+README is concise; README-ARCHIVE.md preserves the full previous README.
 Maintain candid tips in docs/how-i-work.md and date personal model/tool choices.
 Do not move deep project directories or change dailylogin to redesign the site.
 No one-time migration script is needed. Reuse the LAN42 navy/mint styling and

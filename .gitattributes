@@ -1,3 +1,3 @@
 
 # Preserve the historical README verbatim, including its original whitespace.
-TERMINAL-HANDBOOK.md whitespace=-blank-at-eol
+README-ARCHIVE.md whitespace=-blank-at-eol
