@@ -255,16 +255,20 @@ alerts default to on; chat/DM/poke popups default to off. `/notify` lists channe
 `/notify dms on` enables DMs, and `/notify all off` silences even important alerts.
 Existing explicit popup denials and OS permissions are respected.
 The approved campus host also starts a 42 Singapore KoelDrop flock. Eligible
-verified campus users choose join once, always join or never show again. Each
-join uses a fresh service subfolder; old local copies survive shutdown and are
-never automatically deleted. See [the flock guide](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/file-sharing.md).
+verified campus users choose join once, always join or never show again. Same-day
+reconnects reuse one marked folder per trusted host/account (Singapore date); a
+new day gets a new folder. Campus setup offers [y/N] to link the default
+`~/KoelDrop` to personal sgoinfre storage, saving home quota. Existing paths are
+never replaced; local copies survive shutdown without automatic deletion. See [the flock guide](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/file-sharing.md).
 This polling uses LAN42 endpoints, not the 42 API;
 it never forces OAuth or plays a sound automatically. Missing trust is explained
 instead of silently waiting. The initial admin and API operator is hnah (numeric 42 ID 234449).
 Admins, API operators and trusted service machines have independent allowlists.
 Only API operators may explicitly cache/export/download Singapore-scoped data.
-Read-only Singapore scope is the owner's application-form promise; the upstream
-student credential may have broader permissions. Students never receive it.
+The application enables public-user-data access only; management scopes are
+disabled. Singapore-only use is the owner’s additional application-form promise,
+enforced by LAN42 rather than an upstream campus-specific credential scope.
+Students never receive the host credential.
 
 For hnah’s existing managed school host, LAN42 now migrates the legacy access
 policy automatically on its next start after updating. `dailylogin` opens the
@@ -383,3 +387,9 @@ cannot be reached or pagination/records are incomplete, expired cached data is
 not presented as verified: Linux `last` is the labelled fallback. The API's
 publication delay and a start-of-day Intra refresh schedule are **not verified**;
 the report distinguishes retrieval time from server-side freshness.
+
+## Contributors
+
+- [Darren (dthoo · GitHub: whatisthisbuffoonery)](https://crispynuggetd.github.io/42sg-campus-lan/alpha-tester.html) — LAN42 alpha testing. Thank you for helping the project reach beta.
+
+The GitHub link looks up the current profile by permanent account ID, with a last-known-profile fallback.
