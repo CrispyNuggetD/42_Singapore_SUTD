@@ -16,6 +16,13 @@ updated on each sync; existing standalone selections are preserved.
 **Forgot to push before leaving on Friday?** Back up saved work when you lock your
 screen, then retrieve it over the weekend. You still need to share it with teammates.
 
+## Optional login apps and desktop launchers
+
+Run `setupapps` to choose apps opened by `dailylogin` (empty/off by default),
+`loginapps` to view the list, and `desktopapp` to create a user-level launcher
+with optional dock pinning. Telegram, Slack, and arbitrary executable paths are
+supported. [Usage, sgoinfre storage tips, and script syncing](apps/README.md).
+
 ## Features and scope
 
 1. ✅ **Private WIP backups on lock** — after setup, snapshots tracked changes,

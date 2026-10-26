@@ -8,6 +8,10 @@ Want a dock icon that commits, pushes and locks your screen?
 [Go Break quick start](Shell%20automations/gobreak/README.md#quick-start)
 installs just that feature, with optional Codex commit bodies.
 
+Optional apps: `setupapps` chooses a personal list for `dailylogin` (off by
+default); `desktopapp` creates a launcher and offers dock pinning.
+[App setup and storage guide](Shell%20automations/apps/README.md).
+
 ## Terminal setup after cloning
 
 With Python 3 and zsh installed, open a **zsh** terminal and run these commands

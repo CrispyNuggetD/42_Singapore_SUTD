@@ -122,6 +122,11 @@ fi
 # The installer substitutes the actual clone location in this default line.
 export ZSHRC_SHARED_ROOT="${ZSHRC_SHARED_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
+# Personal app list is empty by default, stored outside the repository.
+setupapps() { command python3 "$ZSHRC_RUNTIME_ROOT/app_manager.py" configure "$@"; }
+loginapps() { command python3 "$ZSHRC_RUNTIME_ROOT/app_manager.py" "$@"; }
+desktopapp() { command python3 "$ZSHRC_RUNTIME_ROOT/app_manager.py" desktop "$@"; }
+
 setupzshrc() {
   command python3 "$ZSHRC_RUNTIME_ROOT/setup_zshrc.py" --settings "$ZSHRC_SETTINGS_FILE" || return $?
   source "${ZDOTDIR:-$HOME}/.zshrc"
@@ -1161,6 +1166,7 @@ _dailylogin_tasks() {
   _dailylogin_run 'Before-noon login report' loginreports loginbefore12 || true
   _dailylogin_run 'Weekly hours report' loginreports hourslogged || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
+  _dailylogin_run 'Extra login apps (personal opt-in list; setupapps)' - loginapps run || true
   _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
   # Finish in the project even when syncproj changes to the main repository.
   _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" openproject curproj || true

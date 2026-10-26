@@ -142,6 +142,8 @@ def configure(shared_root, settings_path):
     if values['loginitems'] == 'TRUE':
         ensure_login_items(values['LOGIN_ITEMS_SCRIPT'])
     print('Setup saved. Run source ~/.zshrc in other open terminals to load these settings.')
+    print('Optional apps: run setupapps to choose a personal dailylogin app list (empty/off by default).')
+    print('Run desktopapp to create a user-level launcher and optionally pin it to the dock.')
     return True
 
 
