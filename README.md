@@ -220,7 +220,11 @@ force-killing anything. Go Break and ordinary screen locks keep apps running.
 
 LAN42 separates guest/game hosting from its approved authentication/API service.
 Guests keep chat and games; API-backed views require verified 42 Singapore
-membership. The initial admin and API operator is hnah (numeric 42 ID 234449).
+membership. Singapore students can `/signin`, then `/clusters` or `/clusters 2`
+to see current API-reported logins and occupied campus seats—not just an empty
+floor plan. The approved host (currently hnah’s) shares a 30-second snapshot across
+its clients: ten simultaneous requests share one refresh, which may span multiple
+API pages. Redrawing the display does not fetch again. The initial admin and API operator is hnah (numeric 42 ID 234449).
 Admins, API operators and trusted service machines have independent allowlists.
 Only API operators may explicitly cache/export/download Singapore-scoped data.
 Read-only Singapore scope is the owner's application-form promise; the upstream
