@@ -54,6 +54,11 @@ def save(apps):
 
 def resolve(argv):
     command=os.path.expanduser(argv[0])
+    if sys.platform == 'darwin' and (command.endswith('.app') or (len(argv) == 1 and '/' not in command)):
+        # LaunchServices reuses running applications; each Mac chooses its own list.
+        found = subprocess.run(['/usr/bin/open', '-Ra', command], capture_output=True).returncode == 0
+        if found:
+            return ['/usr/bin/open', '-a', command, *argv[1:]]
     candidates=PRESETS.get(command.lower(),('',[command]))[1] if len(argv)==1 else [command]
     for candidate in candidates:
         executable=shutil.which(candidate)
@@ -65,17 +70,21 @@ def resolve(argv):
 
 
 def missing(name, interactive=True):
-    query='install '+name.lower()+' ubuntu'
+    query='install '+name.lower()+(' macOS' if sys.platform == 'darwin' else ' ubuntu')
     url='https://www.google.com/search?'+urllib.parse.urlencode({'q':query})
     print(name+' is not installed or its executable is not on PATH.')
     print('Install help: '+url)
-    print('Campus tip: HOME has about 5 GB. Keep large portable apps in your own sgoinfre folder,')
-    print('for example /sgoinfre/goinfre/Perso/'+__import__('getpass').getuser()+'/apps; then configure the executable path.')
+    if sys.platform != 'darwin':
+        print('Campus tip: HOME has about 5 GB. Keep large portable apps in your own sgoinfre folder,')
+        print('for example /sgoinfre/goinfre/Perso/'+__import__('getpass').getuser()+'/apps; then configure the executable path.')
     if interactive and sys.stdin.isatty() and input('Open this installation search in your browser? [y/N]: ').strip().lower() in ('y','yes'):
         webbrowser.open(url)
 
 
 def already_running(argv):
+    # LaunchServices handles Mac app reuse; /proc is Linux-only.
+    if sys.platform == 'darwin':
+        return False
     # Compare this user's process executable, not arbitrary matching command text.
     executable=Path(argv[0]).resolve()
     for entry in Path('/proc').iterdir():
@@ -113,9 +122,10 @@ def launch_apps():
 def app_from_command(command, name=None):
     # A real executable path containing spaces can be entered without shell quoting.
     path=Path(command).expanduser()
-    argv=[str(path)] if path.is_file() else shlex.split(command)
+    argv=[str(path)] if path.is_file() or (sys.platform == 'darwin' and path.is_dir() and path.suffix == '.app') else shlex.split(command)
     if not argv:raise ValueError('Enter an executable or command.')
-    label=name or PRESETS.get(argv[0].lower(),(Path(argv[0]).stem,))[0]
+    label=name or (argv[2] if len(argv) >= 3 and Path(argv[0]).name == 'open' and argv[1] == '-a'
+                   else PRESETS.get(argv[0].lower(),(Path(argv[0]).stem,))[0])
     return validate(dict(name=label,argv=argv))
 
 
@@ -123,7 +133,10 @@ def configure():
     apps=load()
     print('Extra login apps are OFF by default. Your list stays local, outside Git.')
     print('Commands: list, add, remove, clear, done. Examples: telegram, slack, /sgoinfre/.../Telegram')
-    print('Save large portable apps in your own sgoinfre folder; campus HOME has about 5 GB.')
+    if sys.platform == 'darwin':
+        print('On Mac, add an app name such as Music, or a command such as open -a Safari.')
+    else:
+        print('Save large portable apps in your own sgoinfre folder; campus HOME has about 5 GB.')
     while True:
         print('\nLogin apps: '+(', '.join(a['name'] for a in apps) or '(none)'))
         action=input('Action [done]: ').strip().lower() or 'done'

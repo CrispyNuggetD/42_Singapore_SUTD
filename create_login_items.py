@@ -20,11 +20,17 @@ TEMPLATE = """#!/usr/bin/env bash
 # Use real commands and quoted paths. cd here does not change your terminal's cwd.
 # Arguments from dli are available here as "$1", "$2", or "$@".
 # Commands run on every manual dli/lgi invocation, so keep them repeatable.
-# Nothing runs until you add uncommented commands. Examples:
+# Only the usage message below runs until you add your own commands. Examples:
 #   mkdir -p "$HOME/notes"
 #   cd "$HOME/Documents/my-project" || exit 1
 #   bash "$HOME/my-scripts/start-work.sh" "$@"
 # Add set -euo pipefail if you want errors to stop your script.
+# Remove this message when you add your own commands.
+printf '%s\\n' 'Your local startup / login items script is ready.' \
+  "Edit this file: ${BASH_SOURCE[0]}" \
+  'Add your own Bash commands here; this computer has its own script.' \
+  'dli runs it in the login-items tmux tab; lgi runs it directly.' \
+  'Use setupapps to choose this computer’s apps. Nothing else is configured here.'
 
 """
 

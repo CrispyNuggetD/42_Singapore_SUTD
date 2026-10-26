@@ -250,3 +250,38 @@ The commands are part of the public installer; Linux uses GNOME Terminal/xterm,
 and Mac uses Terminal/AppKit. Local startup paths and enabled tasks remain
 per-user choices. OS-level services unrelated to this terminal workspace keep
 running: this simulates the shell login workflow, without logging out the OS.
+
+### The same daily workflow on Mac
+
+Use the shared installer and your Mac's own `~/.42-shell-settings.zsh`.
+`dli` uses tmux on both platforms; the optional LAN42 workspace remains separate.
+The Mac's `~/.42-login-items.sh` starts with usage text and no personal commands.
+Existing scripts are preserved. Leave `LOGIN_ITEMS_TMUX_ROLE=login-items` on Mac;
+Linux-specific tester commands stay in the Linux owner's local script.
+
+The app list stays local in `~/.config/42-shell/apps.json` (or `XDG_CONFIG_HOME`).
+For example, `loginapps add 'open -a Music' 'open -a Safari'` opts into those Mac
+apps. `setupapps` also accepts an app name or `.app` path on Mac. LaunchServices
+reuses running apps. No Linux app list is copied during updates.
+
+Mac brightness uses an installed `brightness` command (0–1 scale), or set
+`MAC_BRIGHTNESS_FUNCTION` to a local shell function taking a percentage 0–100.
+The existing `adjustbrightness` and `setbrightness` preferences apply to both
+platforms. No brightness tool or permissions are installed automatically.
+
+On the Mac processor, enable `startmailbox=TRUE` and set `MAC_REMOTE_ROOT` to its
+source clone. The tmux mailbox tab displays the existing launchd service's local
+log by default. Closing the tab does not stop the listener. `MAC_MAILBOX_RUNTIME`
+can select a nondefault installed runtime. `MAC_MAILBOX_MODE=tmux` runs the
+installed processor in the foreground only when its worker lock is free; it
+never stops another worker or disables launchd. Switch supervision locally while
+idle if you explicitly prefer foreground mode. Identities and approvals are untouched.
+
+`leavesch` on Mac exports continued school chats into the private return handoff,
+backs up transcript JSONL files to the separate private repository, syncs work,
+requests normal app Quit, saves changes again, and closes terminals last. Save
+prompts or sync failures keep the tmux workspace open. It attempts the native Mac
+screen lock last. The Quit requests use AppKit; the fallback lock shortcut can
+require local macOS automation/accessibility permission. `LEAVESCH_KEEP_APPS`
+provides a local comma-separated exception list. Public updates do not replace
+these machine-specific preferences or copy credentials between computers.

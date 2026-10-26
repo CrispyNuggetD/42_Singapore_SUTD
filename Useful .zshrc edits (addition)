@@ -1,5 +1,5 @@
 # >>> 42 shared zshrc >>>
-# Shared shell helpers for the Linux 42 campus computer.
+# Shared shell helpers for the 42 campus computer and personal macOS workstations.
 # Edit "Useful .zshrc edits (addition)" in the shared repository, then run:
 #   synczshrc
 #   source ~/.zshrc
@@ -291,9 +291,31 @@ quithidden() {
 }
 
 # Save work and private chats before closing ALL tmux sessions (attached too).
-# Failures keep terminals open; ft_lock is always attempted last, even on failure.
+# Failures keep terminals open; the platform screen lock is attempted last, even on failure.
 # Remove the previous name when reloading this configuration in an existing shell.
 unfunction leaveschool 2>/dev/null || true
+_42_lock_screen() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    local locker='/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession'
+    if [[ -x "$locker" ]]; then
+      command "$locker" -suspend
+    else
+      command osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}'
+    fi
+  else
+    ft_lock
+  fi
+}
+
+_leavesch_backup() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    # Publish resumable school continuations as well as the private JSONL backup.
+    command python3 "$ZSHRC_RUNTIME_ROOT/codex_return.py" export \
+      --private "${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}" || return $?
+  fi
+  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+    command python3 "$ZSHRC_RUNTIME_ROOT/leaveschool.py" backup
+}
 _leavesch_quit_apps() {
   LEAVESCH_KEEP_APPS="${LEAVESCH_KEEP_APPS:-}" \
     closechromeonleave="${closechromeonleave:-TRUE}" \
@@ -307,8 +329,7 @@ leavesch() {
   {
     local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
     local failed=0
-    DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-      command python3 "$helper" backup || return 1
+    _leavesch_backup || return 1
     DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
       command python3 "$helper" push-all || failed=1
     # Cover a private clone configured outside the Documents scan as well.
@@ -335,8 +356,7 @@ leavesch() {
     if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
       # Editors may flush newly saved files while handling their normal Quit.
       print -- 'Saving final app changes before closing terminals.'
-      DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-        command python3 "$helper" backup || return 1
+      _leavesch_backup || return 1
       DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
         command python3 "$helper" push-all || return 1
       if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
@@ -356,7 +376,7 @@ leavesch() {
       _leavesch_quit_apps --schedule-terminals || return 1
     fi
   } always {
-    ft_lock
+    _42_lock_screen
   }
 }
 
@@ -382,7 +402,7 @@ gobreak() {
       _GOBREAK_LOCK_IN_SHELL=1 \
       command python3 "$ZSHRC_RUNTIME_ROOT/gobreak.py" --all-repos
   } always {
-    ft_lock
+    _42_lock_screen
   }
 }
 
@@ -933,6 +953,26 @@ adjust_brightness() {
     return 1
   fi
 
+  if [[ "$OSTYPE" == darwin* ]]; then
+    if [[ -n "${MAC_BRIGHTNESS_FUNCTION:-}" ]]; then
+      if (( $+functions[$MAC_BRIGHTNESS_FUNCTION] )) && [[ "$MAC_BRIGHTNESS_FUNCTION" != adjust_brightness ]]; then
+        "$MAC_BRIGHTNESS_FUNCTION" "$setbrightness"
+        return $?
+      fi
+      print -u2 -- 'MAC_BRIGHTNESS_FUNCTION must name your existing percentage-based Mac helper.'
+      return 1
+    fi
+    if command -v brightness >/dev/null 2>&1; then
+      local fraction
+      fraction=$(command python3 -c 'import sys; print(int(sys.argv[1]) / 100)' "$setbrightness") || return 1
+      command brightness "$fraction" || return $?
+      print -- "Brightness set to $setbrightness%"
+      return 0
+    fi
+    print -u2 -- 'Mac brightness needs your local helper (MAC_BRIGHTNESS_FUNCTION) or the brightness command.'
+    return 1
+  fi
+
   if command -v gdbus >/dev/null 2>&1 &&
      gdbus call --session \
        --dest org.gnome.SettingsDaemon.Power \
@@ -961,12 +1001,15 @@ start_mailbox() {
     return 0
   fi
 
-  if [ "$(uname -s)" != "Linux" ]; then
-    echo "Mac remote client startup is for the Linux campus computer."
-    return 0
-  fi
-
   local mailbox_root="${MAC_REMOTE_ROOT:-$HOME/mac-remote}"
+  if [[ "$OSTYPE" == darwin* ]]; then
+    local runtime="${MAC_MAILBOX_RUNTIME:-$HOME/Library/Application Support/mac-remote}"
+    [[ -d "$runtime" ]] || { print -u2 -- "Mac mailbox runtime missing: $runtime"; return 1; }
+    _daily_terminal open --cwd "$runtime" mailbox -- env \
+      MAC_MAILBOX_RUNTIME="$runtime" MAC_MAILBOX_MODE="${MAC_MAILBOX_MODE:-service}" \
+      python3 "$ZSHRC_RUNTIME_ROOT/mac_mailbox.py" --source "$mailbox_root"
+    return $?
+  fi
   if [ ! -f "$mailbox_root/device.sh" ]; then
     echo "Mailbox clone not found: $mailbox_root"
     echo "Set MAC_REMOTE_ROOT to your mac-remote clone in ~/.zshrc."
@@ -1331,7 +1374,13 @@ _dailylogin_tasks() {
   fi
   _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
   _dailylogin_run "Pull other repositories under $DOCUMENTS_REPOS_ROOT" pullotherrepos syncdocs || true
-  _dailylogin_run 'Import school-chat continuations returned from home' - importhome || true
+  if [[ "$OSTYPE" == darwin* ]]; then
+    if (( $+functions[schoolimport] )); then
+      _dailylogin_run 'Import school chats on this Mac' - schoolimport || true
+    fi
+  else
+    _dailylogin_run 'Import school-chat continuations returned from home' - importhome || true
+  fi
   _dailylogin_run 'LAN42 lobby window request' startlan42 start_lan42 || true
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
