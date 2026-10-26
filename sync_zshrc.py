@@ -14,7 +14,7 @@ import sys
 
 BEGIN = '# >>> 42 shared zshrc >>>'
 END = '# <<< 42 shared zshrc <<<'
-RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'app_manager.py', 'mac_mailbox.py', 'close_chrome.py', 'soft_quit_apps.py', 'relogin.py', 'workspace_restart.py', 'lan42_recommend.py', 'lan42-features.json',
+RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'app_manager.py', 'login_hours.py', 'mac_mailbox.py', 'close_chrome.py', 'soft_quit_apps.py', 'relogin.py', 'workspace_restart.py', 'lan42_recommend.py', 'lan42-features.json',
                  'git_side_push.py', 'lock_backup.py', 'lock_backup_watch.py', 'session_jobs.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'gobreak.py', 'install_gobreak.py', 'Useful .zshrc edits (addition)')
 
 
