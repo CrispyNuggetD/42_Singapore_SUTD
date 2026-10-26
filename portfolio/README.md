@@ -85,3 +85,13 @@ Keep the README and HTML complementary: README offers concise links and prose;
 HTML emphasizes current focus, selected work, honest source-labelled progress,
 then tools/tips and contact. Test desktop/mobile, JavaScript on/off, real links,
 expanded disclosure, deadline staleness and cursor opt-out. Preserve candid tips.
+
+
+## Hosted workflow runtime
+
+The portfolio workflow pins Ubuntu 24.04 and explicit action releases checked on
+27 October 2026. JavaScript actions use Node 24; that runtime belongs to GitHub’s
+action runner, not the portfolio’s browser JavaScript or the campus/Mac OS.
+Recheck official releases when updating actions. Keep Python 3.12 explicit and
+test an OS upgrade before changing the pinned runner. No insecure Node fallback
+or warning-suppression environment variable is used.
