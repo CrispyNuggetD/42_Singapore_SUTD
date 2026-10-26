@@ -34,15 +34,45 @@ For a tmux session that is already running, run `tmux set -g mouse on` once.
 Running `python3 setup_zshrc.py` alone only saves settings; it does not install
 the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 
+Install `tmux` as well to use the workspace (`sudo apt install tmux` on Ubuntu,
+`brew install tmux` on Mac). This is part of the public workflow for every user.
+
 When ready, run `dli` to start the tasks you enabled and then your own login script.
 `dailylogin` runs only the shared tasks; `lgi` runs only your personal script. See the
 [full shell setup guide](Study%20Notes/Codex/shell-setup.md) for more details.
+
+The workspace uses two desktop terminal windows when LAN42 is enabled:
+Work contains Codex, mailbox, **Current Project**, a retained **dailylogin** log,
+and your personal login script; LAN42 contains its HQ, games and tools in its own
+session. Enabled tasks determine which tabs appear. An already running managed
+tab is reused. `dli` attaches Work in the invoking terminal; existing shells cannot
+be moved into tmux, but their dailylogin output is saved locally for the log tab.
+Use `workterm` and `lanterm` to reconnect. `dailylogin` does not run your login script.
+
+Both terminals default to maximized, retaining the title bar and desktop controls.
+Set `DAILY_TMUX_MAXIMIZE=FALSE` in your personal settings to disable that, or use
+`setupzshrc`. GNOME Terminal and xterm are supported on Linux; macOS uses Terminal.
+Set `LAN42_TMUX_SESSION` to choose the separate LAN42 session name (default `lan42`).
+
+`cdcurproj` changes directory only; `curproj` also cleans and opens VS Code.
+To share a project choice between your own workstations, put only an assignment
+such as `export current_proj=3_Philosophers` in a file in your **private** repository.
+On each workstation set `ZSHRC_PORTABLE_SETTINGS_FILE` to that file's local path
+in `~/.42-shell-settings.zsh`. `refreshproject`, `cdcurproj`, `curproj`, and dailylogin
+reload it; enable repository pulls to receive committed changes on login.
+Each student's profile is optional and independent. Keep machine paths, SSH material,
+API credentials and authentication state local; never copy a whole shell profile
+or home configuration into the public repository.
 
 ### Your own final login step
 
 The `loginitems` flag defaults to `TRUE`. Setup creates `~/.42-login-items.sh`
 with instructions and commented examples, and no active commands. Add your own
-Bash commands there: `dli` runs them **last**, even if a shared daily task fails.
+Bash commands there: `dli` starts them **last** in a retained `login-items` tmux tab,
+even if a shared daily task fails. Set `LOGIN_ITEMS_TMUX_ROLE` in personal settings
+to give that tab another name. A `clear` in your script affects only its own pane.
+The pane retains script failures and output; `dli` reports launch status, while the
+script's eventual exit status appears in its pane.
 If the script is missing, the enabled step creates it before running it.
 Existing scripts are never overwritten by setup or updates. Each user gets their
 own file; no personal solver or project commands are shipped in this template.

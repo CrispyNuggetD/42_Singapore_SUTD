@@ -103,6 +103,9 @@ def configure(shared_root, settings_path):
     location('DOCUMENTS_REPOS_ROOT', 'Folder scanned for other repositories', home / 'Documents')
     field('DAILY_TMUX_SESSION', 'Tmux workspace name', 'daily',
           lambda v: re.fullmatch(r'[A-Za-z0-9_-]+', v))
+    field('LAN42_TMUX_SESSION', 'Separate LAN42 tmux workspace name', 'lan42',
+          lambda v: re.fullmatch(r'[A-Za-z0-9_-]+', v))
+    toggle('DAILY_TMUX_MAXIMIZE', 'Maximize both terminal windows to available desktop space (keeps desktop controls)', True)
     values['ZSHRC_RUNTIME_ROOT'] = os.environ.get('ZSHRC_RUNTIME_ROOT', str(home / '.local/share/42-shell'))
     values['DAILY_TMUX_HELPER'] = str(Path(values['ZSHRC_RUNTIME_ROOT']) / 'daily_terminal.py')
     if toggle('autoupdatezshrc', 'Automatically pull the shared clone and refresh installed helpers on dailylogin'):

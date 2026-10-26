@@ -122,6 +122,19 @@ fi
 # The installer substitutes the actual clone location in this default line.
 export ZSHRC_SHARED_ROOT="${ZSHRC_SHARED_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
+# Optional portable preferences live in the owner's private repository.
+# Only explicitly selected preferences go here; paths and credentials stay local.
+refreshproject() {
+  if [[ -n "${ZSHRC_PORTABLE_SETTINGS_FILE:-}" ]]; then
+    [[ -r "$ZSHRC_PORTABLE_SETTINGS_FILE" ]] || {
+      print -u2 -- "Portable project settings missing: $ZSHRC_PORTABLE_SETTINGS_FILE"
+      return 1
+    }
+    source "$ZSHRC_PORTABLE_SETTINGS_FILE" || return $?
+  fi
+}
+refreshproject
+
 # Personal app list is empty by default, stored outside the repository.
 setupapps() { command python3 "$ZSHRC_RUNTIME_ROOT/app_manager.py" configure "$@"; }
 loginapps() { command python3 "$ZSHRC_RUNTIME_ROOT/app_manager.py" "$@"; }
@@ -217,6 +230,9 @@ export CODEX_START_DIR="${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hna
 # Named terminal windows; safe to call helpers inside or outside tmux.
 export DAILY_TMUX_SESSION="${DAILY_TMUX_SESSION:-daily}"
 export DAILY_TMUX_HELPER="${DAILY_TMUX_HELPER:-$ZSHRC_RUNTIME_ROOT/daily_terminal.py}"
+# Maximize to available desktop space, retaining title bar and desktop controls.
+export DAILY_TMUX_MAXIMIZE="${DAILY_TMUX_MAXIMIZE:-TRUE}"
+export LAN42_TMUX_SESSION="${LAN42_TMUX_SESSION:-lan42}"
 _daily_terminal() { command python3 "$DAILY_TMUX_HELPER" "$@"; }
 workterm() {
   if [[ -n "$TMUX" ]]; then
@@ -228,6 +244,7 @@ workterm() {
   fi
 }
 workwindows() { _daily_terminal list; }
+lanterm() { DAILY_TMUX_SESSION="${LAN42_TMUX_SESSION:-lan42}" _daily_terminal show; }
 
 # Close detached tmux sessions and their terminal jobs; keep attached sessions.
 quithidden() {
@@ -412,8 +429,15 @@ unblockchrome() {
   print -r -- "Chrome locks cleared: $profile_dir"
 }
 
+# Change directory only: no editor, build cleanup or application launch.
+cdcurproj() {
+  refreshproject || return $?
+  cd -- "$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj"
+}
+
 # Enter the configured project folder, clean it, open VS Code, and report history.
 curproj() {
+  refreshproject || return $?
   local proj_dir="$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj"
 
   if [ ! -d "$proj_dir" ]; then
@@ -1120,7 +1144,7 @@ _privatebackup_check() {
 }
 
 # --- Short login commands: lg<Tab>, dl<Tab>, dai<Tab> ---
-# dli runs dailylogin, then your own Bash script as its final step.
+# dli runs dailylogin, then your own Bash script in a retained tmux tab.
 # Personal commands live in HOME, never in this shared repository.
 export loginitems="${loginitems:-TRUE}"
 export LOGIN_ITEMS_SCRIPT="${LOGIN_ITEMS_SCRIPT:-$HOME/.42-login-items.sh}"
@@ -1146,13 +1170,35 @@ dli() {
   # Personal commands still run if a daily task fails; retain failure status.
   # Arguments are passed only to your personal Bash script.
   local daily_result=0 items_result=0
+  local -x DAILY_TMUX_DEFER_SHOW=1 DAILY_TMUX_BATCH=1
   dailylogin || daily_result=$?
-  lgi "$@" || items_result=$?
+  if _dailylogin_enabled "$loginitems"; then
+    if _login_items_ensure; then
+      _daily_terminal open --cwd "$PWD" "${LOGIN_ITEMS_TMUX_ROLE:-login-items}" -- bash "$LOGIN_ITEMS_SCRIPT" "$@" || items_result=$?
+    else
+      items_result=$?
+    fi
+  fi
+  _daily_terminal show-all || return 1
   (( daily_result == 0 )) || return "$daily_result"
   return "$items_result"
 }
 
+# Capture output before attaching desktop terminals, preserving the caller's cwd.
 dailylogin() {
+  local log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell"
+  (umask 077; command mkdir -p -- "$log_dir"; command touch -- "$log_dir/dailylogin.log") || return 1
+  local log_file="$log_dir/dailylogin.log"
+  print -r -- "=== dailylogin $(date) ===" >> "$log_file"
+  _dailylogin_impl "$@" > >(command tee -a -- "$log_file") 2>&1
+  local result=$?
+  local -x DAILY_TMUX_BATCH=1
+  _daily_terminal open --cwd "$HOME" dailylogin -- tail -n 1000 -F "$log_file" || return 1
+  [[ "${DAILY_TMUX_DEFER_SHOW:-0}" == 1 ]] || _daily_terminal show-all || return 1
+  return "$result"
+}
+
+_dailylogin_impl() {
   if [[ "${ZSHRC_SETUP_DONE:-0}" != 1 ]]; then
     if [[ -o interactive && -t 0 ]]; then
       setupzshrc || return $?
@@ -1179,11 +1225,8 @@ dailylogin() {
   _dailylogin_settings
   local -x DAILY_TMUX_BATCH=1
   _dailylogin_tasks "$@"
-  _dailylogin_run 'Empty shell window' - _daily_terminal open --cwd "$PWD" zsh -- zsh -i || true
-  if ! _daily_terminal show; then
-    (( dailylogin_failed += 1 ))
-    _dailylogin_log FAILED 'Show tmux workspace (use workterm to reconnect)'
-  fi
+  _dailylogin_run 'Refresh portable project preference' - refreshproject || true
+  _dailylogin_run 'Current Project shell' - _daily_terminal open --cwd "$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj" current-project -- zsh -i || true
   _dailylogin_summary
   (( dailylogin_failed == 0 ))
 }
