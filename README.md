@@ -226,10 +226,13 @@ Only API operators may explicitly cache/export/download Singapore-scoped data.
 Read-only Singapore scope is the owner's application-form promise; the upstream
 student credential may have broader permissions. Students never receive it.
 
-After updating an existing credential-bearing LAN42 host, explicitly run
-`python3 -m campus_lan.access enroll-local` inside its clone before starting the
-trusted service. Missing approval fails closed. The shell installer does not
-approve a host, grant admins, copy credentials or install Tailscale. Offsite local
+For hnah’s existing managed school host, LAN42 now migrates the legacy access
+policy automatically on its next start after updating. `dailylogin` opens the
+launcher first; LAN42 initializes authentication after its Git update, so stale
+pre-update checks cannot block the upgrade. No one-time script or manual upgrade
+command is needed. Existing policies/revocations are preserved; new hosts still
+need explicit approval. The shell installer does not grant admins, copy
+credentials or install Tailscale. Offsite local
 owner API views require no public forwarding; KoelDrop retains its physical
 campus checks. See the [LAN42 access policy and migration instructions](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/access-policy.md).
 

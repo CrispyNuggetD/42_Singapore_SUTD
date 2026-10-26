@@ -91,3 +91,21 @@ _leavesch_backup || exit 3
 
 if __name__ == '__main__':
     unittest.main()
+
+class Lan42Startup(unittest.TestCase):
+    def test_dailylogin_opens_updating_launcher_without_preupdate_auth_module(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);clone=root/'lan42';(clone/'campus_lan').mkdir(parents=True)
+            (clone/'lan42.sh').write_text('#!/bin/sh\nexit 0\n')
+            (clone/'campus_lan/auth_daily.py').write_text("raise SystemExit('stale auth must not run before launcher update')\n")
+            script='''source "$1"
+_dailylogin_enabled() { return 0; }
+_daily_terminal() { print -r -- "OPEN:$*" >> "$EVIDENCE"; }
+LAN42_CLONE="$2"
+startlan42=1
+start_lan42
+'''
+            env=dict(os.environ,EVIDENCE=str(root/'evidence'),ZSHRC_SETTINGS_FILE=str(root/'none'),ZSHRC_PORTABLE_SETTINGS_FILE='')
+            result=subprocess.run(['zsh','-f','-c',script,'test',str(ROOT/'Useful .zshrc edits (addition)'),str(clone)],env=env,capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertIn('OPEN:open --cwd '+str(clone)+' lan42 -- sh '+str(clone/'lan42.sh'),(root/'evidence').read_text())
