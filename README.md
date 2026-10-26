@@ -260,7 +260,7 @@ campus checks. See the [LAN42 access policy and migration instructions](https://
 
 Both shell installer entry points recommend LAN42 when it is missing, including
 a suggested path and short feature list sourced from the marked section of
-[LAN42's README](https://github.com/CrispyNuggetD/42sg-campus-lan#lan42-in-your-daily-workspace).
+[LAN42's README](https://github.com/CrispyNuggetD/42sg-campus-lan#highlights).
 Online installs read the current list; offline installs identify their dated
 snapshot. See [the maintenance workflow](Shell%20automations/lan42-integration.md)
 for refreshing it. Existing LAN42 installs are detected and get tmux setup guidance.
