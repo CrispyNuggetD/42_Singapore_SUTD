@@ -4,6 +4,10 @@
 
 Hi, I’m **Christopher Nah** (**hnah** on Intra), a student at **42 Singapore**. Questions, ideas, or just saying hi? Find me on the **global 42 Slack**, or [here on GitHub](https://github.com/CrispyNuggetD).
 
+**AI-assisted, human-directed.** I use Codex and other AI tools as coding assistants and teachers. I’m learning through 42’s peer-led approach rather than a lecture-based degree programme, so I use AI to explore unfamiliar concepts and engineering practices, ask questions, and work through implementation details. Substantial parts of the code are AI-assisted; I guide the project and test its behaviour.
+
+I’m still building technical depth, and I don’t always know which questions to ask. AI explanations can be wrong, and passing tests does not prove correctness or security. I aim to check explanations against documentation, experiments and peer feedback. I remain responsible for what I publish, communicating limitations and fixing mistakes.
+
 Want a dock icon that commits, pushes and locks your screen?
 [Go Break quick start](Shell%20automations/gobreak/README.md#quick-start)
 installs just that feature, with optional Codex commit bodies.
