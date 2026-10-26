@@ -230,6 +230,10 @@ to see current API-reported logins and occupied campus seats—not just an empty
 floor plan. The approved host (currently hnah’s) shares a 30-second snapshot across
 its clients: ten simultaneous requests share one refresh, which may span multiple
 API pages. Redrawing the display does not fetch again.
+LAN42 web searches default to Ecosia; `/settings search` selects Google/custom
+engines or opts out of permanent aggregate impact counting. The host keeps a
+launch total and estimated unique-search sketch, with no query history or student
+identity records. Offline hosts do not block searches. [Search/privacy guide](https://github.com/CrispyNuggetD/42sg-campus-lan/blob/main/docs/web-search.md).
 The clickable LAN42 footer offers F2 sign in/out (HQ), F3 system mute, F4
 output 0/30%, F5 uwu once and F6 automatic uwu on/off. Sound consent remains
 separate; terminal users may need Fn with the function keys.
