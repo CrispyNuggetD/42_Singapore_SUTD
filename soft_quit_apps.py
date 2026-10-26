@@ -14,7 +14,8 @@ import time
 TERMINALS = {'gnome-terminal', 'gnome-terminal-server', 'org.gnome.terminal', 'xterm',
              'uxterm', 'konsole', 'kitty', 'alacritty', 'terminator', 'tilix',
              'xfce4-terminal', 'org.wezfurlong.wezterm', 'com.apple.terminal',
-             'com.googlecode.iterm2', 'com.mitchellh.ghostty'}
+             'com.googlecode.iterm2', 'com.mitchellh.ghostty', 'net.kovidgoyal.kitty',
+             'org.alacritty', 'com.github.wez.wezterm'}
 SYSTEM_APPS = {'com.apple.finder', 'com.apple.dock', 'com.apple.systemuiserver',
                'com.apple.loginwindow', 'gnome-shell', 'gjs', 'plasmashell',
                'com.rastersoft.ding', 'desktop_window'}

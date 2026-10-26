@@ -107,7 +107,7 @@
 # The launcher handles its own update policy when a new lobby process starts.
 # STAYON_ROOT points to the separately installed private Stayon runner.
 # CODEX_INSTALL_DIR and CODEX_START_DIR override the install/start directories.
-# Codex defaults to ~/Documents/42_Singapore_SUTD_hnah_private/42; codex --cd selects another project.
+# Codex defaults to your project repository; personal settings can select another directory.
 # codex_full_access updates global approval/sandbox defaults in CODEX_HOME/config.toml
 # (default directory: ~/.codex); start_codex also passes full-access launch flags.
 
@@ -225,7 +225,32 @@ export current_proj="${current_proj:-2_pipex}"
 # --- 42 paths ---
 export PROJECTS_ROOT="${PROJECTS_ROOT:-Core Curriculum/Projects}"
 export MAIN_REPO_ROOT="${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
-export CODEX_START_DIR="${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}"
+export CODEX_START_DIR="${CODEX_START_DIR:-$MAIN_REPO_ROOT}"
+
+# Public, per-user login reset and complete workspace restart.
+resetdailylogin() {
+  command python3 "$ZSHRC_RUNTIME_ROOT/relogin.py" reset "$@" || return $?
+  [[ " $* " == *" --check "* ]] && return 0
+  LOGIN_STARTUP_SKIP=1 source "${ZDOTDIR:-$HOME}/.zshrc"
+}
+relogin() { command python3 "$ZSHRC_RUNTIME_ROOT/relogin.py" restart "$@"; }
+
+# Other interactive shells reload at their next prompt after resetdailylogin.
+_42_shell_reload() {
+  local marker="$HOME/.cache/42-shell/reload-request" token=''
+  [[ ! -f "$marker" ]] || token="$(< "$marker")"
+  if [[ "$token" != "${_42_shell_reload_seen:-}" ]]; then
+    _42_shell_reload_seen="$token"
+    LOGIN_STARTUP_SKIP=1 source "${ZDOTDIR:-$HOME}/.zshrc"
+  fi
+}
+_42_shell_reload_seen=''
+[[ ! -f "$HOME/.cache/42-shell/reload-request" ]] || _42_shell_reload_seen="$(< "$HOME/.cache/42-shell/reload-request")"
+if [[ -o interactive ]]; then
+  autoload -Uz add-zsh-hook
+  add-zsh-hook -d precmd _42_shell_reload 2>/dev/null
+  add-zsh-hook precmd _42_shell_reload
+fi
 
 # Named terminal windows; safe to call helpers inside or outside tmux.
 export DAILY_TMUX_SESSION="${DAILY_TMUX_SESSION:-daily}"
@@ -1117,6 +1142,10 @@ _dailylogin_summary() {
 }
 
 _dailylogin_chrome() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    command open -a 'Google Chrome'
+    return $?
+  fi
   local profile_dir="${CHROME_USER_DATA_DIR:-${CHROME_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/google-chrome}"
   command -v google-chrome >/dev/null 2>&1 || {
     print -u2 -- 'google-chrome is not installed.'
@@ -1164,6 +1193,7 @@ privatebackupstatus() {
 }
 privatebackupnow() { command python3 "$ZSHRC_RUNTIME_ROOT/lock_backup.py" "$@"; }
 _privatebackup_check() {
+  [[ "$OSTYPE" != darwin* ]] || return 0
   _dailylogin_enabled "$privatebackup" || return 0
   if ! command python3 "$ZSHRC_RUNTIME_ROOT/setup_private_backup.py" --status; then
     print -- 'Private lock backup is not set up. Run setupprivatebackup to bind your own private GitHub repo.'
@@ -1196,6 +1226,10 @@ lgi() {
 }
 
 dli() {
+  if [[ "${ZSHRC_SETUP_DONE:-0}" == 1 && "${_DAILYLOGIN_REFRESHED:-0}" != 1 ]] && _dailylogin_enabled "$autoupdatezshrc"; then
+    _dailylogin_handoff dli "$@"
+    return $?
+  fi
   _privatebackup_check
   # Personal commands still run if a daily task fails; retain failure status.
   # Arguments are passed only to your personal Bash script.
@@ -1214,8 +1248,37 @@ dli() {
   return "$items_result"
 }
 
+# A dynamically scoped guard permits one update and one latest-entry dispatch.
+# Do not recurse through pull: the new workflow inherits the guard and runs once.
+_dailylogin_handoff() {
+  local entry="$1"
+  shift
+  local _DAILYLOGIN_REFRESHED=1
+  local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
+  local log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell"
+  (umask 077; command mkdir -p -- "$log_dir"; command touch -- "$log_dir/dailylogin.log") || return 1
+  {
+    print -r -- "=== dailylogin workflow update $(date) ==="
+    if ! _dailylogin_run 'Pull shared repository' - pullzshrc ||
+       ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
+       ! _dailylogin_run 'Load latest workflow' - _dailylogin_source; then
+      _dailylogin_log STOP 'Update failed; no login tasks were started.'
+      return 1
+    fi
+  } > >(command tee -a -- "$log_dir/dailylogin.log") 2>&1
+  "$entry" "$@"
+}
+
+_dailylogin_source() {
+  LOGIN_STARTUP_SKIP=1 source "${ZDOTDIR:-$HOME}/.zshrc"
+}
+
 # Capture output before attaching desktop terminals, preserving the caller's cwd.
 dailylogin() {
+  if [[ "${ZSHRC_SETUP_DONE:-0}" == 1 && "${_DAILYLOGIN_REFRESHED:-0}" != 1 ]] && _dailylogin_enabled "$autoupdatezshrc"; then
+    _dailylogin_handoff dailylogin "$@"
+    return $?
+  fi
   local log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell"
   (umask 077; command mkdir -p -- "$log_dir"; command touch -- "$log_dir/dailylogin.log") || return 1
   local log_file="$log_dir/dailylogin.log"
@@ -1239,15 +1302,7 @@ _dailylogin_impl() {
     return 1
   fi
   local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
-  if _dailylogin_enabled "$autoupdatezshrc"; then
-    if ! _dailylogin_run 'Pull shared repository' - pullzshrc ||
-       ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
-       ! _dailylogin_run 'Reload .zshrc' - source "${ZDOTDIR:-$HOME}/.zshrc"; then
-      _dailylogin_log STOP 'Remaining dailylogin tasks were not run because startup failed.'
-      _dailylogin_summary
-      return 1
-    fi
-  else
+  if ! _dailylogin_enabled "$autoupdatezshrc"; then
     _dailylogin_log SKIP "Pull/update/reload .zshrc (autoupdatezshrc=$autoupdatezshrc)"
     (( dailylogin_skipped += 3 ))
   fi
@@ -1259,6 +1314,14 @@ _dailylogin_impl() {
   _dailylogin_run 'Current Project shell' - _daily_terminal open --cwd "$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj" current-project -- zsh -i || true
   _dailylogin_summary
   (( dailylogin_failed == 0 ))
+}
+
+_dailylogin_campus_report() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    print -- 'Campus Linux login-hour report skipped on this Mac.'
+    return 0
+  fi
+  "$@"
 }
 
 _dailylogin_tasks() {
@@ -1273,8 +1336,8 @@ _dailylogin_tasks() {
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
   _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
-  _dailylogin_run 'Before-noon login report' loginreports loginbefore12 || true
-  _dailylogin_run 'Weekly hours report' loginreports hourslogged || true
+  _dailylogin_run 'Before-noon login report' loginreports _dailylogin_campus_report loginbefore12 || true
+  _dailylogin_run 'Weekly hours report' loginreports _dailylogin_campus_report hourslogged || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
   _dailylogin_run 'Extra login apps (personal opt-in list; setupapps)' - loginapps run || true
   _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
@@ -1333,14 +1396,14 @@ codex() {
       -C|--cd|-C?*|--cd=*) command codex "$@"; return $? ;;
     esac
   done
-  command codex --cd "${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}" "$@"
+  command codex --cd "${CODEX_START_DIR:-$MAIN_REPO_ROOT}" "$@"
 }
 
 start_codex() {
   _dailylogin_enabled "${startcodex:-0}" || return 0
   local install_dir="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
   local codex_bin installer
-  local start_dir="${CODEX_START_DIR:-$HOME/Documents/42_Singapore_SUTD_hnah_private/42}"
+  local start_dir="${CODEX_START_DIR:-$MAIN_REPO_ROOT}"
   [[ -d "$start_dir" ]] || { print -u2 -- "Codex directory missing: $start_dir"; return 1; }
   command -v tmux >/dev/null 2>&1 || { print -u2 -- 'tmux is required for Codex windows.'; return 1; }
 

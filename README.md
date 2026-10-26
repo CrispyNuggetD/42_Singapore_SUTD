@@ -224,3 +224,29 @@ a suggested path and short feature list sourced from the marked section of
 Online installs read the current list; offline installs identify their dated
 snapshot. See [the maintenance workflow](Shell%20automations/lan42-integration.md)
 for refreshing it. Existing LAN42 installs are detected and get tmux setup guidance.
+
+### Workflow updates and a full re-login
+
+With `autoupdatezshrc=TRUE`, `dailylogin` and `dli` first pull and install the
+shared code, then hand control to the freshly sourced entry function. The old
+entry returns without executing its task body. A per-invocation guard allows
+one pull/handoff only, so the new workflow runs once rather than recursively
+pulling. Pull/install/reload failures stop before any login tasks run. Personal
+settings and startup scripts stay outside the shared block.
+
+`resetdailylogin` clears the local startup marker and reloads shell settings;
+other interactive shells pick it up at their next prompt. `relogin` is a full
+terminal-workspace restart on Linux X11 and Mac: it stops old tmux panes/jobs
+and this user's managed local LAN42 node, closes terminal windows, clears the
+marker, and opens a fresh terminal to run `dli` and create fresh sessions.
+Unrelated desktop apps and shared/campus authentication servers are unaffected.
+
+If running work is detected (including inside tmux), it asks `y/N`. **y** agrees
+to ending that work and allows force-closing blocked terminal hosts; **n** or
+Enter cancels the restart. Idle workspaces skip the question. `relogin --check`
+previews without stopping or launching anything. Output is recorded in
+`~/.local/state/42-shell/relogin.log` (`XDG_STATE_HOME` overrides this).
+The commands are part of the public installer; Linux uses GNOME Terminal/xterm,
+and Mac uses Terminal/AppKit. Local startup paths and enabled tasks remain
+per-user choices. OS-level services unrelated to this terminal workspace keep
+running: this simulates the shell login workflow, without logging out the OS.

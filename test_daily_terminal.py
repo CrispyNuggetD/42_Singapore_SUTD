@@ -46,7 +46,7 @@ class Shell(unittest.TestCase):
             root = Path(tmp)
             (root/'Projects'/'new-project').mkdir(parents=True)
             (root/'portable.zsh').write_text('export current_proj=new-project\n')
-            (root/'personal.zsh').write_text('export current_proj=old-project\nexport ZSHRC_SETUP_DONE=1\n')
+            (root/'personal.zsh').write_text('export current_proj=old-project\nexport ZSHRC_SETUP_DONE=1\nexport autoupdatezshrc=FALSE\n')
             script = r'''
 export ZSHRC_SETTINGS_FILE="$1/personal.zsh"
 export ZSHRC_PORTABLE_SETTINGS_FILE="$1/portable.zsh"
