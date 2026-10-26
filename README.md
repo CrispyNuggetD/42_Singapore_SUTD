@@ -285,3 +285,43 @@ screen lock last. The Quit requests use AppKit; the fallback lock shortcut can
 require local macOS automation/accessibility permission. `LEAVESCH_KEEP_APPS`
 provides a local comma-separated exception list. Public updates do not replace
 these machine-specific preferences or copy credentials between computers.
+
+### API-backed campus login reports
+
+`hourslogged` and `loginbefore12` now prefer your own 42 API location records.
+Dailylogin uses these when `loginreports=TRUE`. The rolling window is the last
+seven calendar dates in the system timezone (`LOGIN_HOURS_TIMEZONE` can override
+it). `FORTYTWO_LOGIN` selects your campus login independently of your OS account;
+otherwise the login is taken from `MAIL`, then `USER`.
+
+A successful complete API response is labelled **(42 API Verified)** and shows
+when it was fetched. Completed API intervals drive totals, daily averages and
+the remaining time to the configured existing 50-hour target. Overlapping
+sessions are merged and overnight sessions are split at local midnight.
+Active API session start times are verified records, but their elapsed duration
+is provisional and excluded from the verified total. A target calculation does
+not confirm that Intra has granted an award, and future continuous-login times
+are estimates because days expire from the rolling window.
+
+When Linux `last` records differ, the report lists both per-day values and keeps
+the API figure for its official-data calculation. Local wtmp can contain stale
+open sessions or cover only one computer. A successful empty API response means
+zero recorded completed time; it is not silently replaced by local time.
+
+API access reuses this machine's existing protected LAN42 API-host configuration
+when available through `LAN42_CLONE`. Alternatively, an existing user-local
+`FORTYTWO_ACCESS_TOKEN` can authorize the documented HTTPS location endpoint.
+Keep authentication local; neither credentials nor tokens belong in shared shell
+settings, this repository, or the Mac mailbox. Friends without API access keep
+using explicitly labelled local fallback; no host credentials are distributed.
+Mac reports can use the API too, but Linux-format `last` comparison is unavailable
+there.
+
+A complete API snapshot is cached privately under `~/.cache/42-shell/` (or
+`XDG_CACHE_HOME`) for five minutes, so the two daily reports share one fetch.
+It contains only your interval timestamps and fetch metadata. Use
+`hourslogged --refresh` or `loginbefore12 --refresh` to fetch again. When the API
+cannot be reached or pagination/records are incomplete, expired cached data is
+not presented as verified: Linux `last` is the labelled fallback. The API's
+publication delay and a start-of-day Intra refresh schedule are **not verified**;
+the report distinguishes retrieval time from server-side freshness.

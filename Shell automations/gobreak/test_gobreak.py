@@ -265,13 +265,16 @@ class GoBreakTests(unittest.TestCase):
         shared=(SOURCE/'Useful .zshrc edits (addition)').read_text()
         python=self.bin/'python3'
         tmux=self.bin/'tmux';tmux.write_text('#!/bin/sh\nexit 0\n');tmux.chmod(0o755)
+        backup=shared[shared.index('_leavesch_backup() {'):shared.index('_leavesch_quit_apps() {')]
         for name,end in [('gobreak','# Pull private'),('leavesch','# Midday')]:
             body=shared[shared.index(name+'() {'):];body=body[:body.index(end)]
             for action in ('exit 0','exit 127','kill -TERM "$PPID"; exit 143'):
                 with self.subTest(name=name,action=action):
                     python.write_text('#!/bin/sh\n'+action+'\n');python.chmod(0o755)
-                    script='ft_lock() { print LOCK_ATTEMPTED; }\n'+body+'\n'+name
-                    env=dict(os.environ,ZSHRC_RUNTIME_ROOT='/missing-runtime',DOCUMENTS_REPOS_ROOT=str(self.docs))
+                    script=('export PATH="$TEST_BIN:$PATH"\n'
+                            '_42_lock_screen() { print LOCK_ATTEMPTED; }\n'
+                            '_dailylogin_enabled() { return 1; }\n'+backup+body+'\n'+name)
+                    env=dict(os.environ,ZSHRC_RUNTIME_ROOT='/missing-runtime',DOCUMENTS_REPOS_ROOT=str(self.docs),TEST_BIN=str(self.bin))
                     result=subprocess.run(['zsh','-f','-c',script],env=env,capture_output=True,text=True,timeout=5)
                     self.assertEqual(result.stdout.count('LOCK_ATTEMPTED'),1,result.stdout+result.stderr)
 

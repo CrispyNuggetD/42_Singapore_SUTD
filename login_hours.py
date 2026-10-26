@@ -44,8 +44,11 @@ def report_zone():
     if name:
         return ZoneInfo(name.lstrip(':'))
     try:
+        resolved = str(Path('/etc/localtime').resolve())
+        if '/zoneinfo/' in resolved:
+            return ZoneInfo(resolved.split('/zoneinfo/', 1)[1])
         with Path('/etc/localtime').open('rb') as source:
-            return ZoneInfo.from_file(source)
+            return ZoneInfo.from_file(source, key='system local time')
     except OSError:
         return UTC
 
@@ -175,6 +178,7 @@ def snapshot(login, start, now, max_age=300):
         # Avoid displaying URLs, tokens or private configuration in exception text.
         raise Unavailable('API unavailable or incomplete; old cached data is not used as verified') from None
     data = {'login': login, 'start': start.isoformat(), 'fetched_at': now.isoformat(), 'records': records}
+    temporary = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         with tempfile.NamedTemporaryFile('w', dir=path.parent, delete=False) as output:
@@ -183,6 +187,9 @@ def snapshot(login, start, now, max_age=300):
         temporary.replace(path)
     except OSError:
         pass  # A successful live fetch can still be reported without a cache.
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     return data
 
 
@@ -253,10 +260,14 @@ def render(report, login, now, zone, data, local, reason='', target=50):
         if active:
             extra = sum(totals(closed + active, days, zone, now).values()) - sum(values.values())
             print('Active API session elapsed estimate: ' + duration(extra) + ' (provisional; excluded from verified total).')
+            if report == 'hours':
+                provisional = sum(values.values()) + extra
+                print('Provisional total including active API sessions: ' + duration(provisional))
+                print('Provisional remaining to target: ' + duration(max(0, target * 3600 - provisional)))
         intervals = closed + [(a, a) for a, _ in active]
     elif local_values is not None:
         print(f'{login}: local last fallback (not API verified) — {reason}')
-        print('Local records cover this computer only; overlapping terminal sessions are counted once.')
+        print('Local records cover this computer only and may contain stale open sessions; overlaps are counted once.')
         values, intervals = local_values, local
     else:
         print('Login report unavailable: API and local last data could not be read.')
@@ -298,7 +309,11 @@ def main():
     login = os.environ.get('FORTYTWO_LOGIN') or os.environ.get('MAIL', '').split('@')[0] or os.environ.get('USER', '')
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,32}', login):
         parser.error('Set FORTYTWO_LOGIN to your campus login')
-    now, zone = datetime.now(UTC), report_zone()
+    now = datetime.now(UTC)
+    try:
+        zone = report_zone()
+    except (ValueError, KeyError, OSError):
+        parser.error('Set LOGIN_HOURS_TIMEZONE to a valid IANA timezone, for example Asia/Singapore')
     _, start = bounds(now, zone)
     data, reason = None, ''
     try:
