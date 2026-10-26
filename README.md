@@ -230,6 +230,9 @@ to see current API-reported logins and occupied campus seats—not just an empty
 floor plan. The approved host (currently hnah’s) shares a 30-second snapshot across
 its clients: ten simultaneous requests share one refresh, which may span multiple
 API pages. Redrawing the display does not fetch again.
+The clickable LAN42 footer offers F2 sign in/out (HQ), F3 system mute, F4
+output 0/30%, F5 uwu once and F6 automatic uwu on/off. Sound consent remains
+separate; terminal users may need Fn with the function keys.
 On-campus guest HQs now explain availability at startup. With the owner-approved
 public trust installed, waiting clients check the pinned host every 120 seconds
 by default and show its return, with one desktop arrival alert per computer when
