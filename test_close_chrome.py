@@ -1,5 +1,8 @@
 """Shutdown tests use fake processes and never close a real browser."""
 import signal
+import os
+import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 import unittest
@@ -36,6 +39,34 @@ class CloseChrome(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'not force-killed'):
                 chrome.close()
             kill.assert_called_once_with(11, signal.SIGHUP)
+
+    @unittest.skipUnless(shutil.which('zsh'), 'zsh unavailable')
+    def test_leavesch_keeps_tmux_on_chrome_timeout_and_still_locks(self):
+        for failure in ('0', '1'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                python = root/'python3'
+                python.write_text('#!/bin/sh\necho "python:$*" >> "$EVIDENCE"\ncase "$1" in */close_chrome.py) exit "$CHROME_FAILURE";; esac\n')
+                python.chmod(0o700)
+                tmux = root/'tmux'
+                tmux.write_text('#!/bin/sh\necho "tmux:$*" >> "$EVIDENCE"\n')
+                tmux.chmod(0o700)
+                env = dict(os.environ, EVIDENCE=str(root/'events'), CHROME_FAILURE=failure,
+                           ZSHRC_SETTINGS_FILE=str(root/'missing'), ZSHRC_PORTABLE_SETTINGS_FILE='',
+                           ZSHRC_RUNTIME_ROOT=tmp, DOCUMENTS_REPOS_ROOT=tmp, CODEX_PRIVATE_REPO_ROOT=tmp)
+                script = r'''source "$1"
+export PATH="$2:$PATH"
+ft_lock() { print LOCK >> "$EVIDENCE"; }
+leavesch
+'''
+                result = subprocess.run(['zsh', '-f', '-c', script, 'test',
+                                         str(Path(__file__).with_name('Useful .zshrc edits (addition)')), tmp],
+                                        env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, int(failure), result.stderr)
+                events = (root/'events').read_text()
+                self.assertIn('close_chrome.py', events)
+                self.assertEqual('tmux:kill-server' in events, failure == '0')
+                self.assertTrue(events.rstrip().endswith('LOCK'))
 
     def test_mac_uses_guarded_quit_and_waits(self):
         with patch.object(chrome.sys, 'platform', 'darwin'), patch.object(chrome.subprocess, 'run') as run:
