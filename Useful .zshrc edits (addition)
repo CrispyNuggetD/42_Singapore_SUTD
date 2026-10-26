@@ -254,6 +254,9 @@ quithidden() {
 unfunction leaveschool 2>/dev/null || true
 leavesch() {
   setopt localoptions localtraps
+  trap 'return 130' INT
+  trap 'return 143' TERM
+  trap 'return 129' HUP
   {
     local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
     local failed=0
@@ -295,11 +298,20 @@ GOBREAK_REPOS_ROOT="${GOBREAK_REPOS_ROOT-${DOCUMENTS_REPOS_ROOT:-$HOME/Documents
 GOBREAK_INCLUDE_REPOS="${GOBREAK_INCLUDE_REPOS:-}"
 GOBREAK_EXCLUDE_REPOS="${GOBREAK_EXCLUDE_REPOS:-}"
 gobreak() {
-  GOBREAK_REPOS_ROOT="$GOBREAK_REPOS_ROOT" \
-    GOBREAK_INCLUDE_REPOS="$GOBREAK_INCLUDE_REPOS" \
-    GOBREAK_EXCLUDE_REPOS="$GOBREAK_EXCLUDE_REPOS" \
-  DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-    command python3 "$ZSHRC_RUNTIME_ROOT/gobreak.py" --all-repos
+  setopt localoptions localtraps
+  trap 'return 130' INT
+  trap 'return 143' TERM
+  trap 'return 129' HUP
+  {
+    GOBREAK_REPOS_ROOT="$GOBREAK_REPOS_ROOT" \
+      GOBREAK_INCLUDE_REPOS="$GOBREAK_INCLUDE_REPOS" \
+      GOBREAK_EXCLUDE_REPOS="$GOBREAK_EXCLUDE_REPOS" \
+      DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+      _GOBREAK_LOCK_IN_SHELL=1 \
+      command python3 "$ZSHRC_RUNTIME_ROOT/gobreak.py" --all-repos
+  } always {
+    ft_lock
+  }
 }
 
 # Pull private Mac returns, then register separate resumable Ubuntu chat copies.

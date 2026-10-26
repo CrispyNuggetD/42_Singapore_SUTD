@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import signal
+import shlex
 import sys
 import tempfile
 import unittest
@@ -88,7 +90,7 @@ class GoBreakTests(unittest.TestCase):
         git(repo, 'push', '-u', 'origin', 'HEAD')
         (repo / 'work').write_text('changed\n')
         gobreak.checkpoint(repo)
-        self.assertTrue(git(repo, 'log', '-1', '--format=%s').startswith('WIP: break checkpoint '))
+        self.assertTrue(git(repo, 'log', '-1', '--format=%s').startswith('WIP: checkpoint '))
         self.assertEqual(git(repo, 'log', '-1', '--format=%b'), '')
         self.assertEqual(git(repo, 'rev-parse', 'HEAD'), git(repo, 'rev-parse', '@{upstream}'))
         with patch.object(gobreak, 'wip_body', return_value='Pending implementation changes.'):
@@ -207,6 +209,107 @@ class GoBreakTests(unittest.TestCase):
             self.assertEqual(leaveschool.wip_body(self.docs), '')
         self.assertIn('Codex CLI not found', output.getvalue())
         self.assertIn('--no-codex', output.getvalue())
+
+    def test_eod_uses_the_same_checkpoint_and_summary_policy(self):
+        repo = self.repo('main')
+        os.environ['MAIN_REPO_ROOT'] = str(repo)
+        with patch.object(gobreak, 'checkpoint') as checkpoint:
+            leaveschool.push(repo)
+            checkpoint.assert_called_once_with(repo, project_scope=True, codex_context=True, kind='EOD')
+        private = self.repo('private')
+        with patch.object(gobreak, 'checkpoint') as checkpoint:
+            leaveschool.push(private)
+            checkpoint.assert_called_once_with(private, project_scope=False, codex_context=False, kind='EOD')
+
+    def test_wip_and_eod_have_timestamped_project_and_side_summaries(self):
+        repo = self.repo('main')
+        code = repo / 'Core Curriculum/Projects/example/code.c'
+        code.parent.mkdir(parents=True);code.write_text('initial code')
+        git(repo, 'add', '.');git(repo, 'commit', '-m', 'Initial project')
+        remote = self.root / 'remote.git'
+        subprocess.run(['git', 'init', '--bare', str(remote)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        git(repo, 'remote', 'add', 'origin', str(remote));git(repo, 'push', '-u', 'origin', 'HEAD')
+        for kind in ('WIP', 'EOD'):
+            code.write_text(kind+' code');(repo / 'work').write_text(kind+' side')
+            def body(selected_repo, paths=None):
+                self.assertEqual(Path(selected_repo),repo)
+                if paths is not None:self.assertEqual(paths,['work'])
+                return 'Side summary.' if paths is not None else 'Project summary.'
+            with patch.object(gobreak, 'wip_body', side_effect=body):
+                gobreak.checkpoint(repo, project_scope=True, kind=kind)
+            self.assertRegex(git(repo, 'log', '-1', '--format=%s'), '^'+kind+r': checkpoint \d{4}-\d{2}-\d{2}T')
+            self.assertEqual(git(repo, 'log', '-1', '--format=%b'),'Project summary.')
+            self.assertEqual(git(repo, 'log', '-1', '--format=%b', 'HEAD~1'),'Side summary.')
+            self.assertIn('(debug/non-project)',git(repo, 'log', '-1', '--format=%s', 'HEAD~1'))
+            self.assertEqual(git(repo, 'rev-parse', 'HEAD'),git(repo, 'rev-parse', '@{upstream}'))
+
+    def test_eod_body_respects_saved_no_codex_without_lookup(self):
+        saved=self.root/'data/42-gobreak/installation.json';saved.parent.mkdir(parents=True)
+        saved.write_text('{"codex_context":false}')
+        os.environ['GOBREAK_CODEX_CONTEXT']='TRUE'
+        with patch.object(leaveschool.shutil,'which') as lookup:
+            self.assertEqual(leaveschool.wip_body(self.docs),'')
+            lookup.assert_not_called()
+
+    def test_standalone_lock_on_parse_unexpected_error_and_signals(self):
+        scenarios=[(['gobreak.py'],None,SystemExit),
+                   (['gobreak.py','--all-repos'],RuntimeError('unexpected'),RuntimeError),
+                   (['gobreak.py','--all-repos'],lambda *_:os.kill(os.getpid(),signal.SIGTERM),SystemExit),
+                   (['gobreak.py','--all-repos'],KeyboardInterrupt(),KeyboardInterrupt)]
+        for argv,failure,error in scenarios:
+            with self.subTest(argv=argv,error=error),patch.object(sys,'argv',argv),patch.object(gobreak,'select_repositories',side_effect=failure),patch.object(gobreak.subprocess,'run') as lock:
+                with self.assertRaises(error):gobreak.main()
+                lock.assert_called_once_with(['ft_lock'],check=True)
+
+    def test_shell_wrappers_lock_even_if_python_fails_or_is_interrupted(self):
+        shared=(SOURCE/'Useful .zshrc edits (addition)').read_text()
+        python=self.bin/'python3'
+        tmux=self.bin/'tmux';tmux.write_text('#!/bin/sh\nexit 0\n');tmux.chmod(0o755)
+        for name,end in [('gobreak','# Pull private'),('leavesch','# Midday')]:
+            body=shared[shared.index(name+'() {'):];body=body[:body.index(end)]
+            for action in ('exit 0','exit 127','kill -TERM "$PPID"; exit 143'):
+                with self.subTest(name=name,action=action):
+                    python.write_text('#!/bin/sh\n'+action+'\n');python.chmod(0o755)
+                    script='ft_lock() { print LOCK_ATTEMPTED; }\n'+body+'\n'+name
+                    env=dict(os.environ,ZSHRC_RUNTIME_ROOT='/missing-runtime',DOCUMENTS_REPOS_ROOT=str(self.docs))
+                    result=subprocess.run(['zsh','-f','-c',script],env=env,capture_output=True,text=True,timeout=5)
+                    self.assertEqual(result.stdout.count('LOCK_ATTEMPTED'),1,result.stdout+result.stderr)
+
+    def test_desktop_launcher_locks_once_when_python_cannot_start_or_terminates(self):
+        repo=self.repo('launcher repo')
+        marker=self.root/'lock-attempts'
+        (self.bin/'ft_lock').write_text('#!/bin/sh\nprintf "lock\\n" >> '+shlex.quote(str(marker))+'\n')
+        python=self.bin/'python3';python.write_text('#!/bin/sh\nexit 127\n');python.chmod(0o755)
+        with contextlib.redirect_stdout(io.StringIO()):
+            install_gobreak.install(SOURCE,repo=repo,pin=False,codex_context=False)
+        launcher=next((self.root/'data/42-gobreak').glob('launch-*'))
+        for action in ('exit 127','kill -TERM "$PPID"; exit 143','exit 0'):
+            with self.subTest(action=action):
+                python.write_text('#!/bin/sh\n'+action+'\n')
+                marker.unlink(missing_ok=True)
+                env=dict(os.environ,XDG_RUNTIME_DIR=str(self.root))
+                result=subprocess.run([str(launcher)],input='\n',env=env,text=True,capture_output=True,timeout=5)
+                self.assertEqual(marker.read_text(),'lock\n',result.stdout+result.stderr)
+
+    def test_summary_diff_is_scoped_literally_to_side_commit_paths(self):
+        repo=self.repo('scoped')
+        for name,contents in [('side[1].txt','SCOPED_SUMMARY_ONLY'),('side1.txt','UNRELATED_SIDE'),('project.c','UNRELATED_PROJECT')]:
+            (repo/name).write_text(contents)
+        git(repo,'add','.')
+        original_run=subprocess.run
+        prompts=[]
+        def fake_codex(command,*args,**kwargs):
+            if command[0]=='/fake/codex':
+                if 'exec' in command:
+                    prompts.append(kwargs['input'])
+                    Path(command[command.index('--output-last-message')+1]).write_text('Scoped changes.')
+                return subprocess.CompletedProcess(command,0)
+            return original_run(command,*args,**kwargs)
+        os.environ['GOBREAK_CODEX_CONTEXT']='TRUE'
+        with patch.object(leaveschool.shutil,'which',return_value='/fake/codex'),patch.object(leaveschool.subprocess,'run',side_effect=fake_codex):
+            self.assertEqual(leaveschool.wip_body(repo,paths=['side[1].txt']),'Scoped changes.')
+        self.assertIn('SCOPED_SUMMARY_ONLY',prompts[0])
+        self.assertNotIn('UNRELATED_SIDE',prompts[0]);self.assertNotIn('UNRELATED_PROJECT',prompts[0])
 
 
 if __name__ == '__main__':

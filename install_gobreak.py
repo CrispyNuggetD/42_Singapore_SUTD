@@ -138,10 +138,21 @@ def install(source, repo=None, shared_runtime=None, check=False, automatic=False
                    'gobreak-shell', str(runtime / 'gobreak.py'), str(config_path)]
     launcher.write_text(
         '#!/bin/bash\n'
+        'lock_attempted=0\n'
+        'lock_screen() {\n'
+        '  if [ "$lock_attempted" -eq 0 ]; then\n'
+        '    lock_attempted=1\n'
+        '    ft_lock || { echo "Screen lock failed; lock manually." >&2; return 1; }\n'
+        '  fi\n}\n'
+        'trap lock_screen EXIT\n'
+        "trap 'exit 130' INT\n"
+        "trap 'exit 143' TERM\n"
+        "trap 'exit 129' HUP\n"
         'exec 9>"${XDG_RUNTIME_DIR:-/tmp}/42-gobreak-${UID}.lock"\n'
         'flock -n 9 || { echo "A Go Break checkpoint is already running."; exit 0; }\n'
-        + shlex.join(command) + '\n'
+        + '_GOBREAK_LOCK_IN_SHELL=1 ' + shlex.join(command) + '\n'
         'result=$?\n'
+        'lock_screen || result=1\n'
         'if [ "$result" -ne 0 ]; then\n'
         '  read -r -p "Review the error after unlocking. Press Enter to close. " _\n'
         'fi\nexit "$result"\n')

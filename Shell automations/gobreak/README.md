@@ -114,8 +114,13 @@ inside nested repos are not captured. Credential-like filenames stop the save
 for local review. Locking is attempted even if Git fails; errors stay in the
 terminal for review after unlocking. Concurrent clicks run only one checkpoint.
 
-The title stays `WIP: break checkpoint <timestamp>`. With a logged-in Codex CLI,
-Codex receives the staged diff to write a short commit body. Without Codex, or
+The title is `WIP: checkpoint <timestamp>`, including the local timezone.
+The full-shell `leavesch` workflow uses `EOD: checkpoint <timestamp>` with the
+same commit and summary implementation. Separate debug/non-project commits use
+the same title plus `(debug/non-project)`. With a logged-in Codex CLI,
+Codex receives only the staged diff for the paths in that commit to write a
+short commit body. Full-shell summaries cover the main school repo, including
+its side commits; private chat backups are never sent as summary context. Without Codex, or
 if it fails or times out, the commit uses the existing fallback title only.
 The installer prints this behavior. Codex is optional; it is never installed or
 configured. Set `GOBREAK_CODEX_CONTEXT=FALSE` in the desktop session environment
@@ -209,3 +214,16 @@ the standalone helpers and icon automatically. Its saved selections and opt-outs
 were deleted above, so that reinstall uses the full-shell scope and default
 pinning/Codex preferences. See the [full shell guide](../README.md) if you want
 to remove the main shell setup as well.
+
+## Locking on errors and interruption
+
+Both `gobreak` and `leavesch` always attempt `ft_lock` on success, save/push
+errors, cancellation, and catchable INT/TERM/HUP signals. Shell/desktop wrappers
+also cover a missing Python executable, missing runtime, or interpreter startup
+failure. Standalone Python invocations use a `finally` guard, including argument
+and configuration errors. Each entry point owns one lock attempt, avoiding a
+second lock after you unlock. Desktop errors are shown after the lock attempt.
+
+A failed EOD save keeps tmux open. Successful `leavesch` still closes tmux;
+`gobreak` keeps it running. SIGKILL, power loss, or a missing/broken `ft_lock`
+cannot be made into a guaranteed successful lock by a script.

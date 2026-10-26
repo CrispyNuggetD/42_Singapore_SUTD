@@ -183,3 +183,13 @@ path of that file; `copypwd folder/` works for folders too. Tab completes files
 and directories, including names containing spaces. For example, type
 `copypwd fo`, press Tab to complete `foo.txt`, then Enter to copy its path.
 Missing paths report an error and leave the clipboard alone.
+
+### Break versus end of day
+
+`gobreak` and `leavesch` share timestamped checkpoint messages and optional Codex
+summary bodies: `WIP: checkpoint …` versus `EOD: checkpoint …`. Saved
+`--no-codex`/`GOBREAK_CODEX_CONTEXT=FALSE` preferences apply to both. Full-shell
+main-repo side commits are summarized separately from project commits; private
+chat exports never enter the summary prompt. Both attempt `ft_lock` even if a
+save fails, Python cannot start, or the command is interrupted. `gobreak` keeps
+tmux running; `leavesch` closes it only after successful saving and pushing.

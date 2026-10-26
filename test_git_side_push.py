@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 import git_side_push
 import leaveschool
+import gobreak
 
 
 def git(repo, *args):
@@ -17,6 +18,8 @@ def git(repo, *args):
 class SidePushTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
+        self.environment = patch.dict('os.environ', {'GOBREAK_CODEX_CONTEXT': 'FALSE'})
+        self.environment.start(); self.addCleanup(self.environment.stop)
         self.repo = Path(self.tmp.name) / 'school'; self.repo.mkdir()
         git(self.repo, 'init'); git(self.repo, 'config', 'user.name', 'Test'); git(self.repo, 'config', 'user.email', 'test@example.com')
         self.project = self.repo / 'Core Curriculum/Projects/current'; self.project.mkdir(parents=True)
@@ -60,7 +63,7 @@ class SidePushTests(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 leaveschool.push(self.repo)
         self.assertEqual(git(self.repo, 'show', 'HEAD:Core Curriculum/Projects/current/main.c'), b'original')
-        self.assertEqual(git(self.repo, 'log', '-1', '--format=%s').decode().strip(), 'Update debug output and non-project files')
+        self.assertRegex(git(self.repo, 'log', '-1', '--format=%s').decode().strip(), r'^EOD: checkpoint .* \(debug/non-project\)$')
 
     def test_leaveschool_makes_side_commit_then_project_commit(self):
         (self.project / 'main.c').write_text('project')
@@ -85,19 +88,21 @@ class SidePushTests(unittest.TestCase):
     def test_break_wip_context_runs_after_side_commit(self):
         (self.project / 'main.c').write_text('unfinished project')
         (self.repo / 'README.md').write_text('midday notes')
-        def context(repo):
-            self.assertEqual(git(repo, 'log', '-1', '--format=%s').decode().strip(),
-                             'Update debug output and non-project files')
+        def context(repo, paths=None):
+            if paths is not None:
+                self.assertEqual(paths, ['README.md'])
+                return 'Update midday notes.'
+            self.assertIn('(debug/non-project)', git(repo, 'log', '-1', '--format=%s').decode().strip())
             self.assertEqual(git(repo, 'diff', '--cached', '--name-only').decode().strip(),
                              'Core Curriculum/Projects/current/main.c')
             return 'Project implementation remains in progress.'
         with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
-                patch('leaveschool.wip_body', side_effect=context) as summarizer, \
+                patch('gobreak.wip_body', side_effect=context) as summarizer, \
                 contextlib.redirect_stdout(io.StringIO()):
             leaveschool.push(self.repo, wip=True)
-        summarizer.assert_called_once()
+        self.assertEqual(summarizer.call_count, 2)
         message = git(self.repo, 'log', '-1', '--format=%B').decode()
-        self.assertTrue(message.startswith('WIP: break checkpoint '))
+        self.assertTrue(message.startswith('WIP: checkpoint '))
         self.assertIn('Project implementation remains in progress.', message)
         self.assertEqual(git(self.repo, 'rev-parse', 'HEAD'), git(self.remote, 'rev-parse', 'HEAD'))
 
@@ -112,13 +117,16 @@ class SidePushTests(unittest.TestCase):
             (self.repo / 'README.md').write_text('late nonproject update')
             git(self.repo, 'add', '.')
             return result
-        def context(repo):
+        def context(repo, paths=None):
+            if paths is not None:
+                self.assertEqual(paths, [git_side_push.DEBUG_PATH + '/result.txt'])
+                return 'Save side snapshot.'
             self.assertEqual(git(repo, 'diff', '--cached', '--name-only').decode().strip(),
                              'Core Curriculum/Projects/current/main.c')
             return 'Update project implementation.'
         with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
-                patch('git_side_push.side_push', side_effect=side_then_writer), \
-                patch('leaveschool.wip_body', side_effect=context), \
+                patch('gobreak.side_push', side_effect=side_then_writer), \
+                patch('gobreak.wip_body', side_effect=context), \
                 contextlib.redirect_stdout(io.StringIO()):
             leaveschool.push(self.repo, wip=True)
         self.assertEqual(git(self.repo, 'show', '--format=', '--name-only', 'HEAD').decode().strip(),
@@ -135,8 +143,8 @@ class SidePushTests(unittest.TestCase):
             return result
         before = git(self.repo, 'rev-parse', 'HEAD')
         with patch.dict('os.environ', {'MAIN_REPO_ROOT': str(self.repo)}), \
-                patch('git_side_push.side_push', side_effect=side_then_writer), \
-                patch('leaveschool.wip_body') as context, \
+                patch('gobreak.side_push', side_effect=side_then_writer), \
+                patch('gobreak.wip_body') as context, \
                 contextlib.redirect_stdout(io.StringIO()):
             leaveschool.push(self.repo, wip=True)
         context.assert_not_called()

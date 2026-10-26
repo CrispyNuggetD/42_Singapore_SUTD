@@ -56,7 +56,7 @@ def stage_project(repo, project_root='Core Curriculum/Projects'):
     return project
 
 
-def side_push(repo, project_root='Core Curriculum/Projects', message='Update debug output and non-project files', push=True):
+def side_push(repo, project_root='Core Curriculum/Projects', message='Update debug output and non-project files', push=True, body_builder=None):
     repo = Path(repo).resolve(strict=True)
     project_root = str(PurePosixPath(project_root)).rstrip('/')
     if PurePosixPath(project_root).is_absolute() or '..' in PurePosixPath(project_root).parts or project_root == '.':
@@ -89,7 +89,8 @@ def side_push(repo, project_root='Core Curriculum/Projects', message='Update deb
     if paths:
         git(repo, 'add', '--all', '--', *paths)
         if git(repo, 'diff', '--cached', '--name-only', '--', *paths).stdout:
-            git(repo, 'commit', '--only', '-m', message, '--', *paths)
+            body = body_builder(repo, paths) if body_builder else ''
+            git(repo, 'commit', '--only', '-m', message, *(['-m', body] if body else []), '--', *paths)
             print(f'Side commit saved: {len(paths)} debug/non-project paths', flush=True)
     else:
         print('Side commit: no debug/non-project changes', flush=True)

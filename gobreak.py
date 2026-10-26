@@ -6,13 +6,18 @@ from pathlib import Path
 import os
 import json
 import subprocess
+import signal
+import threading
 import sys
 
 from leaveschool import break_checkpoint, git, wip_body, repositories
 from git_side_push import changed_groups, validate_paths, side_push, stage_project
 
 
-def checkpoint(repo, project_scope=False, codex_context=True):
+def checkpoint(repo, project_scope=False, codex_context=True, kind='WIP'):
+    if kind not in ('WIP', 'EOD'):
+        raise ValueError('Checkpoint kind must be WIP or EOD.')
+    title = kind + ': checkpoint ' + datetime.now().astimezone().isoformat(timespec='seconds')
     repo = Path(git(repo, 'rev-parse', '--show-toplevel', capture=True).stdout.strip())
     git(repo, 'symbolic-ref', '--quiet', 'HEAD', capture=True)
     upstream = git(repo, 'rev-parse', '--symbolic-full-name', '@{upstream}', capture=True).stdout.strip()
@@ -28,13 +33,13 @@ def checkpoint(repo, project_scope=False, codex_context=True):
     validate_paths([path for group in changed_groups(repo) for path in group])
     if project_scope:
         projects = os.environ.get('PROJECTS_ROOT', 'Core Curriculum/Projects')
-        side_push(repo, projects)
+        body_builder = (lambda selected_repo, paths: wip_body(selected_repo, paths=paths)) if codex_context else None
+        side_push(repo, projects, message=title + ' (debug/non-project)', body_builder=body_builder)
         stage_project(repo, projects)
     else:
         git(repo, 'add', '--all')
     if git(repo, 'diff', '--cached', '--name-only', capture=True).stdout:
         validate_paths(git(repo, 'diff', '--cached', '--name-only', '-z', capture=True).stdout.rstrip('\0').split('\0'))
-        title = 'WIP: break checkpoint ' + datetime.now().astimezone().isoformat(timespec='seconds')
         body = wip_body(repo) if codex_context else ''
         print('Using a Codex commit body.' if body else 'Using the existing fallback title only.', flush=True)
         git(repo, 'commit', '-m', title, *(['-m', body] if body else []))
@@ -88,17 +93,26 @@ def print_greeting():
     print('Questions or feedback? Contact hnah on 42SG Slack.\n', flush=True)
 
 
+def _exit_signal(number, frame):
+    raise SystemExit(128 + number)
+
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    scope = parser.add_mutually_exclusive_group(required=True)
-    scope.add_argument('--repo', type=Path, help='Checkpoint only this repository')
-    scope.add_argument('--all-repos', action='store_true', help='Use the full shell repository scan and private chat backup')
-    scope.add_argument('--config', type=Path, help='Installed standalone selection settings')
-    args = parser.parse_args()
-    print_greeting()
     failed = 0
     original_codex = os.environ.get('GOBREAK_CODEX_CONTEXT')
+    previous_signals = {}
     try:
+        if threading.current_thread() is threading.main_thread():
+            for number in (signal.SIGTERM, signal.SIGHUP):
+                previous_signals[number] = signal.getsignal(number)
+                signal.signal(number, _exit_signal)
+        parser = argparse.ArgumentParser(description=__doc__)
+        scope = parser.add_mutually_exclusive_group(required=True)
+        scope.add_argument('--repo', type=Path, help='Checkpoint only this repository')
+        scope.add_argument('--all-repos', action='store_true', help='Use the full shell repository scan and private chat backup')
+        scope.add_argument('--config', type=Path, help='Installed standalone selection settings')
+        args = parser.parse_args()
+        print_greeting()
         config = json.loads(args.config.read_text()) if args.config else {}
         preferences = config
         if not args.config:
@@ -129,16 +143,22 @@ def main():
         print(f'Checkpoint needs attention: {error}', file=sys.stderr, flush=True)
         failed = 1
     finally:
-        if original_codex is None:
-            os.environ.pop('GOBREAK_CODEX_CONTEXT', None)
-        else:
-            os.environ['GOBREAK_CODEX_CONTEXT'] = original_codex
-        # Campus locking is independent of successful Git/authentication steps.
+        # Shell wrappers own locking even when Python cannot start. Standalone
+        # invocations lock here, including parse/config errors and signals.
         try:
-            subprocess.run(['ft_lock'], check=True)
-        except (OSError, subprocess.SubprocessError) as error:
-            print(f'Screen lock needs attention: {error}', file=sys.stderr, flush=True)
-            failed = 1
+            if os.environ.get('_GOBREAK_LOCK_IN_SHELL') != '1':
+                try:
+                    subprocess.run(['ft_lock'], check=True)
+                except (OSError, subprocess.SubprocessError) as error:
+                    print(f'Screen lock needs attention: {error}', file=sys.stderr, flush=True)
+                    failed = 1
+        finally:
+            if original_codex is None:
+                os.environ.pop('GOBREAK_CODEX_CONTEXT', None)
+            else:
+                os.environ['GOBREAK_CODEX_CONTEXT'] = original_codex
+            for number, handler in previous_signals.items():
+                signal.signal(number, handler)
     return failed
 
 
