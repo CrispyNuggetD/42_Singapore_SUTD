@@ -175,3 +175,11 @@ reports and non-project files written during plotting or pushing remain pending
 for the next side-push, even if another process stages them. Codex receives only
 the staged project diff; a debug-only update does not create a main WIP commit.
 Renames involving project code keep both paths together in the main commit.
+
+### Copy a file or folder path
+
+`copypwd` copies the current directory. `copypwd foo.txt` copies the absolute
+path of that file; `copypwd folder/` works for folders too. Tab completes files
+and directories, including names containing spaces. For example, type
+`copypwd fo`, press Tab to complete `foo.txt`, then Enter to copy its path.
+Missing paths report an error and leave the clipboard alone.

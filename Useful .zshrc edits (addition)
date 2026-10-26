@@ -149,8 +149,29 @@ clipboard() {
   fi
 }
 
-# Copy the current directory without a trailing newline.
-copypwd() { print -rn -- "$PWD" | clipboard; }
+# Copy an existing file/folder's absolute path; no argument means this directory.
+copypwd() {
+  [[ "${1:-}" == -- ]] && shift
+  if (( $# > 1 )); then
+    print -u2 -- 'Usage: copypwd [FILE_OR_DIRECTORY]'
+    return 1
+  fi
+  local target="$PWD"
+  if (( $# )); then
+    if [[ -z "$1" || ( ! -e "$1" && ! -L "$1" ) ]]; then
+      print -u2 -- "Path does not exist: $1"
+      return 1
+    fi
+    target="${1:a}"
+  fi
+  print -rn -- "$target" | clipboard
+}
+# Use modern completion when loaded, otherwise Zsh's built-in file completion.
+if (( $+functions[compdef] )); then
+  compdef _files copypwd
+else
+  compctl -f copypwd
+fi
 
 # Explicit installation only; sourcing .zshrc never invokes sudo or apt.
 setupclipboard() {
