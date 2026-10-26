@@ -57,9 +57,7 @@ cdcurproj || exit 2
 _dailylogin_impl() { print DAILY_OUTPUT; return 7; }
 _privatebackup_check() { :; }
 _login_items_ensure() { :; }
-_daily_terminal() { print -r -- "HELPER:$*" >> "$1_unused"; }
-# Keep helper evidence separate from the local dailylogin output.
-functions[_daily_terminal]='print -r -- "HELPER:$*" >> "$evidence"'
+_daily_terminal() { print -r -- "HELPER:$*" >> "$evidence"; }
 evidence="$1/evidence"
 LOGIN_ITEMS_SCRIPT="$1/my script.sh"
 LOGIN_ITEMS_TMUX_ROLE=my-startup
@@ -83,6 +81,21 @@ print -r -- "PROJECT:$current_proj"
 
 @unittest.skipUnless(shutil.which('tmux'), 'tmux unavailable')
 class Sessions(unittest.TestCase):
+    def test_legacy_migration_preserves_running_processes(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
+                'DAILY_TMUX_SOCKET': tmp + '/tmux.sock', 'XDG_STATE_HOME': tmp,
+                'DAILY_TMUX_SESSION': 'work', 'LAN42_TMUX_SESSION': 'campus'}):
+            try:
+                lobby = daily.open_window('work', 'lan42', tmp, ['sleep', '60'])
+                shell = daily.open_window('work', 'zsh', tmp, ['sleep', '60'])
+                pid = daily.tmux('display-message', '-p', '-t', lobby, '#{pane_pid}').stdout
+                daily.migrate_layout()
+                self.assertEqual(daily.find_window('campus', 'lan42'), lobby)
+                self.assertEqual(daily.find_window('work', 'current-project'), shell)
+                self.assertEqual(daily.tmux('display-message', '-p', '-t', lobby, '#{pane_pid}').stdout, pid)
+            finally:
+                daily.tmux('kill-server', check=False)
+
     def test_roles_reuse_windows_and_keep_lan_separate(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
                 'DAILY_TMUX_SOCKET': tmp + '/tmux.sock', 'XDG_STATE_HOME': tmp,

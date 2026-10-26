@@ -103,6 +103,8 @@ def open_window(session, role, cwd, command):
         for key in ("PATH", "DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY",
                     "DBUS_SESSION_BUS_ADDRESS", "SSH_AUTH_SOCK", "DAILY_TMUX_HELPER",
                     "DAILY_TMUX_SESSION", "LAN42_TMUX_SESSION", "DAILY_TMUX_MAXIMIZE", "ZSHRC_PORTABLE_SETTINGS_FILE",
+                    "ZSHRC_RUNTIME_ROOT", "ZSHRC_SETTINGS_FILE", "PROJECTS_ROOT", "current_proj",
+                    "LOGIN_ITEMS_SCRIPT", "LOGIN_ITEMS_TESTER", "LOGIN_ITEMS_TMUX_ROLE",
                     "MAIN_REPO_ROOT", "MAC_REMOTE_ROOT",
                     "STAYON_ROOT", "LAN42_CLONE"):
             if key in os.environ:
