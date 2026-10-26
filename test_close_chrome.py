@@ -53,7 +53,8 @@ class CloseChrome(unittest.TestCase):
                 tmux.chmod(0o700)
                 env = dict(os.environ, EVIDENCE=str(root/'events'), CHROME_FAILURE=failure,
                            ZSHRC_SETTINGS_FILE=str(root/'missing'), ZSHRC_PORTABLE_SETTINGS_FILE='',
-                           ZSHRC_RUNTIME_ROOT=tmp, DOCUMENTS_REPOS_ROOT=tmp, CODEX_PRIVATE_REPO_ROOT=tmp)
+                           ZSHRC_RUNTIME_ROOT=tmp, DOCUMENTS_REPOS_ROOT=tmp, CODEX_PRIVATE_REPO_ROOT=tmp,
+                           closeappsonleave='FALSE')
                 script = r'''source "$1"
 export PATH="$2:$PATH"
 ft_lock() { print LOCK >> "$EVIDENCE"; }

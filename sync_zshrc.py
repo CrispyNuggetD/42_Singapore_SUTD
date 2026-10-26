@@ -10,10 +10,11 @@ import shutil
 import shlex
 import subprocess
 import tempfile
+import sys
 
 BEGIN = '# >>> 42 shared zshrc >>>'
 END = '# <<< 42 shared zshrc <<<'
-RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'app_manager.py', 'close_chrome.py',
+RUNTIME_FILES = ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'app_manager.py', 'close_chrome.py', 'soft_quit_apps.py', 'lan42_recommend.py', 'lan42-features.json',
                  'git_side_push.py', 'lock_backup.py', 'lock_backup_watch.py', 'session_jobs.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'gobreak.py', 'install_gobreak.py', 'Useful .zshrc edits (addition)')
 
 
@@ -21,6 +22,8 @@ def install_runtime(source_dir, runtime, check=False, pin=None, codex_context=No
     """Install all helper dependencies locally, including the updater itself."""
     payloads = {}
     for name in RUNTIME_FILES:
+        if name == 'lan42-features.json' and not (source_dir / name).exists():
+            continue  # Older sparse clones can still install; online recommendations remain available.
         payload = (source_dir / name).read_bytes()
         if name.endswith('.py'):
             ast.parse(payload, filename=name)
@@ -176,6 +179,12 @@ def main():
     parser.add_argument('--tmux-config', type=Path, default=Path.home() / '.tmux.conf')
     args = parser.parse_args()
     try:
+        # Existing installed updaters can discover newly added modules in the source clone.
+        sys.path.insert(0, str(args.source.expanduser().resolve().parent))
+        from lan42_recommend import recommend
+        from setup_zshrc import read_settings
+        settings = Path(os.environ.get('ZSHRC_SETTINGS_FILE', str(Path.home() / '.42-shell-settings.zsh'))).expanduser()
+        recommend(read_settings(settings))
         sync(args.source, args.target, args.check, args.runtime, pin=False if args.no_pin else None, codex_context=False if args.no_codex else None)
         install_tmux_mouse(args.tmux_config, args.check)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:

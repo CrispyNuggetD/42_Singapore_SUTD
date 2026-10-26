@@ -11,6 +11,7 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+from lan42_recommend import recommend, installed_path
 
 
 def read_settings(path):
@@ -66,6 +67,7 @@ def yesno(label, default=False):
 
 def configure(shared_root, settings_path):
     previous = read_settings(settings_path)
+    recommend(previous)
     home = Path.home()
     values = dict(previous)
     values.pop('ZSHRC_SETUP_DONE', None)
@@ -75,7 +77,7 @@ def configure(shared_root, settings_path):
     print('  mailbox ~/Documents/mac-remote; LAN42 ~/Documents/42sg-campus-lan;')
     print('  Stayon ~/Documents/42_Singapore_SUTD_hnah_private/Scripts and Testers/stayon.')
     print('Enter your own locations below. Paths may contain spaces; do not add quotes.')
-    print('Optional services and automatic updates default to off on first setup.\n')
+    print('Optional services and automatic updates default to off; an existing LAN42 install is offered enabled.\n')
 
     def field(key, label, default, validator=None):
         values[key] = ask(label, previous.get(key, default), validator)
@@ -118,6 +120,7 @@ def configure(shared_root, settings_path):
     print(f'Project destination: {project}' + ('' if project.is_dir() else ' (not present yet)'))
     toggle('openproject', 'Run make fclean and open VS Code in that project on dailylogin')
     toggle('openchrome', 'Open Chrome on dailylogin if it is not running')
+    toggle('closeappsonleave', 'Normally quit desktop apps on leavesch (keeps save prompts; terminals last)', True)
     toggle('privatebackup', 'Enable private screen-lock backups and remind me to run setupprivatebackup', True)
     toggle('loginitems', 'Run your personal Bash script as the final step of dli', True)
     location('LOGIN_ITEMS_SCRIPT', 'Your personal login script', home / '.42-login-items.sh')
@@ -127,7 +130,7 @@ def configure(shared_root, settings_path):
     location('CODEX_START_DIR', 'Codex working directory', home / 'Documents/42_Singapore_SUTD_hnah_private/42')
     toggle('startmailbox', 'Start your enrolled mailbox worker on dailylogin')
     location('MAC_REMOTE_ROOT', 'Your mac-remote clone (used when enabled)', home / 'Documents/mac-remote')
-    toggle('startlan42', 'Start LAN42 on dailylogin')
+    toggle('startlan42', 'Start LAN42 in its separate tmux workspace on dailylogin', bool(installed_path(previous)))
     location('LAN42_CLONE', 'Your LAN42 clone (used when enabled)', home / 'Documents/42sg-campus-lan')
     toggle('startstayon', 'Start Stayon automatically on dailylogin')
     location('STAYON_ROOT', 'Your Stayon runner folder (used when enabled)', home / 'Documents/stayon')

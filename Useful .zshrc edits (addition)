@@ -269,6 +269,11 @@ quithidden() {
 # Failures keep terminals open; ft_lock is always attempted last, even on failure.
 # Remove the previous name when reloading this configuration in an existing shell.
 unfunction leaveschool 2>/dev/null || true
+_leavesch_quit_apps() {
+  LEAVESCH_KEEP_APPS="${LEAVESCH_KEEP_APPS:-}" \
+    closechromeonleave="${closechromeonleave:-TRUE}" \
+    command python3 "$ZSHRC_RUNTIME_ROOT/soft_quit_apps.py" "$@"
+}
 leavesch() {
   setopt localoptions localtraps
   trap 'return 130' INT
@@ -291,21 +296,40 @@ leavesch() {
       print -u2 -- 'leavesch: some pushes failed; tmux kept open. Fix the errors and retry.'
       return 1
     fi
-    if _dailylogin_enabled "${closechromeonleave:-TRUE}"; then
+    if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
+      _leavesch_quit_apps || {
+        print -u2 -- 'leavesch: an app needs attention; tmux kept open. Finish its prompts and retry.'
+        return 1
+      }
+    elif _dailylogin_enabled "${closechromeonleave:-TRUE}"; then
       command python3 "$ZSHRC_RUNTIME_ROOT/close_chrome.py" || {
         print -u2 -- 'leavesch: Chrome has not finished closing; tmux kept open.'
         return 1
       }
     fi
+    if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
+      # Editors may flush newly saved files while handling their normal Quit.
+      print -- 'Saving final app changes before closing terminals.'
+      DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+        command python3 "$helper" backup || return 1
+      DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
+        command python3 "$helper" push-all || return 1
+      if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
+        command python3 "$helper" push-private || return 1
+      fi
+    fi
     print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
-    command -v tmux >/dev/null 2>&1 || return 0
     local -a tmux_args
     tmux_args=()
     [[ -n "${DAILY_TMUX_SOCKET:-}" ]] && tmux_args=(-S "$DAILY_TMUX_SOCKET")
-    command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1 || return 0
     # Keep this shell alive after its tmux terminal closes so the lock runs.
     trap '' HUP
-    command tmux "${tmux_args[@]}" kill-server
+    if command -v tmux >/dev/null 2>&1 && command tmux "${tmux_args[@]}" list-sessions >/dev/null 2>&1; then
+      command tmux "${tmux_args[@]}" kill-server || return 1
+    fi
+    if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
+      _leavesch_quit_apps --schedule-terminals || return 1
+    fi
   } always {
     ft_lock
   }
@@ -1238,6 +1262,10 @@ _dailylogin_impl() {
 }
 
 _dailylogin_tasks() {
+  # Bootstrap newly added helpers after an older installed updater's first pass.
+  if [[ ! -f "$ZSHRC_RUNTIME_ROOT/soft_quit_apps.py" || ! -f "$ZSHRC_RUNTIME_ROOT/lan42_recommend.py" ]]; then
+    _dailylogin_run 'Refresh newly added runtime helpers' - synczshrc || return 1
+  fi
   _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
   _dailylogin_run "Pull other repositories under $DOCUMENTS_REPOS_ROOT" pullotherrepos syncdocs || true
   _dailylogin_run 'Import school-chat continuations returned from home' - importhome || true
@@ -1355,7 +1383,7 @@ synczshrc() {
     print -- 'Update source is unavailable; keeping the installed shell helpers.'
     return 0
   fi
-  command python3 "$ZSHRC_RUNTIME_ROOT/sync_zshrc.py" \
+  command python3 "$repo_root/sync_zshrc.py" \
     --source "$repo_root/Useful .zshrc edits (addition)" \
     --runtime "$ZSHRC_RUNTIME_ROOT" \
     --target "${ZDOTDIR:-$HOME}/.zshrc" "$@"

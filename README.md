@@ -28,7 +28,7 @@ the [Go Break icon](Shell%20automations/gobreak/README.md), preserving any
 standalone repo selection. `setupzshrc` opens the
 setup wizard: enter your own email, repository paths, and current project, then
 choose which tasks to enable and save. Optional services and automatic updates
-default to off. The installer also enables mouse scrolling in `~/.tmux.conf`.
+default to off; an existing LAN42 install is offered enabled, preserving saved choices. The installer also enables mouse scrolling in `~/.tmux.conf`.
 For a tmux session that is already running, run `tmux set -g mouse on` once.
 
 Running `python3 setup_zshrc.py` alone only saves settings; it does not install
@@ -200,7 +200,27 @@ Week: 6 (By End 2025)
 - Finish looking through subject.pdf of ft\_printf
 - Finish Parser (1 of 3) of ft\_printf (Parser --> Dispatcher --> Handler)
 
-`leavesch` asks Chrome to quit cleanly and waits before closing tmux; it never
-force-kills the browser. If Chrome needs attention, tmux is kept and the screen
-still locks. Set `closechromeonleave=FALSE` in personal settings to leave Chrome
-running. This does not change Go Break or ordinary screen-lock behavior.
+`leavesch` acts as your personal shutdown: save/push work, request normal quits
+from your desktop apps, save/push any files they flushed on exit, close tmux,
+then request terminal closure last and lock.
+It does not log out or power off the machine. Quit requests use native tray/GTK
+Quit actions or supported normal window-close messages on Linux X11, and normal
+AppKit quit requests on Mac. Routine keyboard quit guards are avoided; save,
+active-transfer and unknown confirmation dialogs are not blindly accepted.
+If an app stays open, tmux is retained and the screen still locks. Terminal
+prompts, if any, remain for local review; terminal-stage output is in
+`~/.local/state/42-shell/terminal-quit.log` (respects `XDG_STATE_HOME`).
+
+Configure `closeappsonleave=FALSE` to disable app-wide shutdown (the existing
+Chrome-only option still applies), or `LEAVESCH_KEEP_APPS=slack,code` to keep
+specific app classes/bundle IDs. `closechromeonleave=FALSE` exempts Chrome too.
+Linux needs an X11 session and Python GObject support (`python3-gi` on Ubuntu);
+Wayland reports that automatic app-wide closing is unavailable rather than
+force-killing anything. Go Break and ordinary screen locks keep apps running.
+
+Both shell installer entry points recommend LAN42 when it is missing, including
+a suggested path and short feature list sourced from the marked section of
+[LAN42's README](https://github.com/CrispyNuggetD/42sg-campus-lan#lan42-in-your-daily-workspace).
+Online installs read the current list; offline installs identify their dated
+snapshot. See [the maintenance workflow](Shell%20automations/lan42-integration.md)
+for refreshing it. Existing LAN42 installs are detected and get tmux setup guidance.

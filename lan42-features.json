@@ -1,0 +1,5 @@
+{
+  "source": "https://raw.githubusercontent.com/CrispyNuggetD/42sg-campus-lan/main/README.md",
+  "updated": "2026-10-26",
+  "features": "- `lan42` / `lan42_window`: open your campus HQ in its own tmux workspace.\n- `/who` / `/join`: discover peers, link campus seats and chat across lobbies.\n- `/map` / `/track`: read-only campus seating maps and your own local people lists.\n- `/dm`: message connected peers directly.\n- `/games`: find locally hosted Tetris, Bluff, Hex Wars and FORKNITE rooms.\n- `/signin`: optionally verify your 42 identity; the secure service requires owner setup."
+}

@@ -78,7 +78,7 @@ Helpers only (Git installed):
 ```sh
 git clone --filter=blob:none --sparse https://github.com/CrispyNuggetD/42_Singapore_SUTD.git 42-shell-helpers
 cd 42-shell-helpers
-git sparse-checkout set --no-cone '/README.md' '/AGENTS.md' '/*.py' '/Useful .zshrc edits (addition)' '/Shell automations/' '/Study Notes/Codex/' '/Setup .vimrc guide' '/Compiling 42.txt' '/Random scripts/'
+git sparse-checkout set --no-cone '/README.md' '/AGENTS.md' '/*.py' '/lan42-features.json' '/Useful .zshrc edits (addition)' '/Shell automations/' '/Study Notes/Codex/' '/Setup .vimrc guide' '/Compiling 42.txt' '/Random scripts/'
 ```
 
 For the whole repo, omit `--filter=blob:none --sparse` and the `sparse-checkout`
