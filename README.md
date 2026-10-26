@@ -1,8 +1,8 @@
 > **Forgot to push before leaving for the weekend? [Get private backups on screen lock + zsh/tmux helpers](Shell%20automations/README.md).** Helpers-only download available. Requires setup; you still need to share changes with teammates.
 
-# 42 Repository for Christopher Hui-Kang Nah (hnah)
+# 42 Repository for Christopher Nah (hnah)
 
-Hi, I’m **Christopher Hui-Kang Nah** (**hnah** on Intra), a student at **42 Singapore**. Questions, ideas, or just saying hi? Find me on the **global 42 Slack**, or [here on GitHub](https://github.com/CrispyNuggetD).
+Hi, I’m **Christopher Nah** (**hnah** on Intra), a student at **42 Singapore**. Questions, ideas, or just saying hi? Find me on the **global 42 Slack**, or [here on GitHub](https://github.com/CrispyNuggetD).
 
 Want a dock icon that commits, pushes and locks your screen?
 [Go Break quick start](Shell%20automations/gobreak/README.md#quick-start)
