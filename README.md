@@ -236,7 +236,11 @@ separate; terminal users may need Fn with the function keys.
 On-campus guest HQs now explain availability at startup. With the owner-approved
 public trust installed, waiting clients check the pinned host every 120 seconds
 by default and show its return, with one desktop arrival alert per computer when
-notifications are permitted. This polling uses LAN42 endpoints, not the 42 API;
+the host channel is enabled. Important host/broadcast/release/offline-warning
+alerts default to on; chat/DM/poke popups default to off. `/notify` lists channels,
+`/notify dms on` enables DMs, and `/notify all off` silences even important alerts.
+Existing explicit popup denials and OS permissions are respected.
+This polling uses LAN42 endpoints, not the 42 API;
 it never forces OAuth or plays a sound automatically. Missing trust is explained
 instead of silently waiting. The initial admin and API operator is hnah (numeric 42 ID 234449).
 Admins, API operators and trusted service machines have independent allowlists.
