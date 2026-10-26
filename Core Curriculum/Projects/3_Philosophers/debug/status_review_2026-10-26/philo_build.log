@@ -1,0 +1,21 @@
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/main.c -o obj/main.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/input_output.c -o obj/input_output.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/time.c -o obj/time.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/philosopher.c -o obj/philosopher.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/monitor.c -o obj/monitor.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/logging.c -o obj/logging.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/meal.c -o obj/meal.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/forks.c -o obj/forks.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/init.c -o obj/init.o
+mkdir -p obj
+cc -Iincludes -Wall -Wextra -Werror -pthread -MMD -MP -c src/cleanup_error.c -o obj/cleanup_error.o
+cc -Wall -Wextra -Werror -pthread obj/main.o obj/input_output.o obj/time.o obj/philosopher.o obj/monitor.o obj/logging.o obj/meal.o obj/forks.o obj/init.o obj/cleanup_error.o -o philo

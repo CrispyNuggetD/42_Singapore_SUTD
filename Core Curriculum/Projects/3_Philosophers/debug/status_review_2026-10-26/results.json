@@ -1,0 +1,32 @@
+[
+  {
+    "target": "philo",
+    "check": "build",
+    "exit": 0
+  },
+  {
+    "target": "philo",
+    "check": "no_relink",
+    "exit": 0
+  },
+  {
+    "target": "philo",
+    "check": "norm",
+    "exit": 0
+  },
+  {
+    "target": "philo_bonus",
+    "check": "build",
+    "exit": 0
+  },
+  {
+    "target": "philo_bonus",
+    "check": "no_relink",
+    "exit": 0
+  },
+  {
+    "target": "philo_bonus",
+    "check": "norm",
+    "exit": 0
+  }
+]

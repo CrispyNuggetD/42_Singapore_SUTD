@@ -1,0 +1,307 @@
+PHILOSOPHERS — CURRENT STATUS / NEXT STEPS (v2)
+Reviewed: 26 October 2026, Asia/Singapore
+
+This is the current working checklist. temp_log.txt remains the historical log.
+I checked the current source, the old log, the supplied evaluation sheet and the
+local v13.0 subject. Historical PASS means the recorded tests passed then; it is
+not a guarantee about every input, scheduling interleaving or future edit.
+
+QUICK ANSWER — WHERE AM I?
+
+Mandatory: IMPLEMENTED; the October 24 evaluation suite passed. No new mandatory
+implementation blocker was identified in this status review. Don't restart the
+old October 16 TODO list: those mandatory tasks were subsequently completed.
+
+Bonus: WIP. Parsing, process helpers and semaphore setup/cleanup exist. main now
+calls start_bonus(), which forks children. However:
+  run_philo_bonus()     immediately returns CHILD_ERROR.
+  supervise_children() immediately returns ERR_NOT_IMPLEMENTED.
+So children do not eat, sleep, think or monitor death yet. Cleanup stops/reaps
+remaining children. Having a working build is not having a working simulation.
+
+NEXT SMALL STEP: define the child philosopher state and its time/locking contract,
+then implement the child routine and death monitor. The old instruction to replace
+main's placeholder has ALREADY been done. The two stubs are the remaining core.
+
+PRIORITY KEY
+
+A / EVAL ESSENTIAL: required by the subject or evaluation sheet, including the
+correctness necessary to satisfy it. "MVP" here means a complete, correct minimum
+submission, not just getting the named examples to print plausible output.
+
+B / EXTRA: additional resilience, diagnostics, performance or stronger guarantees
+beyond that baseline. Optional does NOT mean a known data race, leak, deadlock or
+incorrect death may be ignored. If an extra test exposes a required-behavior bug,
+that bug becomes A even when the exact test command is not on the sheet.
+
+DONE = implemented, with evidence stated below.
+WIP = some structure exists, but the feature is incomplete.
+TODO = required behavior or validation still missing.
+
+1. MANDATORY: CURRENT EVALUATION BASELINE
+
+DONE — parse arguments and optional meal goal; reject invalid/overflowing input.
+  philo/src/input_output.c
+DONE — one worker thread and one fork mutex per philosopher; no shared globals.
+  philo/src/init.c, philosopher.c, includes/philo.h
+DONE — fixed odd/even fork acquisition order breaks circular waiting.
+  init_philos() stores first/second fork pointers; take_forks() uses that order.
+  The timing stagger is NOT the deadlock guarantee.
+DONE — single philosopher takes one fork, waits for death, avoids locking it twice.
+  philo/src/forks.c
+DONE — repeat eating, sleeping and thinking; count completed meals, not just starts.
+  philo/src/philosopher.c, meal.c
+DONE — protect meal-start/death decisions and meal counts with meal_state_lock.
+  philo/src/meal.c, monitor.c
+DONE — serialized state output; first death publishes stop; later output suppressed.
+  philo/src/logging.c, monitor.c
+DONE — main monitors death and everyone's quota; stops on the first death or quota.
+  philo/src/monitor.c
+DONE — worker/startup failures request stopping; cleanup joins before freeing data.
+  First worker error is consumed after joins. Partial initialization is tracked.
+  philo/src/main.c, philosopher.c, cleanup_error.c
+DONE — long-sleep adjustment: thinking_wait_ms subtracts sleep already performed.
+  No dynamic fork swapping or shared total-meals scheduling counter remains.
+
+A / REMAINING BEFORE ACTUAL SUBMISSION
+[ ] Verify the actual submission checkout, allowed functions, required directories,
+    Makefiles and README. debug/ is project evidence, not school submission code.
+[ ] If code changes, rerun the affected tests; do a final evaluation run on the
+    submitted snapshot/environment. Current recorded passes are not a grade.
+[ ] Be able to explain locking order, death/meal synchronization, timing, quota
+    completion and cleanup. Explain the clock as a local scheduling strategy,
+    without claiming that sleeps enforce a global barrier or FIFO fairness.
+
+No mandatory redesign is currently needed just to reduce the number of .c files.
+
+2. BONUS: WHAT IS ACTUALLY DONE VERSUS JUST DECLARED
+
+DONE — independent Makefile, root make bonus target, header and typed statuses.
+DONE — mandatory-derived parser, now_ms(), polling wait and error printing.
+DONE — Pipex-derived process bookkeeping:
+  init_children() allocates PID slots; fork_philo() records parent-side PIDs;
+  wait_next_child() waits for ANY child, retries EINTR and decodes its outcome.
+  "alive" currently means created but not yet reaped, not necessarily running.
+DONE — init_bonus() opens named forks(count), take_pair(1), printing(1).
+  open_semaphore() uses O_CREAT | O_EXCL; names are centralized in the header.
+DONE — cleanup_bonus() stops/reaps children, closes/unlinks successfully created
+  semaphores and handles partial initialization. Failed opens do not authorize
+  removing an existing semaphore belonging to another invocation.
+DONE — start_bonus() fork loop is in philosopher_bonus.c, not start_bonus.c.
+  It creates each child, exits via run_philo_bonus(), then calls the supervisor.
+DONE — current main calls start_bonus() after successful initialization.
+WIP  — run_philo_bonus(sim, id): signature and stub only, returns CHILD_ERROR.
+WIP  — supervise_children(sim): signature and stub only, returns ERR_NOT_IMPLEMENTED.
+TODO — actual fork-token acquisition, meal routine, child death detection, logs,
+  quota behavior and complete runtime validation.
+
+The three initialized semaphores do not yet implement these features by themselves.
+There is no child meal-state protection or simulation start timestamp in t_sim_bonus
+currently. An ordinary flag copied by fork is not a cross-process stop flag.
+
+3. BONUS A: REQUIRED IMPLEMENTATION, IN A USEFUL ORDER
+
+A1. Define child state and initial time — TODO.
+    Give the child its philosopher ID, simulation start reference, last meal time,
+    completed-meal count and resources needed by its monitor. Use consistent
+    elapsed timestamps and first-meal deadlines. A common start reference is
+    necessary; an elaborate simultaneous-start barrier is a separate design choice.
+    Decide how the routine and its monitoring thread protect last_meal/death
+    decisions with a semaphore. pthread_mutex_* and sem_init are NOT in this
+    bonus's allowed-function list. sem_open/close/unlink are available.
+    File: philo_bonus.h, child setup in philosopher_bonus.c or init_bonus.c.
+
+A2. Implement death detection and serialized logging — TODO.
+    Check last_meal against time_to_die during eating, sleeping AND fork waiting.
+    A child monitoring thread is one suitable design; it is allowed, not mandated.
+    Keep the deadline decision consistent with the routine's meal-start update.
+    Use the required timestamp/ID/state formats and protect output. Define a
+    cross-process death/output protocol so a death is announced once and output
+    does not continue afterward. Merely protecting each printf separately does
+    not coordinate global stopping. Announce death within the subject's 10 ms.
+    Parent supervision in monitor_bonus.c is not itself child hunger detection.
+    Files: new logging/child-monitor helpers as needed; update header/Makefile.
+
+A3. Acquire/release two fork tokens and implement the routine — TODO.
+    Use the existing forks semaphore as the ONE counter for available forks.
+    Planned strategy: take_pair gate -> two sem_wait(forks) -> release gate -> eat
+    -> two sem_post(forks). Release the gate before eating to permit concurrency.
+    Log actual fork acquisitions. Handle N=1 without an unmonitored wait forever.
+    Keep tokens through eating; update the meal start under the agreed protection.
+    Count a meal only after its eating duration completes. Sleep for the configured
+    duration and log thinking. Stop correctly on death/error/quota.
+    Correct deadlock prevention is essential; this exact gate strategy is optional.
+    Do not carry over the mandatory ring-specific clock without a demonstrated need.
+    File: run_philo_bonus(), with a small fork/meal helper file if Norm requires it.
+
+A4. Implement parent supervision — TODO.
+    While children remain, use wait_next_child() and inspect its OUT exit_code:
+      CHILD_DONE  -> keep waiting; success only after all children finish.
+      CHILD_DIED  -> return STATUS_STOPPED; main stops/reaps remaining children.
+      CHILD_ERROR or unexpected signal -> return a genuine error; main cleans up.
+      wait failure -> propagate error; do not claim successful completion.
+    Add any missing child-error enum/message in matching order. The parent must
+    not perform the philosopher routine or wait for one particular PID while
+    another child's death goes unnoticed.
+    File: monitor_bonus.c / supervise_children().
+
+A5. Finish lifecycle and integration — WIP.
+    Parent cleanup exists, but child-owned normal-exit cleanup still needs wiring.
+    Do not call the parent's cleanup_children() from a child: its copied PID list
+    can describe siblings. Close inherited handles/free child-owned allocations
+    appropriately and coordinate any local monitor thread before freeing its data.
+    A killed process does not return semaphore tokens; after death/error, end the
+    whole run rather than continue using that depleted semaphore count.
+    No orphan/zombie children or ordinary-path leaks; release gate/tokens correctly
+    on recoverable child failures. Partial startup must stop created children.
+    main -> start_bonus is already connected; replace the two stubs, retire obsolete
+    scaffold errors/comments, and verify the complete paths together.
+
+A6. Validate the complete bonus — TODO.
+    Build, no-relink, Norm, allowed functions, no globals, memory/race checks,
+    process structure, output/death behavior, quota completion and final cleanup.
+    Test ordinary repeated invocations; semaphore names must not leak between them.
+    Existing helper tests do NOT certify bonus runtime behavior.
+
+4. EVALUATION CASES: NAMED EXAMPLES VERSUS GENERAL REQUIREMENTS
+
+The supplied sheet uses <= 200 philosophers and timing arguments >= 60 ms.
+These are evaluation test bounds, not a requirement to reject all other input.
+A test with a physically insufficient death budget should die correctly, not be
+classified as a failure merely because a death occurred.
+
+Arguments             Expected                                 MANDATORY / BONUS
+1 800 200 200          No eating, one death                      Passed / TODO
+5 800 200 200          No death during survival observation      Passed / TODO
+5 800 200 200 7        Everyone completes >=7 meals, then stop   Passed / TODO
+4 410 200 200          No death during survival observation      Passed / TODO
+4 310 200 100          A philosopher dies, simulation ends       Passed / TODO
+2 <varied timings>    Correct deadlines, death report <=10 ms    Passed / TODO
+
+"Passed" above refers to the October 24 mandatory report, not a fresh October 26
+runtime suite. The sheet explicitly names the one-philosopher command under
+mandatory; bonus still needs single-philosopher correctness under the subject's
+general rules. The sheet also permits other values to check all requirements.
+
+A survival observation cut off by timeout cannot prove survival forever and is
+not a clean-exit/leak test. Check leaks using naturally terminating quota/death
+runs. Log timestamps alone do not independently measure physical display latency.
+
+The following are A, not optional polish:
+- No data races, crashes, undefined behavior, forbidden functions or Norm errors.
+- No mixed messages; correct timestamps and death/meal synchronization.
+- Correct timing/quotas, fork ownership and deadlock prevention.
+- Correct normal/error cleanup, no orphan processes, no ordinary-path leaks.
+- One process per bonus philosopher, parent not a philosopher, one fork-count sem.
+- Valid project layout/build/README and the ability to explain the implementation.
+Bonus is evaluated only when mandatory meets its requirements.
+
+5. B: ADDITIONAL ROBUSTNESS / DESIGN IMPROVEMENTS
+
+These are separate from completing the missing simulation. Keep completed support;
+don't expand it into another framework before A1-A6 work.
+
+ALREADY PRESENT
+- Explicit first-error/status propagation and detailed operation-specific messages.
+- Checks around ordinary correctly-used mutex operations in mandatory.
+- Partial-write handling for error messages; EINTR retry for bonus waitpid.
+- Startup/cleanup fault-injection harnesses and comparison/debug artifacts.
+  Safe failure handling is essential; exhaustive injection of every rare failure
+  and elaborate diagnostics are additional assurance work.
+
+OPTIONAL NEXT, AFTER THE BASELINE
+[ ] A startup gate to reduce initialization/fork/thread-creation timing skew.
+    Mandatory currently starts its clock before setup/worker creation. Correct
+    deadlines are essential; this particular synchronization mechanism is not.
+[ ] A stronger scheduling/fairness policy, if desired: FIFO admission or a proved
+    bound on waiting. The subject does not demand strict FIFO/equal turns.
+    Starvation in a case that should survive still needs fixing as an A bug.
+[ ] Concurrent-invocation naming and recovery after forced termination. Current
+    fixed O_EXCL names safely reject collisions; SIGKILL can leave stale names.
+    Never blindly unlink another active run's names to make a retry work.
+[ ] More explicit semaphore-name ownership after failed unlink, retryable teardown,
+    or recovery after a cleanup syscall itself fails. Current code reports errors;
+    reporting failure is not a guarantee that every resource was released.
+[ ] Wider randomized/fault-injection/stress runs: varied loads, repeated counts,
+    long sleeps, blocked/failed output, and termination at awkward points.
+    Keep injected conditions separate from native evaluation measurements.
+[ ] Performance improvements backed by measurements (polling cost, throughput,
+    wake-up skew). Do not add queues, new clocks or more files solely for aesthetics.
+[ ] Additional visualisation, diagrams, naming cleanup or further log restructuring.
+
+NOT A NEXT TASK: copy the mandatory odd-count scheduling equation into bonus,
+reintroduce dynamic fork swapping, or rewrite mandatory solely to get five files.
+
+6. KNOWN LIMITATIONS / THINGS NOT PROVED
+
+- Mandatory's deadlock prevention uses fixed ordering. Its relative waits encourage
+  a pattern but do not establish strict scheduling fairness or a hard OS latency
+  bound. The recorded 58/60 130 60 60 tight-margin experiments sometimes died.
+  Do not call every such failure "impossible input": inspect fork/scheduling delay.
+- Native evaluation observations were finite and used line-buffered file output.
+  Logged deadline timing is not an independent proof of visible output latency.
+- Race tools only cover observed executions; previous passing runs are evidence,
+  not a proof of every interleaving.
+- Bonus currently runs stubs: no real simulation, child hunger monitor, completed
+  quota implementation or final logging protocol exists yet.
+- wait_ms() has no process-wide stop/death check; a monitor/process-exit design
+  must supply interruption. sem_wait can block; monitoring must still run.
+- Bonus fixed names can remain after abrupt termination or an unlink failure.
+  Failed close preserves its handle/name; failed unlink is reported after close.
+  Child stop/reap failure returns before semaphore cleanup. Keep this distinction
+  between attempted cleanup and guaranteed cleanup in explanations.
+- Prior helper tests use substitute children and isolated semaphore names. Their
+  successful results do not validate the unfinished run_philo_bonus routine.
+
+7. WHAT IN THE OLD LOG IS NOW OBSOLETE?
+
+Old initial WIP: "only one meal / no repeating routine" -> mandatory DONE.
+October 16 item 1: "everyone left then right" -> fixed odd/even order DONE.
+October 16 item 2: "one philosopher missing" -> single-fork path DONE.
+October 16 item 3: "quota missing" -> completed-meal counting/monitor stop DONE.
+October 16 item 4: "error propagation partial" -> worker to stop to cleanup DONE.
+October 16 item 5: shared-lock tracking -> retained, DONE.
+October 16 item 6: Norm/full testing unfinished -> later suites PASS, with limits.
+October 24 items 13-16: bonus helpers and semaphore setup/cleanup -> retained DONE.
+October 24 item 17 / next step 5: "main still guarded" -> OUTDATED: main calls
+  start_bonus now; the child and supervisor functions are still stubs.
+October 24 items 18-20: appendix, FORKNITE and debug evidence -> retained DONE.
+
+Also stale today: main_bonus.c's comment says to replace the placeholder, and
+philosopher_bonus.c says its stub is not called by main. Update these when wiring
+real behavior; this status review does not silently change implementation files.
+The archived October 24 helper reports intentionally describe their old snapshot.
+
+8. EVIDENCE AND HOW FRESH IT IS
+
+Historical reference:
+- temp_log.txt — original chronological notes, retained unchanged.
+- debug/eval_logs_2026-10-24_final/SUMMARY.md — mandatory 48 runtime/input checks
+  and 15 memory/thread/failure checks passed; exact source hashes and limits there.
+- debug/refactor_checks_2026-10-24/SUMMARY.txt — build/Norm and four smoke cases
+  after moving functions; three moved function bodies matched their prior version.
+- debug/eval_logs_2026-10-24_long_sleep/summary.json — 16 successful cases.
+- debug/bonus_reuse_2026-10-24/README.md — process-helper tests and two Memchecks.
+- debug/bonus_cleanup_2026-10-24/README.md — ten lifecycle cases, five Memchecks.
+- debug/eod_2026-10-24/ — EOD build/Norm and scaffold entry-point observations.
+- debug/test_cases.txt — named evaluation cases first, then additional tests.
+
+Today, 26 October 2026:
+- Read actual current source; mandatory source/header/Makefile match eeb64bc.
+- Built mandatory and bonus in fresh temporary copies; repeated make did no work.
+- Norm passed both complete source/header sets (10 mandatory C files; 9 bonus).
+- Logs and current source hashes: debug/status_review_2026-10-26/.
+- No fresh full runtime, Valgrind or scheduling suite was run for this document.
+  No source logic was changed; no commit or push was requested.
+
+Requirements used:
+- Local Philosophers subject v13.0: common rules, global rules, mandatory and bonus.
+- Supplied evaluation sheet:
+  https://github.com/Dsite42/philosophers/blob/master/philosophers%20eval%20sheet.pdf
+  Its wording is historical; use the current assigned subject if they differ.
+
+WHEN I REOPEN THIS PROJECT
+
+Read the quick answer, then A1-A6. Work on one real bonus behavior at a time.
+Keep the optional B list parked until the complete simulation works. A helper being
+"done" does not make the feature using it done. That was the confusing bit lol.
