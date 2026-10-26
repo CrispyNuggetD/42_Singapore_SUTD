@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 from gi.repository import Gio, GLib
 from lock_backup import CONFIG
+from session_jobs import SessionJobs
 
 runtime = Path(os.environ['XDG_RUNTIME_DIR'])
 lock = (runtime / '42-lock-backup-watch.lock').open('w')
@@ -104,6 +105,13 @@ system.signal_subscribe('org.freedesktop.login1', 'org.freedesktop.DBus.Properti
     'PropertiesChanged', session[4], None, Gio.DBusSignalFlags.NONE, properties_changed, None)
 bus.signal_subscribe('org.gnome.ScreenSaver', 'org.gnome.ScreenSaver',
     'ActiveChanged', '/org/gnome/ScreenSaver', None, Gio.DBusSignalFlags.NONE, screensaver_changed, None)
+jobs=SessionJobs(log,note)
+def periodic_jobs():
+    try:return jobs.tick(not active or locked or screen_locked, backup_busy=child is not None)
+    except Exception as error:
+        note('Session job check failed: '+type(error).__name__)
+        return True
+GLib.timeout_add_seconds(15,periodic_jobs)
 note('Watching desktop session ' + session[0])
 evaluate()
 GLib.MainLoop().run()
