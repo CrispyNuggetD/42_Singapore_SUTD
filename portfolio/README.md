@@ -129,3 +129,8 @@ groups existing snapshot projects into M.0–M.3 and shows the latest API
 `marked_at` per complete group. These are repository groups, not authoritative
 Intra milestone deadlines. Never derive a black-hole date from a pace number or
 confuse milestone deadlines with `blackholed_at`.
+
+`data-dock-astronaut` enables the travelling profile link: it catches at the top
+of the viewport on scroll-down and returns to the scene on scroll-back. The
+link is reparented, not cloned; preserve focus, circular pointer targeting,
+motion preferences and offscreen canvas pause.
