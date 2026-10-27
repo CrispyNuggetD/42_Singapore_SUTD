@@ -1,4 +1,12 @@
 (()=>{
+  function revealDisclosure(){
+    if(location.hash!=='#ai-disclosure')return;
+    const panel=document.getElementById('ai-disclosure');if(!panel)return;
+    panel.open=true;panel.scrollIntoView({block:'start'});
+  }
+  revealDisclosure();window.addEventListener('hashchange',revealDisclosure);
+})();
+(()=>{
   const link=document.querySelector('.back-to-top');if(!link)return;
   const update=()=>{link.hidden=scrollY<420;};
   window.addEventListener('scroll',update,{passive:true});
