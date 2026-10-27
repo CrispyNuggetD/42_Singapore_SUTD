@@ -146,3 +146,10 @@ guide, rendered into the homepage at `#toolkit`. Keep effect/footer links pointe
 there; detailed source, demos and licences remain in FOSS Toolbox. Two tools:
 Adaptive Pointer and Event Horizon, with Space backdrop as the latter’s optional
 add-on. Update this section whenever options, filenames or dependencies change.
+
+`portfolio/toolkit.html` supplies the curated toolkit showcase; `docs/toolkit.md`
+remains the full setup guide inside a native expandable section. Keep the two
+consistent without turning the default catalogue into a long documentation dump.
+The build adds content hashes to CSS/JS URLs in every generated page, preventing
+new markup from reusing stale browser styles/scripts. No JavaScript is required
+for the showcase, links or setup disclosures.

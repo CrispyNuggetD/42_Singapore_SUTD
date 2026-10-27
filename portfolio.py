@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime, timezone
 from html import escape
 import json
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -135,7 +136,7 @@ def build(output):
         names=', '.join(row.get('name',slug) for row,slug in zip(rows,slugs))
         milestones.append('<li class="'+('complete' if complete else 'current')+'"><strong>'+label+(' ✓' if complete else ' · now')+'</strong><span>'+escape(when)+'</span><small>'+escape(names)+'</small></li>')
     values['MILESTONES']=''.join(milestones)
-    values['TOOLKIT']=render_docs('docs/toolkit.md')
+    values['TOOLKIT']=(ROOT/'portfolio/toolkit.html').read_text().replace('{{TOOLKIT_GUIDE}}',render_docs('docs/toolkit.md'))
     values['START_RAW']=escape(progress.get('begin_at') or '',quote=True)
     scene=(ROOT/'portfolio/horizon.html').read_text()
     for key,value in values.items():scene=scene.replace('{{'+key+'}}',value)
@@ -147,6 +148,13 @@ def build(output):
     shell=(ROOT/'portfolio/document.html').read_text()
     for source,filename,title in [('docs/how-i-work.md','how-i-work.html','Candid 42 tips & workflow')]:
         (output/filename).write_text(shell.replace('{{TITLE}}',escape(title)).replace('{{CONTENT}}',render_docs(source)))
+    # Version CSS/JS by content so cached assets cannot leave new markup unstyled.
+    for page in output.glob('*.html'):
+        def revision(match):
+            asset=output/match[2]
+            digest=hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
+            return match[1]+'="'+match[2]+'?v='+digest+'"'
+        page.write_text(re.sub(r'(href|src)="(assets/[^"?]+\.(?:css|js))"',revision,page.read_text()))
     (output/'.nojekyll').touch()
 
 def main():
