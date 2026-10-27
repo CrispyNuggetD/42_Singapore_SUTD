@@ -160,3 +160,7 @@ website deployments, not LAN42 runtime releases. A same-origin, no-store check
 on page load or the Check for updates button compares the published manifest.
 No GitHub API, visitor telemetry, polling or credentials are involved. Without
 JavaScript the stamp and deployment-history link remain visible.
+
+The astronaut offers GitHub for everyone and Intra for 42 students through a
+labelled chooser. Both open in new tabs. Preserve authored fallback links,
+HTTPS validation, keyboard/Escape handling and the panel's viewport bounds.

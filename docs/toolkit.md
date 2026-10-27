@@ -39,6 +39,8 @@ Copy `adaptive-pointer.css` and `adaptive-pointer.js` into your site, then inclu
 
 Dates accept ISO timestamps or Unix seconds/milliseconds. You can supply them manually: **no API required**. An optional minimal JSON feed can update the scene; credentials stay on the server. The source README includes the owner-profile adapter.
 
+To offer both public and student profiles, set `data-public-url` and `data-public-label` (GitHub, LinkedIn or your website). Keep the Intra URL in `data-profile-url`; use the public URL as the astronaut's fallback `href` and supply both ordinary links for no-JavaScript visitors. The chooser opens destinations in new tabs, keeping your portfolio open.
+
 For the travelling pet, add `data-dock-astronaut` to the scene. Add `data-astronaut-chatter` for the silly bubbles, beckoning wave and cursor approach/leave/return reactions. Both are optional.
 
 **Want the background too?** Copy `space-backdrop.css` and `space-backdrop.js` from the same directory, add `data-space-background` to the scene, and load the add-on after the scene script:
