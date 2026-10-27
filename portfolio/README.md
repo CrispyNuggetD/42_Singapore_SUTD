@@ -122,3 +122,10 @@ Optional space-backdrop assets add layered scroll/cursor parallax and occasional
 comets around the opaque grey reading column. The fixed Space motion control
 shares the scene preference. Keep these decorative canvases behind real links,
 and preserve grey no-JS and forced-colour fallbacks.
+
+The flight ruler is calendar-linear from `begin_at` to the recorded deadline;
+its NOW marker and baseline astronaut position share that scale. The course log
+groups existing snapshot projects into M.0–M.3 and shows the latest API
+`marked_at` per complete group. These are repository groups, not authoritative
+Intra milestone deadlines. Never derive a black-hole date from a pace number or
+confuse milestone deadlines with `blackholed_at`.

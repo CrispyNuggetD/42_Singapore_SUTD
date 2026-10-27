@@ -124,6 +124,17 @@ def build(output):
     values={'CURRENT_NAME':escape(current['name']),'CURRENT_URL':project_url(config['current_project']),'CURRENT_SUMMARY':escape(current['summary']),'PROJECTS':''.join(cards),'OBSERVED':escape(date(observed)),'OBSERVED_RAW':escape(observed,quote=True),'DEADLINE':escape(date(deadline)),'DEADLINE_RAW':escape(deadline,quote=True),'LEVEL':escape(str(progress.get('level') or 'Not available')),'COMPLETED':str(completed),'BEGIN':escape(date(progress.get('begin_at')))}
     disclosure=(ROOT/'README.md').read_text().split('**AI-assisted, human-directed.**',1)[1].split('\n## Say hi',1)[0]
     values['AI_DISCLOSURE']=render_docs('README.md','**AI-assisted, human-directed.**'+disclosure)
+    # Repository curriculum groups, not inferred official milestone deadlines.
+    groups=[('M.0',['42cursus-libft']),('M.1',['42cursus-ft_printf','42cursus-get_next_line','born2beroot']),('M.2',['42cursus-fdf','pipex','42cursus-push_swap','exam-rank-02']),('M.3',['42cursus-philosophers','42cursus-minishell','exam-rank-03'])]
+    milestones=[]
+    for label,slugs in groups:
+        rows=[marks.get(slug,{}) for slug in slugs]
+        complete=all(row.get('validated') is True for row in rows)
+        dates=[row.get('marked_at') for row in rows if row.get('marked_at')]
+        when=date(max(dates)).split(',')[0] if complete and dates else 'In progress' if label=='M.3' else 'Date unavailable'
+        names=', '.join(row.get('name',slug) for row,slug in zip(rows,slugs))
+        milestones.append('<li class="'+('complete' if complete else 'current')+'"><strong>'+label+(' ✓' if complete else ' · now')+'</strong><span>'+escape(when)+'</span><small>'+escape(names)+'</small></li>')
+    values['MILESTONES']=''.join(milestones)
     values['START_RAW']=escape(progress.get('begin_at') or '',quote=True)
     scene=(ROOT/'portfolio/horizon.html').read_text()
     for key,value in values.items():scene=scene.replace('{{'+key+'}}',value)
