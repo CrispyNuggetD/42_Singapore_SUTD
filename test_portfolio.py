@@ -32,7 +32,7 @@ class Portfolio(unittest.TestCase):
     def test_build_contains_only_site_and_published_owner_fields(self):
         with tempfile.TemporaryDirectory() as tmp:
             out=Path(tmp);portfolio.build(out)
-            self.assertEqual({p.name for p in out.iterdir()},{'index.html','current-project.html','how-i-work.html','assets','.nojekyll'})
+            self.assertEqual({p.name for p in out.iterdir()},{'index.html','current-project.html','how-i-work.html','assets','.nojekyll','build.json'})
             home=(out/'index.html').read_text()
             for needle in ('Christopher Nah','LAN42','push_swap','Philosophers','Last checked:','data-until=','AI-assisted, human-directed'):self.assertIn(needle,home)
             for bad in ('{{','client_secret','access_token','teammates','/Users/crispy'):self.assertNotIn(bad,home)

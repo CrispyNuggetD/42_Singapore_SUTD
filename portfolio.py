@@ -11,6 +11,7 @@ import re
 import shlex
 import shutil
 import sys
+import subprocess
 import urllib.request
 from urllib.parse import quote
 
@@ -148,13 +149,23 @@ def build(output):
     shell=(ROOT/'portfolio/document.html').read_text()
     for source,filename,title in [('docs/how-i-work.md','how-i-work.html','Candid 42 tips & workflow')]:
         (output/filename).write_text(shell.replace('{{TITLE}}',escape(title)).replace('{{CONTENT}}',render_docs(source)))
+    # Website build identity is independent of runtime/server release numbers.
+    built=datetime.now(timezone.utc)
+    sha=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    run=os.environ.get('GITHUB_RUN_NUMBER','')
+    run_id=os.environ.get('GITHUB_RUN_ID','')
+    label=('Build #'+run if run.isdigit() else 'Local preview')+' · '+sha[:7]
+    metadata=dict(id=sha+':'+built.isoformat(),built_at=built.isoformat(),commit=sha,label=label)
+    (output/'build.json').write_text(json.dumps(metadata,indent=2)+'\n')
+    history=REPO+'/actions/runs/'+run_id if run_id.isdigit() else REPO+'/actions/workflows/portfolio-pages.yml'
+    stamp='<div class="site-build" data-build-id="'+escape(metadata['id'],quote=True)+'" data-built-at="'+escape(metadata['built_at'],quote=True)+'"><span><a href="'+REPO+'/commit/'+sha+'">'+escape(label)+'</a> · Built '+escape(date(metadata['built_at']))+' · <a href="'+history+'">Deployment history ↗</a></span><span class="build-state" role="status">Website build details</span><button class="check-build" type="button" hidden>Check for updates</button></div>'
     # Version CSS/JS by content so cached assets cannot leave new markup unstyled.
     for page in output.glob('*.html'):
         def revision(match):
             asset=output/match[2]
             digest=hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
             return match[1]+'="'+match[2]+'?v='+digest+'"'
-        page.write_text(re.sub(r'(href|src)="(assets/[^"?]+\.(?:css|js))"',revision,page.read_text()))
+        page.write_text(re.sub(r'(href|src)="(assets/[^"?]+\.(?:css|js))"',revision,page.read_text().replace('{{BUILD_STAMP}}',stamp)))
     (output/'.nojekyll').touch()
 
 def main():

@@ -153,3 +153,10 @@ consistent without turning the default catalogue into a long documentation dump.
 The build adds content hashes to CSS/JS URLs in every generated page, preventing
 new markup from reusing stale browser styles/scripts. No JavaScript is required
 for the showcase, links or setup disclosures.
+
+Every build emits `build.json` and a visible footer stamp (Actions build number,
+commit link and SGT build time; local builds say Local preview). These identify
+website deployments, not LAN42 runtime releases. A same-origin, no-store check
+on page load or the Check for updates button compares the published manifest.
+No GitHub API, visitor telemetry, polling or credentials are involved. Without
+JavaScript the stamp and deployment-history link remain visible.
