@@ -86,9 +86,9 @@ def refresh_api(lan42):
     data=dict(login='hnah',observed_at=datetime.now(timezone.utc).isoformat(),source='42 API, owner-authorized single-user read',projects=rows,level=cursus.get('level'),begin_at=cursus.get('begin_at'),blackholed_at=cursus.get('blackholed_at'))
     (ROOT/'portfolio/progress.json').write_text(json.dumps(data,indent=2)+'\n')
 
-def render_docs(source):
+def render_docs(source, text=None):
     import markdown
-    html=markdown.markdown((ROOT/source).read_text(),extensions=['tables','fenced_code','toc','md_in_html'])
+    html=markdown.markdown((ROOT/source).read_text() if text is None else text,extensions=['tables','fenced_code','toc','md_in_html'])
     def links(match):
         url=match[1]
         if url.startswith(('https:','http:','#','mailto:')):return match[0]
@@ -122,6 +122,8 @@ def build(output):
     completed=sum(p.get('validated') is True for p in progress['projects'])
     template=(ROOT/'portfolio/index.html').read_text()
     values={'CURRENT_NAME':escape(current['name']),'CURRENT_URL':project_url(config['current_project']),'CURRENT_SUMMARY':escape(current['summary']),'PROJECTS':''.join(cards),'OBSERVED':escape(date(observed)),'OBSERVED_RAW':escape(observed,quote=True),'DEADLINE':escape(date(deadline)),'DEADLINE_RAW':escape(deadline,quote=True),'LEVEL':escape(str(progress.get('level') or 'Not available')),'COMPLETED':str(completed),'BEGIN':escape(date(progress.get('begin_at')))}
+    disclosure=(ROOT/'README.md').read_text().split('**AI-assisted, human-directed.**',1)[1].split('\n## Say hi',1)[0]
+    values['AI_DISCLOSURE']=render_docs('README.md','**AI-assisted, human-directed.**'+disclosure)
     values['START_RAW']=escape(progress.get('begin_at') or '',quote=True)
     scene=(ROOT/'portfolio/horizon.html').read_text()
     for key,value in values.items():scene=scene.replace('{{'+key+'}}',value)

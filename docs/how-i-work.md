@@ -19,7 +19,11 @@ That being said, it’s always easier to sketch out ideas to think of a solution
 - **zsh + tmux and my public shell helpers:** make the campus/Mac workspace repeatable; personal paths and toggles stay in `.42-shell-settings.zsh`.
 - **Pen, paper, whiteboards and peers:** still part of doing the work. A generated answer or a passing test is not the same as understanding a program.
 
-I use AI as a teacher and coding assistant while building technical depth. I don’t always know what I don’t know. I aim to check explanations against documentation, experiments and peer feedback, and remain responsible for what I publish. Ask me to explain a design decision; that’s useful feedback too.
+My learning combines textbooks, research papers, documentation, peers and hands-on experiments. AI is another tool in that process: I use it for explanations, exploring alternatives and implementation assistance, including substantial code generation and refactoring. The VS Code integration now lets me work with changes directly in the editor rather than continually copying between chat and code.
+
+The project notes record the questions behind the code: for example, mathematical models of timing and fairness in Philosophers, and state-space and sequence investigations in push_swap. Some are experiments or future directions, not claims about the shipped algorithm. I choose what to investigate, review the implementation and pursue correctness through input checks, error handling and repeated tests. That takes sustained work even with AI assistance. Ask me about a design decision or a test case; those are useful conversations.
+
+See the [portfolio disclosure](../README.md) and individual project READMEs for contribution details. I remain responsible for checking generated explanations and code, communicating limitations and correcting mistakes.
 
 ## Pace and perspective
 

@@ -14,6 +14,8 @@ migration and no dailylogin change is required.
 - Root `portfolio.py`: refresh the README focus, optionally read owner API data,
   and build the static site. `_site` is ignored and contains only site output.
 - `index.html`: authored layout; source placeholders are filled at build time.
+  The AI disclosure is extracted from the root README, so update that canonical
+  wording rather than duplicating it in the HTML template.
 - `docs/how-i-work.md`: candid personal tips and dated current toolkit.
 - `assets/brand.css`: LAN42 visual foundation copied 27 October 2026; portfolio
   layout is `portfolio.css`. Reuse the navy/mint identity, not duplicated prose.

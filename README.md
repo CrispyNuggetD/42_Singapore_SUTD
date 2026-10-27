@@ -32,12 +32,11 @@ pen, paper, whiteboards and peers. These are my tools, not requirements for
 anyone else. My [candid tips](docs/how-i-work.md) keep the practical advice and
 personal perspective—including the old “get an iPad if you can” note.
 
-**AI-assisted, human-directed.** I use AI as a coding assistant and teacher while
-learning through 42’s peer-led approach. Substantial code is AI-assisted. I guide
-the work and test behaviour; I’m still building technical depth and may not know
-which questions to ask. I aim to check explanations against documentation,
-experiments and peer feedback. Passing tests does not prove correctness or
-security; I remain responsible for what I publish and fixing mistakes.
+**AI-assisted, human-directed.** I build these projects through reading, design experiments and repeated testing, drawing on textbooks, research papers, documentation and peer discussion. I use AI to learn unfamiliar concepts, challenge ideas and help implement them—including substantial new code, refactoring, build files, header maintenance and repetitive formatting.
+
+I set the questions and engineering goals, investigate algorithms and trade-offs, and review and test the resulting implementation. Correctness, input validation, error handling and understanding the code are part of the work, beyond meeting the minimum requirements. AI assistance reduces manual work; it also needs checking. I remain responsible for what I publish, explaining its limitations and fixing mistakes.
+
+For concrete examples, see my [push_swap algorithm investigations and contribution notes](Core%20Curriculum/Projects/2_push_swap/README.md#appendix) and [Philosophers timing and fairness exploration](Core%20Curriculum/Projects/3_Philosophers/README.md#learning-point-32). These notes distinguish implemented behaviour, experiments and ideas still under investigation.
 
 ## Say hi or contribute
 
