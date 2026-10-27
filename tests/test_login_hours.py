@@ -119,4 +119,56 @@ other pts/4 host 2026-10-26T01:00:00+00:00 still logged in
         self.assertIn('Rolling 7-day total: 2h 00m',output.getvalue())
 
 
+class Entry(unittest.TestCase):
+    def test_unavailable_api_skips_without_local_fallback_for_any_user(self):
+        from contextlib import redirect_stderr
+        for workflow in (False, True):
+            output=io.StringIO()
+            with self.subTest(workflow=workflow), \
+                 patch.dict(os.environ,{'FORTYTWO_LOGIN':'another-student'},clear=True), \
+                 patch.object(h.sys,'argv',['login_hours.py','hours']+(['--workflow'] if workflow else [])), \
+                 patch.object(h,'snapshot',side_effect=h.Unavailable('API unavailable')), \
+                 patch.object(h,'local_intervals') as local, redirect_stderr(output):
+                self.assertEqual(h.main(),77 if workflow else 0)
+                local.assert_not_called()
+                self.assertIn('Login report skipped',output.getvalue())
+                self.assertIn('Dailylogin can continue',output.getvalue())
+
+    def test_linux_hnah_retains_explicit_local_fallback(self):
+        with patch.dict(os.environ,{'FORTYTWO_LOGIN':'hnah','USER':'hnah'},clear=True), \
+             patch.object(h.sys,'platform','linux'), \
+             patch.object(h.sys,'argv',['login_hours.py','hours']), \
+             patch.object(h,'snapshot',side_effect=h.Unavailable('offline')), \
+             patch.object(h,'local_intervals',return_value=[]) as local, \
+             patch.object(h,'render',return_value=0) as render:
+            self.assertEqual(h.main(),0)
+            local.assert_called_once()
+            self.assertIsNone(render.call_args.args[4])
+            self.assertEqual(render.call_args.args[5],[])
+            self.assertEqual(render.call_args.args[6],'offline')
+
+    def test_mac_hnah_and_other_linux_accounts_do_not_use_local_fallback(self):
+        from contextlib import redirect_stderr
+        for platform, user, login in [('darwin','crispy','hnah'),('linux','other','hnah'),('linux','hnah','other')]:
+            with self.subTest(platform=platform,user=user,login=login), \
+                 patch.dict(os.environ,{'FORTYTWO_LOGIN':login,'USER':user},clear=True), \
+                 patch.object(h.sys,'platform',platform), \
+                 patch.object(h.sys,'argv',['login_hours.py','hours','--workflow']), \
+                 patch.object(h,'snapshot',side_effect=h.Unavailable('offline')), \
+                 patch.object(h,'local_intervals') as local, redirect_stderr(io.StringIO()):
+                self.assertEqual(h.main(),77)
+                local.assert_not_called()
+
+    def test_non_owner_login_uses_api_even_on_mac(self):
+        with patch.dict(os.environ,{'FORTYTWO_LOGIN':'another-student'},clear=True), \
+             patch.object(h.sys,'platform','darwin'), \
+             patch.object(h.sys,'argv',['login_hours.py','hours']), \
+             patch.object(h,'snapshot',return_value={'records':[]}) as snapshot, \
+             patch.object(h,'local_intervals',side_effect=h.Unavailable('not Linux')), \
+             patch.object(h,'render',return_value=0) as render:
+            self.assertEqual(h.main(),0)
+            self.assertEqual(snapshot.call_args.args[0],'another-student')
+            self.assertIsNotNone(render.call_args.args[4])
+
+
 if __name__ == '__main__':unittest.main()

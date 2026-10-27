@@ -124,7 +124,7 @@ def configure(shared_root, settings_path):
     toggle('privatebackup', 'Enable private screen-lock backups and remind me to run setupprivatebackup', True)
     toggle('loginitems', 'Run your personal Bash script as the final step of dli', True)
     location('LOGIN_ITEMS_SCRIPT', 'Your personal login script', home / '.42-login-items.sh')
-    toggle('loginreports', 'Show 42 API login-hour reports on dailylogin (local last fallback)', True)
+    toggle('loginreports', 'Show 42 API login-hour reports on dailylogin (skip if unavailable)', True)
     toggle('startcodex', 'Start Codex (installs if missing and enables full access)')
     location('CODEX_INSTALL_DIR', 'Codex install directory', home / '.local/bin')
     location('CODEX_START_DIR', 'Codex working directory', main)

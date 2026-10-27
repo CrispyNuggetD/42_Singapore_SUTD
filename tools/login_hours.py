@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""42 API campus login reports, with explicitly local wtmp fallback.
+"""42 API campus login reports; unavailable API reports are skipped.
 
 No API keys or tokens are stored in the report cache. Overlapping sessions are
 merged, split at local midnight and clipped to the rolling seven calendar dates.
@@ -128,7 +128,7 @@ def fetch(api, login, start, now):
     queries = [{'range[end_at]': start.isoformat() + ',' + now.isoformat()}, {'filter[active]': 'true'}]
     for query in queries:
         complete = False
-        for page in range(1, 101):
+        for page in range(1, 51):
             batch = api.get(path, **query, **{'page[number]': page, 'page[size]': 100, 'sort': '-begin_at'})
             if not isinstance(batch, list):
                 raise ValueError('API returned an invalid page')
@@ -305,10 +305,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('report', choices=('hours', 'before-noon'))
     parser.add_argument('--refresh', action='store_true', help='Fetch again instead of reusing a five-minute API snapshot')
+    parser.add_argument('--workflow', action='store_true', help='Return skip status 77 for dailylogin reporting')
     args = parser.parse_args()
     login = os.environ.get('FORTYTWO_LOGIN') or os.environ.get('MAIL', '').split('@')[0] or os.environ.get('USER', '')
+    def skip(reason):
+        print('Login report skipped: ' + reason, file=sys.stderr)
+        print('Set FORTYTWO_LOGIN to your own 42 login and configure local API access; '
+              'or disable loginreports with setupzshrc. Dailylogin can continue.', file=sys.stderr)
+        return 77 if args.workflow else 0
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,32}', login):
-        parser.error('Set FORTYTWO_LOGIN to your campus login')
+        return skip('no valid campus login configured.')
     now = datetime.now(UTC)
     try:
         zone = report_zone()
@@ -319,11 +325,20 @@ def main():
     try:
         data = snapshot(login, start, now, max_age=0 if args.refresh else 300)
     except Unavailable as error:
+        # Preserve the established campus hnah workflow. Other accounts and
+        # macOS must not mistake workstation login time for campus API hours.
+        campus_fallback = (sys.platform == 'linux' and
+                           os.environ.get('USER') == 'hnah' and login.lower() == 'hnah')
+        if not campus_fallback:
+            return skip(str(error) + '; API data is required, so no local hours are substituted.')
         reason = str(error)
+
     try:
         local = local_intervals(os.environ.get('USER', login), now)
     except Unavailable:
         local = None
+    if data is None and local is None:
+        return skip('API and campus local login records are unavailable.')
     return render(args.report, login, now, zone, data, local, reason)
 
 

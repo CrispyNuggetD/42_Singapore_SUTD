@@ -34,7 +34,7 @@
 #  4. start_mailbox: check/start the enrolled campus mailbox worker.
 #  5. stayon start --automatic: request the separately installed Stayon runner.
 #  6. adjust_brightness: set screen brightness to setbrightness (0-100).
-#  7. loginbefore12 and hourslogged: prefer 42 API locations; local last fallback.
+#  7. loginbefore12 and hourslogged: require 42 API locations; skip unavailable reports.
 #  8. curproj: enter the project, run make fclean, and open/reuse VS Code.
 #  9. Clear stale profile locks and request Chrome if it is not already running.
 # 10. syncproj: pull the main repository, then commit/push if there are changes.
@@ -98,7 +98,7 @@
 # --- Reports and optional services ---
 # loginbefore12 shows before-noon API logins over the last seven calendar dates.
 # hourslogged uses completed 42 API location intervals for its 50h calculation.
-# Both show fetch time, local discrepancies and explicit local-last fallback.
+# API failures skip nonfatally, except Linux hnah retains labelled local fallback.
 # Active API elapsed time is provisional; overlapping sessions are counted once.
 # adjust_brightness tries GNOME's power service, then xbacklight.
 # MAC_REMOTE_ROOT points to the enrolled mac-remote clone. Run its setup.sh and
@@ -926,7 +926,7 @@ _dailylogin_settings() {
   _dailylogin_control_row startmailbox 'Start mailbox unless its worker is already running'
   _dailylogin_control_row startstayon 'Start stayon in automatic mode'
   _dailylogin_control_row adjustbrightness 'Set brightness to setbrightness'
-  _dailylogin_control_row loginreports 'Show local login-hour reports'
+  _dailylogin_control_row loginreports 'Show API login-hour reports (skip when unavailable)'
   _dailylogin_control_row openproject 'Clean project and open VS Code'
   _dailylogin_control_row openchrome 'Open Chrome if absent'
   _dailylogin_control_row syncmainrepo 'Pull main repo; stage/commit/push changes'
@@ -963,6 +963,11 @@ _dailylogin_run() {
   _dailylogin_log RUN "$label"
   "$@"
   result=$?
+  if (( result == 77 )) && [[ "$control" == loginreports ]]; then
+    (( dailylogin_skipped += 1 ))
+    _dailylogin_log SKIP "$label (API report unavailable; continuing)"
+    return 0
+  fi
   if (( result == 0 )); then
     (( dailylogin_done += 1 ))
     _dailylogin_log DONE "$label"
@@ -1241,8 +1246,8 @@ _dailylogin_tasks() {
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
   _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
-  _dailylogin_run 'Before-noon login report' loginreports loginbefore12 || true
-  _dailylogin_run 'Weekly hours report' loginreports hourslogged || true
+  _dailylogin_run 'Before-noon login report' loginreports loginbefore12 --workflow || true
+  _dailylogin_run 'Weekly hours report' loginreports hourslogged --workflow || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
   _dailylogin_run 'Extra login apps (personal opt-in list; setupapps)' - loginapps run || true
   _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
