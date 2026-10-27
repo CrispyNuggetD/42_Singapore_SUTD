@@ -40,6 +40,8 @@ Summary of my philosopher project and the 1 problem I tried to solve for weeks: 
 
 **My solution to making the cat stop stealing the fork:**
 
+<!-- GitHub math: keep display formulas in math fences and inline formulas in dollar/backtick guards. -->
+
 ```math
 \boxed{
 \begin{aligned}
@@ -2079,12 +2081,12 @@ everyone ten meals per huge cycle, but cluster someone's meals at one end and
 leave a fatal gap before their next turn. Likewise, "eventually" is not enough
 when my philosopher has 800 ms to live.
 
-Let \(a_{i,k}\) be philosopher \(i\)'s \(k\)-th meal-start time and \(D\) be
+Let $`a_{i,k}`$ be philosopher $`i`$'s $`k`$-th meal-start time and $`D`$ be
 time_to_die. My survival target is:
 
-$$
+```math
 a_{i,k+1}-a_{i,k}<D.
-$$
+```
 
 Before the first meal, I measure from simulation start instead. The strict
 inequality matters because my deadline check treats elapsed time >= D as
@@ -2097,19 +2099,19 @@ it does not inherently mean serializing the whole table.
 
 #### My table is an odd cycle
 
-Write the philosopher count as \(n=2m+1\), with \(n\ge3\). Philosopher \(i\)
-conflicts with \(i-1\) and \(i+1\), modulo \(n\). A valid phase \(A\) is an
+Write the philosopher count as $`n=2m+1`$, with $`n\ge3`$. Philosopher $`i`$
+conflicts with $`i-1`$ and $`i+1`$, modulo $`n`$. A valid phase $`A`$ is an
 independent set of this cycle:
 
-$$
+```math
 i\in A \Longrightarrow (i+1)\bmod n\notin A.
-$$
+```
 
-At most \(m=(n-1)/2\) philosophers can eat together. If I mark each eater and
+At most $`m=(n-1)/2`$ philosophers can eat together. If I mark each eater and
 the following non-eater, each eater needs two distinct positions, giving
-\(2|A|\le n\). Alternating positions attains the bound.
+$`2|A|\le n`$. Alternating positions attains the bound.
 
-A periodic clock is a sequence of valid sets \(A_0,\ldots,A_{L-1}\), repeated.
+A periodic clock is a sequence of valid sets $`A_0,\ldots,A_{L-1}`$, repeated.
 I must specify whether membership is fixed, whether phases have equal duration,
 whether consecutive phases may share eaters, and when a phase may advance.
 Otherwise "how many clocks?" has no single finite answer.
@@ -2121,15 +2123,15 @@ ring makes its first and last positions conflict. Three colours suffice.
 
 One explicit assignment is:
 
-$$
+```math
 c(i)=
 \begin{cases}
 i\bmod2,&0\le i<n-1,\\
 2,&i=n-1.
 \end{cases}
-$$
+```
 
-At phase \(t\), only philosophers with \(c(i)=t\bmod3\) are eligible.
+At phase $`t`$, only philosophers with $`c(i)=t\bmod3`$ are eligible.
 
 | Phase | Five philosophers | Seven philosophers |
 | --- | --- | --- |
@@ -2140,12 +2142,12 @@ At phase \(t\), only philosophers with \(c(i)=t\bmod3\) are eligible.
 I repeat A, B, C in the same order. I do not have to mirror the next cycle:
 each philosopher keeps their phase and returns every three phase intervals.
 
-In an ideal schedule with phase interval \(T\), eating duration \(E\), and
-sleep duration \(S\), this requires:
+In an ideal schedule with phase interval $`T`$, eating duration $`E`$, and
+sleep duration $`S`$, this requires:
 
-$$
+```math
 T\ge E,\qquad 3T-E\ge S,\qquad 3T<D.
-$$
+```
 
 These are timing conditions for the prescribed schedule, not a proof that
 ordinary threads will hit their slots. With E = S = T = 200 ms, each meal-start
@@ -2161,12 +2163,12 @@ does not fill every phase.
 My "2.5 + 2.5" idea can instead be expressed as a five-phase clock for five
 philosophers. More generally, for every odd n:
 
-$$
+```math
 \boxed{
 A_t=\{(t+2j)\bmod n:\;j=0,\ldots,m-1\},
 \qquad t=0,\ldots,n-1.
 }
-$$
+```
 
 | Phase | Five philosophers | Seven philosophers |
 | --- | --- | --- |
@@ -2190,15 +2192,15 @@ Why this works as a schedule:
 For n = 3, m = 1, there is just one gap of 3. For larger odd counts,
 the maximum meal-start gap is still three phases, even though the average is:
 
-$$
+```math
 \frac{n}{m}T=\left(2+\frac1m\right)T.
-$$
+```
 
 The ideal timing requirements for n >= 5 are:
 
-$$
+```math
 T\ge E,\qquad 2T-E\ge S,\qquad 3T<D.
-$$
+```
 
 The sleep condition uses the shortest start gap, 2T. For n = 3, use
 3T - E >= S instead. At E = S = T = 200 ms, the gaps are 400 or 600 ms.
@@ -2212,9 +2214,9 @@ and longer sleeping can lower achievable throughput.
 There is also a useful divisibility argument. If every phase has m eaters
 and each philosopher gets r meals in an L-phase cycle:
 
-$$
+```math
 Lm=nr.
-$$
+```
 
 Since gcd(n,m) = 1, n divides L. Therefore n phases is the shortest possible
 equal-service cycle made entirely of maximum-size sets, and it gives r = m.
@@ -2426,18 +2428,18 @@ First I count proper colourings of the labelled cycle with three colours.
 For completeness, fix the first colour and let u_k and v_k count valid
 length-k paths ending in that colour or a different colour respectively:
 
-$$
+```math
 u_1=1,\quad v_1=0,\quad
 u_{k+1}=v_k,\quad v_{k+1}=2u_k+v_k.
-$$
+```
 
 To close the cycle, the last colour must differ from the first, giving
 3v_n = 2^n + 2(-1)^n colourings. For odd n this is 2^n - 2.
 All three colours are necessary, so removing the six colour renamings gives:
 
-$$
+```math
 \frac{2^n-2}{6}
-$$
+```
 
 partitions of the labelled table into three unnamed independent groups.
 
@@ -2573,9 +2575,9 @@ It does not establish a persistent three-colour assignment or a phase barrier.
 
 Without enforced timing, the interval between meal starts includes:
 
-$$
+```math
 E+S+\text{thinking delay}+\text{fork waiting}.
-$$
+```
 
 Fork waiting is variable. An earlier wake-up does not grant priority across
 two different mutexes, and an ordinary mutex is not a FIFO reservation system.
