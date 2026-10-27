@@ -113,3 +113,7 @@ and approaches the recorded horizon with time. Keep the horizon’s hover/focus
 info, native disclosure, motion preference and JS-off fallback. Refresh API data
 through the existing owner command when a deadline/freeze changes. This is a
 playful snapshot visualization, not an official standing/eligibility decision.
+
+The scene leads the homepage with a flip-card countdown, an arrival glide and
+gentle scroll-responsive floating. Time still determines the baseline distance;
+hover/focus holds the profile target still. Motion opt-out covers these effects.
