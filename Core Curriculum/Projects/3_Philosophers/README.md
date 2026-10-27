@@ -2124,11 +2124,7 @@ ring makes its first and last positions conflict. Three colours suffice.
 One explicit assignment is:
 
 ```math
-c(i)=
-\begin{cases}
-i\bmod2,&0\le i<n-1,\\[0pt]
-2,&i=n-1.
-\end{cases}
+c(i)=\begin{cases}i\bmod 2,&0\le i\lt n-1,\\ 2,&i=n-1.\end{cases}
 ```
 
 At phase $`t`$, only philosophers with $`c(i)=t\bmod3`$ are eligible.
