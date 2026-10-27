@@ -2126,7 +2126,7 @@ One explicit assignment is:
 ```math
 c(i)=
 \begin{cases}
-i\bmod2,&0\le i<n-1,\\
+i\bmod2,&0\le i<n-1,\\[0pt]
 2,&i=n-1.
 \end{cases}
 ```
