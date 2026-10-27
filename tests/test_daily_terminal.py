@@ -8,11 +8,22 @@ import tempfile
 import unittest
 from unittest.mock import patch, Mock
 
+REAL_POPEN = subprocess.Popen
+
 spec = importlib.util.spec_from_file_location('daily_terminal', (Path(__file__).resolve().parents[1]/'tools/daily_terminal.py'))
 daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_missing_tmux_suggests_mac_install_and_retry(self):
+        for brew in (None, '/opt/homebrew/bin/brew'):
+            with self.subTest(brew=brew), patch.object(daily.sys, 'platform', 'darwin'), \
+                 patch.object(daily.sys, 'argv', ['daily_terminal.py', 'show']), \
+                 patch.object(daily.shutil, 'which', side_effect=lambda name: brew if name == 'brew' else None):
+                with self.assertRaisesRegex(RuntimeError, 'brew install tmux.*rerun dailylogin') as error:
+                    daily.main()
+                self.assertEqual('https://brew.sh' in str(error.exception), brew is None)
+
     def test_routing_and_maximize_are_personalizable(self):
         with patch.dict(os.environ, {'DAILY_TMUX_SESSION': 'work', 'LAN42_TMUX_SESSION': 'campus'}, clear=True):
             self.assertEqual(daily.session_name('codex'), 'work')
@@ -38,6 +49,14 @@ class Desktop(unittest.TestCase):
                             self.assertNotIn('--full-screen', command)
                         else:
                             self.assertEqual('set zoomed' in command[2], maximize == 'TRUE')
+                            # Execute in zsh to catch =SESSION filename expansion.
+                            if shutil.which('zsh'):
+                                with patch.object(subprocess, 'Popen', REAL_POPEN):
+                                    result = subprocess.run(['zsh', '-f', '-c',
+                                        'tmux() { printf "%s\\n" "$@"; }; ' + command[3]],
+                                    text=True, capture_output=True)
+                                self.assertEqual(result.returncode, 0, result.stderr)
+                                self.assertEqual(result.stdout.splitlines(), ['attach-session', '-t', '=daily'])
 
 @unittest.skipUnless(shutil.which('zsh'), 'zsh unavailable')
 class Shell(unittest.TestCase):

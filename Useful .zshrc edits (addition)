@@ -881,7 +881,7 @@ start_lan42() {
   _dailylogin_enabled "${startlan42:-0}" || return 0
   local launcher="$LAN42_CLONE/lan42.sh"
   if [[ ! -f "$launcher" ]]; then
-    print -u2 -- "LAN42 launcher missing: $launcher"
+    print -u2 -- "LAN42 launcher missing: $launcher. Run setupzshrc to select your LAN42 clone or disable startlan42; then rerun dailylogin."
     return 1
   fi
   # LAN42 initializes the owner host after its launcher has pulled updates.
@@ -965,6 +965,12 @@ _dailylogin_run() {
   else
     (( dailylogin_failed += 1 ))
     _dailylogin_log FAILED "$label (exit $result)"
+    case "$control" in
+      startmailbox) print -u2 -- 'Run setupzshrc to set your own MAC_REMOTE_ROOT; enroll your device locally using that clone’s instructions, then rerun dailylogin.' ;;
+      startstayon) print -u2 -- 'Run setupzshrc to set STAYON_ROOT to your installed runner, or disable startstayon if you do not use it.' ;;
+      openproject) print -u2 -- 'Run setupzshrc to select your own repository and project. Install VS Code if code is unavailable; make fclean requires a project with that target.' ;;
+      *) print -u2 -- "Fix the error shown above, then rerun dailylogin. For personal paths or unwanted optional tasks, run setupzshrc ($control)." ;;
+    esac
   fi
   return "$result"
 }
@@ -980,7 +986,7 @@ _dailylogin_chrome() {
   fi
   local profile_dir="${CHROME_USER_DATA_DIR:-${CHROME_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/google-chrome}"
   command -v google-chrome >/dev/null 2>&1 || {
-    print -u2 -- 'google-chrome is not installed.'
+    print -u2 -- 'Install Google Chrome from https://www.google.com/chrome/, then rerun dailylogin; or run setupzshrc to disable openchrome.'
     return 1
   }
   # Match this user's Chrome processes; do not create another tab/window.
@@ -1058,6 +1064,7 @@ lgi() {
 }
 
 dli() {
+  _dailylogin_dependencies || return $?
   if [[ "${ZSHRC_SETUP_DONE:-0}" == 1 && "${_DAILYLOGIN_REFRESHED:-0}" != 1 ]] && _dailylogin_enabled "$autoupdatezshrc"; then
     _dailylogin_handoff dli "$@"
     return $?
@@ -1105,8 +1112,64 @@ _dailylogin_source() {
   LOGIN_STARTUP_SKIP=1 source "${ZDOTDIR:-$HOME}/.zshrc"
 }
 
+# Resolve known public prerequisites only when explicitly running the workflow.
+# No package installation happens when this file is sourced.
+_dailylogin_dependencies() {
+  local -a needed packages runner
+  local tool package
+  needed=(python3 tmux git)
+  _dailylogin_enabled "${startcodex:-0}" && needed+=(curl)
+  _dailylogin_enabled "${openproject:-0}" && needed+=(make)
+  packages=()
+  for tool in "${needed[@]}"; do
+    command -v "$tool" >/dev/null 2>&1 && continue
+    package="$tool"
+    [[ "$OSTYPE" == darwin* && "$tool" == python3 ]] && package=python
+    packages+=("$package")
+  done
+  (( ${#packages} )) || return 0
+  print -- "dailylogin: installing missing prerequisites: ${packages[*]}"
+  if [[ "$OSTYPE" == darwin* ]]; then
+    command -v brew >/dev/null 2>&1 || {
+      print -u2 -- 'Install Homebrew from https://brew.sh, then rerun dailylogin; it will install the missing packages.'
+      return 1
+    }
+    command brew install "${packages[@]}" || {
+      print -u2 -- "Installation failed. Run: brew install ${packages[*]}; then rerun dailylogin."
+      return 1
+    }
+    # Homebrew may have installed a command since zsh last cached executables.
+    rehash
+  elif command -v apt-get >/dev/null 2>&1; then
+    runner=()
+    if (( EUID != 0 )); then
+      command -v sudo >/dev/null 2>&1 || {
+        print -u2 -- "Ask an administrator to run: apt-get update && apt-get install ${packages[*]}; then rerun dailylogin."
+        return 1
+      }
+      runner=(sudo)
+      [[ -t 0 ]] || runner+=(-n)
+    fi
+    "${runner[@]}" apt-get update && "${runner[@]}" apt-get install -y "${packages[@]}" || {
+      print -u2 -- "Installation failed. In an interactive terminal run: sudo apt-get update && sudo apt-get install ${packages[*]}; then rerun dailylogin."
+      return 1
+    }
+    rehash
+  else
+    print -u2 -- "Install ${packages[*]} using your system package manager, then rerun dailylogin."
+    return 1
+  fi
+  for tool in "${needed[@]}"; do
+    command -v "$tool" >/dev/null 2>&1 || {
+      print -u2 -- "$tool is still unavailable. Check the package installation and PATH, then rerun dailylogin."
+      return 1
+    }
+  done
+}
+
 # Capture output before attaching desktop terminals, preserving the caller's cwd.
 dailylogin() {
+  _dailylogin_dependencies || return $?
   if [[ "${ZSHRC_SETUP_DONE:-0}" == 1 && "${_DAILYLOGIN_REFRESHED:-0}" != 1 ]] && _dailylogin_enabled "$autoupdatezshrc"; then
     _dailylogin_handoff dailylogin "$@"
     return $?

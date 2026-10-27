@@ -111,7 +111,7 @@ def configure(shared_root, settings_path):
     values['ZSHRC_RUNTIME_ROOT'] = os.environ.get('ZSHRC_RUNTIME_ROOT', str(home / '.local/share/42-shell'))
     values['DAILY_TMUX_HELPER'] = str(Path(values['ZSHRC_RUNTIME_ROOT']) / 'daily_terminal.py')
     if toggle('autoupdatezshrc', 'Automatically pull the shared clone and refresh installed helpers on dailylogin'):
-        if not all((Path(root) / name).is_file() for name in
+        if not all(((Path(root) / name).is_file() or (Path(root) / 'tools' / name).is_file()) for name in
                    ('sync_zshrc.py', 'setup_zshrc.py', 'daily_terminal.py', 'Useful .zshrc edits (addition)')):
             raise ValueError('Automatic updates require a clone containing the helper files; no settings saved.')
     toggle('pullotherrepos', 'Pull other repositories under DOCUMENTS_REPOS_ROOT on dailylogin')
