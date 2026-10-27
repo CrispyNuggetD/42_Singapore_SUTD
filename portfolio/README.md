@@ -136,7 +136,7 @@ link is reparented, not cloned; preserve focus, circular pointer targeting,
 motion preferences and offscreen canvas pause.
 
 `data-astronaut-chatter` enables ten brief Unix-time-selected speech bubbles and
-rate-limited mouse proximity reactions. They follow the travelling link, add
+state-based mouse proximity reactions, with immediate departure/return feedback. They follow the travelling link, add
 no audio/telemetry and respect shared motion off and system preferences.
 
 ## Central toolkit catalogue
