@@ -135,6 +135,7 @@ def build(output):
         names=', '.join(row.get('name',slug) for row,slug in zip(rows,slugs))
         milestones.append('<li class="'+('complete' if complete else 'current')+'"><strong>'+label+(' ✓' if complete else ' · now')+'</strong><span>'+escape(when)+'</span><small>'+escape(names)+'</small></li>')
     values['MILESTONES']=''.join(milestones)
+    values['TOOLKIT']=render_docs('docs/toolkit.md')
     values['START_RAW']=escape(progress.get('begin_at') or '',quote=True)
     scene=(ROOT/'portfolio/horizon.html').read_text()
     for key,value in values.items():scene=scene.replace('{{'+key+'}}',value)

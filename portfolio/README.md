@@ -138,3 +138,11 @@ motion preferences and offscreen canvas pause.
 `data-astronaut-chatter` enables ten brief Unix-time-selected speech bubbles and
 rate-limited mouse proximity reactions. They follow the travelling link, add
 no audio/telemetry and respect shared motion off and system preferences.
+
+## Central toolkit catalogue
+
+`docs/toolkit.md` is the canonical component overview and quick integration
+guide, rendered into the homepage at `#toolkit`. Keep effect/footer links pointed
+there; detailed source, demos and licences remain in FOSS Toolbox. Two tools:
+Adaptive Pointer and Event Horizon, with Space backdrop as the latter’s optional
+add-on. Update this section whenever options, filenames or dependencies change.

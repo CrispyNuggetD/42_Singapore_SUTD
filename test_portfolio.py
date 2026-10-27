@@ -44,5 +44,8 @@ class Portfolio(unittest.TestCase):
             self.assertIn('data-event-horizon',home)
             self.assertIn('data-gender="male"',home)
             self.assertIn('assets/event-horizon.js',home)
+            self.assertIn('id="toolkit"',home)
+            self.assertIn('Build your own astronaut scene',home)
+            self.assertIn('Optional Event Horizon add-on',home)
             self.assertIn('class="eh-horizon-info"',home)
             self.assertNotIn('100/125',home)
