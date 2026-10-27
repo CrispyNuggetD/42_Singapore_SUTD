@@ -11,7 +11,7 @@ migration and no dailylogin change is required.
   project. Relative paths only, validated against existing project directories.
 - `progress.json`: selected, owner-authorized 42 API snapshot (hnah only), not
   a campus export. No credentials, contact fields, teammates or raw profile.
-- Root `portfolio.py`: refresh the README focus, optionally read owner API data,
+- `tools/portfolio.py`: refresh the README focus, optionally read owner API data,
   and build the static site. `_site` is ignored and contains only site output.
 - `index.html`: authored layout; source placeholders are filled at build time.
   The AI disclosure is extracted from the root README, so update that canonical
@@ -30,7 +30,7 @@ name and existing `setupzshrc` wizard; no renaming or replacement is needed.
 After changing your local focus, run in this owner clone:
 
 ```sh
-python3 portfolio.py refresh --from-shell
+python3 tools/portfolio.py refresh --from-shell
 ```
 
 This parses only those two exported assignments; it never sources/executes your
@@ -49,7 +49,7 @@ Changing focus changes this stable destination at the next deployment.
 Refresh on the already approved owner computer with LAN42 installed:
 
 ```sh
-python3 portfolio.py refresh-api --lan42 /path/to/42sg-campus-lan
+python3 tools/portfolio.py refresh-api --lan42 /path/to/42sg-campus-lan
 ```
 
 Existing local operator approval and Singapore membership checks are required.
@@ -73,8 +73,8 @@ No-JavaScript visitors see the actual deadline date instead of a live countdown.
 
 ```sh
 python3 -m pip install Markdown==3.7
-python3 -m unittest test_portfolio
-python3 portfolio.py build
+PYTHONPATH=tools python3 -m unittest discover -s tests -p test_portfolio.py
+python3 tools/portfolio.py build
 python3 -m http.server 8766 --directory _site
 ```
 

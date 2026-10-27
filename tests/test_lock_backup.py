@@ -80,6 +80,7 @@ class BackupTests(unittest.TestCase):
             lock_backup.checkpoint(config)
         self.assertEqual(git(self.remote, 'ls-tree', '-r', '--name-only', 'wip/test'), b'chats/session.jsonl\n')
 
+    @patch('setup_private_backup.sys.platform', 'linux')
     def test_public_destination_is_rejected_by_installer(self):
         with patch('setup_private_backup.run', return_value=(str(self.source)+'\n').encode()), \
              patch('setup_private_backup.subprocess.run') as command, \
@@ -89,7 +90,7 @@ class BackupTests(unittest.TestCase):
                 setup_private_backup.install(str(self.source), 'git@github.com:someone/public.git', confirmed=True)
 
     def test_lock_signals_are_deduplicated_and_return_rearms(self):
-        text = (Path(__file__).with_name('lock_backup_watch.py')).read_text()
+        text = ((Path(__file__).resolve().parents[1]/'tools/lock_backup_watch.py')).read_text()
         definition = text[text.index('def evaluate():'):text.index('\ndef properties_changed')]
         events = []
         scope = dict(active=True, locked=False, screen_locked=False, fired=False,

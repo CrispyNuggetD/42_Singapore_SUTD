@@ -28,3 +28,6 @@ bin/
 
 # Public portfolio agent instructions; private root agent notes remain ignored.
 !portfolio/AGENTS.md
+
+# Compiler default executable
+a.out

@@ -1,5 +1,10 @@
 > **Archived README: terminal setup, personal plans, tips and progress notes.** For the public portfolio and current project, start with [README](README.md). Existing paths and terminal workflows remain in place. [Current project ↗](https://crispynuggetd.github.io/42_Singapore_SUTD/current-project.html).
 
+> Current layout: helper source files now live in [`tools/`](tools/README.md),
+> and tests in `tests/`. `python3 sync_zshrc.py` remains a stable root entry point.
+> Other historical root-level Python commands below now need the `tools/` prefix.
+
+
 > **Forgot to push before leaving for the weekend? [Get private backups on screen lock + zsh/tmux helpers](Shell%20automations/README.md).** Helpers-only download available. Requires setup; you still need to share changes with teammates.
 
 # 42 Repository for Christopher Nah (hnah)

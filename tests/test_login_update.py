@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import unittest
 
-SOURCE=Path(__file__).with_name('Useful .zshrc edits (addition)').resolve()
+SOURCE=(Path(__file__).resolve().parents[1]/'Useful .zshrc edits (addition)').resolve()
 
 @unittest.skipUnless(shutil.which('zsh'),'zsh unavailable')
 class WorkflowUpdate(unittest.TestCase):

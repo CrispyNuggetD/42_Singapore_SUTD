@@ -46,7 +46,7 @@ New runtime dependency:
 
 Documentation and portable integration patches:
 
-- `Study Notes/Codex/tmux-quick-guide.html` — colored, offline browser guide.
+- `docs/tmux-quick-guide.html` — colored, offline browser guide.
 - `Study Notes/Codex/tmux-workflow.md` — this file.
 - `Study Notes/Codex/tmux-integrations/lan42-tmux.patch`
 - `Study Notes/Codex/tmux-integrations/stayon-tmux.patch`
@@ -86,5 +86,5 @@ source ~/.zshrc
 ```
 
 Your existing local settings, authentication, mailbox enrollment, and Stayon setup are separate and must already be available.
-By default, `DAILY_TMUX_HELPER` points to `$MAIN_REPO_ROOT/daily_terminal.py`, and `DAILY_TMUX_SESSION` is `daily`.
+By default, `DAILY_TMUX_HELPER` points to `$ZSHRC_RUNTIME_ROOT/daily_terminal.py`, and `DAILY_TMUX_SESSION` is `daily`.
 Set overrides outside the shared markers if your paths differ.

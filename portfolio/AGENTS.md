@@ -2,7 +2,7 @@
 
 Read README.md and portfolio/README.md before changing the public presentation.
 Keep current-project links driven by config.json; on the owner clone use
-`python3 portfolio.py refresh --from-shell` when checking current_proj. Parse only
+`python3 tools/portfolio.py refresh --from-shell` when checking current_proj. Parse only
 the two documented personal settings; never execute/source or publish the file.
 Other contributors should use public config, not import their own local focus.
 
@@ -18,7 +18,7 @@ teammate data. Check retries; a failed retry must not erase validated work.
 Denominators depend on subject version: Libft is max 100 for the owner’s submitted
 version, not an incomplete 100/125. API reports marks; maxima are separate owner-
 provided context in config.json. Keep source/date/staleness honest. Public clients
-never fetch the API. Test with `python3 -m unittest test_portfolio`, build and check
+never fetch the API. Test with `PYTHONPATH=tools python3 -m unittest discover -s tests -p test_portfolio.py`, build and check
 mobile/desktop, JavaScript on/off, links and deadline/cursor fallbacks.
 
 Event Horizon is a separate MIT-licensed toolbox component with a canvas backdrop

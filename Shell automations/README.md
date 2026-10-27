@@ -78,7 +78,7 @@ Helpers only (Git installed):
 ```sh
 git clone --filter=blob:none --sparse https://github.com/CrispyNuggetD/42_Singapore_SUTD.git 42-shell-helpers
 cd 42-shell-helpers
-git sparse-checkout set --no-cone '/README.md' '/AGENTS.md' '/*.py' '/lan42-features.json' '/Useful .zshrc edits (addition)' '/Shell automations/' '/Study Notes/Codex/' '/Setup .vimrc guide' '/Compiling 42.txt' '/Random scripts/'
+git sparse-checkout set --no-cone '/README.md' '/AGENTS.md' '/sync_zshrc.py' '/install_gobreak.py' '/tools/' '/Useful .zshrc edits (addition)' '/Shell automations/' '/Study Notes/Codex/' '/docs/vim-setup.md' '/Piscine Preparation/early-c-exercises/' '/Random scripts/'
 ```
 
 For the whole repo, omit `--filter=blob:none --sparse` and the `sparse-checkout`
@@ -160,7 +160,7 @@ clones. Questions or feedback: **hnah (Christopher Nah), 42SG Cohort 4**, on
 **Stayon is not allowed at 42SG for meeting attendance requirements. It is off in
 my own setup (`startstayon=FALSE`) too.** Campus forced logout still applies.
 
-- [Shared zsh code](../Useful%20.zshrc%20edits%20%28addition%29), [installer](../sync_zshrc.py), [settings wizard](../setup_zshrc.py).
+- [Shared zsh code](../Useful%20.zshrc%20edits%20%28addition%29), [installer](../sync_zshrc.py), [settings wizard](../tools/setup_zshrc.py).
 - [Backup installer](../setup_private_backup.py), [snapshot code](../lock_backup.py), [lock watcher](../lock_backup_watch.py).
 - [Detailed shell guide](../Study%20Notes/Codex/shell-setup.md), [tmux guide](../Study%20Notes/Codex/tmux-workflow.md).
 - [Vim tips](../Setup%20.vimrc%20guide), [compiling notes](../Compiling%2042.txt), [miscellaneous scripts](../Random%20scripts/).

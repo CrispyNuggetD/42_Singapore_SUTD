@@ -221,7 +221,7 @@ badapple() {
 export MAIL="${MAIL:-${USER}@student.42singapore.sg}"
 
 # Current project: set current_proj in your personal .42-shell-settings.zsh, then source ~/.zshrc.
-# Owner portfolio sync (explicit, never run by dailylogin): python3 portfolio.py refresh --from-shell
+# Owner portfolio sync (explicit, never run by dailylogin): python3 tools/portfolio.py refresh --from-shell
 # Public focus snapshot: portfolio/config.json; stable link: Pages/current-project.html
 export current_proj="${current_proj:-2_pipex}"
 
@@ -422,7 +422,7 @@ importhome() {
     pull --no-rebase --ff-only || return 1
   local helper="$ZSHRC_RUNTIME_ROOT/codex_return.py"
   # First update can still be running the previous installer's helper list.
-  [[ -f "$helper" ]] || helper="${ZSHRC_SHARED_ROOT:-$MAIN_REPO_ROOT}/codex_return.py"
+  [[ -f "$helper" ]] || helper="${ZSHRC_SHARED_ROOT:-$MAIN_REPO_ROOT}/tools/codex_return.py"
   command python3 "$helper" import \
     --private "$private" --main-repo "$MAIN_REPO_ROOT" "$@"
 }

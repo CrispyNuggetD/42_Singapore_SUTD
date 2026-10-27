@@ -74,7 +74,7 @@ class SoftQuit(unittest.TestCase):
                            closeappsonleave='TRUE')
                 script = 'source "$1"\nexport PATH="$2:$PATH"\n_42_lock_screen() { print LOCK >> "$EVIDENCE"; }\nleavesch'
                 result = subprocess.run(['zsh', '-f', '-c', script, 'test',
-                                         str(Path(__file__).with_name('Useful .zshrc edits (addition)')), tmp],
+                                         str((Path(__file__).resolve().parents[1]/'Useful .zshrc edits (addition)')), tmp],
                                         env=env, capture_output=True, text=True)
                 self.assertEqual(result.returncode, int(failure), result.stderr)
                 events = (root/'events').read_text()

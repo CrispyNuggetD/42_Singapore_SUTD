@@ -25,6 +25,11 @@
 [Verified marks & progress snapshot](portfolio/progress.json) ·
 [Current-project and site maintenance](portfolio/README.md) · [Agent notes](portfolio/AGENTS.md)
 
+## Around the repository
+
+[Core projects](Core%20Curriculum/Projects) · [Shell helpers & maintenance](tools/README.md) ·
+[Tests](tests) · [Study notes](Study%20Notes) · [Archived setup guide](README-ARCHIVE.md)
+
 ## How I learn and work
 
 I’m **Christopher Nah**, **hnah** at **42 Singapore**. I use an iPad/keyboard,

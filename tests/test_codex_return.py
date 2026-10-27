@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import codex_return as handoff
 
-HELPER = Path(__file__).resolve().parent.parent / '42_Singapore_SUTD_hnah_private/Scripts and Testers/codex_school_import.py'
+HELPER = Path(__file__).resolve().parents[2] / '42_Singapore_SUTD_hnah_private/Scripts and Testers/codex_school_import.py'
 
 
 @unittest.skipUnless(shutil.which('codex') and HELPER.exists(), 'Codex and private helper required')

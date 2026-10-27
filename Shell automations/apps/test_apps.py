@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import Mock,patch
 
 SOURCE=Path(__file__).resolve().parents[2]
-sys.path.insert(0,str(SOURCE))
+sys.path.insert(0,str(SOURCE/"tools"))
 import app_manager as apps
 
 class Apps(unittest.TestCase):
@@ -38,6 +38,7 @@ class Apps(unittest.TestCase):
         with patch.object(apps,'already_running',return_value=True),patch.object(apps.subprocess,'Popen') as start:
             apps.launch_apps();start.assert_not_called()
 
+    @patch.object(apps.sys, 'platform', 'linux')
     def test_missing_search_only_opens_with_explicit_yes(self):
         with patch.object(apps.sys.stdin,'isatty',return_value=True),patch('builtins.input',return_value=''),patch.object(apps.webbrowser,'open') as browser:
             apps.missing('Telegram');browser.assert_not_called()

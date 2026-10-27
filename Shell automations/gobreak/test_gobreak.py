@@ -14,7 +14,7 @@ import unittest
 from unittest.mock import patch
 
 SOURCE = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(SOURCE))
+sys.path.insert(0, str(SOURCE/"tools"))
 import gobreak
 import install_gobreak
 import sync_zshrc
@@ -29,7 +29,7 @@ class GoBreakTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='42-gobreak-test-')
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.docs = self.root / 'Documents'
         self.docs.mkdir()
         self.bin = self.root / 'bin'
@@ -104,6 +104,7 @@ class GoBreakTests(unittest.TestCase):
             self.assertEqual(gobreak.main(), 1)
         self.assertTrue(marker.exists())
 
+    @unittest.skipUnless(shutil.which('flock'), 'Linux desktop launcher requires flock')
     def test_shell_and_standalone_updates_preserve_selection(self):
         repo = self.repo('selected repo')
         other = self.repo('other')
@@ -165,6 +166,7 @@ class GoBreakTests(unittest.TestCase):
             self.assertTrue(install_gobreak.pin_to_dock())
             self.assertEqual(run.call_count, 1)
 
+    @unittest.skipUnless(shutil.which('flock'), 'Linux desktop launcher requires flock')
     def test_no_pin_survives_automatic_sync(self):
         repo = self.repo('one')
         with patch.object(install_gobreak, 'pin_to_dock') as pin:
@@ -184,6 +186,7 @@ class GoBreakTests(unittest.TestCase):
             run.side_effect = subprocess.CalledProcessError(1, 'gsettings')
             self.assertFalse(install_gobreak.pin_to_dock())
 
+    @unittest.skipUnless(shutil.which('flock'), 'Linux desktop launcher requires flock')
     def test_no_codex_persists_and_prevents_cli_lookup(self):
         repo = self.repo('one')
         with contextlib.redirect_stdout(io.StringIO()):
@@ -278,6 +281,7 @@ class GoBreakTests(unittest.TestCase):
                     result=subprocess.run(['zsh','-f','-c',script],env=env,capture_output=True,text=True,timeout=5)
                     self.assertEqual(result.stdout.count('LOCK_ATTEMPTED'),1,result.stdout+result.stderr)
 
+    @unittest.skipUnless(shutil.which('flock'), 'Linux desktop launcher requires flock')
     def test_desktop_launcher_locks_once_when_python_cannot_start_or_terminates(self):
         repo=self.repo('launcher repo')
         marker=self.root/'lock-attempts'

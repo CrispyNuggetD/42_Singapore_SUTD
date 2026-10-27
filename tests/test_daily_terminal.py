@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch, Mock
 
-spec = importlib.util.spec_from_file_location('daily_terminal', Path(__file__).with_name('daily_terminal.py'))
+spec = importlib.util.spec_from_file_location('daily_terminal', (Path(__file__).resolve().parents[1]/'tools/daily_terminal.py'))
 daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
@@ -69,7 +69,7 @@ wait
 print -r -- "PROJECT:$current_proj"
 '''
             result = subprocess.run(['zsh', '-f', '-c', script, 'test', tmp,
-                                     str(Path(__file__).with_name('Useful .zshrc edits (addition)'))],
+                                     str((Path(__file__).resolve().parents[1]/'Useful .zshrc edits (addition)'))],
                                     text=True, capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             self.assertIn('PROJECT:new-project', result.stdout)

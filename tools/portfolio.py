@@ -15,7 +15,7 @@ import subprocess
 import urllib.request
 from urllib.parse import quote
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
 REPO='https://github.com/CrispyNuggetD/42_Singapore_SUTD'
 PAGES='https://crispynuggetd.github.io/42_Singapore_SUTD/'
 START='<!-- portfolio-current:start -->';END='<!-- portfolio-current:end -->'
@@ -125,7 +125,7 @@ def render_docs(source, text=None):
 
 def build(output):
     config=load('config.json');progress=load('progress.json');checked_path(config['current_project'])
-    if current_block(config) not in (ROOT/'README.md').read_text():raise ValueError('README focus is stale. Run python3 portfolio.py refresh first.')
+    if current_block(config) not in (ROOT/'README.md').read_text():raise ValueError('README focus is stale. Run python3 tools/portfolio.py refresh first.')
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
     shutil.copytree(ROOT/'portfolio/assets',output/'assets',dirs_exist_ok=True)
     marks={p['slug']:p for p in progress['projects']}

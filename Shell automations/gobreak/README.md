@@ -21,7 +21,7 @@ chunk**:
 ```sh
 gobreak_repo=$(git rev-parse --show-toplevel) &&
 git clone --filter=blob:none --sparse https://github.com/CrispyNuggetD/42_Singapore_SUTD.git "$HOME/42-gobreak" &&
-git -C "$HOME/42-gobreak" sparse-checkout set --no-cone '/install_gobreak.py' '/gobreak.py' '/leaveschool.py' '/git_side_push.py' '/Shell automations/gobreak/' &&
+git -C "$HOME/42-gobreak" sparse-checkout set --no-cone '/install_gobreak.py' '/tools/' '/Shell automations/gobreak/' &&
 python3 "$HOME/42-gobreak/install_gobreak.py" --repo "$gobreak_repo"
 ```
 

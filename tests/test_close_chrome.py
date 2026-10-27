@@ -58,10 +58,11 @@ class CloseChrome(unittest.TestCase):
                 script = r'''source "$1"
 export PATH="$2:$PATH"
 ft_lock() { print LOCK >> "$EVIDENCE"; }
+_42_lock_screen() { ft_lock; }
 leavesch
 '''
                 result = subprocess.run(['zsh', '-f', '-c', script, 'test',
-                                         str(Path(__file__).with_name('Useful .zshrc edits (addition)')), tmp],
+                                         str((Path(__file__).resolve().parents[1]/'Useful .zshrc edits (addition)')), tmp],
                                         env=env, capture_output=True, text=True)
                 self.assertEqual(result.returncode, int(failure), result.stderr)
                 events = (root/'events').read_text()

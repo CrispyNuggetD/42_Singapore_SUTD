@@ -10,7 +10,7 @@ import app_manager
 import create_login_items
 import mac_mailbox
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class MacApps(unittest.TestCase):
