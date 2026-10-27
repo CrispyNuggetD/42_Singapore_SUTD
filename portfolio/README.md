@@ -117,3 +117,8 @@ playful snapshot visualization, not an official standing/eligibility decision.
 The scene leads the homepage with a flip-card countdown, an arrival glide and
 gentle scroll-responsive floating. Time still determines the baseline distance;
 hover/focus holds the profile target still. Motion opt-out covers these effects.
+
+Optional space-backdrop assets add layered scroll/cursor parallax and occasional
+comets around the opaque grey reading column. The fixed Space motion control
+shares the scene preference. Keep these decorative canvases behind real links,
+and preserve grey no-JS and forced-colour fallbacks.
