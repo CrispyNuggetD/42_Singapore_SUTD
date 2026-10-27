@@ -21,7 +21,7 @@ The portfolio is best explored on desktop with a mouse or trackpad; mobile brows
 | [push_swap](Core%20Curriculum/Projects/2_push_swap/README.md) | Sorting algorithms, constrained operations, a checker and measurement. |
 | [LAN42 BETA ↗](https://crispynuggetd.github.io/42sg-campus-lan/) | A student-built 42 Singapore community app: campus tools, chat, games and consent-based sharing. [Source](https://github.com/CrispyNuggetD/42sg-campus-lan). |
 | [Campus HQ web toolkit ↗](https://crispynuggetd.github.io/42_Singapore_SUTD/#toolkit) | Two reusable tools: Adaptive Pointer and Event Horizon, with an optional space backdrop. Setup instructions, source and licences in one place. |
-| [My terminal workspace](README-ARCHIVE.md#terminal-setup-after-cloning) | zsh/tmux, dailylogin, optional apps, backup-on-lock and Mac/campus workflows. |
+| [My terminal workspace](README-ARCHIVE.md#terminal-setup-after-cloning) | zsh/tmux, dailylogin, automatic prerequisite recovery on Ubuntu/Mac, optional apps and backup-on-lock. |
 
 [Browse all core project folders](Core%20Curriculum/Projects) ·
 [Verified marks & progress snapshot](portfolio/progress.json) ·

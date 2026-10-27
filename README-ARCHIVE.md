@@ -45,8 +45,15 @@ For a tmux session that is already running, run `tmux set -g mouse on` once.
 Running `python3 setup_zshrc.py` alone only saves settings; it does not install
 the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 
-Install `tmux` as well to use the workspace (`sudo apt install tmux` on Ubuntu,
-`brew install tmux` on Mac). This is part of the public workflow for every user.
+Once the helpers are installed, `dailylogin` and `dli` check Python 3, tmux and
+Git before setup or updates, plus curl for enabled Codex startup and make for
+enabled project startup. Missing tools install automatically through Ubuntu's
+apt or macOS Homebrew. Ubuntu may ask for your sudo password. If Homebrew is
+missing or installation fails, the workflow stops with the next recovery step.
+Sourcing `.zshrc` never installs packages. Initial installation above still needs
+Python 3 and zsh; recovery becomes available after the helpers are installed.
+Use `setupzshrc` for your own paths and optional services; friends do not need
+my private repositories. [Recovery details](docs/dailylogin-recovery.md).
 
 When ready, run `dli` to start the tasks you enabled and then your own login script.
 `dailylogin` runs only the shared tasks; `lgi` runs only your personal script. See the
