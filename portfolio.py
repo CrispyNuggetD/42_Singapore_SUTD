@@ -122,6 +122,10 @@ def build(output):
     completed=sum(p.get('validated') is True for p in progress['projects'])
     template=(ROOT/'portfolio/index.html').read_text()
     values={'CURRENT_NAME':escape(current['name']),'CURRENT_URL':project_url(config['current_project']),'CURRENT_SUMMARY':escape(current['summary']),'PROJECTS':''.join(cards),'OBSERVED':escape(date(observed)),'OBSERVED_RAW':escape(observed,quote=True),'DEADLINE':escape(date(deadline)),'DEADLINE_RAW':escape(deadline,quote=True),'LEVEL':escape(str(progress.get('level') or 'Not available')),'COMPLETED':str(completed),'BEGIN':escape(date(progress.get('begin_at')))}
+    values['START_RAW']=escape(progress.get('begin_at') or '',quote=True)
+    scene=(ROOT/'portfolio/horizon.html').read_text()
+    for key,value in values.items():scene=scene.replace('{{'+key+'}}',value)
+    template=template.replace('{{HORIZON}}',scene)
     for key,value in values.items():template=template.replace('{{'+key+'}}',value)
     (output/'index.html').write_text(template)
     destination=escape(project_url(config['current_project']),quote=True)

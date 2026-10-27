@@ -17,7 +17,7 @@
 | [Philosophers](Core%20Curriculum/Projects/3_Philosophers/README.md) | Threads, mutexes, processes and the dining-philosophers problem. |
 | [push_swap](Core%20Curriculum/Projects/2_push_swap/README.md) | Sorting algorithms, constrained operations, a checker and measurement. |
 | [LAN42 BETA ↗](https://crispynuggetd.github.io/42sg-campus-lan/) | A student-built 42 Singapore community app: campus tools, chat, games and consent-based sharing. [Source](https://github.com/CrispyNuggetD/42sg-campus-lan). |
-| [FOSS Toolbox ↗](https://github.com/CrispyNuggetD/RykerTorch-FOSS-Toolbox) | Reusable tools, including the website’s adaptive cursor, with copy/paste instructions and a demo. |
+| [FOSS Toolbox ↗](https://github.com/CrispyNuggetD/RykerTorch-FOSS-Toolbox) | Reusable tools, including the adaptive cursor and Event Horizon space scene, with copy/paste instructions and demos. |
 | [My terminal workspace](README-ARCHIVE.md#terminal-setup-after-cloning) | zsh/tmux, dailylogin, optional apps, backup-on-lock and Mac/campus workflows. |
 
 [Browse all core project folders](Core%20Curriculum/Projects) ·

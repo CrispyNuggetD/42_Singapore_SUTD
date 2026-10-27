@@ -99,3 +99,15 @@ or warning-suppression environment variable is used.
 The shared visual family is **Campus HQ**. Both portfolio page templates link
 the reusable cursor package; its persistent bottom-right dock keeps opt-out and
 source access available without scrolling to the footer.
+
+
+## Event Horizon scene
+
+The MIT toolbox Event Horizon component is vendored with HORIZON-LICENSE.
+`horizon.html` receives the verified snapshot dates at build time; the author’s
+explicit gender setting is male (the reusable component defaults neutral). No
+browser API credentials/calls are involved. The astronaut links to hnah’s Intra
+and approaches the recorded horizon with time. Keep the horizon’s hover/focus
+info, native disclosure, motion preference and JS-off fallback. Refresh API data
+through the existing owner command when a deadline/freeze changes. This is a
+playful snapshot visualization, not an official standing/eligibility decision.

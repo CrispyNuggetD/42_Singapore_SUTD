@@ -20,3 +20,9 @@ version, not an incomplete 100/125. API reports marks; maxima are separate owner
 provided context in config.json. Keep source/date/staleness honest. Public clients
 never fetch the API. Test with `python3 -m unittest test_portfolio`, build and check
 mobile/desktop, JavaScript on/off, links and deadline/cursor fallbacks.
+
+Event Horizon is a separate MIT-licensed toolbox component with a canvas backdrop
+and semantic profile link/horizon disclosure. Preserve its motion opt-out,
+offscreen/hidden-tab pause, no-JS content and explicit gender configuration.
+Never infer gender from API/profile names. The author selects male; reusable
+default is neutral. Use only the existing owner snapshot for deadline data.

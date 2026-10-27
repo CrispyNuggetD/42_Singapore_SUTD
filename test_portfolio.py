@@ -39,4 +39,8 @@ class Portfolio(unittest.TestCase):
             self.assertIn(portfolio.project_url(portfolio.load('config.json')['current_project']),(out/'current-project.html').read_text())
             self.assertIn('iSH',(out/'how-i-work.html').read_text())
             self.assertIn('100/100 · API mark',home)
+            self.assertIn('data-event-horizon',home)
+            self.assertIn('data-gender="male"',home)
+            self.assertIn('assets/event-horizon.js',home)
+            self.assertIn('class="eh-horizon-info"',home)
             self.assertNotIn('100/125',home)
