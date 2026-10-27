@@ -1,4 +1,10 @@
 (()=>{
+  const link=document.querySelector('.back-to-top');if(!link)return;
+  const update=()=>{link.hidden=scrollY<420;};
+  window.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('pageshow',update);update();
+})();
+(()=>{
   const element=document.getElementById('deadline');if(!element)return;
   const deadline=Date.parse(element.dataset.until),observed=Date.parse(element.dataset.observed);
   if(!Number.isFinite(deadline)||!Number.isFinite(observed))return;
