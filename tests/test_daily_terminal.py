@@ -15,6 +15,12 @@ daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_attachment_count_tolerates_incomplete_session_rows(self):
+        for row, expected in [('Work\t1',1), ('Work\t0',0), ('Work\t',0),
+                              ('Work',0), ('Work\tinvalid',0), ('LAN42\t1',0)]:
+            with self.subTest(row=row), patch.object(daily, 'tmux', return_value=Mock(stdout=row)):
+                self.assertEqual(daily.attached('Work'),expected)
+
     def test_missing_tmux_suggests_mac_install_and_retry(self):
         for brew in (None, '/opt/homebrew/bin/brew'):
             with self.subTest(brew=brew), patch.object(daily.sys, 'platform', 'darwin'), \

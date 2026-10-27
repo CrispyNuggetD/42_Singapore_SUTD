@@ -562,7 +562,11 @@ curproj() {
         -- "$PROJECTS_ROOT/$current_proj" 2>/dev/null)
 
       today=$(date +%Y-%m-%d)
-      yesterday=$(date -d 'yesterday' +%Y-%m-%d)
+      if [[ "$OSTYPE" == darwin* ]]; then
+        yesterday=$(command date -v-1d +%Y-%m-%d) || return 1
+      else
+        yesterday=$(command date -d 'yesterday' +%Y-%m-%d) || return 1
+      fi
 
       # Warn if last sync was not today or yesterday
       if [ "$last_sync_date" != "$today" ] && [ "$last_sync_date" != "$yesterday" ]; then

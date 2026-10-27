@@ -119,7 +119,9 @@ def attached(session):
     for row in rows:
         name, _, count = row.partition("\t")
         if name == session:
-            return int(count)
+            # A vanished session or incomplete format result is not an
+            # attachment. Keep waiting instead of crashing the GUI launch.
+            return int(count) if count.isdecimal() else 0
     return 0
 
 def maximize_enabled():
