@@ -123,7 +123,7 @@ class GoBreakTests(unittest.TestCase):
             # Unchanged zshrc must still refresh both payloads.
             sync_zshrc.sync(SOURCE / 'Useful .zshrc edits (addition)', target, runtime=runtime)
             self.assertEqual(config.read_text(), saved)
-            self.assertEqual(standalone.read_bytes(), (SOURCE / 'gobreak.py').read_bytes())
+            self.assertEqual(standalone.read_bytes(), (SOURCE / 'tools/gobreak.py').read_bytes())
             self.assertEqual((runtime / 'gobreak.py').read_bytes(), standalone.read_bytes())
             (runtime / 'gobreak.py').write_text('# stale shell again\n')
             install_gobreak.install(SOURCE, repo=repo)
