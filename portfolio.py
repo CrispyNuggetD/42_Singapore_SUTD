@@ -88,6 +88,31 @@ def refresh_api(lan42):
     data=dict(login='hnah',observed_at=datetime.now(timezone.utc).isoformat(),source='42 API, owner-authorized single-user read',projects=rows,level=cursus.get('level'),begin_at=cursus.get('begin_at'),blackholed_at=cursus.get('blackholed_at'))
     (ROOT/'portfolio/progress.json').write_text(json.dumps(data,indent=2)+'\n')
 
+
+def protect_external_links(document):
+    """Keep Campus HQ navigation local; external HTTP(S) links get a new tab."""
+    from html.parser import HTMLParser
+    from urllib.parse import urlsplit
+    offsets=[0]
+    for line in document.splitlines(keepends=True):offsets.append(offsets[-1]+len(line))
+    edits=[]
+    class Links(HTMLParser):
+        def handle_starttag(self,tag,attrs):
+            if tag!='a':return
+            attributes=dict(attrs);url=urlsplit(attributes.get('href') or '')
+            if url.scheme and url.scheme not in ('http','https'):return
+            external=bool(url.netloc and url.netloc.lower()!='crispynuggetd.github.io')
+            raw=self.get_starttag_text()
+            cleaned=re.sub(r"\s+target\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s>]+)",'',raw,flags=re.I)
+            if external:
+                cleaned=re.sub(r"\s+rel\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s>]+)",'',cleaned,flags=re.I)
+                rel=set((attributes.get('rel') or '').split())|{'noopener','noreferrer'}
+                cleaned=cleaned[:-1]+' target="_blank" rel="'+escape(' '.join(sorted(rel)),quote=True)+'"'+(' title="Opens in a new tab"' if 'title' not in attributes else '')+'>'
+            line,column=self.getpos();begin=offsets[line-1]+column;edits.append((begin,begin+len(raw),cleaned))
+    Links(convert_charrefs=True).feed(document)
+    for begin,end,replacement in reversed(edits):document=document[:begin]+replacement+document[end:]
+    return document
+
 def render_docs(source, text=None):
     import markdown
     html=markdown.markdown((ROOT/source).read_text() if text is None else text,extensions=['tables','fenced_code','toc','md_in_html'])
@@ -145,7 +170,7 @@ def build(output):
     for key,value in values.items():template=template.replace('{{'+key+'}}',value)
     (output/'index.html').write_text(template)
     destination=escape(project_url(config['current_project']),quote=True)
-    (output/'current-project.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url='+destination+'"><title>Current project · hnah</title><p>Current project: <a href="'+destination+'">'+escape(current['name'])+'</a></p><p><a href="index.html">Back to portfolio</a></p></html>')
+    (output/'current-project.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Current project · hnah</title><p>Current project README (opens in a new tab): <a href="'+destination+'">'+escape(current['name'])+'</a></p><p><a href="index.html">Back to portfolio</a></p></html>')
     shell=(ROOT/'portfolio/document.html').read_text()
     for source,filename,title in [('docs/how-i-work.md','how-i-work.html','Candid 42 tips & workflow')]:
         (output/filename).write_text(shell.replace('{{TITLE}}',escape(title)).replace('{{CONTENT}}',render_docs(source)))
@@ -165,7 +190,7 @@ def build(output):
             asset=output/match[2]
             digest=hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
             return match[1]+'="'+match[2]+'?v='+digest+'"'
-        page.write_text(re.sub(r'(href|src)="(assets/[^"?]+\.(?:css|js))"',revision,page.read_text().replace('{{BUILD_STAMP}}',stamp)))
+        page.write_text(re.sub(r'(href|src)="(assets/[^"?]+\.(?:css|js))"',revision,protect_external_links(page.read_text().replace('{{BUILD_STAMP}}',stamp))))
     (output/'.nojekyll').touch()
 
 def main():

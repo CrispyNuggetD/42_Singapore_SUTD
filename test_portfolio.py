@@ -7,6 +7,15 @@ from unittest.mock import patch
 import portfolio
 
 class Portfolio(unittest.TestCase):
+    def test_external_links_preserve_the_site_and_internal_links_stay_local(self):
+        source="""<a href="https://github.com/example">Source</a><a href="#section" target="_blank">Section</a><a href="https://crispynuggetd.github.io/42sg-campus-lan/" target="_blank">Campus HQ</a><script>const sample='<a href="https://example.com">';</script>"""
+        result=portfolio.protect_external_links(source)
+        self.assertIn('href="https://github.com/example" target="_blank"',result)
+        self.assertIn('rel="noopener noreferrer"',result)
+        self.assertIn('<a href="#section">',result)
+        self.assertIn('<a href="https://crispynuggetd.github.io/42sg-campus-lan/">',result)
+        self.assertIn("""<script>const sample='<a href="https://example.com">';</script>""",result)
+
     def test_focus_is_safe_and_matches_readme(self):
         c=portfolio.load('config.json')
         self.assertIn(portfolio.current_block(c),(portfolio.ROOT/'README.md').read_text())

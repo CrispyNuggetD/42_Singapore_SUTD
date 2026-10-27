@@ -164,3 +164,11 @@ JavaScript the stamp and deployment-history link remain visible.
 The astronaut offers GitHub for everyone and Intra for 42 students through a
 labelled chooser. Both open in new tabs. Preserve authored fallback links,
 HTTPS validation, keyboard/Escape handling and the panel's viewport bounds.
+
+## Preserve the visitor's place
+
+The build enforces new tabs with `noopener noreferrer` for external HTTP(S)
+anchors, including rendered Markdown. Relative/fragment links and links across
+the same Campus HQ Pages host stay in the current tab. Dynamic links must follow
+the same rule; never add an automatic off-site redirect. Preserve native links
+for no-JavaScript visitors. Test both internal and external destinations.

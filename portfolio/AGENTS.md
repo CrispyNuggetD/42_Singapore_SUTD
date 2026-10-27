@@ -26,3 +26,8 @@ and semantic profile link/horizon disclosure. Preserve its motion opt-out,
 offscreen/hidden-tab pause, no-JS content and explicit gender configuration.
 Never infer gender from API/profile names. The author selects male; reusable
 default is neutral. Use only the existing owner snapshot for deadline data.
+
+Campus HQ link policy: same-site links (including the shared Pages host) stay
+in the same tab. External HTTP(S) links open a new tab with noopener/noreferrer;
+apply this to generated Markdown and dynamic controls too. Keep no-JS ordinary
+link fallbacks, and never auto-redirect visitors away to an external site.
