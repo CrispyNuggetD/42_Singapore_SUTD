@@ -47,7 +47,7 @@ the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 
 Once the helpers are installed, `dailylogin` and `dli` check Python 3, tmux and
 Git before setup or updates, plus curl for enabled Codex startup and make for
-enabled project startup. Ubuntu never uses sudo: missing tmux gets a private
+enabled project startup. Ubuntu never uses sudo: missing tmux prompts before a private
 package download/extraction in your account. Python/Git and optional curl/make
 must already be available from the school environment; they are checked, not
 installed on Linux. Mac recovery uses Homebrew. Failed recovery prints the next

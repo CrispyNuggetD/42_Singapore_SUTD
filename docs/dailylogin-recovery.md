@@ -6,7 +6,7 @@ Install the shared shell block using its installation instructions, then run
 Before setup or updates, `dailylogin` and `dli` check Python 3, tmux and Git.
 Enabled Codex startup also checks curl; enabled project startup checks make.
 Ubuntu does not run sudo or install/update system packages. Missing tmux is
-prepared under `~/.local/share/42-tools/tmux` using `apt-get download` and
+offered with a `[y/N]` prompt, then prepared under `~/.local/share/42-tools/tmux` using `apt-get download` and
 `dpkg-deb --extract` with existing repository metadata. The private wrapper is
 checked before use and its library settings apply only to tmux. Network/mirror
 restrictions, stale metadata or unavailable package tools can prevent recovery;
