@@ -628,11 +628,18 @@ syncdocs() (
       (( failed += 1 ))
       continue
     fi
+    local before_revision=$(git -C "$repo" rev-parse HEAD 2>/dev/null)
     # No password prompts: inaccessible remotes must not block the whole batch.
     # Refuse merges/rebases/autostash; preserve local work if a pull cannot apply.
     if GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes -o ConnectTimeout=10" \
       git -C "$repo" -c merge.autostash=false -c rebase.autostash=false pull --no-rebase --ff-only; then
       (( updated += 1 ))
+      if [[ "${repo:A}" == "${LAN42_CLONE:A}" && -f "$repo/campus_lan/updater.py" ]]; then
+        (builtin cd -- "$repo" && command python3 -m campus_lan.updater --request-reload --previous "$before_revision") || {
+          print -u2 -- 'LAN42 reload check failed; running connections are kept.'
+          (( failed += 1 ))
+        }
+      fi
     else
       print -u2 -- "Pull failed for $repo; local work preserved. Continuing."
       (( failed += 1 ))
