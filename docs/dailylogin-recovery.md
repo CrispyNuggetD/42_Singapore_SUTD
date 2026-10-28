@@ -5,12 +5,16 @@ Install the shared shell block using its installation instructions, then run
 
 Before setup or updates, `dailylogin` and `dli` check Python 3, tmux and Git.
 Enabled Codex startup also checks curl; enabled project startup checks make.
-Missing tools are installed automatically with `apt-get update` and
-`apt-get install -y` on Ubuntu, or `brew install` on macOS. Ubuntu uses sudo
-when needed; an interactive terminal can ask for your password. Unattended
-runs use sudo -n and report the recovery command if privileges are unavailable.
-Install failures stop startup before any daily tasks run. Successful installs
-are checked again before continuing. Existing tools are left alone.
+Ubuntu does not run sudo or install/update system packages. Missing tmux is
+prepared under `~/.local/share/42-tools/tmux` using `apt-get download` and
+`dpkg-deb --extract` with existing repository metadata. The private wrapper is
+checked before use and its library settings apply only to tmux. Network/mirror
+restrictions, stale metadata or unavailable package tools can prevent recovery;
+use LAN42's direct `lan42_here` launcher while resolving workspace setup.
+Python, Git, curl and make are checked but not automatically installed on Linux:
+load the school's available executables on PATH. Python itself must already be
+available to install the shared helpers. No unsupported rootless Python install
+or privileged workaround is attempted. macOS retains Homebrew recovery.
 
 On a Mac without Homebrew, the message links to Homebrew setup; rerun dailylogin
 after installing it. Other package managers receive a list of missing tools.

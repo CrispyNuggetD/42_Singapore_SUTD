@@ -187,16 +187,12 @@ else
   compctl -f copypwd
 fi
 
-# Explicit installation only; sourcing .zshrc never invokes sudo or apt.
+# Check the school-provided clipboard backend; never invoke sudo.
 setupclipboard() {
   if [[ "$OSTYPE" == darwin* ]]; then
     print -- 'macOS provides pbcopy; no installation needed.'
     return 0
   fi
-  command -v apt-get >/dev/null 2>&1 || {
-    print -u2 -- 'Install wl-clipboard (Wayland) or xclip (X11) using your package manager.'
-    return 1
-  }
   local package=xclip backend=xclip
   if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
     package=wl-clipboard
@@ -206,7 +202,8 @@ setupclipboard() {
     print -- "$backend is already installed. Use: pwd | clipboard"
     return 0
   fi
-  command sudo apt-get install "$package"
+  print -u2 -- "Load a school-provided $backend on PATH. Clipboard setup does not use sudo or change system packages."
+  return 1
 }
 
 # Play Bad Apple; download its assets only on the first invocation.
@@ -1124,7 +1121,11 @@ _dailylogin_source() {
 # Resolve known public prerequisites only when explicitly running the workflow.
 # No package installation happens when this file is sourced.
 _dailylogin_dependencies() {
-  local -a needed packages runner
+  local -a needed packages
+  if [[ -x "${FORTYTWO_TOOLS_ROOT:-$HOME/.local/share/42-tools}/tmux/bin/tmux" ]]; then
+    typeset -U path
+    path=("${FORTYTWO_TOOLS_ROOT:-$HOME/.local/share/42-tools}/tmux/bin" $path)
+  fi
   local tool package
   needed=(python3 tmux git)
   _dailylogin_enabled "${startcodex:-0}" && needed+=(curl)
@@ -1137,7 +1138,7 @@ _dailylogin_dependencies() {
     packages+=("$package")
   done
   (( ${#packages} )) || return 0
-  print -- "dailylogin: installing missing prerequisites: ${packages[*]}"
+  print -- "dailylogin: checking recovery for missing prerequisites: ${packages[*]}"
   if [[ "$OSTYPE" == darwin* ]]; then
     command -v brew >/dev/null 2>&1 || {
       print -u2 -- 'Install Homebrew from https://brew.sh, then rerun dailylogin; it will install the missing packages.'
@@ -1149,28 +1150,23 @@ _dailylogin_dependencies() {
     }
     # Homebrew may have installed a command since zsh last cached executables.
     rehash
-  elif command -v apt-get >/dev/null 2>&1; then
-    runner=()
-    if (( EUID != 0 )); then
-      command -v sudo >/dev/null 2>&1 || {
-        print -u2 -- "Ask an administrator to run: apt-get update && apt-get install ${packages[*]}; then rerun dailylogin."
+  else
+    # School Ubuntu accounts have no sudo. Only tmux has a packaged user-level
+    # recovery here; other prerequisites must come from the school environment.
+    if ! command -v tmux >/dev/null 2>&1; then
+      command -v python3 >/dev/null 2>&1 || {
+        print -u2 -- 'Load the school-provided Python 3 on PATH, then rerun dailylogin. No system installer is run.'
         return 1
       }
-      runner=(sudo)
-      [[ -t 0 ]] || runner+=(-n)
+      local resolved_tmux
+      resolved_tmux=$(command python3 "$ZSHRC_RUNTIME_ROOT/ensure_tmux.py") || return 1
+      export PATH="${resolved_tmux:h}:$PATH"
+      rehash
     fi
-    "${runner[@]}" apt-get update && "${runner[@]}" apt-get install -y "${packages[@]}" || {
-      print -u2 -- "Installation failed. In an interactive terminal run: sudo apt-get update && sudo apt-get install ${packages[*]}; then rerun dailylogin."
-      return 1
-    }
-    rehash
-  else
-    print -u2 -- "Install ${packages[*]} using your system package manager, then rerun dailylogin."
-    return 1
   fi
   for tool in "${needed[@]}"; do
     command -v "$tool" >/dev/null 2>&1 || {
-      print -u2 -- "$tool is still unavailable. Check the package installation and PATH, then rerun dailylogin."
+      print -u2 -- "$tool is still unavailable. Load a school-provided executable on PATH, then rerun dailylogin. No sudo or system package installation is attempted on Linux."
       return 1
     }
   done

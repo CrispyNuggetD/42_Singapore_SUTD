@@ -132,7 +132,7 @@ then run `source ~/.zshrc`. Update with `git pull --ff-only`, then
 ### Optional-command effects
 
 Project opening runs `make fclean`; Git sync can stage/commit/push; Codex startup
-enables full access. `setupclipboard` can invoke sudo for dependencies. The separate
+enables full access. `setupclipboard` checks the school-provided clipboard backend without sudo. The separate
 `leavesch` command closes all tmux sessions after successful syncing; lock backups
 do not. A configured private chat-return clone is checked/pulled by `dli`; otherwise
 that task is skipped.

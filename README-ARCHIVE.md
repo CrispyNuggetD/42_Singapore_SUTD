@@ -47,9 +47,11 @@ the terminal helpers. Run `setupzshrc` again whenever you want to change them.
 
 Once the helpers are installed, `dailylogin` and `dli` check Python 3, tmux and
 Git before setup or updates, plus curl for enabled Codex startup and make for
-enabled project startup. Missing tools install automatically through Ubuntu's
-apt or macOS Homebrew. Ubuntu may ask for your sudo password. If Homebrew is
-missing or installation fails, the workflow stops with the next recovery step.
+enabled project startup. Ubuntu never uses sudo: missing tmux gets a private
+package download/extraction in your account. Python/Git and optional curl/make
+must already be available from the school environment; they are checked, not
+installed on Linux. Mac recovery uses Homebrew. Failed recovery prints the next
+step instead of requesting administrator access.
 Sourcing `.zshrc` never installs packages. Initial installation above still needs
 Python 3 and zsh; recovery becomes available after the helpers are installed.
 Use `setupzshrc` for your own paths and optional services; friends do not need

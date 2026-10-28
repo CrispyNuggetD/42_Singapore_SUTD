@@ -19,7 +19,7 @@ class Dependencies(unittest.TestCase):
             stub = root / 'stub'
             stub.write_text('#!/bin/sh\nexit 0\n')
             stub.chmod(0o755)
-            for name in ('git', 'python3', 'curl', 'make'):
+            for name in ('git', 'curl', 'make'):
                 (root / name).symlink_to(stub)
             if manager:
                 installer = root / manager
@@ -27,6 +27,10 @@ class Dependencies(unittest.TestCase):
                     ('exit 9\n' if fail else
                      'case "$*" in *install*) /bin/ln -s "$CASE_ROOT/stub" "$CASE_ROOT/tmux" ;; esac\n'))
                 installer.chmod(0o755)
+            python = root / 'python3'
+            python.write_text('#!/bin/sh\necho user-tmux >> "$CASE_ROOT/log"\n' +
+                ('exit 1\n' if fail else '/bin/ln -s "$CASE_ROOT/stub" "$CASE_ROOT/tmux"\necho "$CASE_ROOT/tmux"\n'))
+            python.chmod(0o755)
             sudo = root / 'sudo'
             sudo.write_text('#!/bin/sh\n[ "$1" != -n ] || shift\nexec "$@"\n')
             sudo.chmod(0o755)
@@ -40,7 +44,7 @@ class Dependencies(unittest.TestCase):
     def test_ubuntu_installs_then_verifies(self):
         result, log = self.run_case('linux-gnu', 'apt-get')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(log.splitlines(), ['update', 'install -y tmux'])
+        self.assertEqual(log.splitlines(), ['user-tmux'])
 
     def test_mac_installs_then_verifies(self):
         result, log = self.run_case('darwin', 'brew')
@@ -50,8 +54,9 @@ class Dependencies(unittest.TestCase):
     def test_install_failure_reports_recovery(self):
         result, _ = self.run_case('linux-gnu', 'apt-get', fail=True)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn('sudo apt-get update', result.stderr)
-        self.assertIn('rerun dailylogin', result.stderr)
+        self.assertNotIn('sudo apt-get', result.stderr)
+        # A failed rootless helper stops the workflow before task startup.
+        self.assertIn('user-tmux', _)
 
     def test_missing_homebrew_explains_bootstrap(self):
         result, _ = self.run_case('darwin', None)
