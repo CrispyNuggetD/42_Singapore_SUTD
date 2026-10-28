@@ -794,6 +794,7 @@ start_mailbox() {
     return 0
   fi
 
+  update_codex || print -u2 -- "Codex update failed; mailbox will use its available CLI."
   local mailbox_root="${MAC_REMOTE_ROOT:-$HOME/mac-remote}"
   if [[ "$OSTYPE" == darwin* ]]; then
     local runtime="${MAC_MAILBOX_RUNTIME:-$HOME/Library/Application Support/mac-remote}"
@@ -858,8 +859,8 @@ PYLOCK
 printf "42 mailbox: detaching keeps the worker running. Ctrl-C stops it.\n"
 bash device.sh start
 worker_result=$?
-printf "\nMailbox stopped (exit %s). Check messages above; press Enter to close.\n" "$worker_result"
-read -r _'
+printf "\nMailbox stopped (exit %s). Run start_mailbox to recover this pane.\n" "$worker_result"
+exit "$worker_result"'
   _daily_terminal open --cwd "$mailbox_root" mailbox -- bash -c "$worker_command" mailbox "$mailbox_root"
 }
 
@@ -1292,7 +1293,12 @@ print("Restart Codex and start a new session to load the defaults.")
 PYCODEX
 }
 
-# Install the official standalone CLI only when missing, then open its tmux window.
+# Refresh official CLI and daemon packages once per day, preserving live sessions.
+update_codex() {
+  command python3 "$ZSHRC_RUNTIME_ROOT/codex_update.py" "$@"
+}
+
+# Update the standalone CLI and daemon, then open its tmux window.
 # Optional local overrides: CODEX_INSTALL_DIR and CODEX_START_DIR.
 # Use the general workspace unless the caller explicitly chooses a directory.
 codex() {
@@ -1307,6 +1313,7 @@ codex() {
 
 start_codex() {
   _dailylogin_enabled "${startcodex:-0}" || return 0
+  update_codex || print -u2 -- "Codex update failed; keeping the available installation and retrying next login."
   local install_dir="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
   local codex_bin installer
   local start_dir="${CODEX_START_DIR:-$MAIN_REPO_ROOT}"
@@ -1338,9 +1345,9 @@ start_codex() {
 "$2" --ask-for-approval never --sandbox danger-full-access
 result=$?
 if [ "$result" -ne 0 ]; then
-  printf "Codex exited with status %s. Press Enter to close.\n" "$result"
-  read -r _
-fi'
+  printf "Codex exited with status %s. Run start_codex to recover this pane.\n" "$result"
+fi
+exit "$result"'
   _daily_terminal open --cwd "$start_dir" codex -- bash -c "$launch" codex-window "$start_dir" "$codex_bin" || return 1
   print -- 'Codex is in tmux. Use workterm to return; sign in there if prompted.'
 }

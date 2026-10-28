@@ -121,6 +121,29 @@ class Sessions(unittest.TestCase):
             finally:
                 daily.tmux('kill-server', check=False)
 
+    def test_dead_pane_recovers_without_replacing_live_work(self):
+        import time
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
+                'DAILY_TMUX_SOCKET': tmp + '/tmux.sock', 'XDG_STATE_HOME': tmp}):
+            try:
+                live = daily.open_window('work', 'codex', tmp, ['sleep', '60'])
+                original = daily.tmux('display-message', '-p', '-t', live, '#{pane_pid}').stdout
+                dead = daily.open_window('work', 'mailbox', tmp, ['sh', '-c', 'exit 7'])
+                for _ in range(100):
+                    if daily.tmux('display-message', '-p', '-t', dead, '#{pane_dead}').stdout.strip() == '1':
+                        break
+                    time.sleep(.01)
+                self.assertEqual(daily.tmux('display-message', '-p', '-t', dead, '#{pane_dead_status}').stdout.strip(), '7')
+                recovered = daily.open_window('work', 'mailbox', tmp, ['sleep', '60'])
+                self.assertEqual(recovered, dead)
+                self.assertEqual(daily.tmux('display-message', '-p', '-t', dead, '#{pane_dead}').stdout.strip(), '0')
+                self.assertEqual(daily.open_window('work', 'codex', tmp, ['false']), live)
+                self.assertEqual(daily.tmux('display-message', '-p', '-t', live, '#{pane_pid}').stdout, original)
+                self.assertEqual(len(daily.tmux('list-windows', '-t', '=work').stdout.splitlines()), 2)
+                print('Verified: mailbox exit 7 recovered in place; live Codex PID preserved; two windows only.')
+            finally:
+                daily.tmux('kill-server', check=False)
+
     def test_roles_reuse_windows_and_keep_lan_separate(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
                 'DAILY_TMUX_SOCKET': tmp + '/tmux.sock', 'XDG_STATE_HOME': tmp,
