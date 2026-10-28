@@ -15,6 +15,44 @@ daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_lan42_uses_second_gnome_tab_with_separate_session(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
+                'XDG_STATE_HOME': tmp, 'DISPLAY': ':test', 'LAN42_TMUX_SESSION': 'campus'}, clear=True), \
+             patch.object(daily.sys, 'platform', 'linux'), \
+             patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'attached', side_effect=[0, 1]), \
+             patch.object(daily, 'gnome_parent', return_value={'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/work', 'GNOME_TERMINAL_SERVICE': ':1.22'}), \
+             patch.object(daily.shutil, 'which', return_value='/usr/bin/gnome-terminal'), \
+             patch.object(daily.subprocess, 'Popen', return_value=Mock()) as launch:
+            daily.show('campus')
+            command = launch.call_args.args[0]
+            self.assertEqual(launch.call_args.kwargs['env']['GNOME_TERMINAL_SCREEN'], '/org/gnome/Terminal/screen/work')
+            self.assertEqual(launch.call_args.kwargs['env']['GNOME_TERMINAL_SERVICE'], ':1.22')
+            self.assertIn('--tab', command)
+            self.assertNotIn('--window', command)
+            self.assertEqual(command[-3:], ['attach-session', '-t', '=campus'])
+
+    def test_parent_identity_comes_from_work_client_only(self):
+        payload = (b'SECRET=do-not-copy\0GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/work\0'
+                   b'GNOME_TERMINAL_SERVICE=:1.22\0')
+        with patch.object(daily, 'tmux', return_value=Mock(stdout='123\tlan42\n456\tdaily\n')), \
+             patch.object(Path, 'read_bytes', return_value=payload) as read:
+            self.assertEqual(daily.gnome_parent('daily'), {
+                'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/work',
+                'GNOME_TERMINAL_SERVICE': ':1.22'})
+            read.assert_called_once()
+
+    def test_background_show_all_opens_work_before_lan_tab(self):
+        with patch.dict(os.environ, {'DISPLAY': ':test'}, clear=True), \
+             patch.object(daily.sys, 'platform', 'linux'), \
+             patch.object(daily.sys, 'argv', ['daily_terminal.py', 'show-all']), \
+             patch.object(daily.sys.stdin, 'isatty', return_value=False), \
+             patch.object(daily.shutil, 'which', return_value='/usr/bin/gnome-terminal'), \
+             patch.object(daily, 'migrate_layout'), patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'show') as show:
+            daily.main()
+            self.assertEqual(show.call_args_list, [unittest.mock.call('daily'), unittest.mock.call('lan42')])
+
     def test_attachment_count_tolerates_incomplete_session_rows(self):
         for row, expected in [('Work\t1',1), ('Work\t0',0), ('Work\t',0),
                               ('Work',0), ('Work\tinvalid',0), ('LAN42\t1',0)]:
