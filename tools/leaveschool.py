@@ -22,9 +22,9 @@ def repository_exclusions(root, mailbox):
     excluded = {mailbox.resolve()}
     scan_root = Path(root).resolve()
     excluded.update(directory for directory in (scan_root, *scan_root.parents)
-                    if directory.name in ("Darren's 42 Repo", 'Projects'))
+                    if directory.name in ("Darren's 42 Repo", 'Darren Showcase Repo', 'Projects'))
     for base in (Path(root), Path.home() / 'Documents'):
-        excluded.update((base / name).resolve() for name in ("Darren's 42 Repo", 'Projects'))
+        excluded.update((base / name).resolve() for name in ("Darren's 42 Repo", 'Darren Showcase Repo', 'Projects'))
     excluded.update(Path(path).expanduser().resolve()
                     for path in os.environ.get('DOCUMENTS_PUSH_EXCLUDE', '').split(os.pathsep) if path)
     return excluded

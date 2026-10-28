@@ -76,7 +76,7 @@ class SidePushTests(unittest.TestCase):
     def test_auto_push_scan_excludes_submission_and_classmate_repositories(self):
         root = Path(self.tmp.name)
         mailbox = root / 'mac-remote'
-        excluded = [root / 'Projects', root / "Darren's 42 Repo", mailbox]
+        excluded = [root / 'Projects', root / "Darren's 42 Repo", root / 'Darren Showcase Repo', mailbox]
         for directory in excluded:
             for location in (directory, directory / 'nested'):
                 (location / '.git').mkdir(parents=True)
