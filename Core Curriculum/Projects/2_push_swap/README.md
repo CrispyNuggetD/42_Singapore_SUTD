@@ -3392,3 +3392,13 @@ conditions before claiming that they improve it.
 Hey Skip, found your flag. 👀 #iykyk
 
 [Click here to go back ↑](#skip-flag-reference)
+
+### Pause the random-test runner in tmux (Linux)
+
+On this workstation, select the solver pane and press **Ctrl-b, then F8** to
+pause or resume `tests/run_random_tests.py` and all its workers, including workers
+in separate process groups. The local tmux binding calls `tests/pause_solver.py`;
+other panes are refused. The toggle preserves process state and does not restart
+the benchmark. Wall-clock timings include the paused interval, so avoid pausing
+runs used for timing comparisons. Detaching tmux alone does not pause work.
+The helper can also be called with `python3 tests/pause_solver.py --pane %PANE_ID`.

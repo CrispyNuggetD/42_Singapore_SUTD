@@ -15,6 +15,8 @@ import secrets
 import signal
 import statistics
 import threading
+import queue
+import select
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from collections import Counter
 import subprocess
@@ -30,11 +32,101 @@ GENERATOR = 'python-mt19937-shuffle-sha256-v1'
 
 ACTIVE_PROCESSES = set()
 PROCESS_LOCK = threading.Lock()
+PROCESS_READY = threading.Condition(PROCESS_LOCK)
 STOP_REQUESTED = threading.Event()
+PAUSED = False
+PAUSE_EPOCH = 0
+
+
+def control_path(pid=None):
+    return Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state'))) / 'push-swap-control' / str(pid or os.getpid())
+
+
+def wait_resumed():
+    with PROCESS_READY:
+        while PAUSED and not STOP_REQUESTED.is_set():
+            PROCESS_READY.wait(.1)
+
+
+def toggle_pause():
+    global PAUSED, PAUSE_EPOCH
+    with PROCESS_READY:
+        if STOP_REQUESTED.is_set():
+            return
+        PAUSED = not PAUSED
+        if PAUSED:
+            PAUSE_EPOCH += 1
+        for process in ACTIVE_PROCESSES:
+            try:
+                os.killpg(process.pid, signal.SIGSTOP if PAUSED else signal.SIGCONT)
+            except ProcessLookupError:
+                pass
+        PROCESS_READY.notify_all()
+    print('\nPaused; press p to resume. Affected timing samples are excluded.' if PAUSED
+          else '\nResumed.', flush=True)
+
+
+class PauseControls:
+    """Keep the runner responsive while its independent worker groups stop."""
+    def start(self):
+        self.requests = queue.SimpleQueue()
+        self.done = threading.Event()
+        self.terminal = None
+        self.previous = signal.signal(signal.SIGUSR1, lambda *_: self.requests.put(True))
+        try:
+            if sys.stdin.isatty():
+                import termios
+                fd = sys.stdin.fileno()
+                original = termios.tcgetattr(fd)
+                changed = original[:]
+                changed[3] &= ~(termios.ICANON | termios.ECHO)
+                termios.tcsetattr(fd, termios.TCSANOW, changed)
+                self.terminal = (fd, original)
+            path = control_path()
+            path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            path.write_text('native-pause-v1\n')
+            path.chmod(0o600)
+        except (OSError, ValueError):
+            # Signal controls still work without a terminal or writable state.
+            pass
+        self.thread = threading.Thread(target=self.listen, daemon=True)
+        self.thread.start()
+        print('Pause/resume: p (terminal) or SIGUSR1 (runner PID). Ctrl-C saves and stops.', flush=True)
+
+    def listen(self):
+        while not self.done.wait(.05):
+            if self.terminal:
+                fd = self.terminal[0]
+                try:
+                    if select.select([fd], [], [], 0)[0]:
+                        if os.read(fd, 1).lower() == b'p':
+                            self.requests.put(True)
+                except OSError:
+                    pass
+            try:
+                while True:
+                    self.requests.get_nowait()
+                    toggle_pause()
+            except queue.Empty:
+                pass
+
+    def close(self):
+        self.done.set()
+        self.thread.join(timeout=1)
+        signal.signal(signal.SIGUSR1, self.previous)
+        if self.terminal:
+            import termios
+            try:
+                termios.tcsetattr(self.terminal[0], termios.TCSANOW, self.terminal[1])
+            except OSError:
+                pass
+        control_path().unlink(missing_ok=True)
 
 
 def start_process(*args, **kwargs):
-    with PROCESS_LOCK:
+    with PROCESS_READY:
+        while PAUSED and not STOP_REQUESTED.is_set():
+            PROCESS_READY.wait(.1)
         if STOP_REQUESTED.is_set():
             raise InterruptedError('Benchmark stopping')
         process = subprocess.Popen(*args, **kwargs)
@@ -48,11 +140,15 @@ def forget_process(process):
 
 
 def stop_workers():
-    with PROCESS_LOCK:
+    global PAUSED
+    with PROCESS_READY:
         STOP_REQUESTED.set()
+        PAUSED = False
+        PROCESS_READY.notify_all()
         active = list(ACTIVE_PROCESSES)
     for process in active:
         try:
+            os.killpg(process.pid, signal.SIGCONT)
             stop_process(process)
         except ProcessLookupError:
             pass
