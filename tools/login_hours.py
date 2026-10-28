@@ -2,7 +2,7 @@
 """42 API campus login reports; unavailable API reports are skipped.
 
 No API keys or tokens are stored in the report cache. Overlapping sessions are
-merged, split at local midnight and clipped to the rolling seven calendar dates.
+merged and split at local midnight for rolling and Monday–Sunday views.
 """
 import argparse
 from contextlib import redirect_stdout
@@ -58,6 +58,16 @@ def bounds(now, zone):
     days = [today - timedelta(days=i) for i in range(6, -1, -1)]
     start = datetime.combine(days[0], datetime.min.time(), zone).astimezone(UTC)
     return days, start
+
+
+def period_days(now, zone):
+    today = now.astimezone(zone).date()
+    monday = today - timedelta(days=today.weekday())
+    return [monday + timedelta(days=i) for i in range(7)]
+
+
+def day_label(day, number):
+    return f'Day {number} {day:%A} {day.isoformat()}'
 
 
 def union(intervals, start, end):
@@ -231,8 +241,10 @@ def discrepancy(api_values, local_values):
     return [day for day in api_values if int(api_values[day] // 60) != int(local_values[day] // 60)]
 
 
-def render(report, login, now, zone, data, local, reason='', target=50):
+def render(report, login, now, zone, data, local, reason='', target=None):
     days, start = bounds(now, zone)
+    week = period_days(now, zone)
+    today = days[-1]
     local_values = totals(local, days, zone, now) if local is not None else None
     active = []
     if data is not None:
@@ -252,7 +264,8 @@ def render(report, login, now, zone, data, local, reason='', target=50):
             if differing:
                 print('Discrepancy with local last records (API used for official-data calculation):')
                 for day in differing:
-                    print(f'  {day}: API {duration(values[day])}; local {duration(local_values[day])}')
+                    date = next(d for d in days if d.isoformat() == day)
+                    print(f'  {day_label(date, (date - today).days)}: API {duration(values[day])}; local {duration(local_values[day])}')
             else:
                 print('Local last totals agree to the minute.')
         else:
@@ -262,8 +275,7 @@ def render(report, login, now, zone, data, local, reason='', target=50):
             print('Active API session elapsed estimate: ' + duration(extra) + ' (provisional; excluded from verified total).')
             if report == 'hours':
                 provisional = sum(values.values()) + extra
-                print('Provisional total including active API sessions: ' + duration(provisional))
-                print('Provisional remaining to target: ' + duration(max(0, target * 3600 - provisional)))
+                print('Provisional rolling total including active API sessions: ' + duration(provisional))
         intervals = closed + [(a, a) for a, _ in active]
     elif local_values is not None:
         print(f'{login}: local last fallback (not API verified) — {reason}')
@@ -272,7 +284,7 @@ def render(report, login, now, zone, data, local, reason='', target=50):
     else:
         print('Login report unavailable: API and local last data could not be read.')
         return 1
-    print('Window: ' + days[0].isoformat() + ' to ' + days[-1].isoformat() + '; timezone ' + str(zone))
+    print('Rolling window: ' + days[0].isoformat() + ' to ' + days[-1].isoformat() + '; timezone ' + str(zone))
     if report == 'before-noon':
         print('Days with a recorded login before 12:00 (last seven calendar dates):')
         qualifying = {}
@@ -281,23 +293,30 @@ def render(report, login, now, zone, data, local, reason='', target=50):
             if days[0] <= when.date() <= days[-1] and when.hour < 12:
                 qualifying[when.date()] = min(qualifying.get(when.date(), when), when)
         for day, when in sorted(qualifying.items()):
-            print(f'  {day}: {when:%H:%M:%S}' + (' (42 API Verified)' if data is not None else ' (local fallback)'))
+            print(f'  {day_label(day, (day - today).days)}: {when:%H:%M:%S}' + (' (42 API Verified)' if data is not None else ' (local fallback)'))
         if not qualifying:
             print('  No qualifying login in available records.')
     else:
-        print('Per-day login totals:')
-        for day, seconds in values.items():
-            print(f'  {day}: {duration(seconds)}')
+        print('Rolling 7 days (today is Day 0):')
+        for day in days:
+            print(f'  {day_label(day, (day - today).days)}: {duration(values[day.isoformat()])}')
         total = sum(values.values())
-        remaining = max(0, target * 3600 - total)
-        print('Rolling 7-day total: ' + duration(total))
+        print('Rolling 7-day total: ' + duration(total) + f' ({total / 3600:.2f}h)')
         print('Rolling 7-day average per day: ' + duration(total / 7))
-        print(f'Target (rolling 7 days): {target:g}h')
-        print('Remaining to reach target: ' + duration(math.ceil(remaining / 60) * 60))
-        print('This is a calculation from available records, not confirmation that an Intra award was granted.')
-        if remaining:
-            print('Continuous-login estimate: ' + (now + timedelta(seconds=remaining)).astimezone(zone).strftime('%a %Y-%m-%d %H:%M') +
-                  ' (provisional; rolling-window expiry and API publication can change it).')
+        week_values = totals(closed if data is not None else local, week, zone, now)
+        print(f'Attendance period: {week[0].isoformat()} to {week[-1].isoformat()} (Monday–Sunday; {zone})')
+        for index, day in enumerate(week, 1):
+            value = duration(week_values[day.isoformat()]) if day <= today else 'upcoming'
+            print(f'  {day_label(day, index)}: {value}')
+        week_total = sum(week_values.values())
+        source = 'API location' if data is not None else 'Local fallback'
+        print(source + ' period total so far: ' + duration(week_total) + f' ({week_total / 3600:.2f}h)')
+        if target is not None:
+            print(f'Weekly policy target (configured locally): {target:g}h')
+            print('Estimated remaining from location intervals: ' + duration(max(0, target * 3600 - week_total)))
+        else:
+            print('Weekly policy target: not configured; set LOGIN_HOURS_WEEKLY_TARGET to the portal policy.')
+        print('Totals come from available location intervals; the attendance portal may apply different rules or publication timing.')
     return 0
 
 
@@ -339,7 +358,14 @@ def main():
         local = None
     if data is None and local is None:
         return skip('API and campus local login records are unavailable.')
-    return render(args.report, login, now, zone, data, local, reason)
+    raw_target = os.environ.get('LOGIN_HOURS_WEEKLY_TARGET', '').strip()
+    try:
+        target = float(raw_target) if raw_target else None
+        if target is not None and (not 0 < target <= 168 or not math.isfinite(target)):
+            raise ValueError
+    except ValueError:
+        parser.error('LOGIN_HOURS_WEEKLY_TARGET must be a positive number of hours up to 168')
+    return render(args.report, login, now, zone, data, local, reason, target)
 
 
 if __name__ == '__main__':

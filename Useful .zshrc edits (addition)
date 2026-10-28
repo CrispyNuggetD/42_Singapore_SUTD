@@ -97,7 +97,7 @@
 
 # --- Reports and optional services ---
 # loginbefore12 shows before-noon API logins over the last seven calendar dates.
-# hourslogged uses completed 42 API location intervals for its 50h calculation.
+# hourslogged shows rolling and Monday–Sunday totals from completed 42 API locations.
 # API failures skip nonfatally, except Linux hnah retains labelled local fallback.
 # Active API elapsed time is provisional; overlapping sessions are counted once.
 # adjust_brightness tries GNOME's power service, then xbacklight.
@@ -1225,10 +1225,6 @@ _dailylogin_impl() {
 }
 
 _dailylogin_campus_report() {
-  if [[ "$OSTYPE" == darwin* ]]; then
-    print -- 'Campus Linux login-hour report skipped on this Mac.'
-    return 0
-  fi
   "$@"
 }
 

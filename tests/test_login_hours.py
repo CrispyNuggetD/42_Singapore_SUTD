@@ -45,12 +45,14 @@ class Durations(unittest.TestCase):
             dict(begin_at='2026-10-26T03:00:00Z',end_at=None)])
         output = io.StringIO()
         with redirect_stdout(output):
-            h.render('hours', 'student', NOW, ZONE, data, [(NOW-timedelta(hours=5),NOW)])
+            h.render('hours', 'student', NOW, ZONE, data, [(NOW-timedelta(hours=5),NOW)], target=20)
         text = output.getvalue()
         self.assertIn('(42 API Verified)', text)
         self.assertIn('Discrepancy', text)
         self.assertIn('Rolling 7-day total: 1h 00m', text)
-        self.assertIn('Remaining to reach target: 49h 00m', text)
+        self.assertIn('Estimated remaining from location intervals: 19h 00m', text)
+        self.assertIn('Day 1 Monday 2026-10-26: 1h 00m', text)
+        self.assertIn('Weekly policy target (configured locally): 20h', text)
         self.assertIn('9h 00m (provisional', text)
 
     def test_empty_api_is_a_valid_zero_not_a_fallback(self):
@@ -65,7 +67,22 @@ class Durations(unittest.TestCase):
         output = io.StringIO()
         with redirect_stdout(output):
             h.render('before-noon','student',NOW,ZONE,data,None)
-        self.assertIn('2026-10-26: 11:59:00 (42 API Verified)', output.getvalue())
+        self.assertIn('Day 0 Monday 2026-10-26: 11:59:00 (42 API Verified)', output.getvalue())
+
+    def test_thursday_period_and_negative_rolling_days(self):
+        now = datetime(2026, 10, 29, 12, tzinfo=UTC)
+        data = dict(fetched_at=now.isoformat(), records=[
+            dict(begin_at='2026-10-27T00:00:00Z', end_at='2026-10-27T12:19:12Z')])
+        output = io.StringIO()
+        with redirect_stdout(output):
+            h.render('hours', 'student', now, ZONE, data, None, target=20)
+        text = output.getvalue()
+        self.assertIn('Day -6 Friday 2026-10-23', text)
+        self.assertIn('Day 0 Thursday 2026-10-29', text)
+        self.assertIn('Attendance period: 2026-10-26 to 2026-11-01', text)
+        self.assertIn('Day 4 Thursday 2026-10-29', text)
+        self.assertIn('Day 7 Sunday 2026-11-01: upcoming', text)
+        self.assertIn('API location period total so far: 12h 19m (12.32h)', text)
 
 
 class API(unittest.TestCase):
