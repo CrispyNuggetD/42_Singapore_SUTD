@@ -84,7 +84,9 @@ class PauseControls:
                 self.terminal = (fd, original)
             path = control_path()
             path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-            path.write_text('native-pause-v1\n')
+            birth = Path('/proc/self/stat')
+            started = birth.read_text().rsplit(')', 1)[1].split()[19] if birth.exists() else None
+            path.write_text(json.dumps({'native_pause': 1, 'started': started}))
             path.chmod(0o600)
         except (OSError, ValueError):
             # Signal controls still work without a terminal or writable state.
@@ -283,6 +285,10 @@ def distribution(values):
             sd / math.sqrt(len(values)) if sd is not None else '—']
 
 
+def timing_ok(record):
+    return record.get('timing_valid', True)
+
+
 def analysis_tables(records, size):
     groups = {}
     raw = []
@@ -305,7 +311,8 @@ def analysis_tables(records, size):
             band = a['moves'] < 700 if size == 100 else a['moves'] < 5500 if size == 500 else '—'
             raw.append([record['run_id'], record['generation_id'], size, record['rank_sha256'],
                         record['binary_sha256'], a.get('id', '—'), a['name'], a['moves'],
-                        a.get('seconds', '—'), a.get('cpu_seconds', '—'),
+                        a.get('seconds', '—') if timing_ok(record) else '—',
+                        a.get('cpu_seconds', '—') if timing_ok(record) else '—',
                         a.get('process_peak_rss_kib', '—'), int(a is chosen), int(a['moves'] == best), band,
                         *[counts.get(m, 0) if 'counts' in a else '—' for m in sorted(MOVES)],
                         shared if counts else '—',
@@ -315,8 +322,8 @@ def analysis_tables(records, size):
     rows = []
     for (digest, settings, size, name), entries in sorted(groups.items()):
         moves = [a['moves'] for _, a, _, _ in entries]
-        timed = [a['seconds'] for _, a, _, _ in entries if 'seconds' in a]
-        cpu = [a['cpu_seconds'] for _, a, _, _ in entries if 'cpu_seconds' in a]
+        timed = [a['seconds'] for r, a, _, _ in entries if timing_ok(r) and 'seconds' in a]
+        cpu = [a['cpu_seconds'] for r, a, _, _ in entries if timing_ok(r) and 'cpu_seconds' in a]
         peak = [a['process_peak_rss_kib'] for _, a, _, _ in entries if 'process_peak_rss_kib' in a]
         rows.append([digest, settings, size, name, len(entries), len(timed),
                      sum(chosen for _, _, chosen, _ in entries),
@@ -414,6 +421,8 @@ def render_record(record, config=None):
             ('Binary SHA-256', 'binary_sha256'), ('Checker', 'checker'), ('Moves', 'move_count'),
             ('Solver seconds', 'solver_seconds'), ('Solver exit', 'solver_exit')]
     rows = [(label, record.get(key, '')) for label, key in keys]
+    if not timing_ok(record):
+        rows.append(('Timing valid', 'false (paused; excluded)'))
     if config and config.get('size_mode') == 'loop':
         width = config['max_size'] - config['min_size'] + 1
         sweep, offset = divmod(record['generation_id'], width)
@@ -455,6 +464,8 @@ def parse_records(text):
         if metrics:
             record['algorithms'] = json.loads(metrics)
         record.update({k: metadata[k] for k in ('error', 'stderr_tail', 'checker_stderr') if k in metadata})
+        if metadata.get('Timing valid', '').startswith('false'):
+            record['timing_valid'] = False
         records.append(record)
     return records
 
@@ -573,12 +584,12 @@ def save_summary(path, config, records, status):
     for size in (100, 500):
         selected = [r for r in records if len(r['input_ranks']) == size]
         moves = stats([r['move_count'] for r in selected])
-        seconds = stats([r['solver_seconds'] for r in selected])
+        seconds = stats([r['solver_seconds'] for r in selected if timing_ok(r)])
         benchmark_rows.append((f'**{size}**', len(selected),
                                f"{moves['average']:.3f}" if selected else '—',
                                moves['min'] if selected else '—',
                                moves['max'] if selected else '—',
-                               f"{seconds['average']:.6f}" if selected else '—'))
+                               f"{seconds['average']:.6f}" if seconds['count'] else '—'))
     text += table(['Input size', 'Runs', 'Average moves', 'Minimum moves',
                    'Maximum moves', 'Average solver seconds'], benchmark_rows)
     text += '\nSizes with zero runs have not been sampled yet.\n\n'
@@ -597,7 +608,7 @@ def save_summary(path, config, records, status):
     rows = []
     measures = [('Winning solution', [r['move_count'] for r in records], 'moves')]
     measures += [(name, values, 'moves') for name, values in algorithms.items()]
-    measures += [('Solver runtime', [r['solver_seconds'] for r in records], 'seconds')]
+    measures += [('Solver runtime', [r['solver_seconds'] for r in records if timing_ok(r)], 'seconds')]
     for name, values, unit in measures:
         result = stats(values)
         rows.append((name, result['count'], f"{result['average']:.3f}" if values else '—',
@@ -608,12 +619,13 @@ def save_summary(path, config, records, status):
     for size in sorted({len(r['input_ranks']) for r in records},
                        key=lambda size: (size not in (100, 500), size)):
         selected = [r for r in records if len(r['input_ranks']) == size]
-        size_rows.append([size, len(selected),
+        size_rows.append([size, len(selected), sum(timing_ok(r) for r in selected),
                           *distribution([r['move_count'] for r in selected]),
-                          *distribution([r['solver_seconds'] for r in selected])])
+                          *distribution([r['solver_seconds'] for r in selected if timing_ok(r)])])
     labels = ['Mean', 'Sample SD', 'CV', 'Min', 'P25', 'Median', 'P75', 'P95', 'Max', 'SEM']
-    text += table(['Input size', 'Runs', *['Moves ' + x for x in labels],
+    text += table(['Input size', 'Runs', 'Timed runs', *['Moves ' + x for x in labels],
                    *['Total seconds ' + x for x in labels]], size_rows)
+    text += '\nPaused runs keep their move/checker results; affected solver and candidate timings are excluded from timing statistics and plots. Raw times remain in saved records.\n'
     text += analysis_tables(records, config['size'])
     text += '\n## Saved runs\n\n'
     saved_paths = detail_paths(path.parent, config['prefix'])
@@ -650,6 +662,8 @@ def run_case(values, show_solutions=False, executable=None, live_progress=True):
         with tempfile.TemporaryFile() as moves, tempfile.TemporaryFile() as diagnostic:
             command = ['bash', '-c', 'exec 3>"$1" 4>"$2"; shift 2; exec "$@"',
                        'push-swap-runner', str(dump), str(metrics_path), str(executable), *args]
+            wait_resumed()
+            epoch = PAUSE_EPOCH
             start = time.monotonic()
             process = start_process(command, stdout=moves, stderr=subprocess.PIPE,
                                        start_new_session=True)
@@ -686,6 +700,8 @@ def run_case(values, show_solutions=False, executable=None, live_progress=True):
                              re.findall(r'algo=\d+/\d+\s*\(([^\r\n]*)\) final_moves=(\d+) DONE', debug)],
               'completed_status': [line for line in re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', debug).splitlines()
                                    if 'final_moves=' in line]}
+    if PAUSE_EPOCH != epoch:
+        result['timing_valid'] = False
     if profiled:
         result['algorithms'] = profiled
         if code == 0 and (len({a['id'] for a in profiled}) != len(profiled)
@@ -839,6 +855,8 @@ def main():
             print('Concurrent throughput mode: timings include resource contention; use --light for isolated comparisons.', flush=True)
         save_summary(summary, config, records, 'running')
         status = 'complete'
+        controls = PauseControls()
+        controls.start()
         executor = ThreadPoolExecutor(max_workers=workers)
         try:
             scheduled = len(records)
@@ -847,10 +865,12 @@ def main():
             next_input = None
             exhausted = False
             while True:
+                wait_resumed()
                 active = [entry for entry in entries if not entry['future'].done()]
                 reserved = sum(entry['memory'] for entry in active)
                 # Bound completed-but-uncommitted results while an earlier job is slow.
                 while len(active) < workers and len(entries) < 2 * workers and not exhausted:
+                    wait_resumed()
                     if target is not None and scheduled >= target:
                         exhausted = True
                         break
@@ -920,6 +940,7 @@ def main():
             print('Stopped; completed runs saved. Uncommitted inputs will be retried.', flush=True)
         finally:
             stop_workers()
+            controls.close()
             executor.shutdown(wait=True, cancel_futures=True)
         save_summary(summary, config, records, status)
         print(f'Summary: {summary}', flush=True)

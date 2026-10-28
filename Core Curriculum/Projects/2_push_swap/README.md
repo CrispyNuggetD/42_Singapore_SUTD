@@ -2448,6 +2448,11 @@ To resume the session with the most recently modified summary:
 An active session is protected by the existing lock; this does not start a second
 runner for it. The flag reports an error if no saved session exists.
 
+Press **p** in the runner terminal to pause/resume its solver workers, including
+outside tmux. For **Ctrl-b, then F8** in tmux, run
+`tmux bind-key F8 send-keys p`. Paused runs keep their move/checker results;
+affected timings are marked and excluded from timing statistics and plots.
+
 On resume, `-n 100` means **100 additional successful tests**; omitting `-n`
 continues until Ctrl-C. Seed and input size come from the saved session.
 The generation ID advances for duplicate attempts too. Inputs are permutations
@@ -3392,13 +3397,3 @@ conditions before claiming that they improve it.
 Hey Skip, found your flag. 👀 #iykyk
 
 [Click here to go back ↑](#skip-flag-reference)
-
-### Pause the random-test runner in tmux (Linux)
-
-On this workstation, select the solver pane and press **Ctrl-b, then F8** to
-pause or resume `tests/run_random_tests.py` and all its workers, including workers
-in separate process groups. The local tmux binding calls `tests/pause_solver.py`;
-other panes are refused. The toggle preserves process state and does not restart
-the benchmark. Wall-clock timings include the paused interval, so avoid pausing
-runs used for timing comparisons. Detaching tmux alone does not pause work.
-The helper can also be called with `python3 tests/pause_solver.py --pane %PANE_ID`.

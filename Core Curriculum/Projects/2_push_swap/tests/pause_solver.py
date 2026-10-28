@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Toggle Linux push_swap runner/worker suspension in the selected tmux pane."""
+"""Request timing-safe native runner pause/resume in the selected tmux pane."""
 import argparse
-import fcntl
 import json
 import os
 from pathlib import Path
 import signal
 import subprocess
-import time
 
 
 def processes():
@@ -41,70 +39,23 @@ def is_runner(pid):
         return False
 
 
-def resume(saved):
+def toggle(pane_pid):
     table = processes()
-    for pid, started in reversed(saved):
-        if pid in table and table[pid][1] == started:
-            try:
-                os.kill(pid, signal.SIGCONT)
-            except ProcessLookupError:
-                pass
-
-
-def await_stopped(pid):
-    deadline = time.monotonic() + 1
-    while time.monotonic() < deadline:
-        try:
-            tasks = (Path('/proc') / str(pid) / 'task').iterdir()
-            states = [p.joinpath('stat').read_text().rsplit(')', 1)[1].split()[0] for p in tasks]
-            if all(state in ('T', 't', 'Z') for state in states):
-                return
-        except FileNotFoundError:
-            return
-        time.sleep(.005)
-    raise RuntimeError('Could not safely suspend all worker threads; resumed stopped processes.')
-
-
-def toggle(pane_pid, directory):
-    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (directory / 'lock').open('a') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        table = processes()
-        if pane_pid not in table:
-            raise ValueError('Pane process has exited.')
-        state = directory / ('%s-%s.json' % (pane_pid, table[pane_pid][1]))
-        if state.exists():
-            resume(json.loads(state.read_text()))
-            state.unlink()
-            return 'Solver resumed'
-        roots = [pid for pid in descendants(pane_pid, table) if is_runner(pid)]
-        if len(roots) != 1:
-            raise ValueError('Select the pane running run_random_tests.py.')
-        stopped = []
-        pending = [roots[0]]
-        try:
-            # Freeze each parent before looking for its children, including
-            # workers launched with start_new_session=True.
-            for pid in pending:
-                current = processes()
-                if pid not in current:
-                    continue
-                if pid in table and current[pid][1] != table[pid][1]:
-                    continue
-                os.kill(pid, signal.SIGSTOP)
-                stopped.append([pid, current[pid][1]])
-                # Wait for the kernel to stop all threads before scanning births.
-                await_stopped(pid)
-                current = processes()
-                pending.extend(child for child, (ppid, _) in current.items()
-                               if ppid == pid and child not in pending)
-            state.write_text(json.dumps(stopped))
-            state.chmod(0o600)
-        except BaseException:
-            resume(stopped)
-            state.unlink(missing_ok=True)
-            raise
-        return 'Solver paused (Ctrl-b then F8 to resume)'
+    if pane_pid not in table:
+        raise ValueError('Pane process has exited.')
+    roots = [pid for pid in descendants(pane_pid, table) if is_runner(pid)]
+    if len(roots) != 1:
+        raise ValueError('Select the pane running run_random_tests.py.')
+    pid = roots[0]
+    path = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state'))) / 'push-swap-control' / str(pid)
+    try:
+        capability = json.loads(path.read_text())
+    except (OSError, ValueError):
+        raise ValueError('Resume with the updated runner to enable timing-safe pause.') from None
+    if capability.get('native_pause') != 1 or capability.get('started') != table[pid][1]:
+        raise ValueError('Runner has no current timing-safe pause controls.')
+    os.kill(pid, signal.SIGUSR1)
+    return 'Solver pause/resume requested; see runner status'
 
 
 def main():
@@ -113,8 +64,7 @@ def main():
     args = parser.parse_args()
     try:
         pid = int(subprocess.check_output(['tmux', 'display-message', '-p', '-t', args.pane, '#{pane_pid}']))
-        directory = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state'))) / 'push-swap-pause'
-        message = toggle(pid, directory)
+        message = toggle(pid)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         message = 'Solver pause: ' + str(error)
     subprocess.run(['tmux', 'display-message', '-t', args.pane, message], check=False)
