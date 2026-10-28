@@ -34,7 +34,9 @@ use the configured `FORTYTWO_LOGIN` (then the email login or local username),
 with an existing local API token or an authorized LAN42 API configuration.
 They work independently of the OS username being hnah or the OS being Linux.
 The hours report shows a Monday–Sunday attendance period (Day 1–Day 7)
-alongside rolling seven calendar days (Day -6–Day 0). Set
+alongside rolling seven calendar days. Both use the attendance-period day
+numbers: Monday is Day 1, and dates before that Monday have negative numbers
+through Day -1 on the preceding Sunday. There is no Day 0. Set
 `LOGIN_HOURS_TIMEZONE=Asia/Singapore` and, for a portal policy of 20 hours
 per week, `LOGIN_HOURS_WEEKLY_TARGET=20` in personal shell settings. The
 hnah login defaults to 20 hours until this setting is installed on school

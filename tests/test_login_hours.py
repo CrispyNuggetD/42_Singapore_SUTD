@@ -67,7 +67,7 @@ class Durations(unittest.TestCase):
         output = io.StringIO()
         with redirect_stdout(output):
             h.render('before-noon','student',NOW,ZONE,data,None)
-        self.assertIn('Day 0 Monday 2026-10-26: 11:59:00 (42 API Verified)', output.getvalue())
+        self.assertIn('Day 1 Monday 2026-10-26: 11:59:00 (42 API Verified)', output.getvalue())
 
     def test_thursday_period_and_negative_rolling_days(self):
         now = datetime(2026, 10, 29, 12, tzinfo=UTC)
@@ -77,8 +77,10 @@ class Durations(unittest.TestCase):
         with redirect_stdout(output):
             h.render('hours', 'student', now, ZONE, data, None, target=20)
         text = output.getvalue()
-        self.assertIn('Day -6 Friday 2026-10-23', text)
-        self.assertIn('Day 0 Thursday 2026-10-29', text)
+        self.assertIn('Day -3 Friday 2026-10-23', text)
+        self.assertIn('Day -1 Sunday 2026-10-25', text)
+        self.assertIn('Day 4 Thursday 2026-10-29', text)
+        self.assertNotIn('Day 0 ', text)
         self.assertIn('Attendance period: 2026-10-26 to 2026-11-01', text)
         self.assertIn('Day 4 Thursday 2026-10-29', text)
         self.assertIn('Day 7 Sunday 2026-11-01: upcoming', text)

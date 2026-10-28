@@ -66,7 +66,9 @@ def period_days(now, zone):
     return [monday + timedelta(days=i) for i in range(7)]
 
 
-def day_label(day, number):
+def day_label(day, period_start):
+    offset = (day - period_start).days
+    number = offset + 1 if offset >= 0 else offset
     return f'Day {number} {day:%A} {day.isoformat()}'
 
 
@@ -245,6 +247,7 @@ def render(report, login, now, zone, data, local, reason='', target=None):
     days, start = bounds(now, zone)
     week = period_days(now, zone)
     today = days[-1]
+    period_start = week[0]
     local_values = totals(local, days, zone, now) if local is not None else None
     active = []
     if data is not None:
@@ -265,7 +268,7 @@ def render(report, login, now, zone, data, local, reason='', target=None):
                 print('Discrepancy with local last records (API used for official-data calculation):')
                 for day in differing:
                     date = next(d for d in days if d.isoformat() == day)
-                    print(f'  {day_label(date, (date - today).days)}: API {duration(values[day])}; local {duration(local_values[day])}')
+                    print(f'  {day_label(date, period_start)}: API {duration(values[day])}; local {duration(local_values[day])}')
             else:
                 print('Local last totals agree to the minute.')
         else:
@@ -293,21 +296,21 @@ def render(report, login, now, zone, data, local, reason='', target=None):
             if days[0] <= when.date() <= days[-1] and when.hour < 12:
                 qualifying[when.date()] = min(qualifying.get(when.date(), when), when)
         for day, when in sorted(qualifying.items()):
-            print(f'  {day_label(day, (day - today).days)}: {when:%H:%M:%S}' + (' (42 API Verified)' if data is not None else ' (local fallback)'))
+            print(f'  {day_label(day, period_start)}: {when:%H:%M:%S}' + (' (42 API Verified)' if data is not None else ' (local fallback)'))
         if not qualifying:
             print('  No qualifying login in available records.')
     else:
-        print('Rolling 7 days (today is Day 0):')
+        print('Rolling 7 days (day numbers follow the attendance period):')
         for day in days:
-            print(f'  {day_label(day, (day - today).days)}: {duration(values[day.isoformat()])}')
+            print(f'  {day_label(day, period_start)}: {duration(values[day.isoformat()])}')
         total = sum(values.values())
         print('Rolling 7-day total: ' + duration(total) + f' ({total / 3600:.2f}h)')
         print('Rolling 7-day average per day: ' + duration(total / 7))
         week_values = totals(closed if data is not None else local, week, zone, now)
         print(f'Attendance period: {week[0].isoformat()} to {week[-1].isoformat()} (Monday–Sunday; {zone})')
-        for index, day in enumerate(week, 1):
+        for day in week:
             value = duration(week_values[day.isoformat()]) if day <= today else 'upcoming'
-            print(f'  {day_label(day, index)}: {value}')
+            print(f'  {day_label(day, period_start)}: {value}')
         week_total = sum(week_values.values())
         source = 'API location' if data is not None else 'Local fallback'
         print(source + ' period total so far: ' + duration(week_total) + f' ({week_total / 3600:.2f}h)')
