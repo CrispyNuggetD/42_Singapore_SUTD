@@ -18,6 +18,18 @@ RUNTIME_FILES = ('codex_update.py', 'ensure_tmux.py', 'sync_zshrc.py', 'setup_zs
                  'git_side_push.py', 'lock_backup.py', 'lock_backup_watch.py', 'session_jobs.py', 'setup_private_backup.py', 'create_login_items.py', 'setup_badapple.py', 'badapple_player.py', 'leaveschool.py', 'codex_return.py', 'gobreak.py', 'install_gobreak.py', 'Useful .zshrc edits (addition)')
 
 
+def backup_file(path):
+    """Keep local shell/config backups out of the home and source directories."""
+    path=Path(path).expanduser()
+    state=Path(os.environ.get('XDG_STATE_HOME') or Path.home()/'.local/state')
+    folder=state/'42-shell/backups'/path.name.lstrip('.')
+    folder.mkdir(parents=True,exist_ok=True,mode=0o700)
+    with tempfile.NamedTemporaryFile(dir=folder,prefix=path.name+'.bak-'+datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'-',delete=False) as output:
+        backup=Path(output.name)
+        with path.open('rb') as source:shutil.copyfileobj(source,output)
+    return backup
+
+
 def source_helper(source_dir, name):
     """Accept the organized checkout and the existing flat installed runtime."""
     candidate=source_dir/'tools'/name
@@ -100,8 +112,7 @@ def install_tmux_mouse(path, check=False):
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
-        backup = path.with_name(path.name + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-        shutil.copy2(path, backup)
+        backup = backup_file(path)
     with path.open('a') as output:
         if original and not original.endswith('\n'):
             output.write('\n')
@@ -159,8 +170,7 @@ def sync(source, target, check=False, runtime=None, pin=None, codex_context=None
         if target.exists() != existed or (existed and read(target) != original):
             raise ValueError('Local zshrc changed during sync; rerun to avoid losing edits.')
         if existed:
-            backup = target.with_name(target.name + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-            shutil.copy2(target, backup)
+            backup = backup_file(target)
             shutil.copymode(target, temporary)
             print(f'Backup: {backup}')
         # target is resolved first, so ~/.zshrc symlinks remain intact.

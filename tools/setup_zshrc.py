@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import tempfile
 from lan42_recommend import recommend, installed_path
+from sync_zshrc import backup_file
 
 
 def read_settings(path):
@@ -43,8 +44,7 @@ def write_settings(path, values):
             output.write(content)
         subprocess.run(['zsh', '-n', str(temporary)], check=True)
         if path.exists():
-            backup = path.with_name(path.name + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-            shutil.copy2(path, backup)
+            backup_file(path)
         os.replace(temporary, path)
     finally:
         if temporary:
