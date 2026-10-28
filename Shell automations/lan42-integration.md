@@ -15,6 +15,10 @@ when changing this integration.
   repositories' terminal tests. That file is generated from this canonical
   source so standalone users receive the same fixes. If the other checkout is
   unavailable, state the pending vendor refresh in the handoff.
+- On macOS, Work and LAN42 attach to separate tmux sessions in two tabs of one
+  Terminal window. The launcher finds Work by its terminal TTY before opening
+  LAN42's tab; Terminal automation needs Accessibility permission for the
+  launching app. Do not route by the frontmost window alone.
 - Run `PYTHONPATH=tools python3 -m unittest discover -s tests` and LAN42's
   `python3 -m unittest discover -s tests -p test_terminal_setup.py`.
 

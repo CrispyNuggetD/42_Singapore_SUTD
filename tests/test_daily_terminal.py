@@ -15,6 +15,39 @@ daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_mac_lan42_targets_work_tty_and_uses_new_tab(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
+                'XDG_STATE_HOME': tmp, 'LAN42_TMUX_SESSION': 'campus'}, clear=True), \
+             patch.object(daily.sys, 'platform', 'darwin'), \
+             patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'attached', side_effect=[0, 1]), \
+             patch.object(daily, 'tmux', return_value=Mock(stdout='daily\t/dev/ttys003\n')), \
+             patch.object(daily.subprocess, 'Popen', return_value=Mock()) as launch:
+            daily.show('campus')
+            command = launch.call_args.args[0]
+            self.assertEqual(command[0:2], ['osascript', '-e'])
+            self.assertEqual(command[4], '/dev/ttys003')
+            self.assertIn('set index of targetWindow to 1', command[2])
+            self.assertIn('keystroke "t" using command down', command[2])
+            self.assertIn('count radio buttons of tab group 1 of front window', command[2])
+            self.assertIn('do script shellCommand in selected tab of front window', command[2])
+            self.assertNotIn('do script (item 1 of argv)', command[2])
+
+    def test_mac_show_all_routes_lan_to_work_before_foreground_attach(self):
+        with patch.dict(os.environ, {}, clear=True), \
+             patch.object(daily.sys, 'platform', 'darwin'), \
+             patch.object(daily.sys, 'argv', ['daily_terminal.py', 'show-all']), \
+             patch.object(daily.sys.stdin, 'isatty', return_value=True), \
+             patch.object(daily.shutil, 'which', return_value='/opt/homebrew/bin/tmux'), \
+             patch.object(daily, 'migrate_layout'), patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'mac_work_tty', return_value='/dev/ttys007') as tty, \
+             patch.object(daily, 'show') as show:
+            daily.main()
+            tty.assert_called_once_with(reuse_terminal=True)
+            self.assertEqual(show.call_args_list, [
+                unittest.mock.call('lan42', mac_parent_tty='/dev/ttys007'),
+                unittest.mock.call('daily', reuse_terminal=True)])
+
     def test_lan42_uses_second_gnome_tab_with_separate_session(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
                 'XDG_STATE_HOME': tmp, 'DISPLAY': ':test', 'LAN42_TMUX_SESSION': 'campus'}, clear=True), \
