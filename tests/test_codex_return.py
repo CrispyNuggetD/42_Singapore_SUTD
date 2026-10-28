@@ -106,13 +106,24 @@ class RoundTrip(unittest.TestCase):
         self.append('New turn')
         with self.rollout.open('a') as stream:
             stream.write(self.encode([{'type': 'event_msg', 'payload': {'type': 'task_started', 'turn_id': 'busy'}}]))
-        with self.assertRaisesRegex(ValueError, 'unfinished turn'):
-            handoff.export_home(self.private, self.home)
+        self.assertEqual(self.quiet(handoff.export_home, self.private, self.home), 0)
         self.assertFalse((self.private/handoff.RETURN_ROOT/'index.json').exists())
         with self.rollout.open('a') as stream:
             stream.write('{partial')
         with self.assertRaises(ValueError):
             handoff.export_home(self.private, self.home)
+
+    @unittest.skipUnless(shutil.which('zstd'), 'zstd required')
+    def test_compressed_imported_chat_is_read(self):
+        self.append('Continuation in compressed rollout')
+        compressed = self.rollout.with_suffix(self.rollout.suffix + '.zst')
+        with compressed.open('wb') as output:
+            subprocess.run(['zstd', '-q', '-c', '--', str(self.rollout)],
+                           stdout=output, check=True)
+        self.rollout.unlink()
+        self.assertEqual(self.quiet(handoff.export_home, self.private, self.home), 1)
+        index = json.loads((self.private/handoff.RETURN_ROOT/'index.json').read_text())
+        self.assertEqual(len(index['snapshots']), 1)
 
     def test_chat_only_git_commit_preserves_other_staged_work(self):
         remote = self.root/'remote/42_Singapore_SUTD_hnah_private'

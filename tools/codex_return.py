@@ -66,11 +66,16 @@ def confined(root, relative):
 
 
 def read_snapshot(path, home):
-    if path.is_symlink() or home not in path.resolve().parents:
+    actual = path if path.exists() else path.with_suffix(path.suffix + '.zst')
+    if actual.is_symlink() or home not in actual.resolve().parents:
         raise ValueError('Chat rollout must be inside CODEX_HOME')
-    before = path.stat()
-    raw = path.read_bytes()
-    after = path.stat()
+    before = actual.stat()
+    if actual.suffix == '.zst':
+        raw = subprocess.run(['zstd', '-dc', '--', str(actual)], check=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    else:
+        raw = actual.read_bytes()
+    after = actual.stat()
     if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
         raise ValueError('Chat is changing; wait for its current turn to finish and retry')
     rows = [json.loads(line) for line in raw.decode().split('\n') if line.strip()]
@@ -103,11 +108,12 @@ def export_home(private, home, check=False):
     index = load(index_path, {'version': 1, 'snapshots': {}})
     pending = []
     unchanged = 0
+    unfinished = 0
     # Strict allowlist: never scan arbitrary Mac conversations or copy all .codex.
     for entry in state['imports'].values():
         local_id = str(uuid.UUID(entry['local_id']))
         path = Path(entry['rollout'])
-        if not path.exists():
+        if not path.exists() and not path.with_suffix(path.suffix + '.zst').exists():
             archived = list((home / 'archived_sessions').glob(f'**/*{local_id}.jsonl'))
             if len(archived) != 1:
                 raise ValueError(f'Imported chat {local_id} is missing; restore it or remove its manifest entry')
@@ -127,7 +133,8 @@ def export_home(private, home, check=False):
             unchanged += 1
             continue
         if active_turn(rows):
-            raise ValueError(f'Chat {local_id} has an unfinished turn; finish/stop it in Codex before leavehome')
+            unfinished += 1
+            continue
         school_id = str(uuid.uuid5(NAMESPACE, local_id + ':' + digest))
         if school_id in index['snapshots']:
             unchanged += 1
@@ -152,7 +159,7 @@ def export_home(private, home, check=False):
         if state_path.exists():
             mod.atomic_write(state_path, json.dumps(state, indent=2) + '\n')
     print(f'leavehome: {len(pending)} changed school chats {"ready" if check else "exported"}; '
-          f'{unchanged} unchanged; Mac-only chats excluded.')
+          f'{unchanged} unchanged; {unfinished} with unfinished turns skipped; Mac-only chats excluded.')
     return len(pending)
 
 
