@@ -37,7 +37,8 @@ The hours report shows a Monday–Sunday attendance period (Day 1–Day 7)
 alongside rolling seven calendar days (Day -6–Day 0). Set
 `LOGIN_HOURS_TIMEZONE=Asia/Singapore` and, for a portal policy of 20 hours
 per week, `LOGIN_HOURS_WEEKLY_TARGET=20` in personal shell settings. The
-target is local configuration; the Intra locations API does not supply the
+hnah login defaults to 20 hours until this setting is installed on school
+computers. The target is local configuration; the Intra locations API does not supply the
 assigned Singapore attendance policy. The portal may count hours differently.
 API access and campus authorization still apply. A fresh API snapshot may be
 shared for five minutes; pass `--refresh` to fetch again.

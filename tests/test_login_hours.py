@@ -163,6 +163,7 @@ class Entry(unittest.TestCase):
             self.assertIsNone(render.call_args.args[4])
             self.assertEqual(render.call_args.args[5],[])
             self.assertEqual(render.call_args.args[6],'offline')
+            self.assertEqual(render.call_args.args[7],20)
 
     def test_mac_hnah_and_other_linux_accounts_do_not_use_local_fallback(self):
         from contextlib import redirect_stderr

@@ -360,7 +360,7 @@ def main():
         return skip('API and campus local login records are unavailable.')
     raw_target = os.environ.get('LOGIN_HOURS_WEEKLY_TARGET', '').strip()
     try:
-        target = float(raw_target) if raw_target else None
+        target = float(raw_target) if raw_target else (20.0 if login.lower() == 'hnah' else None)
         if target is not None and (not 0 < target <= 168 or not math.isfinite(target)):
             raise ValueError
     except ValueError:
