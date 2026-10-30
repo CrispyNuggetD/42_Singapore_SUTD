@@ -8,6 +8,10 @@
 | **Event Horizon** | Deadline scene, flip countdown, time ruler and profile astronaut; optional travelling pet and chatter. | Yes. Works with the normal OS cursor. |
 | ↳ **Space backdrop** | Layered stars, clouds, galaxy glow and occasional comets behind the page. | Optional Event Horizon add-on. Shares its motion switch. |
 
+On this portfolio, the astronaut also follows touch/pen taps, mobile scroll
+direction and keyboard focus. Touch keeps the native cursor; motion off and
+system reduced-motion/high-contrast preferences stop these reactions.
+
 The **pointer switch** controls the cursor. **Space motion** controls the scene, pet animation/chatter and optional backdrop. They are separate preferences. The course log on this portfolio is supplied by this site's saved project data; the reusable scene does not fetch your Intra history.
 
 ### Adaptive Pointer

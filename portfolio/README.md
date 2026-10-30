@@ -172,3 +172,10 @@ anchors, including rendered Markdown. Relative/fragment links and links across
 the same Campus HQ Pages host stay in the current tab. Dynamic links must follow
 the same rule; never add an automatic off-site redirect. Preserve native links
 for no-JavaScript visitors. Test both internal and external destinations.
+
+Pointer feedback uses a high-contrast dot/beam and outlined hover shape; the
+native-pointer opt-out and reduced-motion/high-contrast fallbacks remain intact.
+The astronaut follows mouse, touch/pen taps and drags, mobile scroll direction,
+and focused links/controls (including keyboard Tab). These passive reactions
+do not intercept scrolling, taps or navigation, and stop with motion off or
+system reduced-motion/forced-colour preferences.
