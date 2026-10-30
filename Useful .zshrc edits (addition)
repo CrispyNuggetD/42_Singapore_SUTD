@@ -88,6 +88,7 @@
 # clones, or Documents/Darren's 42 Repo (including nested repositories).
 # DOCUMENTS_PUSH_EXCLUDE can add absolute excluded folders separated by colons.
 # syncdocs pulls repositories with configured upstreams using --ff-only; it
+# DOCUMENTS_PULL_EXCLUDE excludes absolute folders and descendants (colon-separated).
 # never commits/pushes. It excludes MAIN_REPO_ROOT and scans nested repositories,
 # including Vogsphere clones and worktrees. It pulls the mailbox clone but skips
 # its contents. Failed pulls are reported while other repositories continue.
@@ -595,7 +596,8 @@ syncdocs() (
   fi
   local root="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}"
   local mailbox="${MAC_REMOTE_ROOT:-$HOME/mac-remote}"
-  local listing marker repo upstream
+  local listing marker repo upstream excluded
+  local -a prune_args
   local total=0 updated=0 failed=0 scan_failed=0
   [[ -d "$root" ]] || { print -u2 -- "Missing repository search folder: $root"; return 1; }
   listing=$(mktemp "${TMPDIR:-/tmp}/syncdocs.XXXXXXXX") || return 1
@@ -603,8 +605,14 @@ syncdocs() (
   # Canonical paths also cover a symlinked search root or mailbox setting.
   root="${root:A}"
   mailbox="${mailbox:A}"
+  # Prune excluded folders before discovering any nested repositories.
+  prune_args=()
+  for excluded in "${(@s/:/)DOCUMENTS_PULL_EXCLUDE}"; do
+    [[ -n "$excluded" ]] || continue
+    prune_args+=( -path "${(b)${excluded:A}}" -prune -o )
+  done
   # Emit the mailbox root once and prune it; other nested clones remain included.
-  find -H "$root" \( -type d -path "${(b)mailbox}" -prune -print0 \) -o \
+  find -H "$root" "${prune_args[@]}" \( -type d -path "${(b)mailbox}" -prune -print0 \) -o \
     \( -name .git \( -type d -o -type f \) -prune -print0 \) > "$listing" || scan_failed=1
   while IFS= read -r -d '' marker; do
     if [[ "$marker" == "$mailbox" ]]; then

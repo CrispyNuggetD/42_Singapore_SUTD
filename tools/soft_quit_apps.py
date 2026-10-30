@@ -16,6 +16,8 @@ TERMINALS = {'gnome-terminal', 'gnome-terminal-server', 'org.gnome.terminal', 'x
              'xfce4-terminal', 'org.wezfurlong.wezterm', 'com.apple.terminal',
              'com.googlecode.iterm2', 'com.mitchellh.ghostty', 'net.kovidgoyal.kitty',
              'org.alacritty', 'com.github.wez.wezterm'}
+CHROME_NAMES = {'google-chrome', 'chrome', 'chromium', 'chromium-browser'}
+
 SYSTEM_APPS = {'com.apple.finder', 'com.apple.dock', 'com.apple.systemuiserver',
                'com.apple.loginwindow', 'gnome-shell', 'gjs', 'plasmashell',
                'com.rastersoft.ding', 'desktop_window'}
@@ -28,7 +30,7 @@ def normalized(value):
 def keep_names():
     names = {normalized(name) for name in os.environ.get('LEAVESCH_KEEP_APPS', '').split(',') if name.strip()}
     if os.environ.get('closechromeonleave', 'TRUE').upper() in ('FALSE', '0', 'NO', 'OFF'):
-        names.update(('google-chrome', 'chromium', 'chromium-browser', 'com.google.chrome'))
+        names.update(('google-chrome', 'chrome', 'chromium', 'chromium-browser', 'com.google.chrome'))
     return names
 
 
@@ -241,6 +243,13 @@ def linux_quit(check=False, terminals=False, timeout=30, only_names=None):
     x11 = X11()
     try:
         apps = x11.apps()
+        if not terminals:
+            # A background browser can outlive its last window. Include it so
+            # shutdown never succeeds while Chrome still owns the profile.
+            from close_chrome import browsers
+            for pid, token in browsers().items():
+                app = apps.setdefault(pid, App(pid, 'chrome', token=token))
+                app.aliases.add('chrome')
         try:
             native = NativeActions()
             native.trays(apps)
@@ -274,10 +283,12 @@ def linux_quit(check=False, terminals=False, timeout=30, only_names=None):
         while pending and time.monotonic() < deadline:
             clients = set(x11.clients())
             pending = [app for app in pending if process_token(app.pid) == app.token
-                       and (app.quit_action is not None or clients.intersection(app.windows))]
+                       and (app.matches(CHROME_NAMES) or app.quit_action is not None or clients.intersection(app.windows))]
             if pending:
                 time.sleep(0.2)
-        errors += [app.name + ': still open; check its prompts locally' for app in pending]
+        errors += [app.name + (': browser still running; choose Chrome menu > Exit, then retry leavesch'
+                              if app.matches(CHROME_NAMES) else ': still open; check its prompts locally')
+                   for app in pending]
         if errors:
             raise RuntimeError('; '.join(errors))
     finally:
