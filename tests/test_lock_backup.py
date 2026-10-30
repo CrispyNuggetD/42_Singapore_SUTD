@@ -49,6 +49,7 @@ class BackupTests(unittest.TestCase):
         index = (self.source / '.git/index').read_bytes()
         head = git(self.source, 'rev-parse', 'HEAD')
         self.save()
+        self.assertEqual(Path(self.config['storage']).stat().st_mode&0o777,0o700)
         names = git(self.remote, 'ls-tree', '-r', '--name-only', 'wip/test').decode().splitlines()
         self.assertEqual(names, ['.gitignore', 'link', 'main.c', 'new.txt', 'tracked.bin'])
         self.assertTrue(git(self.remote, 'ls-tree', 'wip/test', 'link').startswith(b'120000'))

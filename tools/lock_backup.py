@@ -64,7 +64,9 @@ def checkpoint(config, preview=False):
     if not files:
         raise ValueError('No files found; refusing an empty snapshot')
     storage = Path(config['storage']).expanduser()
-    storage.mkdir(parents=True, exist_ok=True)
+    storage.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if storage.stat().st_uid!=os.getuid():raise ValueError('Backup storage must be owned by you')
+    storage.chmod(0o700)
     with (storage / 'checkpoint.lock').open('w') as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
