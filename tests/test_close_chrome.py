@@ -25,20 +25,19 @@ class CloseChrome(unittest.TestCase):
             self.assertEqual(chrome.browsers(proc), {11: '1234'})
             self.assertFalse(chrome.still_running(11, 'different-start-time', proc))
 
-    def test_shutdown_signals_parent_once_and_waits(self):
-        with patch.object(chrome.sys, 'platform', 'linux'), patch.object(chrome, 'browsers', return_value={11: 'token'}), \
-             patch.object(chrome, 'still_running', side_effect=[True, True, False]), \
-             patch.object(chrome.os, 'kill') as kill, patch.object(chrome.time, 'sleep'):
+    def test_linux_uses_normal_desktop_close_without_signals(self):
+        with patch.object(chrome.sys, 'platform', 'linux'), \
+             patch('soft_quit_apps.linux_quit') as close, patch.object(chrome.os, 'kill') as kill:
             chrome.close()
-            kill.assert_called_once_with(11, signal.SIGHUP)
+            self.assertIn('google-chrome', close.call_args.kwargs['only_names'])
+            kill.assert_not_called()
 
-    def test_timeout_does_not_force_kill(self):
-        with patch.object(chrome.sys, 'platform', 'linux'), patch.object(chrome, 'browsers', return_value={11: 'token'}), \
-             patch.object(chrome, 'still_running', return_value=True), patch.object(chrome.os, 'kill') as kill, \
-             patch.object(chrome.time, 'monotonic', side_effect=[0, 31]):
-            with self.assertRaisesRegex(RuntimeError, 'not force-killed'):
-                chrome.close()
-            kill.assert_called_once_with(11, signal.SIGHUP)
+    def test_desktop_refusal_is_reported_without_killing(self):
+        with patch.object(chrome.sys, 'platform', 'linux'), \
+             patch('soft_quit_apps.linux_quit', side_effect=RuntimeError('still open')), \
+             patch.object(chrome.os, 'kill') as kill:
+            with self.assertRaisesRegex(RuntimeError, 'still open'):chrome.close()
+            kill.assert_not_called()
 
     @unittest.skipUnless(shutil.which('zsh'), 'zsh unavailable')
     def test_leavesch_keeps_tmux_on_chrome_timeout_and_still_locks(self):

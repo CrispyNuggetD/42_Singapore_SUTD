@@ -61,6 +61,76 @@ class BackupTests(unittest.TestCase):
         self.save()
         self.assertNotIn('new.txt', git(self.remote, 'ls-tree', '-r', '--name-only', 'wip/test').decode().splitlines())
 
+    def test_large_file_is_compressed_losslessly_and_push_retry_is_stable(self):
+        import gzip
+        data=b'backup contents\n'*10000
+        (self.source/'large.json').write_bytes(data)
+        with patch.object(lock_backup,'MAX_BLOB',1024):
+            self.save()
+            first=git(self.remote,'rev-parse','wip/test')
+            self.save()
+        zipped=git(self.remote,'show','wip/test:large.json.42-backup.gz')
+        self.assertEqual(gzip.decompress(zipped),data)
+        self.assertEqual(first,git(self.remote,'rev-parse','wip/test'))
+        self.assertEqual((self.source/'large.json').read_bytes(),data)
+
+    def test_compressed_codex_rollouts_are_backed_up_as_jsonl(self):
+        import shutil
+        import leaveschool
+        if not shutil.which('zstd'):self.skipTest('zstd unavailable')
+        git(self.source,'remote','add','origin','git@github.com:CrispyNuggetD/42_Singapore_SUTD_hnah_private.git')
+        sessions=Path(self.temp.name)/'sessions'
+        sessions.mkdir()
+        raw=sessions/'rollout.jsonl'
+        content=b'{"type":"session_meta","payload":{}}\n'
+        raw.write_bytes(content)
+        with raw.with_suffix('.jsonl.zst').open('wb') as output:
+            subprocess.run(['zstd','-q','-c',str(raw)],stdout=output,check=True)
+        raw.unlink()
+        leaveschool.backup(sessions,self.source,Path(self.temp.name)/'other-repo')
+        self.assertEqual((self.source/'42/codex_cache/sessions/rollout.jsonl').read_bytes(),content)
+
+    def test_explicit_ignored_large_file_is_included_without_changing_gitignore(self):
+        import gzip
+        (self.source/'ignored.bin').write_bytes(b'latest raw data\n'*10000)
+        self.config['extra_files']=['ignored.bin']
+        with patch.object(lock_backup,'MAX_BLOB',1024):self.save()
+        raw=git(self.remote,'show','wip/test:ignored.bin.42-backup.gz')
+        self.assertEqual(gzip.decompress(raw),(self.source/'ignored.bin').read_bytes())
+        self.assertEqual(git(self.source,'check-ignore','ignored.bin').strip(),b'ignored.bin')
+        self.config['extra_files']=['missing-explicit-file']
+        with self.assertRaisesRegex(ValueError,'Explicit backup file is missing'):self.save()
+        self.config['extra_files']=['../outside']
+        with self.assertRaisesRegex(ValueError,'Invalid Git file path'):self.save()
+
+    def test_settings_snapshot_is_separate_and_rejects_auth_files(self):
+        git(self.source,'remote','add','origin','git@github.com:CrispyNuggetD/42_Singapore_SUTD_hnah_private.git')
+        folder=self.source/'42/lan42';folder.mkdir(parents=True)
+        (folder/'login-settings.json').write_text('{"close_tab":false}')
+        config=dict(self.config,settings_backup_private=str(self.source),settings_backup_remote=str(self.remote),
+                    extra_files=['main.c'])
+        with contextlib.redirect_stdout(io.StringIO()):lock_backup.backup_preferences(config)
+        names=git(self.remote,'ls-tree','-r','--name-only','wip/42-lan42-settings')
+        self.assertEqual(names,b'42/lan42/login-settings.json\n')
+        (folder/'auth-server.json').write_text('PRIVATE TEST SENTINEL')
+        with self.assertRaisesRegex(ValueError,'Unrecognized file'):
+            lock_backup.backup_preferences(config)
+
+    def test_watcher_failure_warns_without_exposing_file_contents(self):
+        import ast
+        from unittest.mock import Mock
+        text=(Path(__file__).resolve().parents[1]/'tools/lock_backup_watch.py').read_text()
+        node=next(n for n in ast.parse(text).body if isinstance(n,ast.FunctionDef) and n.name=='finished')
+        process=Mock()
+        scope=dict(os=__import__('os'),subprocess=Mock(),note=Mock(),child=None,queued=False)
+        exec(compile(ast.Module(body=[node],type_ignores=[]),'<watcher>','exec'),scope)
+        scope['finished'](1,256)
+        command=scope['subprocess'].Popen.call_args.args[0]
+        self.assertIn('Backup incomplete',command)
+        scope['subprocess'].Popen.reset_mock()
+        scope['finished'](1,0)
+        scope['subprocess'].Popen.assert_not_called()
+
     def test_credentials_stop_checkpoint(self):
         (self.source / '.env').write_text('dummy test fixture')
         with self.assertRaisesRegex(ValueError, 'Credential-like'):

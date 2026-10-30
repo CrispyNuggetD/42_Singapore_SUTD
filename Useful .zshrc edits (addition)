@@ -308,13 +308,15 @@ _42_lock_screen() {
 }
 
 _leavesch_backup() {
+  local failed=0
   if [[ "$OSTYPE" == darwin* ]]; then
     # Publish resumable school continuations as well as the private JSONL backup.
     command python3 "$ZSHRC_RUNTIME_ROOT/codex_return.py" export \
-      --private "${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}" || return $?
+      --private "${CODEX_PRIVATE_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private}" || failed=1
   fi
   DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-    command python3 "$ZSHRC_RUNTIME_ROOT/leaveschool.py" backup
+    command python3 "$ZSHRC_RUNTIME_ROOT/leaveschool.py" backup || failed=1
+  return "$failed"
 }
 _leavesch_quit_apps() {
   LEAVESCH_KEEP_APPS="${LEAVESCH_KEEP_APPS:-}" \
@@ -329,7 +331,7 @@ leavesch() {
   {
     local helper="$ZSHRC_RUNTIME_ROOT/leaveschool.py"
     local failed=0
-    _leavesch_backup || return 1
+    _leavesch_backup || failed=1
     DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
       command python3 "$helper" push-all || failed=1
     # Cover a private clone configured outside the Documents scan as well.
@@ -338,30 +340,30 @@ leavesch() {
     if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
       command python3 "$helper" push-private || failed=1
     fi
-    if (( failed )); then
-      print -u2 -- 'leavesch: some pushes failed; tmux kept open. Fix the errors and retry.'
-      return 1
-    fi
     if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
       _leavesch_quit_apps || {
         print -u2 -- 'leavesch: an app needs attention; tmux kept open. Finish its prompts and retry.'
-        return 1
+        failed=1
       }
     elif _dailylogin_enabled "${closechromeonleave:-TRUE}"; then
       command python3 "$ZSHRC_RUNTIME_ROOT/close_chrome.py" || {
         print -u2 -- 'leavesch: Chrome has not finished closing; tmux kept open.'
-        return 1
+        failed=1
       }
     fi
     if _dailylogin_enabled "${closeappsonleave:-TRUE}"; then
       # Editors may flush newly saved files while handling their normal Quit.
       print -- 'Saving final app changes before closing terminals.'
-      _leavesch_backup || return 1
+      _leavesch_backup || failed=1
       DOCUMENTS_REPOS_ROOT="${DOCUMENTS_REPOS_ROOT:-$HOME/Documents}" \
-        command python3 "$helper" push-all || return 1
+        command python3 "$helper" push-all || failed=1
       if [[ "${private:A}" != "${docs:A}" && "${private:A}" != "${docs:A}/"* ]]; then
-        command python3 "$helper" push-private || return 1
+        command python3 "$helper" push-private || failed=1
       fi
+    fi
+    if (( failed )); then
+      print -u2 -- 'leavesch: all save/quit tasks attempted; failures need attention. Terminals kept open.'
+      return 1
     fi
     print -- 'Work and chat backup saved. Closing all tmux sessions, including attached sessions.'
     local -a tmux_args
@@ -414,13 +416,10 @@ importhome() {
     print -- 'Private repository unavailable; skipping home-chat import.'
     return 0
   fi
-  GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes -o ConnectTimeout=15" \
-    command git -C "$private" -c merge.autostash=false -c rebase.autostash=false \
-    pull --no-rebase --ff-only || return 1
   local helper="$ZSHRC_RUNTIME_ROOT/codex_return.py"
   # First update can still be running the previous installer's helper list.
   [[ -f "$helper" ]] || helper="${ZSHRC_SHARED_ROOT:-$MAIN_REPO_ROOT}/tools/codex_return.py"
-  command python3 "$helper" import \
+  command python3 "$helper" import --fetch \
     --private "$private" --main-repo "$MAIN_REPO_ROOT" "$@"
 }
 

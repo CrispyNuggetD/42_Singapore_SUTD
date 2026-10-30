@@ -102,6 +102,27 @@ class RoundTrip(unittest.TestCase):
         self.assertEqual(self.quiet(handoff.import_home, self.private, school, school_main, self.root/'school-home', 'codex'), 1)
         self.assertEqual(Path(returned['rollout']).read_text(), content)
 
+    def test_fetch_import_preserves_dirty_and_colliding_local_chat_backups(self):
+        remote=self.root/'remote/42_Singapore_SUTD_hnah_private'
+        remote.parent.mkdir()
+        subprocess.run(['git','init','--bare',str(remote)],check=True,capture_output=True)
+        def git(*args):return handoff.git(self.private,*args)
+        git('init','-b','main');git('config','user.name','Test');git('config','user.email','test@example.invalid')
+        git('remote','add','origin',str(remote));git('add','.');git('commit','-m','Baseline')
+        baseline=git('rev-parse','HEAD')
+        self.append('A returned continuation')
+        self.quiet(handoff.export_home,self.private,self.home)
+        git('add','.');git('commit','-m','Return');git('push','-u','origin','main')
+        git('reset','--mixed',baseline)
+        dirty=self.private/'local-work.txt';dirty.write_text('Keep local work')
+        before=git('status','--porcelain')
+        school=self.root/'school-home'
+        result=self.quiet(handoff.fetch_import,self.private,school,self.main,self.root,'codex')
+        self.assertEqual(result,1)
+        self.assertEqual(git('rev-parse','HEAD'),baseline)
+        self.assertEqual(git('status','--porcelain'),before)
+        self.assertEqual(dirty.read_text(),'Keep local work')
+
     def test_incomplete_or_active_chat_exports_nothing(self):
         self.append('New turn')
         with self.rollout.open('a') as stream:

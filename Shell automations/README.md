@@ -193,3 +193,38 @@ main-repo side commits are summarized separately from project commits; private
 chat exports never enter the summary prompt. Both attempt `ft_lock` even if a
 save fails, Python cannot start, or the command is interrupted. `gobreak` keeps
 tmux running; `leavesch` closes it only after successful saving and pushing.
+
+
+### Leave and backup recovery
+
+`leavesch` attempts every backup, repository push, normal app-quit request and
+final save even if an earlier step fails. Any failure keeps tmux and terminal
+windows open for review; screen locking is still attempted last. Chrome uses
+normal desktop close requests on Linux and normal Quit on macOS, without Unix
+signals or force-kill escalation. Unsaved-work prompts require local attention.
+
+Private lock backups compress files larger than 95 MiB losslessly as
+`<original-name>.42-backup.gz`, keeping the source file unchanged. Restore one
+with `gzip -dc -- file.42-backup.gz > restored-file`. Files still too large after
+compression produce an explicit error. If a previous unpublished backup history
+contains GitHub-rejected blobs, retain that history and select a fresh backup
+branch in the private checkpoint configuration; ordinary retries cannot remove
+oversized blobs from older commits. Never force-push or delete the old history
+as an automatic repair.
+
+Owner-authorized Codex backups include plain `.jsonl` and compressed
+`.jsonl.zst` rollouts, storing only decompressed transcript JSONL files in the
+separate private repository's `42/codex_cache`. A chat still changing during
+copy is retried on the next backup. `importhome` fetches the upstream handoff
+and registers separate resumable copies without pulling over local untracked
+chat backups, changing the private working branch, or touching unrelated work.
+
+The checkpoint configuration may explicitly list `extra_files` (relative paths)
+for ignored files that must still be backed up. They pass the same credential,
+path and size checks; ignore rules in the source repo remain unchanged.
+Owner-configured `settings_backup_private` and `settings_backup_remote` add an
+independent `wip/42-lan42-settings` snapshot containing only allowlisted portable
+preferences under `42/lan42` in the separate private repo. School, chat and
+settings jobs each run even if an earlier job fails. Backup success covers only
+the configured selection, never unsaved buffers, every ignored file, nested repo
+contents or credentials. Report skipped/failed scope explicitly when checking it.

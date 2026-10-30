@@ -55,6 +55,13 @@ def finished(pid, status):
     global child, queued
     result = os.waitstatus_to_exitcode(status)
     note('Backup process finished: ' + str(result))
+    if result:
+        try:
+            subprocess.Popen(['notify-send','--app-name=42 private backup','--urgency=critical',
+                              '--','Backup incomplete',
+                              'One or more backup jobs failed. Some data may be local only. Run privatebackupstatus and inspect ~/.local/state/42-lock-backup/watch.log.'],
+                             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        except OSError:note('Could not show backup failure notification; see this log.')
     if child is not None:
         child.returncode = result
     child = None

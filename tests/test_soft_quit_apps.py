@@ -59,11 +59,11 @@ class SoftQuit(unittest.TestCase):
         self.assertNotIn('saving no', script)
 
     def test_leavesch_app_failure_retains_tmux_and_terminal_stage_is_last(self):
-        for failure in ('0', '1'):
+        for failure in ('0', '1', 'backup', 'push'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 python = root/'python3'
-                python.write_text('#!/bin/sh\necho "python:$*" >> "$EVIDENCE"\ncase "$1" in */soft_quit_apps.py) [ "$#" -gt 1 ] || exit "$APP_FAILURE";; esac\n')
+                python.write_text('#!/bin/sh\necho "python:$*" >> "$EVIDENCE"\ncase "$APP_FAILURE:$1:$2" in 1:*/soft_quit_apps.py:|backup:*:backup|push:*:push-all) exit 1;; esac\n')
                 python.chmod(0o700)
                 tmux = root/'tmux'
                 tmux.write_text('#!/bin/sh\necho "tmux:$*" >> "$EVIDENCE"\n')
@@ -76,11 +76,14 @@ class SoftQuit(unittest.TestCase):
                 result = subprocess.run(['zsh', '-f', '-c', script, 'test',
                                          str((Path(__file__).resolve().parents[1]/'Useful .zshrc edits (addition)')), tmp],
                                         env=env, capture_output=True, text=True)
-                self.assertEqual(result.returncode, int(failure), result.stderr)
+                self.assertEqual(result.returncode, int(failure != '0'), result.stderr)
                 events = (root/'events').read_text()
                 self.assertEqual('tmux:kill-server' in events, failure == '0')
                 self.assertEqual('--schedule-terminals' in events, failure == '0')
                 self.assertTrue(events.rstrip().endswith('LOCK'))
+                self.assertEqual(events.count('leaveschool.py backup'), 2)
+                self.assertEqual(events.count('leaveschool.py push-all'), 2)
+                self.assertIn('soft_quit_apps.py', events)
                 if failure == '0':
                     self.assertLess(events.index('tmux:kill-server'), events.index('--schedule-terminals'))
                     self.assertEqual(events.count('leaveschool.py push-all'), 2)

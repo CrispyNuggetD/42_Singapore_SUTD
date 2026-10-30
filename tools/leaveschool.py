@@ -118,20 +118,34 @@ def backup(source, private, main):
     if not source.is_dir():
         raise ValueError(f'Missing Codex sessions directory: {source}')
     copied = 0
-    for src in source.rglob('*.jsonl'):
+    for src in sorted([*source.rglob('*.jsonl'), *source.rglob('*.jsonl.zst')]):
+        compressed = src.name.endswith('.jsonl.zst')
+        if compressed and src.with_suffix('').exists():
+            continue
         if src.is_symlink() or not src.is_file() or source.resolve() not in src.resolve().parents:
             continue
-        dst = target / 'sessions' / src.relative_to(source)
+        relative = src.relative_to(source)
+        if compressed:relative = relative.with_suffix('')
+        dst = target / 'sessions' / relative
         if dst.resolve() != dst:
             raise ValueError(f'Refusing symlink destination: {dst}')
         before = src.stat()
-        if dst.exists() and dst.stat().st_size == before.st_size and dst.stat().st_mtime_ns == before.st_mtime_ns:
+        if dst.exists() and (compressed or dst.stat().st_size == before.st_size) and dst.stat().st_mtime_ns == before.st_mtime_ns:
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         fd, temporary = tempfile.mkstemp(prefix='.chat-', dir=dst.parent)
         os.close(fd)
         try:
-            shutil.copyfile(src, temporary)
+            if compressed:
+                with open(temporary, 'wb') as output:
+                    subprocess.run(['zstd', '-dc', '--', str(src)], stdout=output,
+                                   stderr=subprocess.PIPE, check=True, timeout=120)
+            else:
+                shutil.copyfile(src, temporary)
+            after=src.stat()
+            if (before.st_size,before.st_mtime_ns)!=(after.st_size,after.st_mtime_ns):
+                print('Chat still changing; retaining its previous backup until the next run.',flush=True)
+                continue
             os.utime(temporary, ns=(before.st_atime_ns, before.st_mtime_ns))
             os.replace(temporary, dst)
         finally:

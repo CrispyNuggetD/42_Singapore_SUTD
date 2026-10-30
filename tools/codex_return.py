@@ -8,6 +8,9 @@ import argparse
 import fcntl
 import hashlib
 import importlib.util
+import io
+import tarfile
+import tempfile
 import json
 import os
 from pathlib import Path
@@ -189,9 +192,9 @@ def school_mapper(record, private, main, school_home):
     return mapped
 
 
-def import_home(private, home, main, school_home, codex):
-    mod = helper(private)
-    target = private / RETURN_ROOT
+def import_home(private, home, main, school_home, codex, snapshot_root=None):
+    mod = helper(snapshot_root or private)
+    target = (snapshot_root or private) / RETURN_ROOT
     index = load(target / 'index.json', {'snapshots': {}})
     state_path = home / 'school-handoff/returns.json'
     state = load(state_path, {'version': 1, 'imports': {}})
@@ -235,6 +238,31 @@ def import_home(private, home, main, school_home, codex):
     return added
 
 
+def fetch_import(private, home, main, school_home, codex):
+    """Read upstream handoffs without pulling over local backup files or other work."""
+    git(private, 'fetch', 'origin')
+    upstream = git(private, 'rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}')
+    if not upstream.startswith('origin/'):
+        raise ValueError('Chat import requires an origin tracking branch')
+    paths = ['Scripts and Testers/codex_school_import.py']
+    if git(private, 'ls-tree', '--name-only', upstream, '--', RETURN_ROOT):
+        paths.append(RETURN_ROOT)
+    archive = subprocess.run(['git', '-C', str(private), 'archive', upstream, '--', *paths],
+                             check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    with tempfile.TemporaryDirectory(prefix='42-chat-return-') as directory:
+        root=Path(directory)
+        with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
+            for item in bundle:
+                path=confined(root, item.name)
+                if item.isdir():path.mkdir(parents=True, exist_ok=True)
+                elif item.isfile():
+                    path.parent.mkdir(parents=True,exist_ok=True)
+                    with bundle.extractfile(item) as source, path.open('wb') as output:
+                        shutil.copyfileobj(source,output)
+                else:raise ValueError('Refusing non-file handoff archive entry')
+        return import_home(private,home,main,school_home,codex,snapshot_root=root)
+
+
 def sync_export(private, home):
     # A transcript-only command must not accidentally publish unrelated local commits.
     branch = git(private, 'symbolic-ref', '--quiet', '--short', 'HEAD')
@@ -264,6 +292,7 @@ def sync_export(private, home):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('export', 'check', 'sync', 'import'))
+    parser.add_argument('--fetch', action='store_true', help='Import from origin without modifying the private working tree')
     parser.add_argument('--private', type=Path, default=Path(os.environ.get('CODEX_PRIVATE_REPO_ROOT', Path.home()/'Documents/42_Singapore_SUTD_hnah_private')))
     parser.add_argument('--codex-home', type=Path, default=Path(os.environ.get('CODEX_HOME', Path.home()/'.codex')))
     parser.add_argument('--main-repo', type=Path, default=Path(os.environ.get('MAIN_REPO_ROOT', Path.home()/'Documents/42_Singapore_SUTD')))
@@ -284,7 +313,8 @@ def main():
                 codex = shutil.which(args.codex)
                 if not codex:
                     raise ValueError('Codex CLI missing; set CODEX_BIN to the extension/CLI executable')
-                import_home(private, home, args.main_repo.resolve(), Path.home(), codex)
+                action=fetch_import if args.fetch else import_home
+                action(private, home, args.main_repo.resolve(), Path.home(), codex)
         return 0
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         detail = getattr(error, 'stderr', None) or str(error)

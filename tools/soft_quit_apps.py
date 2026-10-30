@@ -235,7 +235,7 @@ def selected(apps, terminals=False):
             and app.matches(TERMINALS) == terminals]
 
 
-def linux_quit(check=False, terminals=False, timeout=30):
+def linux_quit(check=False, terminals=False, timeout=30, only_names=None):
     if os.environ.get('XDG_SESSION_TYPE') == 'wayland':
         raise RuntimeError('App-wide soft quit currently requires an X11 Linux session; no apps were closed.')
     x11 = X11()
@@ -250,6 +250,8 @@ def linux_quit(check=False, terminals=False, timeout=30):
         except (ImportError, ValueError, RuntimeError) as error:
             raise RuntimeError('Native app quit discovery needs python3-gi and the session bus; no apps were closed.') from error
         targets = selected(apps.values(), terminals)
+        if only_names is not None:
+            targets = [app for app in targets if app.matches(only_names)]
         for app in targets:
             method = 'Quit' if app.quit_action else 'close windows'
             print(f'{"Would request" if check else "Requesting"} {method}: {app.name}', flush=True)

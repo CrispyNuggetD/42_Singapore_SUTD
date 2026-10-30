@@ -2,13 +2,17 @@
 """Save school repository files to an independent private WIP history."""
 import argparse
 from datetime import datetime
+import gzip
 import fcntl
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+
+MAX_BLOB = 95 * 1024 * 1024
 
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / '42-lock-checkpoint.json'
 
@@ -19,11 +23,13 @@ def run(args, cwd=None, capture=True):
                           stdout=subprocess.PIPE if capture else None,
                           stderr=subprocess.PIPE, timeout=600).stdout
 
-def selected(source, paths):
+def selected(source, paths, extra_files=()):
     data = run(['git', '-C', str(source), 'ls-files', '-z', '--cached', '--others',
                 '--exclude-standard', '--', *paths])
     files = []
-    for raw in sorted(set(data.split(b'\0')) - {b''}):
+    entries=set(data.split(b'\0'))-{b''}
+    entries.update(os.fsencode(name) for name in extra_files)
+    for raw in sorted(entries):
         relative = Path(os.fsdecode(raw))
         full = source / relative
         if relative.is_absolute() or '..' in relative.parts:
@@ -34,6 +40,8 @@ def selected(source, paths):
             raise ValueError('Refusing a path through a directory symlink')
         if full.is_file() or full.is_symlink():
             files.append(relative)
+        elif os.fsdecode(raw) in extra_files:
+            raise ValueError('Explicit backup file is missing: '+str(relative))
     return files
 
 def checkpoint(config, preview=False):
@@ -43,7 +51,7 @@ def checkpoint(config, preview=False):
         print('Screen-lock checkpoint disabled')
         return
     source = Path(config['source']).resolve(strict=True)
-    files = selected(source, config['paths'])
+    files = selected(source, config['paths'], config.get('extra_files',()))
     # Account privacy policy forbids exporting credentials, even to private Git.
     for relative in files:
         name = relative.name.lower()
@@ -82,7 +90,18 @@ def checkpoint(config, preview=False):
                 if (source / relative).is_symlink():
                     target.symlink_to(os.readlink(source / relative))
                 else:
-                    shutil.copy2(source / relative, target)
+                    if (source / relative).stat().st_size > MAX_BLOB:
+                        compressed = target.with_name(target.name + '.42-backup.gz')
+                        if compressed.relative_to(tree_dir) in files:
+                            raise ValueError('Compressed backup filename conflicts with a source file')
+                        with (source / relative).open('rb') as original, compressed.open('wb') as output:
+                            with gzip.GzipFile(filename='', mode='wb', fileobj=output, mtime=0) as zipped:
+                                shutil.copyfileobj(original, zipped)
+                        if compressed.stat().st_size > MAX_BLOB:
+                            raise ValueError('Large file remains over the Git blob limit after compression: ' + str(relative))
+                        print('Compressed oversized backup file: ' + str(relative), flush=True)
+                    else:
+                        shutil.copy2(source / relative, target)
             run(git + ['read-tree', '--empty'])
             run(git + ['--work-tree', str(tree_dir), 'add', '--force', '--all', '--', '.'], cwd=tree_dir)
             tree = run(git + ['write-tree']).decode().strip()
@@ -118,8 +137,30 @@ def backup_chats(config):
     chats = dict(config, source=str(private), paths=['42/codex_cache'],
                  storage=str(Path(config['storage']) / 'chats'),
                  remote=config['chat_backup_remote'], branch='wip/42-chat-backup',
-                 chat_backup_private=None)
+                 chat_backup_private=None, extra_files=[])
     checkpoint(chats)
+
+def backup_preferences(config):
+    private=config.get('settings_backup_private')
+    if not private:return
+    private=Path(private).expanduser().resolve(strict=True)
+    from leaveschool import git
+    top=Path(git(private,'rev-parse','--show-toplevel',capture=True).stdout.strip()).resolve()
+    remote=git(private,'remote','get-url','origin',capture=True).stdout.strip()
+    if top!=private or not remote.removesuffix('.git').endswith('/42_Singapore_SUTD_hnah_private'):
+        raise ValueError('LAN42 settings backup requires the separate private repository')
+    folder=private/'42/lan42'
+    if folder.resolve()!=folder or not folder.is_dir():raise ValueError('Portable LAN42 folder is missing or symlinked')
+    for path in folder.iterdir():
+        if path.name!='login-settings.json' and not re.fullmatch(r'(tracking|clusters-auto-open|popup-permissions|koel-sound|koel-auto|notification-channels-account|audio-volume-account|web-search-account|clock-tools-account)-[a-f0-9]{64}\.json',path.name):
+            raise ValueError('Unrecognized file in portable settings; backup stopped for review')
+        if path.is_symlink() or not path.is_file():raise ValueError('Unsafe portable preference file')
+    settings=dict(config,source=str(private),paths=['42/lan42'],extra_files=[],
+                  storage=str(Path(config['storage'])/'lan42-settings'),
+                  remote=config['settings_backup_remote'],branch='wip/42-lan42-settings',
+                  settings_backup_private=None,chat_backup_private=None)
+    checkpoint(settings)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
@@ -127,7 +168,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = json.loads(CONFIG.read_text())
     failed = False
-    for action in [lambda: checkpoint(config, args.preview)] + ([] if args.preview or not config.get('enabled') else [lambda: backup_chats(config)]):
+    for action in [lambda: checkpoint(config, args.preview)] + ([] if args.preview or not config.get('enabled') else [lambda: backup_chats(config), lambda: backup_preferences(config)]):
         try:
             action()
         except Exception as error:

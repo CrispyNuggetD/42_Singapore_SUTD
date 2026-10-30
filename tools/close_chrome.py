@@ -3,7 +3,6 @@
 import argparse
 import os
 from pathlib import Path
-import signal
 import re
 import subprocess
 import sys
@@ -57,25 +56,10 @@ def close(timeout=30):
         return
     if not sys.platform.startswith('linux'):
         raise RuntimeError('Automatic Chrome quit is supported on Linux and macOS.')
-    running = browsers()
-    if not running:
-        print('Chrome is already closed.')
-        return
-    print('Asking Chrome to quit cleanly...', flush=True)
-    for pid, token in running.items():
-        if still_running(pid, token):
-            try:
-                # Chromium handles SIGHUP via its normal graceful Exit() path.
-                # Signal only browser parents, never renderers or process groups.
-                os.kill(pid, signal.SIGHUP)
-            except ProcessLookupError:
-                pass
-    deadline = time.monotonic() + timeout
-    while any(still_running(pid, token) for pid, token in running.items()):
-        if time.monotonic() >= deadline:
-            raise RuntimeError('Chrome is still running; finish any close prompts locally and retry leavesch. It was not force-killed.')
-        time.sleep(0.2)
-    print('Chrome exited cleanly.')
+    from soft_quit_apps import linux_quit
+    # Use the desktop's supported Quit/WM_DELETE_WINDOW path. No Unix signals.
+    linux_quit(timeout=timeout, only_names={'google-chrome', 'Google-chrome',
+                                          'chrome', 'chromium', 'chromium-browser'})
 
 
 def main():
