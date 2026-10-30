@@ -897,6 +897,18 @@ start_lan42() {
   _daily_terminal open --cwd "$LAN42_CLONE" lan42 -- sh "$launcher" "$@"
 }
 
+
+# Ask once before reloading this checkout's local LAN42 clients and host.
+lan42restart() (
+  local clone="${LAN42_CLONE:-$HOME/Documents/42sg-campus-lan}"
+  if [[ ! -f "$clone/campus_lan/updater.py" ]]; then
+    print -u2 -- "LAN42 updater missing: $clone/campus_lan/updater.py. Check LAN42_CLONE."
+    return 1
+  fi
+  builtin cd -- "$clone" || return 1
+  command python3 -m campus_lan.updater --request-reload "$@"
+)
+
 divider() {
     printf "\n\033[1;36m%*s\033[0m\n" "$(tput cols)" '' | tr ' ' '='
 }
