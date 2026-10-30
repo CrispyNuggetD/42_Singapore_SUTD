@@ -228,3 +228,12 @@ preferences under `42/lan42` in the separate private repo. School, chat and
 settings jobs each run even if an earlier job fails. Backup success covers only
 the configured selection, never unsaved buffers, every ignored file, nested repo
 contents or credentials. Report skipped/failed scope explicitly when checking it.
+
+An explicitly configured `lan42_source` adds a separate `wip/42-lan42-source`
+snapshot of LAN42 Python source/tests and the selected modified documentation to
+the same confirmed private WIP destination. It excludes screenshots/assets,
+private runtime configuration and unrelated repositories. This is a private code
+backup, not publication of a release or a push to LAN42's upstream source branch.
+The watcher warns on a failed backup run with a generic desktop notification;
+file details remain in its local log. Missing explicitly selected extra files
+are failures rather than silent omissions.

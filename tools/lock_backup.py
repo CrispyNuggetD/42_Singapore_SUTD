@@ -162,13 +162,32 @@ def backup_preferences(config):
     checkpoint(settings)
 
 
+def backup_lan42_source(config):
+    source=config.get('lan42_source')
+    if not source:return
+    source=Path(source).expanduser().resolve(strict=True)
+    from leaveschool import git
+    remote=git(source,'remote','get-url','origin',capture=True).stdout.strip()
+    top=Path(git(source,'rev-parse','--show-toplevel',capture=True).stdout.strip()).resolve()
+    if top!=source or not remote.removesuffix('.git').endswith('/42sg-campus-lan'):
+        raise ValueError('LAN42 source backup must use the configured LAN42 checkout')
+    # Code and changed documentation only; no image/browser/private runtime data.
+    paths=['campus_lan','tests','README.md','AGENTS.md','docs/access-policy.md',
+           'docs/campus-guide.md','docs/quick-guide.html','docs/runtime-environment.md',
+           'docs/system-snapshots/42-campus.json']
+    snapshot=dict(config,source=str(source),paths=paths,extra_files=[],
+                  storage=str(Path(config['storage'])/'lan42-source'),branch='wip/42-lan42-source',
+                  lan42_source=None,chat_backup_private=None,settings_backup_private=None)
+    checkpoint(snapshot)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview', action='store_true')
     args = parser.parse_args()
     config = json.loads(CONFIG.read_text())
     failed = False
-    for action in [lambda: checkpoint(config, args.preview)] + ([] if args.preview or not config.get('enabled') else [lambda: backup_chats(config), lambda: backup_preferences(config)]):
+    for action in [lambda: checkpoint(config, args.preview)] + ([] if args.preview or not config.get('enabled') else [lambda: backup_chats(config), lambda: backup_preferences(config), lambda: backup_lan42_source(config)]):
         try:
             action()
         except Exception as error:

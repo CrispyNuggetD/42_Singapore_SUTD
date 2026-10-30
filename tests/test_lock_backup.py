@@ -131,6 +131,16 @@ class BackupTests(unittest.TestCase):
         scope['finished'](1,0)
         scope['subprocess'].Popen.assert_not_called()
 
+    def test_lan42_code_backup_excludes_unrelated_files_and_preserves_index(self):
+        git(self.source,'remote','add','origin','https://github.com/CrispyNuggetD/42sg-campus-lan.git')
+        (self.source/'campus_lan').mkdir()
+        (self.source/'campus_lan/change.py').write_text('print("test fixture")\n')
+        before=(self.source/'.git/index').read_bytes()
+        with contextlib.redirect_stdout(io.StringIO()):
+            lock_backup.backup_lan42_source(dict(self.config,lan42_source=str(self.source)))
+        self.assertEqual(git(self.remote,'ls-tree','-r','--name-only','wip/42-lan42-source'),b'campus_lan/change.py\n')
+        self.assertEqual((self.source/'.git/index').read_bytes(),before)
+
     def test_credentials_stop_checkpoint(self):
         (self.source / '.env').write_text('dummy test fixture')
         with self.assertRaisesRegex(ValueError, 'Credential-like'):
