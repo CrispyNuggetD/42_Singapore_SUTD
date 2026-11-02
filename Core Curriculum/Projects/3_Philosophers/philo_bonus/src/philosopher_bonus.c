@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 22:59:37 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/24 22:59:37 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 10:55:41 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,27 @@
 */
 int	run_philo_bonus(t_sim_bonus *sim, int id)
 {
-	(void)sim;
-	(void)id;
+	t_philo_bonus	philo;
+	t_status		status;
+
+	memset(&philo, 0, sizeof(philo));
+	philo.id = id;
+	philo.sim = sim;
+	philo.last_meal = sim->start_time;
+	/* Open this philosopher's meal_state_lock before starting its monitor. */
+
+	status = philo_wait_bonus(sim,
+		initial_wait_slots_bonus(&philo) * sim->config.time_to_eat);
+	while (status == STATUS_OK)
+	{
+		status = philo_eat_bonus(&philo);
+		if (status == STATUS_OK)
+			status = sleep_and_think(sim);
+		if (status == STATUS_OK)
+			status = philo_wait_bonus(sim, thinking_wait_ms(sim));
+		if (status != STATUS_OK)
+			break ;
+	}
 	return (CHILD_ERROR);
 }
 

@@ -240,6 +240,7 @@ simulation features. The numbered links jump to each learning point.
 34. [See the clock grow: 1, 2, 3, 4, 5, and 7 philosophers (AI-generated diagrams)](#learning-point-34)
 35. [What if the sleep is weirdly long? Valid inputs, different clocks](#learning-point-35)
 36. [Bonus: why another semaphore just to take two forks?](#learning-point-36)
+37. [Bonus: replacing mutexes means checking error handling too](#learning-point-37)
 
 <a id="learning-point-1"></a>
 
@@ -3138,5 +3139,41 @@ return semaphore tokens.
 This entry records the planned acquisition design. Semaphore setup and partial
 initialization cleanup are now implemented; the actual acquisition routine is
 still TODO in the bonus scaffold.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-37"></a>
+
+### 37. Bonus: replacing mutexes means checking error handling too
+
+Bonus is not as straightforward as replacing every mutex call with a semaphore
+call. Even the error reporting works differently:
+
+| Operation | Success | Failure |
+| --- | --- | --- |
+| `pthread_mutex_lock()` | Returns `0` | Returns an error number directly |
+| `sem_wait()` | Returns `0` | Returns `-1` and sets `errno` |
+
+`pthread_mutex_lock()` does not return `EINTR`: after a signal handler returns,
+the thread resumes waiting for the mutex. `sem_wait()` can instead fail with
+`errno == EINTR`, meaning a signal interrupted the wait before it acquired a
+unit. That is why my bonus helper retries that particular failure:
+
+```c
+while (sem_wait(sem) == -1)
+{
+    if (errno != EINTR)
+        return (ERR_SEM_WAIT);
+}
+```
+
+I check `errno` only after `sem_wait()` reports failure. Other failures are
+propagated to the caller rather than retried indefinitely. A zero semaphore
+counter is not an error: the call waits for a unit to become available.
+
+The mandatory mutex helper does not need this retry loop. The bonus helper
+still follows the same ownership rule: if a later step fails, attempt to
+return every fork unit already acquired and release the acquisition gate.
 
 [Back to appendix index](#learning-points)

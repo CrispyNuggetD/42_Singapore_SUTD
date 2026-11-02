@@ -18,7 +18,9 @@ static const char	*semaphore_error_message(t_status status)
 	static const char	*messages[] = {
 		"Error: Semaphore creation failed.\n",
 		"Error: Semaphore close failed.\n",
-		"Error: Semaphore unlink failed.\n"
+		"Error: Semaphore unlink failed.\n",
+		"Error: Semaphore wait failed.\n",
+		"Error: Semaphore post failed.\n"
 	};
 
 	return (messages[status - ERR_SEM_OPEN]);

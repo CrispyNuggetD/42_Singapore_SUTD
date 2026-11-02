@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/24 22:19:00 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 10:38:59 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,8 +61,20 @@ typedef enum e_status
 	ERR_SEM_OPEN,
 	ERR_SEM_CLOSE,
 	ERR_SEM_UNLINK,
+	ERR_SEM_WAIT,
+	ERR_SEM_POST,
 	ERR_TOTAL
 }	t_status;
+
+typedef enum e_philo_state
+{
+	LOG_FORK,
+	LOG_EATING,
+	LOG_SLEEPING,
+	LOG_THINKING,
+	LOG_DIED,
+	LOG_TOTAL
+}	t_philo_state;
 
 typedef struct s_config
 {
@@ -73,22 +85,44 @@ typedef struct s_config
 	int		optional_meal_goal;
 }	t_config;
 
+typedef struct s_sim_bonus	t_sim_bonus;
+
+/*
+** The fields below describe one philosopher in its child process:
+** id: philosopher number, from 1 to N.
+** meal_state_lock: semaphore protecting reads and writes of the next two fields
+** between the philosopher routine and its death-monitor thread.
+** last_meal: LAST meal START time, in milliseconds.
+** meals_eaten: number of completed meals.
+** sim: pointer to this child's copy of the simulation structure.
+** Other processes do not see updates to these ordinary memory fields.
+*/
+typedef struct s_philo_bonus
+{
+	int				id;
+	sem_t			*meal_state_lock;
+	long			last_meal;
+	int				meals_eaten;
+	t_sim_bonus		*sim;
+}	t_philo_bonus;
+
 /*
 ** Parent-owned bookkeeping. Children inherit copies, not shared updates.
-** count is array capacity; alive counts children not yet reaped.
+** count is array capacity; alive_to_reap counts children not yet reaped.
 ** A positive PID identifies an unreaped child; zero means unused or reaped.
 */
 typedef struct s_children
 {
 	pid_t	*pids;
 	int		count;
-	int		alive;
+	int		alive_to_reap;
 }	t_children;
 
 typedef struct s_sim_bonus
 {
 	t_config	config;
 	t_children	children;
+	long		start_time;
 	sem_t		*forks;
 	sem_t		*take_pair;
 	sem_t		*printing;
@@ -100,6 +134,7 @@ t_status	write_guaranteed(int fd, const char *buffer, size_t length);
 t_status	print_return_error(t_status status);
 long		now_ms(void);
 t_status	wait_ms(long duration_ms);
+int			initial_wait_slots_bonus(t_philo_bonus *philo);
 t_status	init_bonus(t_sim_bonus *sim);
 t_status	start_bonus(t_sim_bonus *sim);
 t_status	supervise_children(t_sim_bonus *sim);
@@ -109,5 +144,8 @@ t_status	init_children(t_children *children, int count);
 t_status	fork_philo(t_children *children, int index, pid_t *pid);
 t_status	wait_next_child(t_children *children, int *exit_code);
 t_status	cleanup_children(t_children *children);
+t_status	release_forks_bonus(t_philo_bonus *philo, int count);
+t_status	take_forks_bonus(t_philo_bonus *philo);
+t_status	log_philo_state_bonus(t_philo_bonus *philo, t_philo_state state);
 
 #endif

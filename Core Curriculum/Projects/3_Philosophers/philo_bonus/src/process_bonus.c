@@ -40,7 +40,7 @@ t_status	fork_philo(t_children *children, int index, pid_t *pid)
 	if (*pid > 0)
 	{
 		children->pids[index] = *pid;
-		children->alive++;
+		children->alive_to_reap++;
 	}
 	return (STATUS_OK);
 }
@@ -66,7 +66,7 @@ static void	forget_child(t_children *children, pid_t pid)
 		if (children->pids[i] == pid)
 		{
 			children->pids[i] = 0;
-			children->alive--;
+			children->alive_to_reap--;
 			return ;
 		}
 		i++;
@@ -76,7 +76,7 @@ static void	forget_child(t_children *children, pid_t pid)
 /* From pipex */
 /*
 ** Adapt wait_pipeline: wait for ANY child, not the last-created philosopher.
-** Parent only, alive > 0; own only the children tracked here. Retry EINTR.
+** Parent only, alive_to_reap > 0; own only the children tracked here. Retry EINTR.
 ** Return is wait success/error; *exit_code is the separate child outcome.
 ** TODO: parent reacts to CHILD_DIED/CHILD_ERROR by stopping other children.
 */

@@ -47,7 +47,7 @@ t_status	cleanup_children(t_children *children)
 	status = kill_children(children);
 	if (status != STATUS_OK)
 		return (status);
-	while (children->alive > 0)
+	while (children->alive_to_reap > 0)
 	{
 		status = wait_next_child(children, &exit_code);
 		if (status != STATUS_OK)
