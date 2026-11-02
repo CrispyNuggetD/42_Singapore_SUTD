@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 10:58:10 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 13:31:07 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 ** The caller releases both forks on non-success; do not publish this normal
 ** STATUS_STOPPED as a global stop request from the worker.
 */
-static t_status	record_meal_start_bonus(t_philo *philo)
+static t_status	record_meal_start_bonus(t_philo_bonus *philo)
 {
 	long		meal_start;
 	t_status	status;
