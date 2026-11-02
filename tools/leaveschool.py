@@ -9,6 +9,8 @@ import shutil
 import subprocess
 import tempfile
 
+MAX_CHAT_BLOB = 95 * 1024 * 1024
+
 
 def git(repo, *args, capture=False):
     env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
@@ -127,10 +129,15 @@ def backup(source, private, main):
         relative = src.relative_to(source)
         if compressed:relative = relative.with_suffix('')
         dst = target / 'sessions' / relative
-        if dst.resolve() != dst:
+        archive = dst.with_name(dst.name + '.zst')
+        if dst.resolve() != dst or archive.resolve() != archive:
             raise ValueError(f'Refusing symlink destination: {dst}')
         before = src.stat()
-        if dst.exists() and (compressed or dst.stat().st_size == before.st_size) and dst.stat().st_mtime_ns == before.st_mtime_ns:
+        oversized = not compressed and before.st_size > MAX_CHAT_BLOB
+        existing = (dst, archive) if compressed else (archive if oversized else dst,)
+        if any(path.exists() and path.stat().st_mtime_ns == before.st_mtime_ns
+               and (compressed or oversized or path.stat().st_size == before.st_size)
+               for path in existing):
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         fd, temporary = tempfile.mkstemp(prefix='.chat-', dir=dst.parent)
@@ -142,12 +149,27 @@ def backup(source, private, main):
                                    stderr=subprocess.PIPE, check=True, timeout=120)
             else:
                 shutil.copyfile(src, temporary)
+            oversized = Path(temporary).stat().st_size > MAX_CHAT_BLOB
+            if oversized:
+                packed = temporary + '.zst'
+                try:
+                    with open(packed, 'wb') as output:
+                        subprocess.run(['zstd', '-T2', '-3', '-q', '-c', '--', temporary],
+                                       stdout=output, stderr=subprocess.PIPE,
+                                       check=True, timeout=120)
+                    if Path(packed).stat().st_size > MAX_CHAT_BLOB:
+                        raise ValueError(f'Chat remains over GitHub size limit after compression: {relative}')
+                    Path(temporary).unlink()
+                    temporary = packed
+                except BaseException:
+                    Path(packed).unlink(missing_ok=True)
+                    raise
             after=src.stat()
             if (before.st_size,before.st_mtime_ns)!=(after.st_size,after.st_mtime_ns):
                 print('Chat still changing; retaining its previous backup until the next run.',flush=True)
                 continue
             os.utime(temporary, ns=(before.st_atime_ns, before.st_mtime_ns))
-            os.replace(temporary, dst)
+            os.replace(temporary, archive if oversized else dst)
         finally:
             Path(temporary).unlink(missing_ok=True)
         copied += 1
