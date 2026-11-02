@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 10:38:59 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
 # define SEM_FORKS_NAME "/hnah_philo_forks"
 # define SEM_PAIR_NAME "/hnah_philo_take_pair"
 # define SEM_PRINT_NAME "/hnah_philo_printing"
+# define SEM_MEAL_NAME "/hnah_philo_meal_state"
 
 /* Child exit codes are separate from the parent's function status enum. */
 # define CHILD_DONE 0
@@ -45,6 +46,7 @@ typedef enum e_status
 {
 	STATUS_OK,
 	STATUS_STOPPED,
+	STATUS_DONE,
 	ERR_USAGE,
 	ERR_NEGATIVE,
 	ERR_INVALID_INTEGER,
@@ -58,6 +60,9 @@ typedef enum e_status
 	ERR_WAITPID,
 	ERR_KILL,
 	ERR_NOT_IMPLEMENTED,
+	ERR_INVALID_LOG_STATE,
+	ERR_THREAD_CREATE,
+	ERR_CHILD,
 	ERR_SEM_OPEN,
 	ERR_SEM_CLOSE,
 	ERR_SEM_UNLINK,
@@ -100,6 +105,7 @@ typedef struct s_sim_bonus	t_sim_bonus;
 typedef struct s_philo_bonus
 {
 	int				id;
+	pthread_t		monitor_thread;
 	sem_t			*meal_state_lock;
 	long			last_meal;
 	int				meals_eaten;
@@ -123,9 +129,9 @@ typedef struct s_sim_bonus
 	t_config	config;
 	t_children	children;
 	long		start_time;
-	sem_t		*forks;
-	sem_t		*take_pair;
-	sem_t		*printing;
+	sem_t		*forks_sem;
+	sem_t		*take_pair_lock;
+	sem_t		*printing_lock;
 }	t_sim_bonus;
 
 t_status	parse_input(int argc, char **argv, t_config *config);
@@ -133,19 +139,27 @@ t_status	ft_pos_atoi_status(const char *nptr, int *out_value);
 t_status	write_guaranteed(int fd, const char *buffer, size_t length);
 t_status	print_return_error(t_status status);
 long		now_ms(void);
-t_status	wait_ms(long duration_ms);
+t_status	philo_wait_bonus(long duration_ms);
 int			initial_wait_slots_bonus(t_philo_bonus *philo);
+t_status	open_semaphore(sem_t **sem, const char *name, unsigned int value);
+t_status	open_unique_meal_semaphore(t_philo_bonus *philo);
 t_status	init_bonus(t_sim_bonus *sim);
+t_status	init_philo_bonus(t_philo_bonus *philo, t_sim_bonus *sim, int id);
 t_status	start_bonus(t_sim_bonus *sim);
-t_status	supervise_children(t_sim_bonus *sim);
+void		*monitor_philo_bonus(void *argument);
+t_status	supervise_children_bonus(t_sim_bonus *sim);
 int			run_philo_bonus(t_sim_bonus *sim, int id);
 t_status	cleanup_bonus(t_sim_bonus *sim, t_status status);
+t_status	cleanup_philo_bonus(t_philo_bonus *philo, t_sim_bonus *sim);
 t_status	init_children(t_children *children, int count);
-t_status	fork_philo(t_children *children, int index, pid_t *pid);
+t_status	fork_philo_bonus(t_children *children, int index, pid_t *pid);
 t_status	wait_next_child(t_children *children, int *exit_code);
 t_status	cleanup_children(t_children *children);
+t_status	wait_semaphore(sem_t *sem);
 t_status	release_forks_bonus(t_philo_bonus *philo, int count);
 t_status	take_forks_bonus(t_philo_bonus *philo);
+t_status	prepare_to_eat_bonus(t_philo_bonus *philo);
+t_status	philo_eat_bonus(t_philo_bonus *philo);
 t_status	log_philo_state_bonus(t_philo_bonus *philo, t_philo_state state);
-
+long		thinking_wait_ms_bonus(t_philo_bonus *philo);
 #endif

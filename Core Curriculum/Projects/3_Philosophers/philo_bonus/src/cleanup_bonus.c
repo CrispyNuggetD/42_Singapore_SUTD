@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/24 20:55:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 18:29:29 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,14 +87,32 @@ t_status	cleanup_bonus(t_sim_bonus *sim, t_status status)
 	cleanup_status = cleanup_children(&sim->children);
 	if (cleanup_status != STATUS_OK)
 		return (cleanup_status);
-	cleanup_status = close_semaphore(&sim->printing, SEM_PRINT_NAME);
+	cleanup_status = close_semaphore(&sim->printing_lock, SEM_PRINT_NAME);
 	if (status <= STATUS_STOPPED && cleanup_status != STATUS_OK)
 		status = cleanup_status;
-	cleanup_status = close_semaphore(&sim->take_pair, SEM_PAIR_NAME);
+	cleanup_status = close_semaphore(&sim->take_pair_lock, SEM_PAIR_NAME);
 	if (status <= STATUS_STOPPED && cleanup_status != STATUS_OK)
 		status = cleanup_status;
-	cleanup_status = close_semaphore(&sim->forks, SEM_FORKS_NAME);
+	cleanup_status = close_semaphore(&sim->forks_sem, SEM_FORKS_NAME);
 	if (status <= STATUS_STOPPED && cleanup_status != STATUS_OK)
 		status = cleanup_status;
+	return (status);
+}
+
+t_status	cleanup_philo_bonus(t_philo_bonus *philo, t_sim_bonus *sim)
+{
+	t_status	status;
+
+	status = STATUS_OK;
+	if (sem_close(philo->meal_state_lock) == -1)
+		status = ERR_SEM_CLOSE;
+	if (sem_close(sim->forks_sem) == -1)
+		status = ERR_SEM_CLOSE;
+	if (sem_close(sim->take_pair_lock) == -1)
+		status = ERR_SEM_CLOSE;
+	if (sem_close(sim->printing_lock) == -1)
+		status = ERR_SEM_CLOSE;
+	free(sim->children.pids);
+	memset(&sim->children, 0, sizeof(sim->children));
 	return (status);
 }

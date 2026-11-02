@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 12:19:51 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,5 @@ int	main(int argc, char **argv)
 	if (status == STATUS_OK)
 		status = start_bonus(&sim);
 	status = cleanup_bonus(&sim, status);
-	return (print_return_error(status) > STATUS_STOPPED);
+	return (print_return_error(status) >= ERR_USAGE);
 }

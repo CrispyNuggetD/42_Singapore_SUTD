@@ -6,8 +6,12 @@ SRC_DIR := src
 OBJ_DIR := obj
 SRCS := $(SRC_DIR)/main_bonus.c \
 	$(SRC_DIR)/init_bonus.c \
+	$(SRC_DIR)/semaphore_bonus.c \
 	$(SRC_DIR)/philosopher_bonus.c \
 	$(SRC_DIR)/monitor_bonus.c \
+	$(SRC_DIR)/logging_bonus.c \
+	$(SRC_DIR)/meal_bonus.c \
+	$(SRC_DIR)/forks_bonus.c \
 	$(SRC_DIR)/input_output_bonus.c \
 	$(SRC_DIR)/time_bonus.c \
 	$(SRC_DIR)/process_bonus.c \

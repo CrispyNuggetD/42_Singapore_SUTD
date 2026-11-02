@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/16 23:20:43 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,22 +33,14 @@ static t_status	print_message(t_philo *philo, t_philo_state state)
 }
 
 /*
-** Log one state supplied by the caller; this function does not detect death.
-** The monitor calls LOG_DIED only after confirming an expired deadline.
-** Other callers use LOG_FORK, LOG_EATING, LOG_SLEEPING, or LOG_THINKING.
+** Log a caller-supplied state; only the monitor supplies confirmed LOG_DIED.
 **
-** request is an INPUT to check_or_stop_sim, not an operation result:
-** ordinary messages pass STATUS_OK (check only); LOG_DIED passes
-** STATUS_STOPPED (publish global stopping before printing this death).
-** status is the OUTPUT: STATUS_OK permits this message; STATUS_STOPPED
-** suppresses it because global stopping was already set. ERR_* is failure.
-** The first death request returns STATUS_OK so its message can print.
+** request: STATUS_OK checks stopping; STATUS_STOPPED publishes death stopping.
+** status: STATUS_OK permits output; STATUS_STOPPED suppresses it; ERR_* fails.
+** The first death request publishes stopping but still permits its own output.
 **
-** Lock order is printing_lock then all_stop_lock. The helper releases the
-** stop lock before output; this function releases the print lock afterward.
-** Local STATUS_STOPPED results from workers do not call this logger as death.
-** Return failures to the caller; this function does not record first_error
-** for its own time/output errors, join threads, or clean up resources.
+** Lock order: printing_lock -> all_stop_lock; release the stop lock before
+** output and the printing lock afterward. Return errors for callers to handle.
 */
 t_status	log_philo_state(t_philo *philo, t_philo_state state)
 {

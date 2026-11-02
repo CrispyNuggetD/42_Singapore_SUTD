@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/24 20:55:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ static const char	*semaphore_error_message(t_status status)
 static const char	*error_message(t_status status)
 {
 	static const char	*messages[] = {
-		"",
-		"",
 		("Usage: ./philo_bonus <number_of_philosophers> <time_to_die> "
 			"<time_to_eat> <time_to_sleep> [optional_meal_goal]\n"),
 		"Error: Negative integers are not allowed.\n",
@@ -45,10 +43,13 @@ static const char	*error_message(t_status status)
 		"Error: Fork failed.\n",
 		"Error: Waiting for a child failed.\n",
 		"Error: Stopping a child failed.\n",
-		"Bonus scaffold: simulation is not implemented yet.\n"
+		"Bonus scaffold: simulation is not implemented yet.\n",
+		"Error: Invalid philosopher log state.\n",
+		"Error: Thread creation failed.\n",
+		"Error: Child process failed or terminated unexpectedly.\n"
 	};
 
-	return (messages[status]);
+	return (messages[status - ERR_USAGE]);
 }
 
 t_status	print_return_error(t_status status)
@@ -56,7 +57,7 @@ t_status	print_return_error(t_status status)
 	const char	*message;
 	size_t		length;
 
-	if (status > STATUS_STOPPED && status < ERR_TOTAL)
+	if (status >= ERR_USAGE && status < ERR_TOTAL)
 	{
 		if (status >= ERR_SEM_OPEN)
 			message = semaphore_error_message(status);

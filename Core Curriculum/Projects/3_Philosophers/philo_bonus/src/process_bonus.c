@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/10/24 20:55:17 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ t_status	init_children(t_children *children, int count)
 ** Both processes return OK: *pid == 0 identifies the child branch.
 ** Child MUST run its routine and exit; only the parent continues spawning.
 */
-t_status	fork_philo(t_children *children, int index, pid_t *pid)
+t_status	fork_philo_bonus(t_children *children, int index, pid_t *pid)
 {
 	*pid = fork();
 	if (*pid < 0)
@@ -76,7 +76,8 @@ static void	forget_child(t_children *children, pid_t pid)
 /* From pipex */
 /*
 ** Adapt wait_pipeline: wait for ANY child, not the last-created philosopher.
-** Parent only, alive_to_reap > 0; own only the children tracked here. Retry EINTR.
+** Parent only, alive_to_reap > 0; own only the children tracked here.
+** Retry waits interrupted by EINTR.
 ** Return is wait success/error; *exit_code is the separate child outcome.
 ** TODO: parent reacts to CHILD_DIED/CHILD_ERROR by stopping other children.
 */

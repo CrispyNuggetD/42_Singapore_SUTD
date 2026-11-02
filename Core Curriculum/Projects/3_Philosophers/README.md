@@ -183,6 +183,35 @@ The command format is:
 The simulation stops when a philosopher dies or everyone completes the
 optional meal quota.
 
+### Source layout: why bonus has extra files
+
+Bonus follows mandatory's file names and responsibilities where possible:
+`main`, `input_output`, `time`, `forks`, `meal`, `logging`, `monitor`, and
+`philosopher` each have a corresponding `_bonus.c` file. The implementations
+differ where processes and semaphores replace shared-memory thread behavior.
+
+There are 10 mandatory source files and 13 bonus source files. The three
+additional files have specific responsibilities rather than duplicating logic:
+
+| Bonus file | Responsibility | Why it is separate |
+| --- | --- | --- |
+| `process_bonus.c` | Allocates PID bookkeeping, forks children, decodes exit results, and reaps children. | Bonus needs process management. Its five functions already reach the Norm limit per file. |
+| `semaphore_bonus.c` | Opens shared semaphores, creates and unlinks private meal semaphores, and retries interrupted waits. | Groups the five semaphore utility functions together, freeing initialization to stay in one file. |
+| `error_bonus.c` | Maps statuses to messages and reports errors. | Mandatory combines cleanup and errors in `cleanup_error.c`. Bonus has four cleanup functions and three error functions, so combining `cleanup_bonus.c` and `error_bonus.c` would exceed five functions. |
+
+`init_bonus.c` contains both parent and child initialization (three functions).
+Initialization has two scopes: `init_bonus()` runs in the parent before
+forking and creates shared resources; `init_philo_bonus()` runs inside each
+child and creates its private meal-state semaphore and monitor thread.
+`process_bonus.c` supplies process helpers, while `supervise_children_bonus()`
+in `monitor_bonus.c` decides how the parent reacts to child outcomes.
+
+The former `init_philo_bonus.c` has been merged into `init_bonus.c`. Semaphore
+utilities formerly in initialization and fork handling now live in
+`semaphore_bonus.c`; `forks_bonus.c` focuses on acquiring and returning fork
+units. The total remains 13 bonus source files, with every file within the
+Norm limit of five functions.
+
 ## Resources
 
 - Philosophers subject, version 13.0 (provided locally).
@@ -241,6 +270,8 @@ simulation features. The numbered links jump to each learning point.
 35. [What if the sleep is weirdly long? Valid inputs, different clocks](#learning-point-35)
 36. [Bonus: why another semaphore just to take two forks?](#learning-point-36)
 37. [Bonus: replacing mutexes means checking error handling too](#learning-point-37)
+38. [Bonus: why printing under a semaphore is not enough with printf](#learning-point-38)
+39. [Bonus: death and quota completion need different shutdown paths](#learning-point-39)
 
 <a id="learning-point-1"></a>
 
@@ -3175,5 +3206,91 @@ counter is not an error: the call waits for a unit to become available.
 The mandatory mutex helper does not need this retry loop. The bonus helper
 still follows the same ownership rule: if a later step fails, attempt to
 return every fork unit already acquired and release the acquisition gate.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-38"></a>
+
+### 38. Bonus: why printing under a semaphore is not enough with printf
+
+A printing semaphore coordinates the children, but `printf()` can still keep
+output in each process's private stdio buffer. A newline normally flushes
+line-buffered terminal output; redirected output is typically fully buffered.
+Releasing the semaphore does not flush that buffer.
+
+Consequently, redirected messages can arrive in batches out of order, and
+children killed with `SIGKILL` can lose messages that never left their buffers.
+`exit()` flushes stdio, but that does not help siblings killed by the parent.
+
+The bonus logger formats one complete line in a local character array, then
+calls `write_guaranteed(STDOUT_FILENO, ...)` while holding the printing
+semaphore. This avoids stdio buffering, handles partial writes, and checks
+output errors. It uses no `sprintf()`, `snprintf()`, or `fflush()`, which are
+not in the bonus allowed-function list. A successful write submits bytes to
+the OS; it does not guarantee immediate screen rendering or disk persistence.
+
+After a successful death message, the child retains the printing semaphore
+and exits. Other children cannot write further log messages before the parent
+stops them. If writing fails, the logger releases the semaphore and reports
+the error instead.
+
+[Back to appendix index](#learning-points)
+
+
+<a id="learning-point-39"></a>
+
+### 39. Bonus: death and quota completion need different shutdown paths
+
+Holding the printing semaphore after a death message makes sense: the parent
+will stop all remaining children, and no later state messages should print.
+Holding it after one philosopher completes its quota would instead prevent
+other philosophers from continuing. These are different shutdown conditions.
+
+| Outcome | What happens to the other children? | Printing semaphore |
+| --- | --- | --- |
+| Death | Parent stops and reaps the remaining children. | Keep it held after the successful death message. |
+| One philosopher finishes its quota | Parent keeps waiting for the others to finish. | The finishing child must leave shared resources available. |
+
+My first completion path returned `STATUS_DONE` from the meal helper to the
+routine. I moved quota completion into the monitor, calling `exit(CHILD_DONE)`
+there. Testing exposed why this shortcut was unsafe: after incrementing its
+meal count, the routine could start its sleeping message while the monitor
+noticed completion. If the monitor exited the child while the routine held
+`printing_lock`, that shared semaphore stayed locked. The parent kept waiting,
+and another philosopher could never print or finish.
+
+The same concern applies to fork units and the pair-acquisition gate. Process
+exit does not automatically return semaphore tokens. The monitor cannot just
+post every shared semaphore during cleanup: it does not know which resources
+its routine owns, and another process may own a lock. Taking and releasing the
+printing lock before exit is also insufficient: the routine could acquire it
+again between that release and process termination.
+
+The corrected design restores routine-owned quota completion:
+
+1. Finish eating and return both fork units.
+2. Increment the completed-meal count and check the optional goal under the
+   meal-state lock; release that lock before returning `STATUS_DONE`.
+3. The routine stops its cycle immediately, without another sleeping message
+   or fork acquisition.
+4. The monitor observes the completed quota under the same meal lock and
+   returns `NULL` instead of exiting the process. Check completion before
+   starvation so a finished philosopher is no longer monitored for hunger.
+5. The routine joins the monitor, closes its semaphore handles, frees its
+   child-owned copies of allocated resources, and exits with `CHILD_DONE`.
+
+The monitor continues to own death detection and death shutdown. Keeping the
+local philosopher record alive until its monitor has ended also prevents a
+thread from accessing that record after the routine returns.
+
+The 2 November 2026 evaluation reproduced the quota hang both under Memcheck
+and with an external test shim that delayed a sleeping-message write by
+100 ms. After this correction, the bonus retest passed 28 runtime/input
+cases and ten delayed-write quota regressions. The quota Memcheck run freed
+all heap blocks in the parent and both children. Death exits still have
+separate possible/reachable allocation reports; the clean quota result does
+not establish that every shutdown path is clean. The initial ordinary native
+tests had passed too, illustrating why those alone did not expose the race.
 
 [Back to appendix index](#learning-points)

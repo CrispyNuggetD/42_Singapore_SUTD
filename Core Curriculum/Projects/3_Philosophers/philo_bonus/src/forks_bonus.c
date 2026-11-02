@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 11:20:27 by hnah             ###   ########.fr       */
+/*   Created: 2026/11/02 11:00:52 by hnah              #+#    #+#             */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,11 @@ t_status	release_forks_bonus(t_philo_bonus *philo, int count)
 	status = STATUS_OK;
 	while (count > 0)
 	{
-		if (sem_post(philo->sim->forks) == -1)
+		if (sem_post(philo->sim->forks_sem) == -1)
 			status = ERR_SEM_POST;
 		count--;
 	}
 	return (status);
-}
-
-/* Signals may interrupt a wait without acquiring a semaphore unit. */
-static t_status	wait_semaphore(sem_t *sem)
-{
-	while (sem_wait(sem) == -1)
-	{
-		if (errno != EINTR)
-			return (ERR_SEM_WAIT);
-	}
-	return (STATUS_OK);
 }
 
 /* Success owns one unit; logging failure returns that unit. */
@@ -43,7 +32,7 @@ static t_status	take_fork_and_log(t_philo_bonus *philo)
 {
 	t_status	status;
 
-	status = wait_semaphore(philo->sim->forks);
+	status = wait_semaphore(philo->sim->forks_sem);
 	if (status != STATUS_OK)
 		return (status);
 	status = log_philo_state_bonus(philo, LOG_FORK);
@@ -62,7 +51,7 @@ t_status	take_forks_bonus(t_philo_bonus *philo)
 	t_status	status;
 	int			count;
 
-	status = wait_semaphore(philo->sim->take_pair);
+	status = wait_semaphore(philo->sim->take_pair_lock);
 	if (status != STATUS_OK)
 		return (status);
 	count = 0;
@@ -72,7 +61,7 @@ t_status	take_forks_bonus(t_philo_bonus *philo)
 		if (status == STATUS_OK)
 			count++;
 	}
-	if (sem_post(philo->sim->take_pair) == -1)
+	if (sem_post(philo->sim->take_pair_lock) == -1)
 		status = ERR_SEM_POST;
 	if (status != STATUS_OK && release_forks_bonus(philo, count) != STATUS_OK)
 		return (ERR_SEM_POST);

@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 10:37:57 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 17:36:00 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,10 @@ long	now_ms(void)
 	return (tv.tv_sec * 1000L + tv.tv_usec / 1000);
 }
 
-/*
-** From mandatory: elapsed-time wait, without the thread-shared stop flag.
-** This only waits or reports errors. It does not monitor death or stop peers.
-** The bonus child monitor and parent shutdown still need to be implemented.
-*/
-t_status	wait_ms(long duration_ms)
+t_status	philo_wait_bonus(long duration_ms)
 {
-	long	start_time;
-	long	current_time;
+	long		start_time;
+	long		current_time;
 
 	start_time = now_ms();
 	if (start_time == -1)
@@ -67,22 +62,41 @@ int	initial_wait_slots_bonus(t_philo_bonus *philo)
 	return (0);
 }
 
-t_status	philo_wait_bonus(t_sim_bonus *sim, long duration_ms)
-{
-	long		start_time;
-	long		current_time;
+/*
+** From mandatory: after the first meal, return 0 or 1 extra slot of time_to_eat.
+** Odd IDs wait one extra slot; even IDs do not.
+** The last ID of an odd count does not wait an extra slot.
+** One philosopher does not wait an extra slot to take their only fork.
+*/
 
-	start_time = now_ms();
-	if (start_time == -1)
-		return (ERR_TIME);
-	while (1)
-	{
-		current_time = now_ms();
-		if (current_time == -1)
-			return (ERR_TIME);
-		if (current_time - start_time >= duration_ms)
-			return (STATUS_OK);
-		if (usleep(WAIT_CHECK_MICROSECONDS) == -1)
-			return (ERR_SLEEP);
-	}
+static int	needs_extra_wait_bonus(t_philo_bonus *philo)
+{
+	int	count;
+	int	meals_per_cycle;
+	int	wait_after_meal;
+	int	meal_in_cycle;
+
+	count = philo->sim->config.count;
+	if (count < 3 || count % 2 == 0 || philo->meals_eaten < 1)
+		return (0);
+	meals_per_cycle = count / 2;
+	wait_after_meal = (philo->id - 1) / 2 + 1;
+	if (philo->id == count)
+		wait_after_meal--;
+	meal_in_cycle = (philo->meals_eaten - 1) % meals_per_cycle + 1;
+	return (meal_in_cycle == wait_after_meal);
+}
+
+long	thinking_wait_ms_bonus(t_philo_bonus *philo)
+{
+	long	rest_target;
+	long	extra_wait;
+
+	rest_target = philo->sim->config.time_to_eat;
+	if (needs_extra_wait_bonus(philo))
+		rest_target *= 2;
+	extra_wait = rest_target - philo->sim->config.time_to_sleep;
+	if (extra_wait < 0)
+		return (0);
+	return (extra_wait);
 }

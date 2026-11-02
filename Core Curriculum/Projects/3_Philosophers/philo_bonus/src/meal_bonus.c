@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/12 13:14:55 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 13:31:07 by hnah             ###   ########.fr       */
+/*   Created: 2026/11/02 10:42:44 by hnah              #+#    #+#             */
+/*   Updated: 2026/11/02 17:59:49 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,17 @@
 /*
 ** Caller owns both forks; protect the deadline test and meal-start update.
 ** An expired deadline returns local STATUS_STOPPED and preserves last_meal.
-** This does not set all_stop: the monitor must still detect and log death.
-** The caller releases both forks on non-success; do not publish this normal
-** STATUS_STOPPED as a global stop request from the worker.
+** The child monitor is responsible for detecting and logging death.
+** The caller releases both fork units on non-success.
 */
 static t_status	record_meal_start_bonus(t_philo_bonus *philo)
 {
 	long		meal_start;
 	t_status	status;
 
-	if (pthread_mutex_lock(&philo->meal_state_lock) != 0)
-		return (ERR_MUTEX);
-	status = STATUS_OK;
+	status = wait_semaphore(philo->meal_state_lock);
+	if (status != STATUS_OK)
+		return (status);
 	meal_start = now_ms();
 	if (meal_start == -1)
 		status = ERR_TIME;
@@ -34,19 +33,19 @@ static t_status	record_meal_start_bonus(t_philo_bonus *philo)
 		status = STATUS_STOPPED;
 	else
 	{
-		status = log_philo_state(philo, LOG_EATING);
+		status = log_philo_state_bonus(philo, LOG_EATING);
 		if (status == STATUS_OK)
 			philo->last_meal = meal_start;
 	}
-	if (pthread_mutex_unlock(&philo->meal_state_lock) != 0)
-		return (ERR_MUTEX);
+	if (sem_post(philo->meal_state_lock) == -1)
+		return (ERR_SEM_POST);
 	return (status);
 }
 
 /*
-** Acquire forks in the fixed init order, then record the meal start.
-** Success owns both forks. Failure attempts to release all acquired forks.
-** take_forks_bonus handles the single-philosopher case without a second lock.
+** Acquire two units from the fork semaphore, then record the meal start.
+** Success owns both units; a recording failure attempts to return both.
+** Acquisition failures are cleaned up inside take_forks_bonus.
 */
 t_status	prepare_to_eat_bonus(t_philo_bonus *philo)
 {
@@ -57,7 +56,7 @@ t_status	prepare_to_eat_bonus(t_philo_bonus *philo)
 		return (status);
 	status = record_meal_start_bonus(philo);
 	if (status != STATUS_OK && release_forks_bonus(philo, 2) != STATUS_OK)
-		return (ERR_MUTEX);
+		return (ERR_SEM_POST);
 	return (status);
 }
 
@@ -68,15 +67,19 @@ t_status	philo_eat_bonus(t_philo_bonus *philo)
 	status = prepare_to_eat_bonus(philo);
 	if (status != STATUS_OK)
 		return (status);
-	status = philo_wait(philo->sim, philo->sim->config.time_to_eat);
+	status = philo_wait_bonus(philo->sim->config.time_to_eat);
 	if (release_forks_bonus(philo, 2) != STATUS_OK)
-		return (ERR_MUTEX);
+		return (ERR_SEM_POST);
 	if (status != STATUS_OK)
 		return (status);
-	if (pthread_mutex_lock(&philo->meal_state_lock) != 0)
-		return (ERR_MUTEX);
+	status = wait_semaphore(philo->meal_state_lock);
+	if (status != STATUS_OK)
+		return (status);
 	philo->meals_eaten++;
-	if (pthread_mutex_unlock(&philo->meal_state_lock) != 0)
-		return (ERR_MUTEX);
-	return (STATUS_OK);
+	if (philo->sim->config.optional_meal_goal != EAT_FOREVER
+		&& philo->meals_eaten >= philo->sim->config.optional_meal_goal)
+		status = STATUS_DONE;
+	if (sem_post(philo->meal_state_lock) == -1)
+		return (ERR_SEM_POST);
+	return (status);
 }
