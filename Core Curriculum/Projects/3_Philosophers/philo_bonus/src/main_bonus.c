@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 20:55:17 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 10:53:22 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/02 12:19:51 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 */
 int	main(int argc, char **argv)
 {
-	t_philo_bonus	philo;
-	t_status		status;
+	t_sim_bonus	sim;
+	t_status	status;
 
 	memset(&sim, 0, sizeof(sim));
 	status = parse_input(argc, argv, &sim.config);
