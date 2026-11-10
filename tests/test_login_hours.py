@@ -48,7 +48,8 @@ class Durations(unittest.TestCase):
             h.render('hours', 'student', NOW, ZONE, data, [(NOW-timedelta(hours=5),NOW)], target=20)
         text = output.getvalue()
         self.assertIn('(42 API Verified)', text)
-        self.assertIn('Discrepancy', text)
+        self.assertNotIn('local last', text.lower())
+        self.assertNotIn('Discrepancy', text)
         self.assertIn('Rolling 7-day total: 1h 00m', text)
         self.assertIn('Estimated remaining from location intervals: 19h 00m', text)
         self.assertIn('Day 1 Monday 2026-10-26: 1h 00m', text)
@@ -152,6 +153,22 @@ class Entry(unittest.TestCase):
                 local.assert_not_called()
                 self.assertIn('Login report skipped',output.getvalue())
                 self.assertIn('Dailylogin can continue',output.getvalue())
+
+    def test_successful_api_never_reads_local_records_on_42_or_mac(self):
+        for platform in ('linux', 'darwin'):
+            for records in ([], [dict(begin_at='2026-10-26T01:00:00Z', end_at=None)]):
+                data = dict(fetched_at=NOW.isoformat(), records=records)
+                with self.subTest(platform=platform, records=records), \
+                     patch.dict(os.environ, {'FORTYTWO_LOGIN':'hnah', 'USER':'hnah'}, clear=True), \
+                     patch.object(h.sys, 'platform', platform), \
+                     patch.object(h.sys, 'argv', ['login_hours.py', 'hours', '--workflow']), \
+                     patch.object(h, 'snapshot', return_value=data), \
+                     patch.object(h, 'local_intervals') as local, \
+                     patch.object(h, 'render', return_value=0) as render:
+                    self.assertEqual(h.main(), 0)
+                    local.assert_not_called()
+                    self.assertIs(render.call_args.args[4], data)
+                    self.assertIsNone(render.call_args.args[5])
 
     def test_linux_hnah_retains_explicit_local_fallback(self):
         with patch.dict(os.environ,{'FORTYTWO_LOGIN':'hnah','USER':'hnah'},clear=True), \

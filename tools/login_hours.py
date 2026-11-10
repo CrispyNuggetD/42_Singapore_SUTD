@@ -248,7 +248,7 @@ def render(report, login, now, zone, data, local, reason='', target=None):
     week = period_days(now, zone)
     today = days[-1]
     period_start = week[0]
-    local_values = totals(local, days, zone, now) if local is not None else None
+    local_values = totals(local, days, zone, now) if data is None and local is not None else None
     active = []
     if data is not None:
         closed = []
@@ -262,17 +262,6 @@ def render(report, login, now, zone, data, local, reason='', target=None):
         print(f'{login}: (42 API Verified) — completed API location intervals')
         print('API fetched: ' + timestamp(data['fetched_at']).astimezone(zone).isoformat(timespec='seconds'))
         print('API publication delay is unknown; a fetch timestamp does not verify Intra’s update schedule.')
-        if local_values is not None:
-            differing = discrepancy(values, local_values)
-            if differing:
-                print('Discrepancy with local last records (API used for official-data calculation):')
-                for day in differing:
-                    date = next(d for d in days if d.isoformat() == day)
-                    print(f'  {day_label(date, period_start)}: API {duration(values[day])}; local {duration(local_values[day])}')
-            else:
-                print('Local last totals agree to the minute.')
-        else:
-            print('Local last comparison unavailable on this workstation.')
         if active:
             extra = sum(totals(closed + active, days, zone, now).values()) - sum(values.values())
             print('Active API session elapsed estimate: ' + duration(extra) + ' (provisional; excluded from verified total).')
@@ -355,10 +344,12 @@ def main():
             return skip(str(error) + '; API data is required, so no local hours are substituted.')
         reason = str(error)
 
-    try:
-        local = local_intervals(os.environ.get('USER', login), now)
-    except Unavailable:
-        local = None
+    local = None
+    if data is None:
+        try:
+            local = local_intervals(os.environ.get('USER', login), now)
+        except Unavailable:
+            pass
     if data is None and local is None:
         return skip('API and campus local login records are unavailable.')
     raw_target = os.environ.get('LOGIN_HOURS_WEEKLY_TARGET', '').strip()
