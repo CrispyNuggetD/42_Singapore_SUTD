@@ -28,3 +28,36 @@ class Jobs(unittest.TestCase):
         jobs.tick(True,True);jobs.launch.assert_not_called()
         jobs.tick(True);jobs.launch.assert_called_once_with('leavesch')
         jobs.tick(True);self.assertEqual(jobs.launch.call_count,1)
+
+
+    @patch('session_jobs.subprocess.run')
+    def test_failed_leave_does_not_retry_until_actual_activity(self,run):
+        now=[0];run.return_value.stdout='2500000'
+        jobs=SessionJobs(io.StringIO(),Mock(),clock=lambda:now[0])
+        jobs.config=lambda:{'idle_leavesch':True}
+        process=Mock();process.poll.return_value=None
+        jobs.launch=Mock(return_value=process)
+        jobs.tick(True)
+        process.returncode=1;process.poll.return_value=1
+        for t in (60,180,3600):
+            now[0]=t;jobs.tick(True)
+        jobs.launch.assert_called_once_with('leavesch')
+        # Even an active session must not rearm while its input is still idle.
+        jobs.tick(False);self.assertEqual(jobs.launch.call_count,1)
+        run.side_effect=OSError('idle source unavailable')
+        jobs.tick(False);self.assertEqual(jobs.launch.call_count,1)
+        run.side_effect=None;run.return_value.stdout='0';jobs.tick(False)
+        run.return_value.stdout='2500000';process.poll.return_value=None
+        jobs.tick(False);self.assertEqual(jobs.launch.call_count,2)
+
+    @patch('session_jobs.subprocess.run')
+    def test_successful_leave_does_not_repeat_while_session_is_active_but_idle(self,run):
+        run.return_value.stdout='2500000'
+        jobs=SessionJobs(io.StringIO(),Mock(),clock=lambda:0)
+        jobs.config=lambda:{'idle_leavesch':True}
+        process=Mock();process.poll.return_value=None
+        jobs.launch=Mock(return_value=process)
+        jobs.tick(False)
+        process.returncode=0;process.poll.return_value=0
+        jobs.tick(False);jobs.tick(False)
+        jobs.launch.assert_called_once_with('leavesch')

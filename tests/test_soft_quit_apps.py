@@ -12,6 +12,26 @@ class SoftQuit(unittest.TestCase):
         browser_patch = patch('close_chrome.browsers', return_value={})
         browser_patch.start(); self.addCleanup(browser_patch.stop)
 
+    def test_window_manager_close_and_direct_fallback_preserve_app_protocol(self):
+        import ctypes as C
+        for supported in (True,False):
+            with self.subTest(window_manager=supported), patch.object(quitapps.C,'CDLL') as library:
+                lib=library.return_value
+                lib.XOpenDisplay.return_value=1;lib.XDefaultRootWindow.return_value=100
+                atoms={'WM_DELETE_WINDOW':1,'WM_PROTOCOLS':2,'_NET_CLOSE_WINDOW':3}
+                lib.XInternAtom.side_effect=lambda display,name,only:atoms[name.decode()]
+                x=quitapps.X11()
+                x.property=Mock(side_effect=lambda window,name:[1] if name=='WM_PROTOCOLS' else ([3] if supported else []))
+                messages=[]
+                def send(display,target,propagate,mask,event):
+                    client=C.cast(event,C.POINTER(x.Client)).contents
+                    messages.append((target,mask,client.window,client.message_type,client.format,list(client.data.l)[:2]))
+                    return 1
+                lib.XSendEvent.side_effect=send
+                self.assertTrue(x.close_window(42))
+                self.assertEqual(messages,[(100,(1<<20)|(1<<19),42,3,32,[0,2])] if supported else [(42,0,42,2,32,[1,0])])
+                x.close()
+
     def test_system_terminal_and_personal_exclusions(self):
         apps = [quitapps.App(1, 'code'), quitapps.App(2, 'Gnome-terminal'),
                 quitapps.App(3, 'gjs'), quitapps.App(4, 'slack'), quitapps.App(5, 'Google-chrome')]

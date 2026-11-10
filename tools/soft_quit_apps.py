@@ -131,9 +131,19 @@ class X11:
         event = self.Event()
         client = C.cast(C.byref(event), C.POINTER(self.Client)).contents
         client.type, client.display, client.window = 33, self.display, window
-        client.message_type, client.format = self.atom('WM_PROTOCOLS'), 32
-        client.data.l[0], client.data.l[1] = self.atom('WM_DELETE_WINDOW'), 0
-        sent = self.lib.XSendEvent(self.display, window, 0, 0, C.byref(event))
+        client.format = 32
+        close_atom = self.atom('_NET_CLOSE_WINDOW')
+        if close_atom in (self.property(self.root, '_NET_SUPPORTED') or []):
+            # Ask the window manager, like its title-bar cross. It delivers the
+            # normal close protocol; application save/beforeunload prompts stay.
+            client.message_type = close_atom
+            client.data.l[0], client.data.l[1] = 0, 2  # CurrentTime, desktop tool
+            target, mask = self.root, (1 << 20) | (1 << 19)
+        else:
+            client.message_type = self.atom('WM_PROTOCOLS')
+            client.data.l[0], client.data.l[1] = self.atom('WM_DELETE_WINDOW'), 0
+            target, mask = window, 0
+        sent = self.lib.XSendEvent(self.display, target, 0, mask, C.byref(event))
         self.lib.XFlush(self.display)
         return bool(sent)
 

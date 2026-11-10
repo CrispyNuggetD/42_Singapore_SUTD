@@ -35,7 +35,6 @@ class SessionJobs:
         self.push=None
         self.leave=None
         self.was_running=False
-        self.leave_retry=0
 
     def config(self):
         path=Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/'42-shell/session-jobs.json'
@@ -52,28 +51,27 @@ class SessionJobs:
         config=self.config();now=self.clock()
         if away:
             if self.away_since is None:self.away_since=now
-        else:self.away_since=None;self.left=False
+        else:self.away_since=None
         for name in ('push','leave'):
             process=getattr(self,name)
             if process is not None and process.poll() is not None:
                 self.note('Session '+name+' finished: '+str(process.returncode))
                 if name=='leave' and process.returncode:
-                    self.left=False
-                    self.leave_retry=now+120
+                    self.note('Automatic leavesch failed; no retry until user activity rearms it.')
                 setattr(self,name,None)
         if self.leave is not None:return True
-        idle=0
+        idle=None
         if config.get('idle_leavesch'):
             try:
                 result=subprocess.run(['xprintidle'],capture_output=True,text=True,timeout=3,check=True)
                 idle=int(result.stdout)/1000
             except (OSError,ValueError,subprocess.SubprocessError):pass
             away_for=now-self.away_since if self.away_since is not None else 0
-            if due(idle,away_for,self.left) and now>=self.leave_retry and not backup_busy and self.push is None:
+            if due(idle or 0,away_for,self.left) and not backup_busy and self.push is None:
                 self.left=True
                 self.leave=self.launch('leavesch')
                 return True
-            if idle<60 and not away:self.left=False
+            if idle is not None and idle<60 and not away:self.left=False
         running=solver_running() if config.get('solver_gitpushswap') else False
         if running and not self.was_running:
             # Use elapsed runtime so enabling the watcher covers an already
