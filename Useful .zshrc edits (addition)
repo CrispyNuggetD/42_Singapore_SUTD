@@ -147,11 +147,11 @@ setupzshrc() {
   source "${ZDOTDIR:-$HOME}/.zshrc"
 }
 
-# Account login history, independent of the current terminal or tmux pane.
+# Desktop/console login history, excluding tmux and other pseudo-terminals.
 # lm is the shortest spelling; lastm<Tab> completes the readable command.
 lastme() {
   if (( $# )); then
-    print -u2 -- 'Usage: lastme (or lm): latest 15 login entries for $USER'
+    print -u2 -- 'Usage: lastme (or lm): latest 15 desktop/console login entries for $USER'
     return 2
   fi
   local login_user="${USER:-}"
@@ -159,7 +159,17 @@ lastme() {
     print -u2 -- 'USER is unset; cannot select your account login history.'
     return 1
   fi
-  command last -n 15 "$login_user"
+  local -a last_options
+  last_options=()
+  [[ "$OSTYPE" == linux* ]] && last_options=(-w)
+  # Filter before counting: tmux may generate more than 15 recent pts records.
+  # USER selection stays with last; ttyN, display and macOS console rows remain.
+  command last "${last_options[@]}" "$login_user" | command awk '
+    $2 ~ /^(tty[0-9]+|:[0-9]+([.][0-9]+)?|console)$/ {
+      if (++count <= 15) print
+    }
+    END { if (!count) print "No desktop/console login records available in local last history." }
+  '
 }
 alias lm=lastme
 
