@@ -40,6 +40,8 @@ exit $result
                      ZSHRC_SETTINGS_FILE=str(home/'settings'),ZSHRC_RUNTIME_ROOT=tmp,
                      ZSHRC_PORTABLE_SETTINGS_FILE='',XDG_STATE_HOME=tmp,FAIL_PULL='9' if fail else '0',
                      LOGIN_STARTUP_SKIP='1')
+            if fail:
+                script=script.replace('source "$SOURCE"', 'source "$HOME/.zshrc"', 1)
             if mode=='FALSE':
                 script='source "$HOME/.zshrc"\ndli "one argument"\nresult=$?\nwait\nexit $result\n'
             result=subprocess.run(['zsh','-f','-c',script],env=env,capture_output=True,text=True,timeout=10)
@@ -58,10 +60,14 @@ exit $result
         self.assertNotIn('OLD_ENTRY_TASK',events)
         self.assertEqual(sum(e=='TERMINAL:show-all' for e in events),1)
 
-    def test_failed_pull_starts_no_tasks(self):
+    def test_failed_pull_uses_installed_workflow_without_install_or_reload(self):
         result,events=self.exercise('TRUE',fail=True)
-        self.assertNotEqual(result.returncode,0)
-        self.assertEqual(events,['PULL'])
+        self.assertEqual(result.returncode,0,result.stderr+result.stdout)
+        self.assertEqual(events.count('PULL'),1)
+        self.assertNotIn('SYNC',events)
+        self.assertEqual(events.count('TASKS'),1)
+        self.assertIn('OLD_ENTRY_TASK',events)
+        self.assertIn('Continuing login with the installed workflow',result.stdout+result.stderr)
 
     def test_auto_update_off_does_not_pull(self):
         result,events=self.exercise('FALSE')

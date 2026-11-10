@@ -1045,7 +1045,7 @@ pullzshrc() {
   print -r -- "Pulling shared shell helpers from $repo_root"
   command git -C "$repo_root" -c merge.autostash=false -c rebase.autostash=false \
     pull --ff-only || {
-      print -u2 -- "Repository pull failed; dailylogin stopped before updating .zshrc."
+      print -u2 -- "Repository pull failed; keeping the installed shell helpers."
       return 1
     }
 }
@@ -1131,10 +1131,11 @@ _dailylogin_handoff() {
   (umask 077; command mkdir -p -- "$log_dir"; command touch -- "$log_dir/dailylogin.log") || return 1
   {
     print -r -- "=== dailylogin workflow update $(date) ==="
-    if ! _dailylogin_run 'Pull shared repository' - pullzshrc ||
-       ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
-       ! _dailylogin_run 'Load latest workflow' - _dailylogin_source; then
-      _dailylogin_log STOP 'Update failed; no login tasks were started.'
+    if ! _dailylogin_run 'Pull shared repository' - pullzshrc; then
+      print -u2 -- 'WARNING: Shared helpers were not updated. Continuing login with the installed workflow; resolve the Git error and retry the update later.'
+    elif ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
+         ! _dailylogin_run 'Load latest workflow' - _dailylogin_source; then
+      _dailylogin_log STOP 'Installation/reload failed; no login tasks were started.'
       return 1
     fi
   } > >(command tee -a -- "$log_dir/dailylogin.log") 2>&1
