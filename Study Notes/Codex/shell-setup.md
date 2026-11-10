@@ -130,3 +130,10 @@ With `autoupdatezshrc` enabled, normal `dailylogin` performs the update and impo
 Each changed Mac revision becomes a distinct school snapshot, so independent edits do not overwrite one another. Repeating a handoff is a no-op. An unchanged returned copy backed up by `leaveschool` is not imported into the Mac again. If you continue that copy at school, its new revision can be picked up on the Mac as usual. Manually created Mac chats/forks outside the import manifest are not exported.
 
 The VS Code extension is powered by [Codex app-server](https://learn.chatgpt.com/docs/app-server). This script is a local transcript-transfer workflow using the installed CLI's migration support, rather than an automatic account-wide chat sync feature. Keep the school CLI and extension compatible; importing into another CODEX_HOME will not update the extension's history.
+
+## Account login history
+
+Run `lm` (or type `lastm` then Tab and Enter) for the latest 15 login entries
+for `$USER`: `last -n 15 "$USER"`. This selects your OS account, not your current
+TTY or tmux pane. The shared helper uses each user's own account; no username
+is hard-coded. Existing shells pick it up after `synczshrc` and `source ~/.zshrc`.
