@@ -124,6 +124,8 @@ fi
 # The installer substitutes the actual clone location in this default line.
 export ZSHRC_SHARED_ROOT="${ZSHRC_SHARED_ROOT:-$HOME/Documents/42_Singapore_SUTD}"
 
+# AI_ALIAS_COMMAND is empty (disabled) by default. Set it in personal settings
+# to codex, claude, or another command to enable the ai shortcut.
 # Optional portable preferences live in the owner's private repository.
 # Only explicitly selected preferences go here; paths and credentials stay local.
 refreshproject() {
@@ -133,6 +135,14 @@ refreshproject() {
       return 1
     }
     source "$ZSHRC_PORTABLE_SETTINGS_FILE" || return $?
+  fi
+  # Remove only our previous alias when the preference is disabled or changed.
+  if [[ -n "${_42_AI_ALIAS_VALUE:-}" && "${aliases[ai]-}" == "$_42_AI_ALIAS_VALUE" ]]; then
+    unalias ai
+  fi
+  _42_AI_ALIAS_VALUE="${AI_ALIAS_COMMAND:-}"
+  if [[ -n "$_42_AI_ALIAS_VALUE" ]]; then
+    alias ai="$_42_AI_ALIAS_VALUE"
   fi
 }
 refreshproject
