@@ -941,6 +941,43 @@ start_lan42() {
   _daily_terminal open --cwd "$LAN42_CLONE" lan42 -- sh "$launcher" "$@"
 }
 
+# Update this computer's private LAN42 app secret from its desktop clipboard.
+lan42key() (
+  local clone="${LAN42_CLONE:-$HOME/Documents/42sg-campus-lan}"
+  if [[ ! -f "$clone/campus_lan/auth.py" ]]; then
+    print -u2 -- "LAN42 clone missing: $clone. Set LAN42_CLONE first."
+    return 1
+  fi
+  command python3 - "$clone" <<'PY'
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+sys.path.insert(0, sys.argv[1])
+from campus_lan.auth import config_dir, private_read, private_write
+
+path = config_dir() / 'auth-server.json'
+settings = json.loads(private_read(path))
+if sys.platform == 'darwin':
+    choices = [('pbpaste',)]
+elif os.environ.get('WAYLAND_DISPLAY'):
+    choices = [('wl-paste', '--no-newline'), ('xclip', '-selection', 'clipboard', '-out'), ('xsel', '--clipboard', '--output')]
+else:
+    choices = [('xclip', '-selection', 'clipboard', '-out'), ('xsel', '--clipboard', '--output')]
+reader = next((args for args in choices if shutil.which(args[0])), None)
+if reader is None:
+    raise SystemExit('No desktop clipboard reader found.')
+secret = subprocess.run(reader, check=True, capture_output=True).stdout.decode('utf-8').strip()
+if not secret or any(char.isspace() for char in secret):
+    raise SystemExit('Clipboard must contain only the new 42 API client secret.')
+settings['client_secret'] = secret
+private_write(path, json.dumps(settings))
+print('Updated the local LAN42 API client secret. Restart the authentication host.')
+PY
+)
+
 
 # Ask once before reloading this checkout's local LAN42 clients and host.
 lan42restart() (
