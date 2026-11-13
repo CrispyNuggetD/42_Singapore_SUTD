@@ -15,6 +15,28 @@ daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_foreground_attach_accepts_server_shutdown(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {'XDG_STATE_HOME': tmp}, clear=True), \
+             patch.object(daily.sys, 'platform', 'darwin'), \
+             patch.object(daily.sys.stdin, 'isatty', return_value=True), \
+             patch.object(daily, 'exists', side_effect=[True, False]), \
+             patch.object(daily, 'attached', return_value=0), \
+             patch.object(daily, 'maximize_current_terminal'), \
+             patch.object(daily.subprocess, 'run', return_value=Mock(returncode=1)) as run:
+            daily.show('Work', reuse_terminal=True)
+            run.assert_called_once_with(['tmux', 'attach-session', '-t', '=Work'], check=False)
+
+    def test_foreground_attach_reports_failure_if_session_survives(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {'XDG_STATE_HOME': tmp}, clear=True), \
+             patch.object(daily.sys, 'platform', 'darwin'), \
+             patch.object(daily.sys.stdin, 'isatty', return_value=True), \
+             patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'attached', return_value=0), \
+             patch.object(daily, 'maximize_current_terminal'), \
+             patch.object(daily.subprocess, 'run', return_value=Mock(returncode=1)):
+            with self.assertRaisesRegex(RuntimeError, 'tmux attach exited with status 1'):
+                daily.show('Work', reuse_terminal=True)
+
     def test_final_focus_selects_codex_in_existing_session(self):
         with patch.dict(os.environ, {}, clear=True), \
              patch.object(daily.sys, 'platform', 'linux'), \

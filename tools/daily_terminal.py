@@ -302,7 +302,9 @@ def show(session, window=None, reuse_terminal=False, mac_parent_tty=None):
             maximize_current_terminal()
             # Release the launch lock before the blocking attachment.
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
-            subprocess.run(attach, check=True)
+            result = subprocess.run(attach, check=False)
+            if result.returncode and exists(session):
+                raise RuntimeError(f"tmux attach exited with status {result.returncode} while {session} is still running.")
             return
         if sys.platform == "darwin":
             if mac_parent_tty is None and session == session_name("lan42"):
@@ -418,5 +420,6 @@ if __name__ == "__main__":
     try:
         main()
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
-        detail = error.stderr.strip() if isinstance(error, subprocess.CalledProcessError) else str(error)
+        stderr = error.stderr if isinstance(error, subprocess.CalledProcessError) else None
+        detail = (stderr.decode(errors="replace") if isinstance(stderr, bytes) else stderr or "").strip() or str(error)
         sys.exit("daily tmux: " + detail)
