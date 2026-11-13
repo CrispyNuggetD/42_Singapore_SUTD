@@ -119,12 +119,24 @@ def backup(source, private, main):
         raise ValueError('Chat backup must remain inside the separate private repo; no symlink destinations')
     if not source.is_dir():
         raise ValueError(f'Missing Codex sessions directory: {source}')
+    imported_manifest = source.parent / 'school-handoff/manifest.json'
+    imported_ids = set()
+    if imported_manifest.exists():
+        entries = json.loads(imported_manifest.read_text())['imports']
+        imported_ids = {entry['local_id'] for entry in entries.values()}
     copied = 0
+    excluded_imports = 0
     for src in sorted([*source.rglob('*.jsonl'), *source.rglob('*.jsonl.zst')]):
         compressed = src.name.endswith('.jsonl.zst')
         if compressed and src.with_suffix('').exists():
             continue
         if src.is_symlink() or not src.is_file() or source.resolve() not in src.resolve().parents:
+            continue
+        stem = src.name.removesuffix('.zst').removesuffix('.jsonl')
+        if len(stem) >= 37 and stem[-37] == '-' and stem[-36:] in imported_ids:
+            # Continued school chats use the dedicated return_to_school export.
+            # Copying imports into the general backup creates a Mac/42 echo loop.
+            excluded_imports += 1
             continue
         relative = src.relative_to(source)
         if compressed:relative = relative.with_suffix('')
@@ -173,7 +185,8 @@ def backup(source, private, main):
         finally:
             Path(temporary).unlink(missing_ok=True)
         copied += 1
-    print(f'Copied {copied} new/updated chats to {target}', flush=True)
+    print(f'Copied {copied} new/updated chats to {target}; '
+          f'excluded {excluded_imports} imported school chats.', flush=True)
 
 
 def break_checkpoint(root, private, main_repo, repos=None):
