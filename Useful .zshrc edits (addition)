@@ -1401,7 +1401,7 @@ start_codex() {
   codex_full_access || return 1
   # Explicit flags also keep project-level defaults from reducing this launch's access.
   local launch='cd -- "$1" || exit 1
-"$2" --ask-for-approval never --sandbox danger-full-access
+"$2" --ask-for-approval never --sandbox danger-full-access resume --last --all
 result=$?
 if [ "$result" -ne 0 ]; then
   printf "Codex exited with status %s. Run start_codex to recover this pane.\n" "$result"

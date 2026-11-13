@@ -223,6 +223,57 @@ def mac_terminal_script(tab=False):
             ' end tell\nend run')
 
 
+def focus_work(session):
+    """Select Codex after all launches and raise its existing desktop terminal."""
+    window = find_window(session, "codex")
+    if not window:
+        return
+    tmux("select-window", "-t", window)
+    if sys.platform == "darwin":
+        subprocess.run(["osascript", "-e", 'tell application "Terminal" to activate'], check=False)
+    elif os.environ.get("DISPLAY"):
+        # GNOME's Work tab is established first by show-all. Match its terminal
+        # process through the tmux client's ancestry, never an unrelated window.
+        rows = tmux("list-clients", "-F", "#{client_pid}\t#{client_session}", check=False).stdout
+        pids = set()
+        for row in rows.splitlines():
+            pid, _, name = row.partition("\t")
+            if name != session:
+                continue
+            while pid.isdecimal() and int(pid) > 1 and pid not in pids:
+                pids.add(pid)
+                try:
+                    pid = next(line.split()[1] for line in (Path('/proc') / pid / 'status').read_text().splitlines()
+                               if line.startswith('PPid:'))
+                except (OSError, StopIteration):
+                    break
+        script = r"""
+import gi, subprocess, sys, re
+gi.require_version('Wnck', '3.0')
+from gi.repository import Wnck, Gdk
+screen = Wnck.Screen.get_default()
+if screen:
+    screen.force_update()
+    for window in screen.get_windows():
+        if str(window.get_pid()) not in sys.argv[1:]:
+            continue
+        if window.get_class_group_name() == 'Gnome-terminal':
+            props = subprocess.run(['xprop', '-id', str(window.get_xid()), '_GTK_WINDOW_OBJECT_PATH', '_GTK_UNIQUE_BUS_NAME'], capture_output=True, text=True).stdout
+            values = re.findall(r'= "([^"]+)"', props)
+            if len(values) == 2:
+                subprocess.run(['gdbus', 'call', '--session', '--dest', values[1], '--object-path', values[0], '--method', 'org.gtk.Actions.Activate', 'active-tab', '[<int32 0>]', '{}'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        timestamp = Gdk.x11_get_server_time(Gdk.get_default_root_window())
+        workspace = window.get_workspace()
+        if workspace:
+            workspace.activate(timestamp)
+        window.activate(timestamp)
+        Gdk.flush()
+        break
+"""
+        subprocess.run(["/usr/bin/python3", "-c", script, *sorted(pids)],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+
+
 def show(session, window=None, reuse_terminal=False, mac_parent_tty=None):
     if not exists(session):
         print("No daily windows yet. Run start_codex, start_lan42, or dailylogin.")
@@ -322,6 +373,9 @@ def main():
         else:
             print("No daily windows yet.")
     elif args.action == "show-all":
+        window = find_window(session, "codex")
+        if window:
+            tmux("select-window", "-t", window)
         lan = session_name("lan42")
         if sys.platform == "darwin":
             # A foreground dli may attach Work in its original Terminal tab.
@@ -333,6 +387,7 @@ def main():
                 show(lan, mac_parent_tty=mac_work_tty(reuse_terminal=reuse))
             if reuse:
                 show(session, reuse_terminal=True)
+            focus_work(session)
             return
         desktop_batch = (sys.platform != "darwin" and shutil.which("gnome-terminal")
                          and (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
@@ -346,6 +401,7 @@ def main():
             # the caller's original terminal tab.
             if lan != session and exists(lan):show(lan)
             show(session, reuse_terminal=True)
+        focus_work(session)
     elif args.action == "show":
         show(session)
     else:

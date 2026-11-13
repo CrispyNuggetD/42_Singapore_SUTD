@@ -15,6 +15,15 @@ daily = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(daily)
 
 class Desktop(unittest.TestCase):
+    def test_final_focus_selects_codex_in_existing_session(self):
+        with patch.dict(os.environ, {}, clear=True), \
+             patch.object(daily.sys, 'platform', 'linux'), \
+             patch.object(daily, 'find_window', return_value='@42') as find, \
+             patch.object(daily, 'tmux') as command:
+            daily.focus_work('daily')
+            find.assert_called_once_with('daily', 'codex')
+            command.assert_called_once_with('select-window', '-t', '@42')
+
     def test_mac_lan42_targets_work_tty_and_uses_new_tab(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
                 'XDG_STATE_HOME': tmp, 'LAN42_TMUX_SESSION': 'campus'}, clear=True), \
@@ -39,7 +48,8 @@ class Desktop(unittest.TestCase):
              patch.object(daily.sys, 'argv', ['daily_terminal.py', 'show-all']), \
              patch.object(daily.sys.stdin, 'isatty', return_value=True), \
              patch.object(daily.shutil, 'which', return_value='/opt/homebrew/bin/tmux'), \
-             patch.object(daily, 'migrate_layout'), patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'migrate_layout'), patch.object(daily, 'find_window', return_value=None), \
+             patch.object(daily, 'focus_work'), patch.object(daily, 'exists', return_value=True), \
              patch.object(daily, 'mac_work_tty', return_value='/dev/ttys007') as tty, \
              patch.object(daily, 'show') as show:
             daily.main()
@@ -81,7 +91,8 @@ class Desktop(unittest.TestCase):
              patch.object(daily.sys, 'argv', ['daily_terminal.py', 'show-all']), \
              patch.object(daily.sys.stdin, 'isatty', return_value=False), \
              patch.object(daily.shutil, 'which', return_value='/usr/bin/gnome-terminal'), \
-             patch.object(daily, 'migrate_layout'), patch.object(daily, 'exists', return_value=True), \
+             patch.object(daily, 'migrate_layout'), patch.object(daily, 'find_window', return_value=None), \
+             patch.object(daily, 'focus_work'), patch.object(daily, 'exists', return_value=True), \
              patch.object(daily, 'show') as show:
             daily.main()
             self.assertEqual(show.call_args_list, [unittest.mock.call('daily'), unittest.mock.call('lan42')])
