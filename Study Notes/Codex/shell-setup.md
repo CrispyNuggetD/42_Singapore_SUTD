@@ -148,3 +148,10 @@ history, skips boot/shutdown records and does not run login items or the solver.
 These are recorded logins, not a list of people currently present. History may
 be incomplete or rotated. The helper is installed by `synczshrc`; reload with
 `source ~/.zshrc` in existing terminals. Personal login scripts remain local.
+
+## Reload the current shell
+
+Run `refresh` to source `${ZDOTDIR:-$HOME}/.zshrc` in the current shell.
+It reloads installed helpers and settings; it does not pull repository updates.
+After initially installing this shortcut, run `source ~/.zshrc` once (or open a
+new terminal). Later reloads need only `refresh`.

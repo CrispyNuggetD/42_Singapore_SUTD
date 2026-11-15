@@ -1530,6 +1530,11 @@ exit "$result"'
 }
 
 # Refresh the marked shared block and installed helpers; personal settings stay local.
+# Reload this shell's configuration without opening a new terminal.
+refresh() {
+  source "${ZDOTDIR:-$HOME}/.zshrc"
+}
+
 synczshrc() {
   local repo_root="${ZSHRC_SHARED_ROOT:-${MAIN_REPO_ROOT:-$HOME/Documents/42_Singapore_SUTD}}"
   if [[ ! -f "$repo_root/Useful .zshrc edits (addition)" ]]; then
