@@ -505,6 +505,10 @@ bindkey "^[Z" reverse-menu-complete
 # This toggle is a setting, not a command; keep it out of command-name completion.
 zstyle ":completion:*:-command-:*:parameters" ignored-patterns adjustbrightness
 
+# Git shortcuts shared across Mac and 42.
+alias yeet='git push'
+alias yoink='git pull --ff-only'
+
 # compile helper
 alias compile='cc -Wall -Wextra -Werror'
 
