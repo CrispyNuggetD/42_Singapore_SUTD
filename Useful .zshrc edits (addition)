@@ -510,13 +510,54 @@ alias yeet='git push'
 alias yoink='git pull --ff-only'
 
 # Practice launcher; leaves the school's examshell command available.
-# Override EXAM_PRACTICE_ROOT when the revision checkout lives elsewhere.
+# exampractice --path DIRECTORY selects/remembers another checkout location.
 exampractice() (
-  local practice_root="${EXAM_PRACTICE_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private/Exam Revision}"
-  if [[ ! -f "$practice_root/exam.sh" || ! -f "$practice_root/.resources/main/menu.sh" ]]; then
-    print -u2 -- 'Exam practice checkout missing; set EXAM_PRACTICE_ROOT to its folder.'
-    return 1
+  local saved_path="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell/exampractice-path"
+  local practice_root="${EXAM_PRACTICE_ROOT:-}" answer destination
+  if [[ "${1:-}" == --path ]]; then
+    (( $# >= 2 )) && [[ -n "$2" ]] || { print -u2 -- 'Usage: exampractice [--path DIRECTORY]'; return 1; }
+    practice_root="$2"
+    shift 2
   fi
+  if [[ -z "$practice_root" && -r "$saved_path" ]]; then
+    IFS= read -r practice_root < "$saved_path"
+  fi
+  if [[ -z "$practice_root" ]]; then
+    practice_root="$HOME/Documents/42_examshell"
+    # Preserve the owner's existing practice copy without imposing it on friends.
+    local existing="$HOME/Documents/42_Singapore_SUTD_hnah_private/Exam Revision"
+    if [[ ! -f "$practice_root/exam.sh" && -f "$existing/exam.sh" ]]; then
+      practice_root="$existing"
+    fi
+  fi
+  practice_root="${practice_root/#\~/$HOME}"
+  practice_root="${practice_root:A}"
+  if [[ ! -f "$practice_root/exam.sh" || ! -f "$practice_root/.resources/main/menu.sh" ]]; then
+    print -- 'Practice shell missing. Source: https://github.com/terminal-42s/42_examshell'
+    [[ -t 0 ]] || { print -u2 -- 'Run exampractice interactively to approve a clone.'; return 1; }
+    print -n -- "Clone the practice repository? [y/N]: "
+    IFS= read -r answer || return 1
+    [[ "$answer" == [yY] || "$answer" == [yY][eE][sS] ]] || return 1
+    print -n -- "Destination [$practice_root]: "
+    IFS= read -r destination || return 1
+    [[ -z "$destination" ]] || practice_root="${destination/#\~/$HOME}"
+    practice_root="${practice_root:A}"
+    if [[ -e "$practice_root" || -L "$practice_root" ]]; then
+      print -u2 -- 'Destination already exists and is not a valid practice checkout; nothing replaced.'
+      return 1
+    fi
+    command mkdir -p -- "${practice_root:h}" || return
+    command git clone -- https://github.com/terminal-42s/42_examshell.git "$practice_root" || return
+    [[ -f "$practice_root/exam.sh" && -f "$practice_root/.resources/main/menu.sh" ]] || {
+      print -u2 -- 'Cloned checkout is missing the expected practice launcher.'; return 1
+    }
+  fi
+  # Remember only this computer's path; never publish it with shared helpers.
+  ( umask 077
+    command mkdir -p -- "${saved_path:h}" &&
+      print -r -- "$practice_root" > "$saved_path.$$.tmp" &&
+      command mv -- "$saved_path.$$.tmp" "$saved_path"
+  ) || { print -u2 -- 'Could not remember practice location; launching anyway.'; }
   cd -- "$practice_root" || return
   command bash ./exam.sh "$@"
 )
