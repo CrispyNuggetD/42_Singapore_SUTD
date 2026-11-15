@@ -137,3 +137,13 @@ Run `lm` (or type `lastm` then Tab and Enter) for the latest 15 login entries
 for `$USER`: `last -n 15 "$USER"`. This selects your OS account, not your current
 TTY or tmux pane. The shared helper uses each user's own account; no username
 is hard-coded. Existing shells pick it up after `synczshrc` and `source ~/.zshrc`.
+
+## Recent distinct login users
+
+`lastusers` prints the latest local OS login record for each of five distinct
+users, matching the login-history step in the personal login-items script.
+Use `lastusers 10` for ten (accepted range: 1–1000). It reads the local `last`
+history, skips boot/shutdown records and does not run login items or the solver.
+These are recorded logins, not a list of people currently present. History may
+be incomplete or rotated. The helper is installed by `synczshrc`; reload with
+`source ~/.zshrc` in existing terminals. Personal login scripts remain local.

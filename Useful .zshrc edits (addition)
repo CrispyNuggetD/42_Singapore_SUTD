@@ -1217,6 +1217,29 @@ _login_items_ensure() {
   command python3 "$ZSHRC_RUNTIME_ROOT/create_login_items.py" "$LOGIN_ITEMS_SCRIPT"
 }
 
+# Recent distinct OS logins, without running personal startup commands.
+lastusers() {
+  local login_limit="${1:-5}"
+  if (( $# > 1 )) || [[ "$login_limit" != <-> ]] || (( login_limit < 1 || login_limit > 1000 )); then
+    print -u2 -- 'Usage: lastusers [COUNT] (1–1000; default 5)'
+    return 2
+  fi
+  if ! (( $+commands[last] )); then
+    print -u2 -- 'Login history unavailable: last is not installed.'
+    return 1
+  fi
+  local -a login_last_args
+  [[ "$OSTYPE" == darwin* ]] || login_last_args=(-w)
+  print -- "Latest logins from ${login_limit} distinct users:"
+  # awk exits early; an expected upstream SIGPIPE must not fail this command.
+  { command last "${login_last_args[@]}" || true; } | command awk -v limit="$login_limit" '
+    NF && $1 !~ /^(reboot|shutdown|wtmp|btmp)$/ && !seen[$1]++ {
+      print
+      if (++n == limit) exit
+    }
+  '
+}
+
 lgi() {
   if ! _dailylogin_enabled "$loginitems"; then
     print -- 'Personal login items disabled (loginitems=FALSE).'
