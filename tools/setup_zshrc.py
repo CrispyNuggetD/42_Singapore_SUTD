@@ -116,6 +116,7 @@ def configure(shared_root, settings_path):
             raise ValueError('Automatic updates require a clone containing the helper files; no settings saved.')
     toggle('pullotherrepos', 'Pull other repositories under DOCUMENTS_REPOS_ROOT on dailylogin')
     toggle('syncmainrepo', 'Run main-repo Git sync (stages ALL changes, asks for a commit, then pushes)')
+    toggle('gitrepair', 'Use existing Codex login for scoped background Git diagnosis after a main-sync failure', False)
     project = Path(main) / values['PROJECTS_ROOT'] / values['current_proj']
     print(f'Project destination: {project}' + ('' if project.is_dir() else ' (not present yet)'))
     toggle('openproject', 'Run make fclean and open VS Code in that project on dailylogin')

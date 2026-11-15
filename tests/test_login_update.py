@@ -62,7 +62,8 @@ exit $result
 
     def test_failed_pull_uses_installed_workflow_without_install_or_reload(self):
         result,events=self.exercise('TRUE',fail=True)
-        self.assertEqual(result.returncode,0,result.stderr+result.stdout)
+        self.assertEqual(result.returncode,1,result.stderr+result.stdout)
+        self.assertIn('Dailylogin finished with unresolved failures',result.stdout)
         self.assertEqual(events.count('PULL'),1)
         self.assertNotIn('SYNC',events)
         self.assertEqual(events.count('TASKS'),1)

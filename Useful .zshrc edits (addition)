@@ -497,6 +497,7 @@ loginreports=${loginreports:-1}
 openproject=${openproject:-0}
 openchrome=${openchrome:-0}
 syncmainrepo=${syncmainrepo:-0}
+gitrepair=${gitrepair:-FALSE}
 
 # --- Zsh backwards cycling ---
 bindkey "^[[Z" reverse-menu-complete
@@ -1084,6 +1085,7 @@ _dailylogin_settings() {
   _dailylogin_control_row openproject 'Clean project and open VS Code'
   _dailylogin_control_row openchrome 'Open Chrome if absent'
   _dailylogin_control_row syncmainrepo 'Pull main repo; stage/commit/push changes'
+  _dailylogin_control_row gitrepair 'Background scoped Codex diagnosis after main-sync failure'
   print -l -- '' 'Settings affecting these tasks'
   printf '  %-22s %s\n' \
     verbosity_level "${verbosity_level:-2} (1 = progress; 2+ = progress and settings)" \
@@ -1127,6 +1129,11 @@ _dailylogin_run() {
     _dailylogin_log DONE "$label"
   else
     (( dailylogin_failed += 1 ))
+    dailylogin_failures+=("$label ($1): exit $result; see this task’s error in dailylogin.log.")
+    if [[ "$control" == syncmainrepo && "${dailylogin_git_retried:-0}" == 0 ]]; then
+      dailylogin_git_failed_index=${#dailylogin_failures}
+      _dailylogin_git_start
+    fi
     _dailylogin_log FAILED "$label (exit $result)"
     case "$control" in
       startmailbox) print -u2 -- 'Run setupzshrc to set your own MAC_REMOTE_ROOT; enroll your device locally using that clone’s instructions, then rerun dailylogin.' ;;
@@ -1139,7 +1146,58 @@ _dailylogin_run() {
 }
 
 _dailylogin_summary() {
-  _dailylogin_log SUMMARY "$dailylogin_done completed; $dailylogin_skipped skipped; $dailylogin_failed failed."
+  print -- "[SUMMARY] $dailylogin_done completed; $dailylogin_skipped skipped; $dailylogin_failed failed."
+  if (( dailylogin_failed )); then
+    print -- 'Dailylogin finished with unresolved failures:'
+    print -l -- "${dailylogin_failures[@]}"
+  else
+    print -- 'All enabled dailylogin tasks completed successfully (disabled/unavailable reports are counted as skipped).'
+  fi
+}
+
+_dailylogin_git_start() {
+  _dailylogin_enabled "${gitrepair:-FALSE}" || return 0
+  [[ -n "${dailylogin_git_pid:-}" ]] && return 0
+  local helper="$ZSHRC_RUNTIME_ROOT/git_repair.py"
+  [[ -f "$helper" ]] || { print -- 'Git repair helper missing; run synczshrc.'; return 0; }
+  local state_root="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell/git-repair"
+  (umask 077; command mkdir -p -- "$state_root") || return 0
+  dailylogin_git_state=$(command mktemp -d "$state_root/run.XXXXXXXX") || return 0
+  command python3 "$helper" --repo "$MAIN_REPO_ROOT" --state "$dailylogin_git_state" \
+    > "$dailylogin_git_state/worker.log" 2>&1 &
+  dailylogin_git_pid=$!
+  print -- "Main Git sync failed; background Codex diagnosis started. Status: $dailylogin_git_state"
+}
+
+_dailylogin_git_finish() {
+  [[ -n "${dailylogin_git_pid:-}" ]] || return 0
+  print -- 'Final Git recovery check (wait up to 60 seconds while the bounded worker finishes).'
+  local -i waited=0
+  while [[ ! -f "$dailylogin_git_state/result.json" ]] && kill -0 "$dailylogin_git_pid" 2>/dev/null && (( waited < 60 )); do
+    command sleep 1
+    (( waited += 1 ))
+  done
+  if [[ ! -f "$dailylogin_git_state/result.json" ]]; then
+    print -- "Git repair is still pending or exited without a result; dailylogin is NOT fully successful. Check $dailylogin_git_state/worker.log"
+    return 0
+  fi
+  command python3 - "$dailylogin_git_state/result.json" <<'PYREPAIR'
+import json,sys
+r=json.load(open(sys.argv[1]));print('Background Git repair: '+r['reason'])
+sys.exit(0 if r.get('ok') is True else 1)
+PYREPAIR
+  local repaired=$?
+  if (( repaired == 0 )); then
+    dailylogin_git_retried=1
+    if (( dailylogin_git_failed_index > 0 )); then
+      dailylogin_failures[$dailylogin_git_failed_index]=()
+      (( dailylogin_failed -= 1 ))
+    fi
+    # Retry the full sync, not just its pull: existing commit/push prompts remain.
+    _dailylogin_run 'Main repository Git sync retry after repair' syncmainrepo syncproj || true
+  else
+    dailylogin_failures+=('Background Git repair could not complete; see the reason above and its local status file.')
+  fi
 }
 
 _dailylogin_chrome() {
@@ -1278,13 +1336,14 @@ dli() {
 _dailylogin_handoff() {
   local entry="$1"
   shift
-  local _DAILYLOGIN_REFRESHED=1
+  local _DAILYLOGIN_REFRESHED=1 _DAILYLOGIN_PULL_FAILED=0
   local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
   local log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/42-shell"
   (umask 077; command mkdir -p -- "$log_dir"; command touch -- "$log_dir/dailylogin.log") || return 1
   {
     print -r -- "=== dailylogin workflow update $(date) ==="
     if ! _dailylogin_run 'Pull shared repository' - pullzshrc; then
+      _DAILYLOGIN_PULL_FAILED=1
       print -u2 -- 'WARNING: Shared helpers were not updated. Continuing login with the installed workflow; resolve the Git error and retry the update later.'
     elif ! _dailylogin_run 'Update shared .zshrc block' - synczshrc ||
          ! _dailylogin_run 'Load latest workflow' - _dailylogin_source; then
@@ -1383,6 +1442,13 @@ _dailylogin_impl() {
     return 1
   fi
   local -i dailylogin_done=0 dailylogin_skipped=0 dailylogin_failed=0
+  local -a dailylogin_failures
+  local dailylogin_git_pid='' dailylogin_git_state=''
+  local -i dailylogin_git_failed_index=0 dailylogin_git_retried=0
+  if [[ "${_DAILYLOGIN_PULL_FAILED:-0}" == 1 ]]; then
+    (( dailylogin_failed += 1 ))
+    dailylogin_failures+=('Shared helper pull: failed before startup; installed workflow was used. See the update error above.')
+  fi
   if ! _dailylogin_enabled "$autoupdatezshrc"; then
     _dailylogin_log SKIP "Pull/update/reload .zshrc (autoupdatezshrc=$autoupdatezshrc)"
     (( dailylogin_skipped += 3 ))
@@ -1393,6 +1459,7 @@ _dailylogin_impl() {
   _dailylogin_tasks "$@"
   _dailylogin_run 'Refresh portable project preference' - refreshproject || true
   _dailylogin_run 'Current Project shell' - _daily_terminal open --cwd "$MAIN_REPO_ROOT/$PROJECTS_ROOT/$current_proj" current-project -- zsh -i || true
+  _dailylogin_git_finish
   _dailylogin_summary
   (( dailylogin_failed == 0 ))
 }
@@ -1407,6 +1474,7 @@ _dailylogin_tasks() {
     _dailylogin_run 'Refresh newly added runtime helpers' - synczshrc || return 1
   fi
   _dailylogin_run 'Codex installation/full access/window request' startcodex start_codex || true
+  _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
   _dailylogin_run "Pull other repositories under $DOCUMENTS_REPOS_ROOT" pullotherrepos syncdocs || true
   if [[ "$OSTYPE" == darwin* ]]; then
     if (( $+functions[schoolimport] )); then
@@ -1424,7 +1492,6 @@ _dailylogin_tasks() {
   _dailylogin_run 'Weekly hours report' loginreports hourslogged --workflow || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
   _dailylogin_run 'Extra login apps (personal opt-in list; setupapps)' - loginapps run || true
-  _dailylogin_run 'Main repository Git sync (pull; commit/push if changed)' syncmainrepo syncproj || true
   # Finish in the project even when syncproj changes to the main repository.
   _dailylogin_run "Project $current_proj: change directory, clean, open VS Code" openproject curproj || true
 }

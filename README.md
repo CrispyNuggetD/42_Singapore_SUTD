@@ -64,3 +64,7 @@ The [archived README and historical notes](README-ARCHIVE.md) preserve
 the detailed setup, personal plan, weekly notes and integrations. Project and
 script paths are unchanged; this is a new front door over the existing archive.
 No dailylogin migration or one-time script is needed.
+
+Dailylogin can optionally run a scoped background Codex Git diagnosis after a
+main-sync failure (`gitrepair=TRUE`), retry the full sync at the end and report
+unresolved tasks. See [shell setup and recovery](Study%20Notes/Codex/shell-setup.md#background-git-recovery-and-dailylogin-results).

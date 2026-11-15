@@ -155,3 +155,41 @@ Run `refresh` to source `${ZDOTDIR:-$HOME}/.zshrc` in the current shell.
 It reloads installed helpers and settings; it does not pull repository updates.
 After initially installing this shortcut, run `source ~/.zshrc` once (or open a
 new terminal). Later reloads need only `refresh`.
+
+## Background Git recovery and dailylogin results
+
+The main repository sync now runs early, so a repair can progress while the
+remaining dailylogin tasks run. Enable `gitrepair=TRUE` in your personal shell
+settings (or choose it in `setupzshrc`); it defaults off for other installations.
+It uses the existing logged-in Codex CLI and may consume the account's usage.
+Missing CLI/login, timeout and blocked repairs are reported; it never installs
+Codex or changes its account/security configuration for this feature.
+
+After a main-sync failure, a background worker gives an ephemeral read-only
+Codex invocation only sanitized facts: dirty/clean, ahead/behind counts and lock
+presence. No raw Git stderr, remote URLs, file contents, credentials or transcript
+are included. The agent runs in an empty temporary task directory, with user
+config omitted, and selects an enumerated action; it never edits the repository.
+The executor, not generated shell commands, performs the bounded repair.
+
+Permitted repairs: retry a fast-forward pull; retire an empty, owner-owned index
+lock older than ten minutes only when no Git process is running for this user
+(keeping a private backup); or merge clean divergent histories in an isolated
+worktree and fast-forward the unchanged real checkout to that merge. No force
+push, history rewrite, automatic stash, local edit disposal, arbitrary index
+rebuild, credential/config changes, or conflict resolution is attempted. The
+helper itself never pushes. Concurrent changes stop repair. Conflicting trial
+merges are removed only from the generated temporary worktree.
+
+At the end, dailylogin waits at most 60 additional seconds for the worker. A
+successful repair triggers a retry of **the full main sync**, preserving existing
+commit/push prompts. Only that full retry clears the original failure. A pending
+or failed repair remains a failure; its reason and private result/log location
+are printed. An earlier failed shared-helper pull is also counted rather than
+being silently forgotten. The final summary always shows completed/skipped/failed
+counts and names failed functions; skipped tasks are not claimed as completed.
+
+Run reports live under `${XDG_STATE_HOME:-$HOME/.local/state}/42-shell/git-repair/`
+with private permissions. They and stale-lock backups stay local, outside Git.
+Read-only mode prevents agent writes; it is not an OS-level isolation guarantee
+for all possible reads. The fixed executor still refuses unsafe operations.
