@@ -570,7 +570,8 @@ def read_config(path):
             'min_size': int(metadata.get('Minimum size', 2)),
             'max_size': int(metadata.get('Maximum size', 500)),
             'generator': metadata['Generator'],
-            'python_version': metadata['Python version']}
+            'python_version': metadata['Python version'],
+            'total_runs': int(metadata['Target total runs']) if metadata.get('Target total runs', 'unlimited') != 'unlimited' else None}
 
 
 def save_summary(path, config, records, status):
@@ -595,7 +596,8 @@ def save_summary(path, config, records, status):
     text += '\nSizes with zero runs have not been sampled yet.\n\n'
     text += table(['Session', 'Value'], [
         ('Status', status), ('Workers for this invocation', config.get('workers', 1)),
-        ('Successful runs', len(records)), ('Master seed', config['seed']),
+        ('Successful runs', len(records)), ('Target total runs', config.get('total_runs') or 'unlimited'),
+        ('Master seed', config['seed']),
         ('Input size', config['size'] if config.get('size_mode', 'fixed') == 'fixed' else 'variable'),
         ('Size mode', config.get('size_mode', 'fixed')),
         ('Minimum size', config.get('min_size', 2)), ('Maximum size', config.get('max_size', 500)), ('Next generation ID', records[-1]['generation_id']+1 if records else 0),
@@ -743,7 +745,9 @@ def latest_session(base):
 
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-n', type=int, help='successful runs to add; omit for Ctrl-C mode')
+    limits = parser.add_mutually_exclusive_group()
+    limits.add_argument('-n', type=int, help='successful runs to add')
+    limits.add_argument('--total-runs', type=int, help='finish at this saved session total; persists on resume')
     load = parser.add_mutually_exclusive_group()
     load.add_argument('-light', '--light', action='store_true', help='one worker; use for isolated timings')
     load.add_argument('-j', '--jobs', type=int, help='requested concurrent runs (RAM cap still applies)')
@@ -763,6 +767,8 @@ def arguments():
     args = parser.parse_args()
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
+    if args.total_runs is not None and args.total_runs < 1:
+        parser.error('--total-runs must be positive')
     if args.n is not None and args.n < 1:
         parser.error('-n must be positive')
     if args.size is not None and args.size < 2:
@@ -818,6 +824,8 @@ def main():
                   'min_size': args.min_size if args.min_size is not None else 2,
                   'max_size': args.max_size if args.max_size is not None else 500,
                   'python_version': sys.version.split()[0]}
+    if getattr(args, 'total_runs', None) is not None:
+        config['total_runs'] = args.total_runs
     snapshot_dir = tempfile.TemporaryDirectory(prefix='push_swap_session_')
     lock = os.open(folder, os.O_RDONLY)
     try:
@@ -846,10 +854,14 @@ def main():
         config['workers'] = workers
         seen = {r['rank_sha256'] for r in records}
         generation = records[-1]['generation_id'] + 1 if records else 0
-        target = len(records) + args.n if args.n else None
+        target = len(records) + args.n if args.n else config.get('total_runs')
+        if args.n and config.get('total_runs'):
+            target = min(target, config['total_runs'])
         fixed = config.get('size_mode', 'fixed') == 'fixed'
         permutations = math.factorial(config['size']) if fixed else None
         print(f"Session: {folder}\nSeed: {config['seed']} | mode: {config.get('size_mode', 'fixed')} | size: {config['size']} | saved: {len(records)}", flush=True)
+        if target is not None:
+            print(f'Finish target: {target} successful runs total', flush=True)
         print(f"Workers: {workers} | dynamic per-input scheduling | total memory budget: {memory_budget / 1024**2:.0f} MiB", flush=True)
         if workers > 1:
             print('Concurrent throughput mode: timings include resource contention; use --light for isolated comparisons.', flush=True)
