@@ -509,6 +509,18 @@ zstyle ":completion:*:-command-:*:parameters" ignored-patterns adjustbrightness
 alias yeet='git push'
 alias yoink='git pull --ff-only'
 
+# Practice launcher; leaves the school's examshell command available.
+# Override EXAM_PRACTICE_ROOT when the revision checkout lives elsewhere.
+exampractice() (
+  local practice_root="${EXAM_PRACTICE_ROOT:-$HOME/Documents/42_Singapore_SUTD_hnah_private/Exam Revision}"
+  if [[ ! -f "$practice_root/exam.sh" || ! -f "$practice_root/.resources/main/menu.sh" ]]; then
+    print -u2 -- 'Exam practice checkout missing; set EXAM_PRACTICE_ROOT to its folder.'
+    return 1
+  fi
+  cd -- "$practice_root" || return
+  command bash ./exam.sh "$@"
+)
+
 # compile helper
 alias compile='cc -Wall -Wextra -Werror'
 
