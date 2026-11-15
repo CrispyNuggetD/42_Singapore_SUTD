@@ -1219,9 +1219,9 @@ _login_items_ensure() {
 
 # Recent distinct OS logins, without running personal startup commands.
 lastusers() {
-  local login_limit="${1:-5}"
+  local login_limit="${1:-10}"
   if (( $# > 1 )) || [[ "$login_limit" != <-> ]] || (( login_limit < 1 || login_limit > 1000 )); then
-    print -u2 -- 'Usage: lastusers [COUNT] (1–1000; default 5)'
+    print -u2 -- 'Usage: lastusers [COUNT] (1–1000; default 10)'
     return 2
   fi
   if ! (( $+commands[last] )); then
@@ -1419,6 +1419,7 @@ _dailylogin_tasks() {
   _dailylogin_run 'Mailbox worker check/start' startmailbox start_mailbox || true
   _dailylogin_run 'Stayon (automatic mode)' startstayon stayon start --automatic || true
   _dailylogin_run "Set brightness to $setbrightness%" adjustbrightness adjust_brightness || true
+  _dailylogin_run 'Latest logins from ten distinct users' loginreports lastusers || true
   _dailylogin_run 'Before-noon login report' loginreports loginbefore12 --workflow || true
   _dailylogin_run 'Weekly hours report' loginreports hourslogged --workflow || true
   _dailylogin_run 'Chrome window request' openchrome _dailylogin_chrome || true
