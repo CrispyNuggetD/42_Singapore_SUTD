@@ -304,10 +304,10 @@ def render(report, login, now, zone, data, local, reason='', target=None):
         source = 'API location' if data is not None else 'Local fallback'
         print(source + ' period total so far: ' + duration(week_total) + f' ({week_total / 3600:.2f}h)')
         if target is not None:
-            print(f'Weekly policy target (configured locally): {target:g}h')
+            print(f'Personal weekly target (optional; not a school requirement): {target:g}h')
             print('Estimated remaining from location intervals: ' + duration(max(0, target * 3600 - week_total)))
         else:
-            print('Weekly policy target: not configured; set LOGIN_HOURS_WEEKLY_TARGET to the portal policy.')
+            print('Personal weekly target: not configured; optionally set LOGIN_HOURS_WEEKLY_TARGET.')
         print('Totals come from available location intervals; the attendance portal may apply different rules or publication timing.')
     return 0
 
@@ -354,7 +354,7 @@ def main():
         return skip('API and campus local login records are unavailable.')
     raw_target = os.environ.get('LOGIN_HOURS_WEEKLY_TARGET', '').strip()
     try:
-        target = float(raw_target) if raw_target else (20.0 if login.lower() == 'hnah' else None)
+        target = float(raw_target) if raw_target else (50.0 if login.lower() == 'hnah' else None)
         if target is not None and (not 0 < target <= 168 or not math.isfinite(target)):
             raise ValueError
     except ValueError:

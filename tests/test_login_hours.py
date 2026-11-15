@@ -53,7 +53,7 @@ class Durations(unittest.TestCase):
         self.assertIn('Rolling 7-day total: 1h 00m', text)
         self.assertIn('Estimated remaining from location intervals: 19h 00m', text)
         self.assertIn('Day 1 Monday 2026-10-26: 1h 00m', text)
-        self.assertIn('Weekly policy target (configured locally): 20h', text)
+        self.assertIn('Personal weekly target (optional; not a school requirement): 20h', text)
         self.assertIn('9h 00m (provisional', text)
 
     def test_empty_api_is_a_valid_zero_not_a_fallback(self):
@@ -182,7 +182,7 @@ class Entry(unittest.TestCase):
             self.assertIsNone(render.call_args.args[4])
             self.assertEqual(render.call_args.args[5],[])
             self.assertEqual(render.call_args.args[6],'offline')
-            self.assertEqual(render.call_args.args[7],20)
+            self.assertEqual(render.call_args.args[7],50)
 
     def test_mac_hnah_and_other_linux_accounts_do_not_use_local_fallback(self):
         from contextlib import redirect_stderr
