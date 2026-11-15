@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import stat
 import subprocess
 import tempfile
@@ -62,13 +63,19 @@ def advise(facts, taskdir):
               'index_lock suggests stale_index_lock (the executor verifies safety); clean divergence '
               'suggests merge_upstream (executor tests conflicts separately); otherwise retry. '
               'Return only the schema object. Facts: ' + json.dumps(facts))
-    result = subprocess.run([executable, 'exec', '--ignore-user-config', '--sandbox', 'read-only', '--ephemeral',
-                             '-c', 'approval_policy="never"', '--skip-git-repo-check',
-                             '--cd', str(taskdir), '--output-schema', str(schema_path),
-                             '--output-last-message', str(output), '-'],
-                            input=prompt, text=True, stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL, timeout=90)
-    if result.returncode or not output.exists() or output.stat().st_size > 1024:
+    process = subprocess.Popen([executable, 'exec', '--ignore-user-config', '--sandbox', 'read-only', '--ephemeral',
+                                '-c', 'approval_policy="never"', '--skip-git-repo-check',
+                                '--cd', str(taskdir), '--output-schema', str(schema_path),
+                                '--output-last-message', str(output), '-'],
+                               stdin=subprocess.PIPE, text=True, stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL, start_new_session=True)
+    try:
+        process.communicate(prompt, timeout=90)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+        raise
+    if process.returncode or not output.exists() or output.stat().st_size > 1024:
         raise ValueError('Codex diagnosis failed or timed out; no repair selected.')
     answer = json.loads(output.read_text())
     if set(answer) != {'action'} or answer['action'] not in ACTIONS:

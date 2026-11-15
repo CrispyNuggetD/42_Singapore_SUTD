@@ -90,3 +90,37 @@ class RepairTests(unittest.TestCase):
             result=r.repair(self.repo,self.state)
         self.assertFalse(result['ok']);self.assertIn('deadline',result['reason'])
         self.assertFalse(json.loads((self.state/'result.json').read_text())['ok'])
+
+    def test_active_git_keeps_even_old_lock(self):
+        lock=self.repo/'.git/index.lock';lock.touch();os.utime(lock,(time.time()-700,)*2)
+        before=r.snapshot(self.repo)
+        with patch.object(r.subprocess,'run',return_value=subprocess.CompletedProcess([],0,stdout='git\n',stderr='')):
+            with self.assertRaisesRegex(ValueError,'Git process is active'):
+                r.retire_lock(self.repo,before,self.state/'backups')
+        self.assertTrue(lock.exists())
+
+    def test_concurrent_change_aborts_before_merge(self):
+        self.diverge()
+        def advise(*args):
+            (self.repo/'new-local-work').write_text('keep me')
+            return 'merge_upstream'
+        with patch.object(r,'advise',side_effect=advise):
+            result=r.repair(self.repo,self.state)
+        self.assertFalse(result['ok']);self.assertIn('changed while',result['reason'])
+        self.assertEqual((self.repo/'new-local-work').read_text(),'keep me')
+
+    def test_codex_receives_only_facts_in_read_only_temporary_directory(self):
+        from unittest.mock import Mock
+        task=self.root/'agent-task';task.mkdir()
+        facts=dict(dirty=False,ahead=1,behind=1,index_lock=False,error_class='diverged')
+        def launch(args,**kwargs):
+            Path(args[args.index('--output-last-message')+1]).write_text('{"action":"merge_upstream"}')
+            process=Mock(returncode=0)
+            return process
+        with patch.object(r.shutil,'which',return_value='/fake/codex'),patch.object(r.subprocess,'Popen',side_effect=launch) as start:
+            self.assertEqual(r.advise(facts,task),'merge_upstream')
+        args=start.call_args.args[0]
+        self.assertEqual(args[args.index('--sandbox')+1],'read-only')
+        self.assertIn('--ignore-user-config',args)
+        self.assertEqual(args[args.index('--cd')+1],str(task))
+        self.assertNotIn(str(self.repo), ' '.join(args))
