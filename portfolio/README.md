@@ -35,9 +35,10 @@ python3 tools/portfolio.py refresh --from-shell
 
 This parses only those two exported assignments; it never sources/executes your
 settings or publishes other values. It writes the public relative path to
-`config.json` and refreshes the README markers. Review and commit both files.
-The build rejects a stale README marker rather than guessing a private setting
-on GitHub. Other contributors should edit the public config deliberately, not
+`config.json`, refreshes the README markers, and creates/updates the root `current`
+relative symlink. Review and commit all three together.
+The build and the Actions `refresh --check` step reject a stale README or
+`current` link rather than guessing a private setting on GitHub. Other contributors should edit the public config deliberately, not
 publish their own local setting as hnah’s focus. CI does not read personal files.
 
 Every page may link to `current-project.html`: it is generated from the same
@@ -179,3 +180,25 @@ The astronaut follows mouse, touch/pen taps and drags, mobile scroll direction,
 and focused links/controls (including keyboard Tab). These passive reactions
 do not intercept scrolling, taps or navigation, and stop with motion off or
 system reduced-motion/forced-colour preferences.
+
+
+## Portable current-project directory
+
+The Git-tracked root `current` symlink uses exactly `config.json.current_project`
+as its relative target. For example, it points to
+`Core Curriculum/Projects/3_Philosophers`, never an absolute /root or /Users path.
+From any normal symlink-capable checkout, `cd current` opens the selected project.
+GitHub tracks the link itself, not a second copy of the project.
+
+After changing the public current project, run `python3 tools/portfolio.py refresh`;
+for the owner's existing shell setting use `refresh --from-shell` as above. Commit
+`current`, `portfolio/config.json` and README changes together. CI checks this
+invariant with `python3 tools/portfolio.py refresh --check`; it does not mutate
+or auto-commit the checkout. This uses the existing public setting and Actions
+workflow, not another project-selection variable. A real file/directory named
+`current` is never overwritten by refresh. The symlink changes when focus does;
+no shell startup or dailylogin behavior is changed.
+
+Symlinks require filesystem/checkout support. Native Linux, macOS and iSH Git
+checkouts support this pattern; an iOS Files provider may expose links differently.
+The link cannot grant access to a Working Copy folder that has not been mounted.

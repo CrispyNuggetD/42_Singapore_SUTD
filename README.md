@@ -13,6 +13,10 @@ The portfolio is best explored on desktop with a mouse or trackpad; mobile brows
 **Current project: [Philosophers](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/main/Core%20Curriculum/Projects/3_Philosophers/README.md)** · [What I’m working on now](https://crispynuggetd.github.io/42_Singapore_SUTD/#current-project)
 <!-- portfolio-current:end -->
 
+From this repository root, **`cd current`** opens the same current project.
+`current` is a Git-tracked relative symlink, so it works regardless of clone location.
+
+
 ## Start with these
 
 | Work | What you will find |

@@ -19,6 +19,8 @@ class Portfolio(unittest.TestCase):
     def test_focus_is_safe_and_matches_readme(self):
         c=portfolio.load('config.json')
         self.assertIn(portfolio.current_block(c),(portfolio.ROOT/'README.md').read_text())
+        portfolio.check_current_link(c)
+        self.assertFalse(Path(__import__('os').readlink(portfolio.ROOT/'current')).is_absolute())
         self.assertIn(portfolio.project_url(c['current_project']),portfolio.current_block(c))
         for bad in ('../private','/tmp','missing-project'):
             with self.assertRaises(ValueError):portfolio.checked_path(bad)
@@ -59,3 +61,46 @@ class Portfolio(unittest.TestCase):
             self.assertIn('Optional Event Horizon add-on',home)
             self.assertIn('class="eh-horizon-info"',home)
             self.assertNotIn('100/125',home)
+
+
+class CurrentProjectLink(unittest.TestCase):
+    def test_refresh_keeps_portable_link_readme_and_config_in_sync_after_focus_change(self):
+        import os
+        import subprocess
+        with tempfile.TemporaryDirectory(prefix="school repo with spaces ") as tmp:
+            root=Path(tmp);(root/'portfolio').mkdir()
+            for name in ('first','second'):(root/'Core Curriculum'/name).mkdir(parents=True)
+            config={'current_project':'Core Curriculum/first','projects':[]}
+            (root/'portfolio/config.json').write_text(json.dumps(config))
+            (root/'README.md').write_text(portfolio.START+'\n'+portfolio.END)
+            with patch.object(portfolio,'ROOT',root):
+                portfolio.refresh();portfolio.check_current_link(config)
+                self.assertEqual(os.readlink(root/'current'),'Core Curriculum/first')
+                result=subprocess.run(['sh','-c','cd current && pwd -P'],cwd=root,capture_output=True,text=True,check=True)
+                self.assertEqual(Path(result.stdout.strip()),(root/'Core Curriculum/first').resolve())
+                config['current_project']='Core Curriculum/second'
+                (root/'portfolio/config.json').write_text(json.dumps(config))
+                with self.assertRaisesRegex(ValueError,'stale/missing'):portfolio.check_current_link(config)
+                portfolio.refresh();portfolio.check_current_link(config)
+                self.assertEqual(os.readlink(root/'current'),'Core Curriculum/second')
+                self.assertIn(portfolio.current_block(config),(root/'README.md').read_text())
+                self.assertEqual(list(root.glob('.current-link-*')),[])
+
+    def test_real_current_directory_or_file_is_not_overwritten(self):
+        for directory in (True,False):
+            with tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp);(root/'project').mkdir()
+                if directory:(root/'current').mkdir()
+                else:(root/'current').write_text('keep me')
+                with patch.object(portfolio,'ROOT',root):
+                    with self.assertRaisesRegex(ValueError,'Refusing to replace'):portfolio.refresh_current_link({'current_project':'project'})
+                self.assertFalse((root/'current').is_symlink())
+                if not directory:self.assertEqual((root/'current').read_text(),'keep me')
+
+    def test_current_or_external_link_cannot_be_the_configured_project(self):
+        with tempfile.TemporaryDirectory() as tmp,tempfile.TemporaryDirectory() as other:
+            root=Path(tmp);(root/'current').symlink_to(other,target_is_directory=True)
+            (root/'external').symlink_to(other,target_is_directory=True)
+            with patch.object(portfolio,'ROOT',root):
+                for path in ('current','external'):
+                    with self.assertRaises(ValueError):portfolio.checked_path(path)
