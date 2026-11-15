@@ -12,6 +12,7 @@ import shlex
 import shutil
 import sys
 import subprocess
+import tempfile
 import urllib.request
 from urllib.parse import quote
 
@@ -23,8 +24,31 @@ START='<!-- portfolio-current:start -->';END='<!-- portfolio-current:end -->'
 def load(name):return json.loads((ROOT/'portfolio'/name).read_text())
 def checked_path(value):
     path=Path(value)
-    if path.is_absolute() or '..' in path.parts or not path.parts or not (ROOT/path).is_dir():raise ValueError('Current project must be an existing repository-relative directory.')
+    if (path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0]=='current'
+            or not (ROOT/path).is_dir() or not (ROOT/path).resolve().is_relative_to(ROOT.resolve())):raise ValueError('Current project must be an existing repository-relative directory.')
     return path.as_posix()
+def refresh_current_link(config):
+    target=checked_path(config['current_project'])
+    current=ROOT/'current'
+    if current.is_symlink():
+        if os.readlink(current)==target:return False
+    elif current.exists():
+        raise ValueError('Refusing to replace a real file/directory at current; move it aside explicitly first.')
+    # Atomic relative symlink replacement; never traverse the project contents.
+    with tempfile.TemporaryDirectory(prefix='.current-link-',dir=ROOT) as temporary:
+        link=Path(temporary)/'current'
+        link.symlink_to(target,target_is_directory=True)
+        link.replace(current)
+    return True
+
+
+def check_current_link(config):
+    target=checked_path(config['current_project'])
+    current=ROOT/'current'
+    if not current.is_symlink() or os.readlink(current)!=target or not current.is_dir():
+        raise ValueError('Root current symlink is stale/missing. Run python3 tools/portfolio.py refresh and commit current with the config/README.')
+
+
 def project_url(path):
     path=checked_path(path)
     return REPO+('/blob/main/' if (ROOT/path/'README.md').exists() else '/tree/main/')+quote(path+('/README.md' if (ROOT/path/'README.md').exists() else ''),safe='/')
@@ -43,9 +67,11 @@ def refresh(settings=None):
                 if key in ('PROJECTS_ROOT','current_proj'):values[key]=value
         if not values.get('current_proj'):raise ValueError('No explicit current_proj found; nothing changed.')
         config['current_project']=checked_path(str(Path(values.get('PROJECTS_ROOT','Core Curriculum/Projects'))/values['current_proj']))
-        (ROOT/'portfolio/config.json').write_text(json.dumps(config,indent=2)+'\n')
     text=(ROOT/'README.md').read_text()
     if START not in text or END not in text:raise ValueError('README current-project markers missing.')
+    checked_path(config['current_project'])
+    refresh_current_link(config)
+    if settings:(ROOT/'portfolio/config.json').write_text(json.dumps(config,indent=2)+'\n')
     (ROOT/'README.md').write_text(re.sub(re.escape(START)+'.*?'+re.escape(END),lambda _:current_block(config),text,flags=re.S))
 
 def validated_attempt(detail):
@@ -125,6 +151,7 @@ def render_docs(source, text=None):
 
 def build(output):
     config=load('config.json');progress=load('progress.json');checked_path(config['current_project'])
+    check_current_link(config)
     if current_block(config) not in (ROOT/'README.md').read_text():raise ValueError('README focus is stale. Run python3 tools/portfolio.py refresh first.')
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
     shutil.copytree(ROOT/'portfolio/assets',output/'assets',dirs_exist_ok=True)
@@ -195,11 +222,14 @@ def build(output):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
-    p=sub.add_parser('refresh');p.add_argument('--from-shell',action='store_true');p.add_argument('--settings',type=Path)
+    p=sub.add_parser('refresh');p.add_argument('--from-shell',action='store_true');p.add_argument('--settings',type=Path);p.add_argument('--check',action='store_true',help='Check the committed config, README and current symlink without writing')
     p=sub.add_parser('build');p.add_argument('--output',type=Path,default=ROOT/'_site')
     p=sub.add_parser('refresh-api');p.add_argument('--lan42',type=Path,required=True)
     args=parser.parse_args()
-    if args.action=='refresh':refresh(args.settings or Path(os.environ.get('ZSHRC_SETTINGS_FILE',str(Path.home()/'.42-shell-settings.zsh'))) if args.from_shell or args.settings else None)
+    if args.action=='refresh' and args.check:
+        config=load('config.json');check_current_link(config)
+        if current_block(config) not in (ROOT/'README.md').read_text():raise ValueError('README focus is stale. Run python3 tools/portfolio.py refresh.')
+    elif args.action=='refresh':refresh(args.settings or Path(os.environ.get('ZSHRC_SETTINGS_FILE',str(Path.home()/'.42-shell-settings.zsh'))) if args.from_shell or args.settings else None)
     elif args.action=='refresh-api':refresh_api(args.lan42)
     else:build(args.output)
 if __name__=='__main__':main()

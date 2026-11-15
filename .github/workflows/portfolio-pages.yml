@@ -24,6 +24,8 @@ jobs:
       - run: PYTHONPATH=tools python -m unittest discover -s tests
       - run: PYTHONPATH=tools python -m unittest discover -s 'Shell automations/gobreak'
       - run: PYTHONPATH=tools python -m unittest discover -s 'Shell automations/apps'
+      - name: Check current project link and README
+        run: python tools/portfolio.py refresh --check
       - run: python tools/portfolio.py build
       - uses: actions/upload-pages-artifact@v5.0.0
         with:
