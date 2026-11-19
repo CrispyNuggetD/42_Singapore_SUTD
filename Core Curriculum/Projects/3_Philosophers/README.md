@@ -32,9 +32,7 @@
             :-----------.    ....           ....
 ```
 
-THE FELI-O-SO-FURR IS STEALING THE FORK!
-
-One hungry philosopher just lost their chance to eat.
+THE FELI-O-SO-FURR IS STEALING THE FORK! One hungry philosopher just lost their chance to eat.
 
 Summary of my philosopher project and the 1 problem I tried to solve for weeks: A hungry (odd-id) cat.
 
@@ -59,8 +57,6 @@ n\ge3,\quad n\equiv1\pmod2,\quad k\ge1,\\
 \end{aligned}
 }
 ```
-
-The cat is innocent. The modulo arithmetic is not.
 
 Here, $n$ is the philosopher count, $i$ is the **1-based ID**, $k$ is that
 philosopher's completed-meal count, and $E,S$ are the eating/sleeping durations
@@ -87,6 +83,26 @@ rhythm; they do not enforce a global clock or guarantee OS scheduling.
 4. [Appendix: my learning points](#appendix-my-learning-points)
 
 ## Description
+
+> [!WARNING]
+> **PLEASE READ THIS PART FIRST:**
+>
+> I had a lot of fun with this project, and did additional stuff not required such as mapping philo ids to actual intra 42SG IDs for fun.
+> It's also good because unlike other online "bar graph" visualisers, my vibe-coded visualiser is INTERACTIVE.
+>
+> This means you get to see what I mean by "3 phase clock" (For odd number, one philo eats LATE, as highlighted in SPECIAL COLOR).
+>
+> Ok, this readme is *very long* cos it's a documentation, that's also on my [Public GitHub Repo](../../../).
+>
+> Chats with ChatGPT is summarised into the APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
+>
+> The "proper english" APPENDIX is A.I. summarised/ vibed whatever you wanna call it.
+>
+> IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
+
+SO LET'S START:
+
+### Eval Cheat-sheet + Showcase/ Visualisation.
 
 Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
 or jump straight to [the code-flow diagram](#clock-code).
