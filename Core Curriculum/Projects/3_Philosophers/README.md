@@ -67,16 +67,15 @@ Summary of my philosopher project and the 1 problem I tried to solve for weeks: 
 ```math
 \begin{aligned}
 W(n,i,k;E,S)&=\max\!\left\{0,\;E\bigl(1+\delta_{n,i,k}\bigr)-S\right\},\\[4pt]
-\delta_{n,i,k}&=
-\begin{cases}
-1,&
-\begin{gathered}
-n\ge3,\quad n\equiv1\pmod2,\quad k\ge1,\\
+\delta_{n,i,k}&=\left\{
+\begin{array}{ll}
+1,& n\ge3,\quad n\equiv1\pmod2,\quad k\ge1,\quad\text{and}\\
+&
 1+\bigl((k-1)\bmod\lfloor n/2\rfloor\bigr)
-=\min\!\left\{\lceil i/2\rceil,\lfloor n/2\rfloor\right\},
-\end{gathered}\\[4pt]
+=\min\!\left\{\lceil i/2\rceil,\lfloor n/2\rfloor\right\},\\[4pt]
 0,&\text{otherwise}.
-\end{cases}
+\end{array}
+\right.
 \end{aligned}
 ```
 
