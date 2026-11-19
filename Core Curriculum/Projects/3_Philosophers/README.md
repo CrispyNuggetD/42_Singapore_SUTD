@@ -84,7 +84,7 @@ rhythm; they do not enforce a global clock or guarantee OS scheduling.
 
 ## Description
 
-> [!WARNING]
+> [!NOTE]
 > **PLEASE READ THIS PART FIRST:**
 >
 > I had a lot of fun with this project, and did additional stuff not required such as mapping philo ids to actual intra 42SG IDs for fun.
