@@ -1,7 +1,17 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> [!TIP]
+>
+> **(Markdown Formatting, Optimised for): Plss use the Public GitHub Repo Link:**
+>
+> [FROZEN 42SG Eval: Public GitHub Repo]([CHECK_1]).
+>
+> Scared different? Commit ID/ Hash of the README is the SAME, verifiably:
+> [CHECK_2]
+
+## 42 FELINES: THE FELI-O-SO-FURRR PROJECT
+
 ```text
-42 FELINES: THE FELI-O-SO-FURRR PROJECT
                                                           --:
                                                         -*+++=+
                                                       -=*==*+*.
@@ -40,8 +50,9 @@ Summary of my philosopher project and the 1 problem I tried to solve for weeks: 
 
 <!-- GitHub math: keep display formulas in math fences and inline formulas in dollar/backtick guards. -->
 
+<table><tr><td>
+
 ```math
-\boxed{
 \begin{aligned}
 W(n,i,k;E,S)&=\max\!\left\{0,\;E\bigl(1+\delta_{n,i,k}\bigr)-S\right\},\\[4pt]
 \delta_{n,i,k}&=
@@ -55,8 +66,9 @@ n\ge3,\quad n\equiv1\pmod2,\quad k\ge1,\\
 0,&\text{otherwise}.
 \end{cases}
 \end{aligned}
-}
 ```
+
+</td></tr></table>
 
 Here, $n$ is the philosopher count, $i$ is the **1-based ID**, $k$ is that
 philosopher's completed-meal count, and $E,S$ are the eating/sleeping durations
@@ -99,8 +111,8 @@ rhythm; they do not enforce a global clock or guarantee OS scheduling.
 > The "proper english" APPENDIX is A.I. summarised/ vibed whatever you wanna call it.
 >
 > IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
-
-SO LET'S START:
+>
+> SO LET'S START:
 
 ### Eval Cheat-sheet + Showcase/ Visualisation.
 
