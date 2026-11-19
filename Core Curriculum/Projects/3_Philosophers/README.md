@@ -11,7 +11,7 @@
 
 > [!TIP]
 >
-> Now, can you do us a **favour**?
+> Now, can you do us a **favour**? :>
 >
 > The Markdown Formatting, is optimised for, so please use the: Public GitHub Repo Link:**
 >
