@@ -1,12 +1,24 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+> [!WARNING]
+>
+> This **README/ LEARNING DOCUMENTATION** is >3300 lines long.
+>
+> Evaluation-related segments AND contents page are **shown FIRST**, just follow the flow of this readme!
+>
+> You **DON'T** have to read APPENDIX (I understand and can explain them too!).
+
+
 > [!TIP]
 >
-> **(Markdown Formatting, Optimised for): Plss use the Public GitHub Repo Link:**
+> Now, can you do us a **favour**?
+>
+> The Markdown Formatting, is optimised for, so please use the: Public GitHub Repo Link:**
 >
 > [FROZEN 42SG Eval: Public GitHub Repo]([CHECK_1]).
 >
-> Scared different? Commit ID/ Hash of the README is the SAME, verifiably:
+> Scared I play cheat and is different? Commit ID/ Hash of the README is VERIFIABLY the SAME:
+>
 > [CHECK_2]
 
 ## 42 FELINES: THE FELI-O-SO-FURRR PROJECT
