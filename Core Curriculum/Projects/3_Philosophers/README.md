@@ -13,7 +13,7 @@
 >
 > Now, can you do us a **favour**? :>
 >
-> The Markdown Formatting, is optimised for, so please use the: Public GitHub Repo Link:**
+> The Markdown Formatting, is optimised for, so please use the: Public GitHub Repo Link:
 >
 > [FROZEN 42SG Eval: Public GitHub Repo]([CHECK_1]).
 >
@@ -92,9 +92,8 @@ shares the final pair's position. Otherwise, $\delta=0$.
 The separate `initial_wait_slots()` starts odd IDs at 0 eating slots, even
 IDs at 1, and the last ID of an odd table at 2 (a lone philosopher starts
 at 0). After that, the formula above takes over. Cute cat; mathematically
-assigned turns. See [how the clock maps to the code](#clock-code) for the
-reasoning and timing limits: these local waits encourage the intended
-rhythm; they do not enforce a global clock or guarantee OS scheduling.
+assigned turns. (These local waits encourage the intended
+rhythm; they do not enforce a global clock or guarantee OS scheduling).
 
 # Philosophers
 
@@ -110,26 +109,24 @@ rhythm; they do not enforce a global clock or guarantee OS scheduling.
 > [!NOTE]
 > **PLEASE READ THIS PART FIRST:**
 >
-> I had a lot of fun with this project, and did additional stuff not required such as mapping philo ids to actual intra 42SG IDs for fun.
-> It's also good because unlike other online "bar graph" visualisers, my vibe-coded visualiser is INTERACTIVE.
+> 1. I had a lot of fun with this project, and did additional stuff not required such as mapping philo ids to actual intra 42SG IDs for fun.
+> It's also good because unlike other online "bar graph" visualisers, my (vibe-coded) visualiser is INTERACTIVE.
 >
 > This means you get to see what I mean by "3 phase clock" (For odd number, one philo eats LATE, as highlighted in SPECIAL COLOR).
 >
-> Ok, this readme is *very long* cos it's a documentation, that's also on my [Public GitHub Repo](../../../).
+> 2. "Study notes style" chats with ChatGPT is A.I. summarisedd (vibed whatever you wanna call it), into "proper english" as APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
 >
-> Chats with ChatGPT is summarised into the APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
->
-> The "proper english" APPENDIX is A.I. summarised/ vibed whatever you wanna call it.
->
-> IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
->
-> SO LET'S START:
+> 3. IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
+
+SO LET'S START:
 
 ### Eval Cheat-sheet + Showcase/ Visualisation.
 
-Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
-or jump straight to [the code-flow diagram](#clock-code).
-These diagrams and their walkthrough are **AI-generated** from my ideas and
+> 1. Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
+or:
+> 2. jump straight to [the code-flow diagram](#clock-code).
+>
+> These diagrams and their walkthrough are **AI-generated** from my ideas and
 code; feel free to skip them if that is not your thing lol.
 
 A C project about threads, mutexes, and the dining philosophers problem.
