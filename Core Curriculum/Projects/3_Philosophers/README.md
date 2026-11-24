@@ -1,10 +1,12 @@
 *This project has been created as part of the 42 curriculum by hnah.*
 
+# Philosophers
+
 > [!WARNING]
 >
 > This **README/ LEARNING DOCUMENTATION** is very long (>3300 lines).
 >
-> Just follow the flow of this readme! Evaluation-related segments AND contents page are **shown FIRST**, 
+> Just follow the flow of this readme! Start with the [contents](#contents) to jump to the evaluation-related sections.
 >
 > You **DON'T** have to read APPENDIX (I understand and can explain them too!).
 
@@ -96,63 +98,56 @@ at 0). After that, the formula above takes over. Cute cat; mathematically
 assigned turns. (These local waits encourage the intended
 rhythm; they do not enforce a global clock or guarantee OS scheduling).
 
-# Philosophers
-
-A C project about threads, mutexes, and the dining philosophers problem.
-The mandatory program will model philosophers eating, sleeping, and thinking,
-while protecting shared forks and monitoring starvation.
-
 ## Contents
 
 1. [Description](#description) — [see how the clock works](#see-how-it-works)
 2. [Instructions](#instructions)
 3. [Resources](#resources)
-
----
-
 4. [Appendix: my learning points](#appendix-my-learning-points)
 
 ## Description
+
+A C project about threads, mutexes, and the dining philosophers problem.
+In mandatory, each philosopher has a thread and each fork has a mutex.
+The philosophers eat, sleep, and think while the main thread watches for
+starvation or checks whether everyone has reached the meal quota.
 
 > [!NOTE]
 >
 > **PLEASE READ THIS PART FIRST:**
 >
 > 1. This README is long because I learned way more than I expected from Philo lol.
-The project description, build instructions, and resources come first; the
-thread, pointer, mutex, and time rabbit holes are in the linked learning
-appendix below.
->> * I had a lot of fun with this project, and did additional stuff not required such as making (vibe-coded) a javascript webpage that maps philo ids to actual intra 42SG IDs FOR FUN.
-> (Unlike other online "bar graph" visualisers, my visualiser is INTERACTIVE.)
+>    The project description, build instructions, and resources come first. The
+>    thread, pointer, mutex, and time rabbit holes are in the linked learning
+>    appendix below.
 >
->> * You get to see what I mean by **"3 phase clock"** (For odd number, one philo eats LATE, as highlighted in SPECIAL COLOR).
+>    - I had a lot of fun with this project and did some extra stuff, like making (vibe-coding) a JavaScript webpage that maps philo IDs to actual Intra 42SG IDs FOR FUN.
+>      (Unlike other online "bar graph" visualisers, my visualiser is INTERACTIVE.)
+>    - You get to see what I mean by **"3 phase clock"** (at an odd table, the last philo starts LATE and shows up in a SPECIAL COLOR).
 >
 > 2. "Study notes style" chats with ChatGPT is A.I. summarised (vibed, or whatever you wanna call it), into "proper english" as APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
 >
-> 3. IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
+> 3. **Description**, **Instructions**, and **Resources** are the three sections the subject asks for in this README.
 
 SO LET'S START!! :D
 
-### ** (Helpful, but NOT evaluation mandatory) Eval Cheat-sheet + Showcase/ Visualisation. 
+### Eval cheat sheet + showcase / visualisation
 
-> **Click "back to mandatory evaluation" links to come back later if you want to explore these:**
-> 1. Want illustrations of how algo works intuitively? [See the step-by-step clock diagrams](#learning-point-34)
-or:
-> 2. Click [here](#clock-code) to see the WHOLE program as a **code-flow diagram**
-> 3. Check out: [**FORKNITE**](https://github.com/CrispyNuggetD/42sg-campus-lan/tree/main/minigames/forknite),
-> the interactive browser Philo visualiser that pipes the actual C executable output into the JavaScript animation workflow. [More info in the appendix](#forknite-visualiser-setup).
->> * (This can be compared to the current online "static" version many others use):
->>> * Publicly available
-[Philosophers visualiser by rom98759](https://rom98759.github.io/Philosophers-visualizer/)
-for viewing eating, sleeping and thinking activity as a chart.
+> **Click "back to mandatory evaluation" to come back after exploring these.**
+>
+> 1. Want to see how the algo works? [See the step-by-step clock diagrams](#learning-point-34).
+> 2. Want to see how the waits fit into the mandatory routine? [See the code-flow diagram](#clock-code).
+> 3. Check out [**FORKNITE**](https://github.com/CrispyNuggetD/42sg-campus-lan/tree/main/minigames/forknite), the interactive browser Philo visualiser that pipes the actual C executable output into the JavaScript animation workflow. [More info in the appendix](#forknite-visualiser-setup).
+>    - You can compare it with the public [Philosophers visualiser by rom98759](https://rom98759.github.io/Philosophers-visualizer/), which shows eating, sleeping and thinking activity as a chart.
 
 ---
 > These diagrams and their walkthrough are **AI-generated** from my ideas and
-code; feel free to skip them if that is not your thing lol.
+> code; feel free to skip them if that is not your thing lol.
 
 <a id="mandatory-evaluation"></a>
 
 ### The complete implementation:
+
 1. Argument parsing,
 2. Resource initialization,
 3. The eating/sleeping/thinking cycle,
@@ -160,10 +155,11 @@ code; feel free to skip them if that is not your thing lol.
 5. Meal quotas, and
 6. Cleanup.
 
-In my own public GitHub repo (not school submission), the pre-evaluation [final validation report](debug/eval_logs_2026-10-24_final/SUMMARY.md)
+In my own public GitHub repo (not school submission), the 24 October pre-evaluation [final validation report](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/c6b634247fec02812524c6184bc9d09ed2ec54b6/Core%20Curriculum/Projects/3_Philosophers/debug/eval_logs_2026-10-24_final/SUMMARY.md)
 records the passing checks and their timing/coverage limits.
-The mandatory sources, header, and Makefile are in `philo/`, as required by
-subject version 13.0. Libft is not used.
+The mandatory sources, header, and Makefile are in `philo/` and their bonus
+counterparts are in `philo_bonus/`, as required by subject version 13.0.
+Libft is not used.
 
 [CHECK POINT 2026-11-24T17:59:21+08:00]
 
@@ -210,11 +206,9 @@ The executable is `philo/philo`.
 `make clean` removes object files and `make fclean` also removes executables
 from both `philo/` and `philo_bonus/`. `make re` rebuilds mandatory.
 
-`make bonus` builds the bonus scaffold. Bonus is still WIP: input parsing,
-process helpers and semaphore initialization/cleanup are in place, but the
-philosopher routine and parent supervision are TODO. Valid input currently
-initializes and cleans up resources, reports "not implemented", and exits with
-a nonzero status; it does not run the simulation yet.
+`make bonus` (or `make -C philo_bonus`) builds `philo_bonus/philo_bonus`.
+In bonus, each philosopher runs in a child process. A semaphore counts the
+available forks, and the parent waits for the children and handles shutdown.
 
 The command format is:
 
@@ -222,6 +216,10 @@ The command format is:
 ./philo/philo number_of_philosophers time_to_die time_to_eat time_to_sleep \
     [number_of_times_each_philosopher_must_eat]
 ```
+
+Bonus takes the same arguments. The three time values are in milliseconds.
+For example, try `./philo/philo 5 800 200 200 7` or
+`./philo_bonus/philo_bonus 5 800 200 200 7`.
 
 The simulation stops when a philosopher dies or everyone completes the
 optional meal quota.
@@ -240,7 +238,7 @@ additional files have specific responsibilities rather than duplicating logic:
 | --- | --- | --- |
 | `process_bonus.c` | Allocates PID bookkeeping, forks children, decodes exit results, and reaps children. | Bonus needs process management. Its five functions already reach the Norm limit per file. |
 | `semaphore_bonus.c` | Opens shared semaphores, creates and unlinks private meal semaphores, and retries interrupted waits. | Groups the five semaphore utility functions together, freeing initialization to stay in one file. |
-| `error_bonus.c` | Maps statuses to messages and reports errors. | Mandatory combines cleanup and errors in `cleanup_error.c`. Bonus has four cleanup functions and three error functions, so combining `cleanup_bonus.c` and `error_bonus.c` would exceed five functions. |
+| `error_bonus.c` | Maps statuses to messages and reports errors. | Mandatory combines cleanup and errors in `cleanup_error.c`. Bonus has five cleanup functions and three error functions, so combining `cleanup_bonus.c` and `error_bonus.c` would exceed five functions. |
 
 `init_bonus.c` contains both parent and child initialization (three functions).
 Initialization has two scopes: `init_bonus()` runs in the parent before
@@ -257,12 +255,16 @@ Norm limit of five functions.
 
 ## Resources
 
-- Philosophers subject, version 13.0 (provided locally).
+- Philosophers subject, version 13.0.
 - Local manual pages: `man pthread_create`, `man pthread_mutex_init`,
   `man pthread_join`, `man gettimeofday`, and `man usleep`.
+
+### Usage of AI
+
 - AI assistance helped explain concepts and write these learning notes.
   It also helped with implementation, refactoring, and checks throughout
   the simulation, including initialization, logging, timing, and cleanup.
+- The ideas, design choices, and understanding how the project works are my responsibility.
 
 ## Appendix: my learning points
 
@@ -667,8 +669,8 @@ pointer without saying which philosopher it represents.
 `threads_to_join` counter starts at zero, selects the next record, and
 increments only after `pthread_create()` succeeds. If creation fails
 partway through, cleanup joins exactly the threads that started. Cleanup
-then decrements the counter after each join. My routine currently prints
-a greeting; the eating cycle is still to be written.
+then decrements the counter after each join. My first routine just printed
+a greeting. It now runs the eating, sleeping, and thinking cycle.
 
 [Back to appendix index](#learning-points)
 
@@ -1268,7 +1270,7 @@ owned resources without guessing which function last touched a field.
 | Group in `t_sim` | Contents | Functions that use it |
 | --- | --- | --- |
 | `config` (`t_config`) | Validated count, durations, and meal goal | `parse_input()` writes it; setup and threads read it |
-| `runtime` (`t_runtime`) | Start timestamp, stop state, and print mutex | `init_sim()` sets the timestamp; stop/logging setup is still unfinished |
+| `runtime` (`t_runtime`) | Start timestamp, stop state, and stop and printing mutexes | `init_sim()` sets the timestamp and initializes the stop and printing mutexes |
 | `resources` (`t_resources`) | Fork/philosopher arrays and successful initialization/thread counters | Setup and thread creation update it; `cleanup_resources()` releases it |
 
 For example, `sim.config.count` is a setting,
@@ -2090,8 +2092,8 @@ and `printing_lock` lets one through at a time. A state struct stores data;
 it does not execute the monitor or replace a thread.
 
 These are design tradeoffs, not a claim that either layout automatically
-satisfies the subject's timing requirements. My complete lifecycle and
-shutdown handling still need to be finished and tested.
+satisfies the subject's timing requirements. In my implementation, main joins
+the workers and cleans up after the monitor loop.
 
 [Back to appendix index](#learning-points)
 
@@ -3153,7 +3155,7 @@ on top of 200 ms eating and 400 ms sleeping: exactly the 800 ms deadline.
 Subtracting the sleep already completed fixed that unnecessary delay in both
 runs. I did not need to blame the parameters for that bug lol.
 
-[Recorded results and individual run logs](debug/eval_logs_2026-10-24_long_sleep/summary.json)
+[Recorded results and individual run logs](https://github.com/CrispyNuggetD/42_Singapore_SUTD/blob/c6b634247fec02812524c6184bc9d09ed2ec54b6/Core%20Curriculum/Projects/3_Philosophers/debug/eval_logs_2026-10-24_long_sleep/summary.json)
 are saved with the project. These finite runs support the change; they are not
 an unconditional starvation-freedom or real-time scheduling proof. The earlier
 full evaluation report describes the pre-adjustment code, so its two long-sleep
@@ -3188,12 +3190,12 @@ Nobody can eat. Nobody returns anything. Great, we each own half a meal lol.
 ```
 
 The same problem exists for N philosophers if everyone grabs one first.
-So my planned `take_pair` semaphore starts at **1**: only one philosopher
+So my `take_pair` semaphore starts at **1**: only one philosopher
 can be in the process of acquiring a pair at a time. Everyone waiting at
 that gate holds zero forks.
 
 ```c
-/* Planned flow only: logging and error handling omitted. */
+/* Simplified flow: logging and error handling omitted. */
 sem_wait(take_pair);
 sem_wait(forks);
 sem_wait(forks);
@@ -3219,7 +3221,7 @@ its own death path, because waiting cannot manufacture a second fork.
 
 This is where it connects back to my mandatory implementation:
 
-| What I need to prevent | Mandatory | Planned bonus |
+| What I need to prevent | Mandatory | Bonus |
 | --- | --- | --- |
 | Circular waiting for the second fork | Odd/even IDs acquire their specific forks in opposite orders | Only one philosopher acquires a pair at a time |
 | Everyone being stuck with an incomplete pair | Fixed fork ordering breaks the cycle | The acquisition gate prevents multiple incomplete pairs |
@@ -3238,9 +3240,10 @@ fairness are still different questions. On an error, any acquired tokens and
 the gate need appropriate handling; killing a process does not automatically
 return semaphore tokens.
 
-This entry records the planned acquisition design. Semaphore setup and partial
-initialization cleanup are now implemented; the actual acquisition routine is
-still TODO in the bonus scaffold.
+This was the plan, and it's what I ended up implementing. See
+[`forks_bonus.c`](philo_bonus/src/forks_bonus.c) for how I acquire the pair and
+return any tokens I already took if acquisition fails. Semaphore setup and
+partial initialization cleanup are implemented too.
 
 [Back to appendix index](#learning-points)
 
