@@ -2,9 +2,9 @@
 
 > [!WARNING]
 >
-> This **README/ LEARNING DOCUMENTATION** is >3300 lines long.
+> This **README/ LEARNING DOCUMENTATION** is very long (>3300 lines).
 >
-> Evaluation-related segments AND contents page are **shown FIRST**, just follow the flow of this readme!
+> Just follow the flow of this readme! Evaluation-related segments AND contents page are **shown FIRST**, 
 >
 > You **DON'T** have to read APPENDIX (I understand and can explain them too!).
 
@@ -13,7 +13,7 @@
 >
 > Now, can you do us a **favour**? :>
 >
-> The Markdown Formatting, is optimised for, so please use the: Public GitHub Repo Link:
+> The Markdown Formatting, is optimised for GitHub, so please use the: Public GitHub Repo Link:
 >
 > [FROZEN 42SG Eval: Public GitHub Repo]([CHECK_1]).
 >
@@ -21,9 +21,11 @@
 >
 > [CHECK_2]
 
-## 42 FELINES: THE FELI-O-SO-FURRR PROJECT
+## (Preface) 42 FELINES: THE FELI-O-SO-FURRR PROJECT
 
 ```text
+THE FELI-O-SO-FURR IS STEALING THE FORK! 
+One hungry philosopher just lost their chance to eat.
                                                           --:
                                                         -*+++=+
                                                       -=*==*+*.
@@ -54,11 +56,10 @@
             :-----------.    ....           ....
 ```
 
-THE FELI-O-SO-FURR IS STEALING THE FORK! One hungry philosopher just lost their chance to eat.
 
 Summary of my philosopher project and the 1 problem I tried to solve for weeks: A hungry (odd-id) cat.
 
-**My solution to making the cat stop stealing the fork:**
+**My solution to making the cat stop stealing the fork (lol):**
 
 <!-- GitHub math: keep display formulas in math fences and inline formulas in dollar/backtick guards. -->
 
@@ -97,69 +98,75 @@ rhythm; they do not enforce a global clock or guarantee OS scheduling).
 
 # Philosophers
 
+A C project about threads, mutexes, and the dining philosophers problem.
+The mandatory program will model philosophers eating, sleeping, and thinking,
+while protecting shared forks and monitoring starvation.
+
 ## Contents
 
 1. [Description](#description) — [see how the clock works](#see-how-it-works)
 2. [Instructions](#instructions)
 3. [Resources](#resources)
+
+---
+
 4. [Appendix: my learning points](#appendix-my-learning-points)
 
 ## Description
 
 > [!NOTE]
+>
 > **PLEASE READ THIS PART FIRST:**
 >
-> 1. I had a lot of fun with this project, and did additional stuff not required such as mapping philo ids to actual intra 42SG IDs for fun.
-> It's also good because unlike other online "bar graph" visualisers, my (vibe-coded) visualiser is INTERACTIVE.
+> 1. This README is long because I learned way more than I expected from Philo lol.
+The project description, build instructions, and resources come first; the
+thread, pointer, mutex, and time rabbit holes are in the linked learning
+appendix below.
+>> * I had a lot of fun with this project, and did additional stuff not required such as making (vibe-coded) a javascript webpage that maps philo ids to actual intra 42SG IDs FOR FUN.
+> (Unlike other online "bar graph" visualisers, my visualiser is INTERACTIVE.)
 >
-> This means you get to see what I mean by "3 phase clock" (For odd number, one philo eats LATE, as highlighted in SPECIAL COLOR).
+>> * You get to see what I mean by **"3 phase clock"** (For odd number, one philo eats LATE, as highlighted in SPECIAL COLOR).
 >
-> 2. "Study notes style" chats with ChatGPT is A.I. summarisedd (vibed whatever you wanna call it), into "proper english" as APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
+> 2. "Study notes style" chats with ChatGPT is A.I. summarised (vibed, or whatever you wanna call it), into "proper english" as APPENDIX below. You DON'T HAVE TO READ THE APPENDIX; you can ask me to check my understanding.
 >
 > 3. IF YOU FOLLOW the next 3 sections, that's ALL THE SECTIONS THAT'S MANDATORY for the evaluation.
 
-SO LET'S START:
+SO LET'S START!! :D
 
-### Eval Cheat-sheet + Showcase/ Visualisation.
+### ** (Helpful, but NOT evaluation mandatory) Eval Cheat-sheet + Showcase/ Visualisation. 
 
-> 1. Want pictures? [See the step-by-step clock diagrams](#learning-point-34)
+> **Click "back to mandatory evaluation" links to come back later if you want to explore these:**
+> 1. Want illustrations of how algo works intuitively? [See the step-by-step clock diagrams](#learning-point-34)
 or:
-> 2. jump straight to [the code-flow diagram](#clock-code).
->
+> 2. Click [here](#clock-code) to see the WHOLE program as a **code-flow diagram**
+> 3. Check out: [**FORKNITE**](https://github.com/CrispyNuggetD/42sg-campus-lan/tree/main/minigames/forknite),
+> the interactive browser Philo visualiser that pipes the actual C executable output into the JavaScript animation workflow. [More info in the appendix](#forknite-visualiser-setup).
+>> * (This can be compared to the current online "static" version many others use):
+>>> * Publicly available
+[Philosophers visualiser by rom98759](https://rom98759.github.io/Philosophers-visualizer/)
+for viewing eating, sleeping and thinking activity as a chart.
+
+---
 > These diagrams and their walkthrough are **AI-generated** from my ideas and
 code; feel free to skip them if that is not your thing lol.
 
-A C project about threads, mutexes, and the dining philosophers problem.
-The mandatory program will model philosophers eating, sleeping, and thinking,
-while protecting shared forks and monitoring starvation.
+<a id="mandatory-evaluation"></a>
 
-The mandatory implementation is complete: argument parsing, resource
-initialization, the eating/sleeping/thinking cycle, monitoring, meal quotas,
-and cleanup. The [final validation report](debug/eval_logs_2026-10-24_final/SUMMARY.md)
+### The complete implementation:
+1. Argument parsing,
+2. Resource initialization,
+3. The eating/sleeping/thinking cycle,
+4. Monitoring,
+5. Meal quotas, and
+6. Cleanup.
+
+In my own public GitHub repo (not school submission), the pre-evaluation [final validation report](debug/eval_logs_2026-10-24_final/SUMMARY.md)
 records the passing checks and their timing/coverage limits.
 The mandatory sources, header, and Makefile are in `philo/`, as required by
 subject version 13.0. Libft is not used.
 
-This README is long because I learned way more than I expected from Philo lol.
-The project description, build instructions, and resources come first; the
-thread, pointer, mutex, and time rabbit holes are in the linked learning
-appendix below.
+[CHECK POINT 2026-11-24T17:59:21+08:00]
 
-Shoutout to [**FORKNITE**](https://github.com/CrispyNuggetD/42sg-campus-lan/tree/main/minigames/forknite),
-the browser game in my [LAN42](https://github.com/CrispyNuggetD/42sg-campus-lan)
-that became my de facto Philo visualiser lol. It runs my actual compiled
-`philo` executable and turns its output into something I can watch and replay.
-The philosophers are eating and dying according to this C program; I just gave
-the terminal logs a browser and an unnecessarily dramatic name.
-
-In LAN42, `/game forknite` creates a room, friends use `/join ROOM_NUMBER`,
-and the host uses `/start`. My local setup points to this project's executable,
-so rebuilding Philo updates what the game runs. Browser pause/replay only affects
-the visualisation, not the running C simulation.
-
-There is also a publicly available
-[Philosophers visualiser by rom98759](https://rom98759.github.io/Philosophers-visualizer/)
-for viewing eating, sleeping and thinking activity as a chart.
 
 <a id="see-how-it-works"></a>
 
@@ -267,7 +274,28 @@ These notes are separate from the mandatory project description and build
 instructions above. Examples may be exercises or plans rather than implemented
 simulation features. The numbered links jump to each learning point.
 
+### FORKNITE visualiser setup
+
+[Back to mandatory evaluation](#mandatory-evaluation).
+
+FORKNITE Visualiser runs my actual compiled
+`philo` executable and turns its output into something I can watch and replay.
+The philosophers are eating and dying according to this C program.
+
+Requires my LAN42 (Host server) to work at the moment:
+1. `/game forknite` creates a room
+2. friends use `/join ROOM_NUMBER` and
+3. the host uses `/start`.
+
+My local setup points to this project's executable,
+so rebuilding Philo updates what the game runs. Browser pause/replay only affects
+the visualisation, not the running C simulation.
+
+**You've reached the end of the FORKNITE setup.** Go [back to mandatory evaluation](#mandatory-evaluation) to pick up where you left off.
+
 <a id="learning-points"></a>
+
+### Learning point index
 
 1. [Threads](#learning-point-1)
 2. [Mutexes](#learning-point-2)
@@ -2746,6 +2774,8 @@ I can compare what changed. Their references to swapping are historical.
 
 ### 34. See the clock grow: 1, 2, 3, 4, 5, and 7 philosophers
 
+[Back to mandatory evaluation](#mandatory-evaluation).
+
 **This section's Mermaid diagrams and explanations are AI-generated from my
 ideas and implementation, then added here as learning notes.**
 
@@ -2962,9 +2992,13 @@ assigned to that ID. For quota 6, the ideal seven-tick loop simply repeats
 twice. Increasing the quota repeats the pattern; it does not add new colours
 or a new scheduling rule.
 
+**You've reached the end of the step-by-step clock diagrams.** Go [back to mandatory evaluation](#mandatory-evaluation) to pick up where you left off.
+
 <a id="clock-code"></a>
 
 #### How those pictures map to my routine
+
+[Back to mandatory evaluation](#mandatory-evaluation).
 
 There is no shared tick variable in this implementation. Each worker runs
 the same routine and derives its initial offset and recurring extra wait
@@ -3002,7 +3036,8 @@ yields; I cannot claim other implementations have no patterns, or that mine
 always follows these diagrams. The graphs explain the mathematics and the
 code's intention. Actual logs are how I check the behaviour.
 
-[Back to the introductory overview](#see-how-it-works) ·
+**You've reached the end of the code-flow walkthrough.** Go [back to mandatory evaluation](#mandatory-evaluation) to pick up where you left off.
+
 [Back to appendix index](#learning-points)
 
 
