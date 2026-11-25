@@ -161,9 +161,6 @@ The mandatory sources, header, and Makefile are in `philo/` and their bonus
 counterparts are in `philo_bonus/`, as required by subject version 13.0.
 Libft is not used.
 
-[CHECK POINT 2026-11-24T17:59:21+08:00]
-
-
 <a id="see-how-it-works"></a>
 
 ### See how it works: my clock idea
