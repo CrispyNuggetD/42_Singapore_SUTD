@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 21:10:43 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/25 17:34:04 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/27 23:25:01 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,10 +106,13 @@ typedef struct s_philo_bonus
 {
 	int				id;
 	pthread_t		monitor_thread;
+	pthread_t		stop_listener_thread;
 	sem_t			*meal_state_lock;
-	sem_t			*child_stop_signal;
+	sem_t			*stop_request;
+	sem_t			*stop_lock;
 	long			last_meal;
 	int				meals_eaten;
+	int				stop;
 	t_sim_bonus		*sim;
 }	t_philo_bonus;
 
@@ -133,8 +136,8 @@ typedef struct s_sim_bonus
 	sem_t		*forks_sem;
 	sem_t		*take_pair_lock;
 	sem_t		*printing_lock;
-	sem_t		**all_stop_signals
-	sem_t		*philo_stop_noted;
+	sem_t		**all_stop_requests;
+	sem_t		*stop_confirmations;
 }	t_sim_bonus;
 
 t_status	parse_input(int argc, char **argv, t_config *config);
@@ -150,6 +153,7 @@ t_status	init_bonus(t_sim_bonus *sim);
 t_status	init_philo_bonus(t_philo_bonus *philo, t_sim_bonus *sim, int id);
 t_status	start_bonus(t_sim_bonus *sim);
 void		*monitor_philo_bonus(void *argument);
+void		*listen_for_stop(void *argument);
 t_status	supervise_children_bonus(t_sim_bonus *sim);
 int			run_philo_bonus(t_sim_bonus *sim, int id);
 t_status	cleanup_bonus(t_sim_bonus *sim, t_status status);

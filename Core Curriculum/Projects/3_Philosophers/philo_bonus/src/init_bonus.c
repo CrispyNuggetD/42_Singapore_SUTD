@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 22:19:06 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 17:36:08 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/27 23:25:04 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@ static t_status	init_philo_monitor_bonus(t_philo_bonus *philo)
 {
 	if (pthread_create(&philo->monitor_thread, NULL,
 			monitor_philo_bonus, philo) != 0)
+		return (ERR_THREAD_CREATE);
+	if (pthread_create(&philo->stop_listener_thread, NULL,
+			listen_for_stop, philo) != 0)
 		return (ERR_THREAD_CREATE);
 	return (STATUS_OK);
 }

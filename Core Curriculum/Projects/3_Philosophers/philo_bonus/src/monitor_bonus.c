@@ -6,7 +6,7 @@
 /*   By: hnah <hnah@student.42singapore.sg>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/24 22:59:37 by hnah              #+#    #+#             */
-/*   Updated: 2026/11/02 18:38:19 by hnah             ###   ########.fr       */
+/*   Updated: 2026/11/27 23:16:24 by hnah             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,23 @@ static void	check_philo_locked_bonus(t_philo_bonus *philo)
 			exit(CHILD_ERROR);
 		exit(CHILD_DIED);
 	}
+}
+
+static void	*listen_for_stop(void *argument)
+{
+	t_philo_bonus	*philo;
+	//t_status		status;
+
+	if (wait_semaphore(philo->stop_request) != STATUS_OK)
+		exit(CHILD_ERROR);
+	if (wait_semaphore(philo->stop_lock) != STATUS_OK)
+		exit(CHILD_ERROR);
+	philo->stop = 1;
+	if (sem_post(philo->stop_lock) == -1)
+		exit(CHILD_ERROR);
+	if (sem_post(philo->sim->stop_confirmations) == -1)
+		exit(CHILD_ERROR);
+	return (NULL);
 }
 
 void	*monitor_philo_bonus(void *argument)
