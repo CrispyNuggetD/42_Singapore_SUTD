@@ -58,8 +58,10 @@ One hungry philosopher just lost their chance to eat.
             :-----------.    ....           ....
 ```
 
+### Problematic Mandatory - Last, odd philo screws up eating "clock-pattern"!
 
-Summary of my philosopher project and the 1 problem I tried to solve for weeks: A hungry (odd-id) cat.
+The mandatory problem I spent weeks on was keeping the last philosopher fed
+at an odd-sized table. A hungry (odd-id) cat.
 
 **My solution to making the cat stop stealing the fork (lol):**
 
@@ -97,6 +99,14 @@ IDs at 1, and the last ID of an odd table at 2 (a lone philosopher starts
 at 0). After that, the formula above takes over. Cute cat; mathematically
 assigned turns. (These local waits encourage the intended
 rhythm; they do not enforce a global clock or guarantee OS scheduling).
+
+### Problematic Bonus - Many other solutions are incomplete/ wrong!
+
+The bonus gave me a second problem to take into the evaluation. I got the
+simulation to stop when a philosopher died, then Memcheck showed me what was
+still allocated when the dying child exited. The problem is people either didn't do bonus, or existing solutions were "cheating" and not POSIX-C compliant!
+
+That became the next thing I needed to solve before submission. [Why was a clean death so much harder in bonus?](#learning-point-40)
 
 ## Contents
 
@@ -335,6 +345,7 @@ the visualisation, not the running C simulation.
 37. [Bonus: replacing mutexes means checking error handling too](#learning-point-37)
 38. [Bonus: why printing under a semaphore is not enough with printf](#learning-point-38)
 39. [Bonus: death and quota completion need different shutdown paths](#learning-point-39)
+40. [Bonus: why is it so hard to clean up after a death?](#learning-point-40)
 
 <a id="learning-point-1"></a>
 
@@ -3363,5 +3374,54 @@ all heap blocks in the parent and both children. Death exits still have
 separate possible/reachable allocation reports; the clean quota result does
 not establish that every shutdown path is clean. The initial ordinary native
 tests had passed too, illustrating why those alone did not expose the race.
+
+[Back to appendix index](#learning-points)
+
+<a id="learning-point-40"></a>
+
+### 40. Bonus: why is it so hard to clean up after a death?
+
+"It's just merging Pipex and Philo, I thought. Won't take long. Or so I
+thought."
+
+After I fixed quota shutdown, I turned to the death path. The simulation
+printed `died` and stopped, but Memcheck still showed 346 bytes possibly lost
+and 239–243 bytes still reachable in the dying child. The reports had zero
+bytes definitely or indirectly lost. A monitor calling `exit()` can end
+the process with another thread still alive, semaphore handles still open,
+and the child's copy of the PID array still allocated. That was the bonus
+problem that kept me from calling this finished.
+
+#### Why was this easier in mandatory? Is it the semaphores?
+
+The big change is from threads to processes. Both `pthread_mutex_lock()` and
+`sem_wait()` can block. In mandatory, every philosopher thread can read
+`all_stop` in the same `sim`. Main sets it and prints `died`. An eating
+thread sees the flag in its timed wait and releases its forks. A neighbour
+blocked on a fork can then wake up, see the flag too, and unwind. Main can
+join everyone and clean up.
+
+In bonus, each child gets its own copy of `sim` after `fork()`. A flag set
+in one process only reaches threads in that process. My current death path
+holds the printing semaphore after the final line, then exits from the
+monitor so the parent can stop and reap the other children. If I simply
+return from the monitor, a worker can still be stuck in `sem_wait()`.
+Joining it would leave me waiting too.
+
+#### What if waiting on a semaphore is how the child gets told to stop?
+
+I asked around and kept hearing there was no way to do this with the v13.0
+function list. That got on my nerves. The subject gives me `sem_wait()` and
+`sem_post()`, and leaves out `sem_timedwait()` and `sem_trywait()`. Then ChatGPT 6.2 came out and after thinking, this release found a way: it suggested to use a blocking semaphore for the stop request
+itself. That's the part I had missed.
+
+A child listener waits on a named semaphore that starts at zero. When a
+monitor prints `died`, it notifies the parent through another semaphore.
+The parent posts to each child's stop semaphore. Each listener wakes, sets
+the stop flag in its own process, and posts a confirmation. Once all children
+have confirmed, the parent can wake threads blocked on forks, the pair gate,
+or printing. They check their own stop flag after waking and unwind without
+printing again. Then each child can join its threads, close its handles,
+free its memory, and exit.
 
 [Back to appendix index](#learning-points)
